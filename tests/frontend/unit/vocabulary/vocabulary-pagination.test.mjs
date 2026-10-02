@@ -54,19 +54,19 @@ describe('Unit: Vocabulary First/Last Pagination (<< < 1 2 3 > >>)', () => {
     test('buttons have required accessible Vietnamese labels and glyphs', () => {
       // First button (<<)
       assert.ok(vocabJs.includes("'aria-label': 'Trang đầu'") || vocabJs.includes('"aria-label": "Trang đầu"'));
-      assert.ok(vocabJs.includes("'«'") || vocabJs.includes('"«"') || vocabJs.includes('&laquo;'));
+      assert.ok(vocabJs.includes("'<<'") || vocabJs.includes('"<<"'));
 
       // Previous button (<)
       assert.ok(vocabJs.includes("'aria-label': 'Trang trước'") || vocabJs.includes('"aria-label": "Trang trước"'));
-      assert.ok(vocabJs.includes("'‹'") || vocabJs.includes('"‹"') || vocabJs.includes('&lsaquo;'));
+      assert.ok(vocabJs.includes("'< '") || vocabJs.includes("text: '<'") || vocabJs.includes('text: "<"'));
 
       // Next button (>)
       assert.ok(vocabJs.includes("'aria-label': 'Trang sau'") || vocabJs.includes('"aria-label": "Trang sau"'));
-      assert.ok(vocabJs.includes("'›'") || vocabJs.includes('"›"') || vocabJs.includes('&rsaquo;'));
+      assert.ok(vocabJs.includes("'> '") || vocabJs.includes("text: '>'") || vocabJs.includes('text: ">"'));
 
       // Last button (>>)
       assert.ok(vocabJs.includes("'aria-label': 'Trang cuối'") || vocabJs.includes('"aria-label": "Trang cuối"'));
-      assert.ok(vocabJs.includes("'»'") || vocabJs.includes('"»"') || vocabJs.includes('&raquo;'));
+      assert.ok(vocabJs.includes("'>>'") || vocabJs.includes('">>"'));
     });
 
     test('buttons are semantic native buttons with type button', () => {

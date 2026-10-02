@@ -857,7 +857,7 @@ export class VocabularyPageController {
         'aria-label': 'Trang đầu',
         id: 'vocabPaginationFirstBtn'
       },
-      text: '«'
+      text: '<<'
     });
     if (pag.pageIndex === 0) {
       firstBtn.setAttribute('disabled', 'true');
@@ -878,7 +878,7 @@ export class VocabularyPageController {
         'aria-label': 'Trang trước',
         id: 'vocabPaginationPrevBtn'
       },
-      text: '‹'
+      text: '<'
     });
     if (pag.pageIndex === 0) {
       prevBtn.setAttribute('disabled', 'true');
@@ -922,7 +922,7 @@ export class VocabularyPageController {
         'aria-label': 'Trang sau',
         id: 'vocabPaginationNextBtn'
       },
-      text: '›'
+      text: '>'
     });
     if (pag.pageIndex >= pag.totalPages - 1) {
       nextBtn.setAttribute('disabled', 'true');
@@ -943,7 +943,7 @@ export class VocabularyPageController {
         'aria-label': 'Trang cuối',
         id: 'vocabPaginationLastBtn'
       },
-      text: '»'
+      text: '>>'
     });
     if (pag.pageIndex >= pag.totalPages - 1) {
       lastBtn.setAttribute('disabled', 'true');

@@ -410,13 +410,7 @@ export class SrsReviewController {
           // Authoritative differentiation for empty state in Due mode (Section XI)
           try {
             const stats = await apiClient('/srs/stats');
-            if (stats && typeof stats.reviewsToday === 'number' && typeof stats.maxReviewLimit === 'number' && stats.reviewsToday >= stats.maxReviewLimit) {
-              if (this.dom.emptyTitle) this.dom.emptyTitle.textContent = 'Đã đạt hạn mức ôn tập hôm nay!';
-              if (this.dom.emptyDescription) {
-                this.dom.emptyDescription.textContent = 
-                  `Bạn đã hoàn thành tối đa số lượt ôn tập cho phép trong ngày (${stats.reviewsToday}/${stats.maxReviewLimit} lượt). Hãy quay lại vào ngày mai hoặc điều chỉnh hạn mức trong Cài đặt SRS!`;
-              }
-            } else if (stats && stats.cardsDue === 0 && stats.reviewsToday === 0) {
+            if (stats && stats.cardsDue === 0 && stats.reviewsToday === 0) {
               if (this.dom.emptyTitle) this.dom.emptyTitle.textContent = 'Chưa có thẻ từ vựng trong hàng đợi ôn tập';
               if (this.dom.emptyDescription) {
                 this.dom.emptyDescription.textContent = 

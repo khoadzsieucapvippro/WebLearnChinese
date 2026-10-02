@@ -100,6 +100,16 @@ public final class VocabularySpecification {
                 Join<Vocabulary, Radical> radicalJoin = root.join("radicals");
                 predicates.add(cb.equal(radicalJoin.get("radicalId"), criteria.getRadicalId()));
             }
+            if (criteria.getHskLevel() != null) {
+                if (criteria.getHskLevel() == 1) {
+                    predicates.add(cb.or(
+                            cb.equal(root.get("hskLevel"), 1),
+                            cb.isNull(root.get("hskLevel"))
+                    ));
+                } else {
+                    predicates.add(cb.equal(root.get("hskLevel"), criteria.getHskLevel()));
+                }
+            }
             if (criteria.getSearch() != null && !criteria.getSearch().trim().isEmpty()) {
                 String trimmed = criteria.getSearch().trim();
                 String lowerPattern = "%" + trimmed.toLowerCase() + "%";
@@ -114,6 +124,18 @@ public final class VocabularySpecification {
                 return null;
             }
             return cb.and(predicates.toArray(new Predicate[0]));
+        };
+    }
+
+    public static Specification<Vocabulary> hasHskLevel(Integer hskLevel) {
+        return (root, query, cb) -> {
+            if (hskLevel == null) {
+                return null;
+            }
+            if (hskLevel == 1) {
+                return cb.or(cb.equal(root.get("hskLevel"), 1), cb.isNull(root.get("hskLevel")));
+            }
+            return cb.equal(root.get("hskLevel"), hskLevel);
         };
     }
 }

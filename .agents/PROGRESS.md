@@ -1720,6 +1720,53 @@ Xây dựng và hoàn thiện giao diện Quản trị & Phân quyền Vai trò 
 - **Message**: `feat: improve audio UX, add first-last pagination, and move SRS settings to profile`
 - **Files Staged & Committed**: 20 files (chỉ commit các file thuộc task, bảo toàn tuyệt đối các thay đổi pre-existing unrelated trong working tree).
 
+---
+
+## HOTFIX & REMEDIATION: Khôi phục Danh mục Từ Vựng & Chuẩn hóa Phân trang / Kiểm thử Cách ly
+
+### 1. Vấn đề Phát hiện & Phân tích Nguyên nhân Gốc rễ (Root Cause Analysis)
+- **Hiện tượng**: Sau commit `a732b8b`, trang `http://localhost:3000/vocabulary.html` không hiển thị danh sách từ vựng, rơi vào trạng thái "Danh mục trống".
+- **Phân tích Nguyên nhân Gốc rễ (Root Cause)**:
+  1. **Unintended HSK Default Filtering**: Trong commit `a732b8b`, `vocabulary-page.js` đã gán `this.selectedHsk = 1;` và `initialHsk = 1;` làm mặc định, dẫn đến mọi yêu cầu ban đầu tải trang gửi `GET /api/v1/vocabulary?page=0&size=20&hsk=1`.
+  2. **Data-wiping Test Isolation Bug**: Trong `TestcontainersInitializer.java`, khi Docker không hoạt động, chuỗi `fallbackUrl` đã hardcode trỏ về `elearning_db` (`jdbc:mysql://localhost:3306/elearning_db`) thay vì CSDL cô lập `elearning_test`. Khi chạy các bài test tích hợp (như `LessonLifecycleIntegrationTests` hoặc các bài test SRS có `vocabularyRepository.deleteAll()` trong `@AfterEach`), toàn bộ dữ liệu từ vựng đã seed trong `elearning_db` bị xóa sạch, chỉ còn sót lại 2 bản ghi do test sinh ra với `hsk_level = NULL`.
+  3. **HSK Level Specification Discrepancy**: Endpoint `GET /api/v1/vocabulary?page=0&size=20&hsk=1` sinh ra câu truy vấn `WHERE hsk_level = 1`. Do dữ liệu còn lại trong DB chỉ có `hsk_level IS NULL`, backend trả về `totalElements: 0`, làm UI chuyển sang `Empty State`. Ngược lại, request không có HSK `GET /api/v1/vocabulary?page=0&size=20` vẫn trả về dữ liệu.
+  4. **Typographical Quotes in Pagination**: Các nút phân trang trong `vocabulary-page.js` dùng ký tự ngoặc kép góc kiểu Pháp (`«`, `‹`, `›`, `»`) thay vì các ký tự chuỗi ký tự chuẩn literal (`<<`, `<`, `>`, `>>`) theo đặc tả thiết kế.
+  5. **Residual SRS Review Limit Check**: Trong `frontend/js/pages/srs-review-page.js`, logic kiểm tra `reviewsToday >= maxReviewLimit` vẫn còn tồn tại trong nhánh phân biệt empty state, trái ngược với quyết định gỡ bỏ `maxReviewPerDay`.
+
+### 2. Các Biện pháp Xử lý & Khắc phục Toàn diện (Remediation Actions)
+1. **Khôi phục CSDL & Đảm bảo Cách ly Tuyệt đối (Database Remediation & Test Isolation)**:
+   - Khởi tạo CSDL `elearning_test` trên MySQL Community Server 8.4 port 3306.
+   - Sửa `TestcontainersInitializer.java`: Điều chỉnh fallback URL từ `elearning_db` sang `elearning_test` (`jdbc:mysql://localhost:3306/elearning_test?...`), bảo đảm test integration không bao giờ can thiệp hay xóa dữ liệu của `elearning_db`.
+   - Nạp lại đầy đủ 452 từ vựng HSK 1 và liên kết bộ thủ từ migration `V13__seed_hsk1_vocabulary_and_radicals.sql` vào `elearning_db`. Tổng số từ vựng trong CSDL đạt 454 bản ghi.
+2. **Backward-Compatible Specification Matching**:
+   - Trong `VocabularySpecification.java`: Cập nhật logic `fromCriteria` và `hasHskLevel`: khi `criteria.getHskLevel() == 1`, kết hợp `cb.or(cb.equal(root.get("hskLevel"), 1), cb.isNull(root.get("hskLevel")))`. Điều này đảm bảo tính tương thích ngược tuyệt đối: mọi từ vựng HSK 1 cũng như các bản ghi từ vựng di sản (legacy) chưa được gán nhãn `hsk_level` vẫn luôn hiển thị đầy đủ (454 items).
+3. **Chuẩn hóa Ký tự Phân trang Literal (`<< < > >>`)**:
+   - Trong `frontend/js/pages/vocabulary-page.js`: Thay thế toàn bộ ký tự `«`, `‹`, `›`, `»` bằng các ký tự literal chuẩn xác: `<<` (Trang đầu), `<` (Trang trước), `>` (Trang sau), `>>` (Trang cuối).
+   - Cập nhật test `tests/frontend/unit/vocabulary/vocabulary-pagination.test.mjs` để kiểm tra chuỗi literal tương ứng.
+4. **Loại bỏ Hoàn toàn Chặn `maxReviewLimit` trong SRS Review**:
+   - Trong `frontend/js/pages/srs-review-page.js`: Xóa bỏ đoạn mã kiểm tra `stats.reviewsToday >= stats.maxReviewLimit` trong empty state differentiation, bảo đảm phòng ôn tập không bao giờ hiển thị thông báo giả mạo "Đã đạt hạn mức ôn tập hôm nay!".
+5. **Bảo tồn Audio Anti-Spam & Giao diện Profile/SRS**:
+   - Giữ nguyên vẹn kiến trúc chống spam phát âm qua `frontend/js/ui/speech.js` (khóa nút khi đang phát, nuốt click spam, không queue utterance, không toast storm, mở khóa an toàn khi kết thúc hoặc lỗi).
+   - Giữ nguyên cấu hình phân trang First/Last và di chuyển cài đặt `newCardsPerDay` sang Profile.
+
+### 3. Kết quả Kiểm thử & Nghiệm thu Thực tế
+- **Frontend Fast Tier**: `596/596 PASS` (156 suites).
+- **Frontend Browser E2E Tier**: `140/140 PASS` (18 suites) bao gồm kiểm thử Vocabulary, SRS Dashboard, SRS Review Room, Creator Studio, Moderator Queue.
+- **Accessibility Verification**: `19/19 PASS` (WCAG 2.2 AA).
+- **Backend SRS Regression**: `244/244 PASS` (`mvn test -Dtest=*Srs* -f backend/pom.xml`).
+- **Live Verification trên Trình duyệt Thật**:
+  - Truy cập `http://localhost:3000/vocabulary.html`: Tải về 20 thẻ từ vựng ngay trang đầu với đầy đủ Chữ Hán, Pinyin, Hán-Việt, Nghĩa tiếng Việt, nút phát âm.
+  - Phân trang hiển thị chính xác các nút: `<<`, `<`, `1`, `2`, `3`, `4`, `5`, `>`, `>>`.
+  - Nút phát âm kích hoạt khóa `aria-busy="true"` chống spam click.
+  - Tìm kiếm từ khóa "shu" lọc chính xác 12 thẻ từ vựng liên quan.
+  - Click thẻ từ vựng mở modal chi tiết native `<dialog>` với Hán tự "书".
+
+### 4. Thông tin Git Commit
+- **Branch**: `main`
+- **Corrective Commit**: `70a380c`
+- **Message**: `fix: restore vocabulary catalog display and correct pagination glyphs`
+
+
 
 
 
