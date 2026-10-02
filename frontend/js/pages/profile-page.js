@@ -23,6 +23,7 @@ import { sanitizeResourceUrl, createSafeElement, clearContainer } from '../ui/se
 const DEFAULT_AVATAR_PLACEHOLDER = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80"><rect width="80" height="80" fill="%23F3EFEA" rx="40"/><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="32" fill="%2378716C">学</text></svg>';
 
 let currentProfile = null;
+let currentSrsSettings = null;
 
 /**
  * Validates Profile Form inputs.
@@ -405,6 +406,244 @@ function initProfileEditForm() {
   }
 }
 
+/**
+ * Validates SRS Daily Settings for profile page (Task UX/FE Remediation).
+ * Only validates newCardsPerDay (> 0, positive integer).
+ * 
+ * @param {string|number} newCardsPerDay 
+ * @returns {{ isValid: boolean, errors: Record<string, string> }}
+ */
+export function validateProfileSrsSettings(newCardsPerDay) {
+  const errors = {};
+  const newCardsStr = String(newCardsPerDay ?? '').trim();
+  if (!newCardsStr) {
+    errors.newCardsPerDay = 'Số lượng thẻ mới mỗi ngày không được để trống.';
+  } else {
+    const num = Number(newCardsStr);
+    if (Number.isNaN(num)) {
+      errors.newCardsPerDay = 'Số lượng thẻ mới phải là một số nguyên hợp lệ.';
+    } else if (!Number.isInteger(num)) {
+      errors.newCardsPerDay = 'Số lượng thẻ mới phải là số nguyên (không chứa phần thập phân).';
+    } else if (num <= 0) {
+      errors.newCardsPerDay = 'Số lượng thẻ mới phải là số nguyên dương lớn hơn 0.';
+    }
+  }
+  return {
+    isValid: Object.keys(errors).length === 0,
+    errors
+  };
+}
+
+/**
+ * Loads SRS settings from backend via GET /api/v1/srs/settings.
+ */
+export async function loadSrsSettings() {
+  const input = document.getElementById('srsNewCardsPerDayInput');
+  try {
+    const settings = await apiClient('/srs/settings');
+    currentSrsSettings = settings;
+    if (input && settings?.newCardsPerDay != null) {
+      input.value = String(settings.newCardsPerDay);
+    }
+  } catch (err) {
+    console.warn('[ProfilePage] Failed to load SRS settings:', err);
+  }
+}
+
+/**
+ * Initializes the Profile SRS Settings form handler.
+ */
+export function initProfileSrsSettingsForm() {
+  const form = document.getElementById('profileSrsSettingsForm');
+  if (!form) return;
+
+  const input = document.getElementById('srsNewCardsPerDayInput');
+  const errorEl = document.getElementById('srsNewCardsPerDayError');
+  const saveBtn = document.getElementById('btnSaveSrsSettings');
+  const resetBtn = document.getElementById('btnResetSrsSettings');
+  const statusEl = document.getElementById('srsSettingsStatus');
+
+  function clearSrsErrors() {
+    if (input) {
+      input.classList.remove('is-invalid');
+      input.removeAttribute('aria-invalid');
+    }
+    if (errorEl) {
+      errorEl.textContent = '';
+      errorEl.classList.add('d-none');
+    }
+    if (statusEl) {
+      statusEl.textContent = '';
+      statusEl.className = 'small mt-2';
+    }
+  }
+
+  if (input) {
+    input.addEventListener('input', () => {
+      input.classList.remove('is-invalid');
+      input.removeAttribute('aria-invalid');
+      if (errorEl) {
+        errorEl.textContent = '';
+        errorEl.classList.add('d-none');
+      }
+    });
+  }
+
+  let isSubmitting = false;
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (isSubmitting) return;
+
+    clearSrsErrors();
+
+    const newCardsVal = input?.value || '';
+    const validation = validateProfileSrsSettings(newCardsVal);
+    if (!validation.isValid) {
+      if (input && errorEl) {
+        input.classList.add('is-invalid');
+        input.setAttribute('aria-invalid', 'true');
+        errorEl.textContent = validation.errors.newCardsPerDay || '';
+        errorEl.classList.remove('d-none');
+        input.focus();
+      }
+      return;
+    }
+
+    isSubmitting = true;
+    if (saveBtn) {
+      saveBtn.disabled = true;
+      const btnText = saveBtn.querySelector('.btn-text');
+      const spinner = saveBtn.querySelector('.spinner-border');
+      if (btnText) btnText.textContent = 'Đang lưu...';
+      if (spinner) spinner.classList.remove('d-none');
+    }
+    if (statusEl) {
+      statusEl.textContent = 'Đang lưu cài đặt...';
+      statusEl.className = 'small text-secondary mt-2';
+    }
+
+    try {
+      const updated = await apiClient('/srs/settings', {
+        method: 'PUT',
+        body: {
+          newCardsPerDay: parseInt(String(newCardsVal).trim(), 10)
+        }
+      });
+
+      currentSrsSettings = updated;
+      if (input && updated?.newCardsPerDay != null) {
+        input.value = String(updated.newCardsPerDay);
+      }
+
+      if (statusEl) {
+        statusEl.textContent = '✓ Đã cập nhật cài đặt SRS thành công!';
+        statusEl.className = 'small text-success fw-semibold mt-2';
+      }
+
+      showToast({
+        type: 'success',
+        title: 'Cài đặt SRS',
+        message: 'Đã lưu cài đặt số thẻ mới mỗi ngày thành công.'
+      });
+    } catch (err) {
+      console.error('[ProfilePage] Failed to save SRS settings:', err);
+      const msg = err.message || 'Không thể lưu cài đặt. Vui lòng thử lại sau.';
+      if (statusEl) {
+        statusEl.textContent = `⚠️ ${msg}`;
+        statusEl.className = 'small text-danger fw-semibold mt-2';
+      }
+      showToast({
+        type: 'danger',
+        title: 'Lỗi cập nhật',
+        message: msg
+      });
+    } finally {
+      isSubmitting = false;
+      if (saveBtn) {
+        saveBtn.disabled = false;
+        const btnText = saveBtn.querySelector('.btn-text');
+        const spinner = saveBtn.querySelector('.spinner-border');
+        if (btnText) btnText.textContent = 'Lưu thay đổi';
+        if (spinner) spinner.classList.add('d-none');
+      }
+    }
+  });
+
+  if (resetBtn) {
+    resetBtn.addEventListener('click', () => {
+      clearSrsErrors();
+      if (currentSrsSettings && input && currentSrsSettings.newCardsPerDay != null) {
+        input.value = String(currentSrsSettings.newCardsPerDay);
+        if (statusEl) {
+          statusEl.textContent = 'Đã khôi phục giá trị đã lưu.';
+          statusEl.className = 'small text-muted mt-2';
+        }
+      }
+    });
+  }
+}
+
+/**
+ * Manages tab switching between Personal Info and Learning Settings.
+ * Supports URL hash navigation (#srs-settings / #personal-info) and accessible attributes.
+ */
+export function initProfileTabs() {
+  const tabPersonal = document.getElementById('tabPersonalInfo');
+  const tabSettings = document.getElementById('tabLearningSettings');
+  const panePersonal = document.getElementById('panePersonalInfo');
+  const paneSettings = document.getElementById('paneLearningSettings');
+
+  if (!tabPersonal || !tabSettings || !panePersonal || !paneSettings) return;
+
+  function switchTab(activeTab, activePane, inactiveTab, inactivePane) {
+    activeTab.classList.add('active');
+    activeTab.setAttribute('aria-selected', 'true');
+    inactiveTab.classList.remove('active');
+    inactiveTab.setAttribute('aria-selected', 'false');
+
+    activePane.classList.add('show', 'active');
+    inactivePane.classList.remove('show', 'active');
+  }
+
+  function activatePersonalTab() {
+    switchTab(tabPersonal, panePersonal, tabSettings, paneSettings);
+  }
+
+  function activateSettingsTab() {
+    switchTab(tabSettings, paneSettings, tabPersonal, panePersonal);
+  }
+
+  tabPersonal.addEventListener('click', () => {
+    activatePersonalTab();
+    if (typeof history !== 'undefined' && history.replaceState) {
+      history.replaceState(null, '', '#personal-info');
+    }
+  });
+
+  tabSettings.addEventListener('click', () => {
+    activateSettingsTab();
+    loadSrsSettings();
+    if (typeof history !== 'undefined' && history.replaceState) {
+      history.replaceState(null, '', '#srs-settings');
+    }
+  });
+
+  function checkHash() {
+    if (typeof window !== 'undefined' && window.location.hash === '#srs-settings') {
+      activateSettingsTab();
+      loadSrsSettings();
+    } else if (typeof window !== 'undefined' && window.location.hash === '#personal-info') {
+      activatePersonalTab();
+    }
+  }
+
+  checkHash();
+  if (typeof window !== 'undefined') {
+    window.addEventListener('hashchange', checkHash);
+  }
+}
+
 if (typeof document !== 'undefined' && typeof document.addEventListener === 'function') {
   document.addEventListener('DOMContentLoaded', () => {
     // 1. Guard check: Unauthenticated users are redirected to login
@@ -418,8 +657,10 @@ if (typeof document !== 'undefined' && typeof document.addEventListener === 'fun
     // 2. Initialize shared navbar auth watcher
     initNavbarAuth('navAuthContainer');
 
-    // 3. Initialize form controls and fetch profile
+    // 3. Initialize tabs and form controls
+    initProfileTabs();
     initProfileEditForm();
+    initProfileSrsSettingsForm();
     loadProfile();
   });
 }

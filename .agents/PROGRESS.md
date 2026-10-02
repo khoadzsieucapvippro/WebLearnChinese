@@ -32,17 +32,23 @@
 | **Task R3.1 & R3.1A** | Vocabulary Lifecycle (referential integrity guards) + Delete/Mutation Concurrency Hardening | 1010 tests |
 | **Task R3.2** | Lesson Lifecycle & Moderation History Integrity | 1040 tests |
 | **Task R3.3 & R3.3A** | 214 Kangxi Radicals Audit + Pinyin Normalization & Search Integrity | 1059 tests |
-| **Task R3.4..R3.11** | Object-Level Auth Audit, Personal Notes Pagination, Login Rate Limiter Eviction, Apache POI 5.4.0 (CVE-2025-31672), Radical Missing Pinyin (V7), Database Index Performance & EXPLAIN, Production HTTP & Reverse Proxy Security Headers, Backend Final Quality Gate & Pre-Frontend Release Seal | 1088/1088 tests PASS |
-| **Final Adversarial Review** | Account Status Token Invalidation (`findByIdForUpdate` + `auth_ver`), LoginRateLimiter Active Eviction, Capacity Limit & Concurrency Throttling, DTO Collection Element Validation (`@NotNull @Positive Long/Integer`), GlobalExceptionHandler Safe 400 | 1101/1101 tests PASS |
+| **Phase 9 Frontend** | Hoàn thành 100% Module 9A..9G, Task 9G.1..9G.5 (DEC-43..DEC-47) | 741 frontend tests PASS |
+| **Radical Learning Redesign & V11 Video Coverage** | Tái cấu trúc 214 Bộ thủ Khang Hy: V8 (schema), V9 (seed content), V10 (correct videos), và V11 (`V11__seed_all_214_radical_learning_videos.sql`). Hoàn thiện 214/214 bộ thủ Khang Hy với video YouTube chuẩn xác (91 unique IDs, 70 bài giảng đơn lẻ, 144 series mapping). Bảo toàn timestamp start/end từ DB -> API -> Frontend embed (`&start=X`) & external link (`&t=Xs`). 91/91 unique IDs xác thực qua YouTube oEmbed API (`PLAYABLE_EMBED: 91/91`). Core E2E độc lập, deterministic. | 36/36 BE unit PASS, 373 FE unit PASS, 177 Static PASS, 10/10 deterministic browser PASS, 3/3 real-video smoke PASS, live full-stack browser verification PASS |
+| **Radical Catalog Navigation Redesign (Two Learning Tabs)** | Redesign catalog `frontend/radicals.html` sang mô hình 2 Tab Học tập: `[ 50 Bộ Thủ Thông Dụng ]` và `[ 164 Bộ Thủ Mở Rộng ]`. Chuẩn WAI-ARIA tabs (role=tablist, role=tab, role=tabpanel, Arrow/Home/End keyboard). Global Search trên toàn bộ 214 bộ thủ (chữ Hán, Pinyin, Hán-Việt, nghĩa có/không dấu); khi clear search khôi phục chính xác tab được chọn trước đó. Tối ưu responsive (6 cột desktop lớn, 3-4 tablet, 2 mobile 375px), bỏ các badge thừa, không phân trang, không page-size, không #ID. Speaker component đồng bộ Vocabulary visual contract. | 380 unit tests PASS, 177 static PASS, 13/13 browser RCAT E2E PASS, 19/19 A11y PASS, 10/10 responsive layout PASS, live full-stack verification PASS |
+| **Redesign Navigation + Radical Categories & Search + Vocabulary HSK Navigation** | Đồng bộ toàn diện UX/Navigation: (1) Cập nhật `frontend/radicals.html`: Thay nhãn `164 Bộ Thủ Mở Rộng` bằng `214 Bộ Thủ Đầy Đủ` (hiển thị trọn vẹn 214 bộ thủ Khang Hy); cập nhật logic tìm kiếm bộ thủ: LOẠI BỎ `meaningVi` & `explanationVi`, chỉ tìm kiếm theo chữ Hán, Pinyin có/không dấu và Hán-Việt. (2) Cập nhật `frontend/vocabulary.html`: Bổ sung segmented tabs `[ HSK 1 ] [ HSK 2 ] [ HSK 3 ]` đồng bộ visual language, WAI-ARIA tab navigation, deep-linking `?hsk=1|2|3`. (3) Phân tích blocker HSK Backend: CSDL & Backend hiện tại (`V1__init_schema.sql`, `Vocabulary.java`) chưa có metadata HSK, frontend không fake client-side data mà giữ vững contract API hiện hành và đề xuất migration mở rộng `V12__add_vocabulary_hsk_metadata.sql`. | 177/177 Static PASS, 557/557 Fast Unit PASS, 13/13 Radicals Browser E2E PASS, 13/13 Vocabulary Browser E2E PASS, 10/10 Responsive Multi-viewport PASS (0px overflow), 7 visual screenshot artifacts |
+| **Flat Navbar Restoration (Xóa toàn bộ Navbar Dropdowns)** | **Đã xóa hoàn toàn navbar dropdown**: (1) Xóa sạch submenu/dropdown HTML (`.nav-item-dropdown`, `.nav-dropdown-btn`, `#navVocabMenu`, `#navRadicalsMenu`, SVG chevrons `⌄/⌃`) trên toàn bộ 22 trang HTML. (2) **`Từ vựng` trở thành direct link** (`href="vocabulary.html"`), `Bộ thủ` trở thành direct link (`href="radicals.html"`). Navbar phẳng hoàn toàn: `Trang chủ` \| `Bộ thủ` \| `Từ vựng` \| `Bài học` \| `Ôn tập SRS`. (3) Xóa toàn bộ CSS dropdown (`.nav-item-dropdown`, `.nav-dropdown-menu`, etc.) và JS hover/click dropdown handlers. (4) **HSK 1 / HSK 2 / HSK 3 vẫn giữ nguyên trong trang Từ vựng** (`frontend/vocabulary.html`) dưới ô tìm kiếm (chuẩn WAI-ARIA tabs). (5) Xác minh desktop (1280px) & mobile (375px): 0 dropdowns khi hover/click/focus/keyboard. | 557 Fast Unit PASS, 177 Static PASS, 13/13 Vocabulary Browser E2E PASS (VB19), live browser desktop/mobile visual verification PASS |
+| **SRS Vocabulary Flow Fix & Validation (Pre-500 HSK 1 Gate)** | **Ổn định & xác minh 100% luồng SRS Vocabulary**: (1) **Quy tắc sản phẩm**: SRS chỉ ôn Vocabulary; Radical hoàn toàn không tham gia SRS review; Trang Từ vựng là catalog, chỉ duyệt từ vào SRS khi thuộc Approved Lesson. (2) **Sửa entry flow**: `lesson-detail.html` nút `#btnGoToSrsReview` truyền động `srs-review.html?lessonId=<id>`. (3) **SRS Due Vocabulary-only**: Query backend, frontend session, badges, và `getStudyStats()` strictly lọc `itemType=VOCABULARY`. (4) **Flyway V14**: Tạo 3 Approved Lessons kiểm thử (9396, 9397, 9398) với 18 từ HSK 1 thật (6 từ/bài, orderIndex 1..6). (5) **Deterministic Regression Sequence (Cases A..G)**: Mô phỏng thời gian qua `MutableClock` (Day 0, Day 1, Day 7, Day 22): Case A (1→6→15 ngày, EF 2.50), Case B (15→36 ngày, EF 2.36), Case C (reset 0 ngày, EF 1.70, học lại trong ngày), Case D (chặn sớm 409 CONFLICT), Case E (lọc thẻ đến hạn chính xác theo thời gian), Case F (chỉ lấy Vocabulary, loại bỏ Radical), Case G (rào chắn Approved Lesson 422). (6) **Daily Quota**: Phân định rõ `newCardsToday` vs `reviewsToday`. (7) **Live Browser E2E**: Chạy thực tế Playwright (login → lesson 9396 → SRS review ?lessonId=9396 → lật thẻ → chấm điểm Good (3) → sang thẻ tiếp → dashboard cập nhật đúng → due empty state). | 101/101 BE SRS integration tests PASS, 559 FE fast unit PASS, 8/8 srs-review browser PASS, 6/6 srs-dashboard browser PASS, live browser automated walkthrough PASS (7 screenshots). |
+| **Đồng bộ Nút Phát Âm SRS & Trang Từ Vựng (Speech Button Synchronization)** | **Đồng bộ 100% visual và component nút phát âm giữa SRS và Từ vựng**: (1) **Xóa toàn bộ emoji**: Loại bỏ vĩnh viễn emoji `🔊` và text `Phát âm` khỏi SRS flashcard. (2) **Visual Consistency**: Tái sử dụng chính xác CSS class `.vocab-speech-btn` và SVG speaker icon (`width/height: 34px`, hình tròn `border-radius: var(--radius-full)`, `background: var(--color-bg-subtle)`, border `1px solid var(--color-border)`, icon `var(--color-accent-primary)`, hover `scale(1.08)` + primary bg, active `scale(0.96)`, visible focus ring). (3) **Component Refactoring**: Xuất bản hai hàm chuẩn hóa `createSpeakerIcon(size = 16)` và `createSpeechButton(options)` tại `frontend/js/ui/ui.js` (an toàn DOM qua `createElementNS`, zero `innerHTML`), tái sử dụng / re-export đồng nhất trên `vocabulary-page.js`, `radicals-page.js`, `lesson-detail-page.js`, và `srs-review-page.js`. (4) **Bảo toàn Web Speech API**: Giữ nguyên 100% cơ chế phát âm hiện tại (`SpeechSynthesisUtterance`, `zh-CN`, `rate: 0.85`, voice selection, fallback khi thiếu audio URL; zero audio file chuyển đổi). (5) **Accessibility & Keyboard Conflict Safeguard**: Thẻ front và back đều có `aria-label` và `title` cập nhật động theo từng từ vựng (`Phát âm từ ${card.hanzi}`). Rào chắn bàn phím: Khi focus vào nút phát âm, phím `Space` hoặc `Enter` kích hoạt phát âm và tuyệt đối **không** lật flashcard (`tag === 'button' && e.target !== this.dom.flashcard` return sớm; `e.stopPropagation()` trong click handler). (6) **Browser Verification**: Kiểm chứng trực tiếp trên trình duyệt bằng Playwright trên cả Desktop (1280px) và Mobile (390px) — Styles tính toán (Computed styles) giữa Vocabulary và SRS Review trùng khớp 100% từng pixel. | 15/15 srs-speech-button unit PASS, 399/399 unit PASS, 19/19 A11y PASS, 9/9 srs-review browser E2E PASS (kèm SR-09), 8 visual screenshot artifacts. |
+| **UX/FE Remediation: Audio Anti-Spam + Pagination First/Last + Move SRS Settings to Profile + Remove maxReviewPerDay** | **Đợt chỉnh sửa UX/UI đồng bộ Vocabulary + SRS + Profile**: (1) **Audio Anti-Spam Controller (`frontend/js/ui/speech.js`)**: Quản lý vòng đời Web Speech API tập trung; click đầu tiên khóa nút (`disabled=true`, `aria-busy="true"`, `.is-speaking`); click liên tiếp bị bỏ qua triệt để (không queue utterance, không spam toast, không race condition); unlock an toàn khi `end` hoặc `error` hoặc sau timeout bảo vệ 10s; hủy phiên cũ sạch sẽ khi đổi từ. (2) **Pagination First/Last (`<< < 1 2 3 > >>`)**: Trang bị nút `<<` (Trang đầu) và `>>` (Trang cuối) cho `frontend/vocabulary.html`; semantic button, disabled đúng chuẩn khi ở trang đầu/cuối/đơn; nhãn tiếng Việt WCAG 2.2 AA. (3) **SRS Settings sang Profile (`frontend/profile.html`)**: Tab điều hướng `[ Thông tin cá nhân ]` và `[ Cài đặt học tập ]`; form SRS chỉ gồm `newCardsPerDay` kèm giải thích rõ ràng và nút Lưu/Đặt lại; lazy-load setting khi kích hoạt tab (tránh 401 khi xem profile thường); URL hash `#srs-settings` tự động kích hoạt tab. (4) **Bỏ hoàn toàn `maxReviewPerDay`**: Xóa thẻ hạn ngạch ôn tập và text `x / 100` ở dashboard SRS; backend `SrsServiceImpl` loại bỏ clamp hạn ngạch review trong `getDueCards()` và bỏ chặn review cap trong `reviewCard()`, giúp người dùng ôn tập không giới hạn; DTO `UpdateSrsSettingRequest` chuyển `maxReviewPerDay` sang optional, bảo toàn tương thích CSDL (`max_review_per_day` giữ nguyên không phá schema). | 596/596 Fast Tier PASS, 140/140 Browser E2E PASS, 19/19 A11y PASS, 244/244 Backend SRS Maven tests PASS, 0px horizontal overflow 22/22 trang. |
 
 ### 🔄 CURRENT POSITION (VỊ TRÍ HIỆN TẠI)
 
 | Mục | Giá trị |
 | :--- | :--- |
-| **Last Completed Task** | **Task 9G.5 — Responsive & Multi-Viewport Layout Verification, Remediation & Browser Testing (`tests/frontend/e2e/responsive-layout.browser.mjs` 10/10 PASS, 22/22 HTML pages verified with 0px document overflow across 375/414/768/1200/1440 viewports and 320px reflow spot-check, `.table-responsive` localized horizontal scroll preserved, flashcard & creator-import deep responsiveness verified, 27 real Chromium screenshot artifacts, DEC-47 issued, Phase 9 100% COMPLETED)** |
-| **Current Workstream** | **Phase 9 Frontend Gate Cleared (Modules 9A..9G 100% COMPLETED). Sẵn sàng chuyển giao Checkpoint Phase 9 -> Phase 10.** |
-| **Next Immediate Task** | **Checkpoint Phase 9 / Phase 10 Module 10A Task 10A.1 — Rà soát Hồi quy Ranh giới Tiêm nhiễm & OWASP API Security** |
-| **Frontend Phase 9 Status** | **MODULE 9A, 9B, 9C, 9D, 9E, 9F, 9G (100% COMPLETED — 741 frontend tests PASS: 177 Static, 535 Fast, 19 A11y, 10 Responsive)** |
+| **Last Completed Task** | **UX/FE Remediation: Audio Anti-Spam + Pagination First/Last + Move SRS Settings to Profile + Remove maxReviewPerDay — SpeechController anti-spam, vocabulary << < 1 2 3 > >> pagination, Profile learning settings tab, SRS dashboard simplified, backend review cap removed.** |
+| **Current Workstream** | **Hạ tầng UX/UI đồng bộ, Vocabulary audio & pagination hoàn thiện, SRS settings chuyển về Profile thành công. Sẵn sàng cho việc xây dựng bài học với dataset 500 từ HSK 1.** |
+| **Next Immediate Task** | **Xây dựng chương trình học (Curriculum/Lessons) cho bộ dataset 500 từ HSK 1.** |
+| **Frontend Phase 9 Status** | **MODULE 9A..9G + UX/FE REMEDIATION (100% COMPLETED — 596 Fast Unit/Static, 140 Browser E2E, 19 A11y, 10 Responsive)** |
 | **Production Hardening Status** | **DEFERRED** (Phase 10–11) |
 
 ### 📋 BACKEND REMEDIATION & HARDENING TASKS (R3.4 → R3.11) — 100% COMPLETED
@@ -1425,6 +1431,295 @@ Xây dựng và hoàn thiện giao diện Quản trị & Phân quyền Vai trò 
 
 ### Next Task
 - **Phase 9 — Module 9G — Task 9G.3: Content Security Policy (CSP) Construction & Strict Resource Graph Hardening (`frontend/index.html`..`*.html`, `SecurityConfig.java`)**.
+
+---
+
+## 2026-09-23 — Kangxi Radicals Catalog Navigation Redesign: Two Learning Tabs — [COMPLETED]
+
+### Scope of Delivery
+1. **Kiến trúc Điều hướng 2 Tab Học tập Chuẩn Ngữ nghĩa (Semantic WAI-ARIA Tabs)**:
+   - Thay thế bố cục hiển thị đồng thời cả 2 bảng (50 + 164) bằng Segmented Tabs duy nhất:
+     `[ 50 Bộ Thủ Thông Dụng ]` và `[ 164 Bộ Thủ Mở Rộng ]`.
+   - Đúng nhãn tiếng Việt nguyên bản:
+     - Tab 1: `50 Bộ Thủ Thông Dụng` (Mặc định active, 50 bộ thủ sắp xếp `commonRank ASC`).
+     - Tab 2: `164 Bộ Thủ Mở Rộng` (Active khi bấm, 164 bộ thủ sắp xếp `radicalId ASC`).
+   - Cấu trúc ARIA ngữ nghĩa hoàn chỉnh: `role="tablist"`, `role="tab"`, `role="tabpanel"`, `aria-selected`, `aria-controls`, `aria-labelledby`, `tabindex`.
+   - Bàn phím chuẩn tab pattern: `ArrowLeft`, `ArrowRight`, `Home`, `End` tự động luân chuyển focus và chuyển đổi tab trực tiếp.
+2. **Khử Bỏ Các Anti-Patterns & Visual Clutter**:
+   - Loại bỏ badge thừa: Không còn badge "Bộ chọn lọc trọng tâm" hay redundant toolbar count badge.
+   - Loại bỏ mô tả dài dòng: Bỏ đoạn paragraph dài dưới catalog header; thay bằng cấu trúc súc tích.
+   - Bỏ số thứ tự `#1`, `#2`, `#3` database IDs trên Radical Cards; card giữ cấu trúc trực quan: Character, Pinyin, Hán-Việt, Meaning, Speaker button.
+   - Không thêm phân trang (pagination) hay page-size selector.
+3. **Cơ chế Tìm kiếm Toàn cục (Global Search) & Khôi phục Tab State**:
+   - Tìm kiếm diễn ra trên **toàn bộ 214 bộ thủ Khang Hy**, không bị giới hạn trong tab đang active.
+   - Hỗ trợ đa dạng: chữ Hán, Pinyin có/không dấu, Hán-Việt có/không dấu, nghĩa tiếng Việt có/không dấu.
+   - Khi có truy vấn tìm kiếm: ẩn cả 2 tab panels và hiển thị `#searchResultsSection` với số lượng kết quả rõ ràng.
+   - Khi xóa tìm kiếm (clear search): khôi phục chính xác tab mà người dùng đã chọn trước đó (ví dụ từ Tab 164 -> tìm kiếm -> xóa tìm kiếm -> trở lại đúng Tab 164).
+4. **Visual & Responsive Layout Refinement**:
+   - Container căn giữa chuẩn mực: `.radical-catalog-container` giới hạn tối đa 1280px.
+   - Responsive Grid:
+     - Mobile (375px): 2 cột, không horizontal overflow, tab buttons xếp gọn 50/50.
+     - Tablet (576px–768px): 3–4 cột.
+     - Desktop lớn (992px–1200px+): 5–6 cột cân đối.
+   - Card uniform height: Đặt `-webkit-line-clamp: 1` cho trường nghĩa tiếng Việt dài, tránh nhảy chiều cao giữa các thẻ.
+   - Speaker Button: Đồng bộ hoàn toàn visual & interaction pattern với Vocabulary (circular SVG button, focus ring, accessible name, stopPropagation không kích hoạt modal).
+5. **Bảo tồn Hoàn toàn Khả năng Đã Hoàn thành**:
+   - Radical Detail Dialog, audio playback/Web Speech fallback, YouTube video lessons (V11 214/214 coverage, 91 unique IDs, start/end timestamps), CSP, và bảo mật Safe DOM Rendering được giữ nguyên 100%. Zero backend changes.
+
+### Automated Verification Results
+- **Targeted Unit Tests (`radicals-catalog.test.mjs`)**: **50/50 PASS** (Bao gồm Section 8 Two Learning Tabs & State Transition Contract).
+- **Frontend Unit Suite (`runner.mjs --tier=unit`)**: **380/380 PASS** (0 failures).
+- **Targeted Browser E2E Tests (`radicals.browser.mjs`)**: **13/13 PASS** (`RCAT-01`..`RCAT-13` phủ toàn bộ kịch bản tab, search, clear restoration, speaker, detail dialog, mobile 375px, keyboard).
+- **Static Invariants & Semantics (`runner.mjs --tier=static`)**: **177/177 PASS** (Zero DOM sink / obsolete elements).
+- **Fast Tier Verification (`runner.mjs --tier=fast`)**: **557/557 PASS** across 144 suites.
+- **Accessibility Suite (`runner.mjs --tier=a11y`)**: **19/19 PASS** (100% WCAG 2.2 AA).
+- **Responsive Multi-Viewport Suite (`responsive-layout.browser.mjs`)**: **10/10 PASS** (22/22 pages, 0px overflow across 375/768/1200px).
+- **Full-stack Live Browser Verification (`verify-live-browser-radicals.mjs`)**: **PASS** (Live MySQL 8.4 + Spring Boot + Static Server: Tab 1 50 cards, Tab 2 164 cards, Radical 75 dedicated embed, Radical 11 timestamp embed, search restoration).
+
+---
+
+## 2026-09-29 — Redesign Navigation + Radical Categories + Vocabulary HSK Navigation — [COMPLETED]
+
+### Scope of Delivery
+1. **Redesign Global Navbar & Accessible Dropdown Menus (W3C WAI-ARIA APG Disclosure Navigation Pattern)**:
+   - Loại bỏ liên kết đơn phẳng `214 Bộ thủ` và `Từ vựng` trên thanh điều hướng chính.
+   - Chuyển đổi sang cấu trúc W3C WAI-ARIA Disclosure Dropdown chuẩn:
+     - `Trang chủ`
+     - `Bộ thủ ▾` (`#navDropdownRadicals` với toggle button `aria-haspopup="true"`, `aria-expanded="false"`, `aria-controls="navRadicalsMenu"`)
+       - `50 Bộ thủ thông dụng` (`radicals.html?category=common50`)
+       - `214 Bộ thủ đầy đủ` (`radicals.html?category=all214`)
+     - `Từ vựng ▾` (`#navDropdownVocab` với toggle button `aria-haspopup="true"`, `aria-expanded="false"`, `aria-controls="navVocabMenu"`)
+       - `HSK 1` (`vocabulary.html?hsk=1`)
+       - `HSK 2` (`vocabulary.html?hsk=2`)
+       - `HSK 3` (`vocabulary.html?hsk=3`)
+     - `Bài học`
+     - `Ôn tập SRS`
+   - Đạt chuẩn A11y & W3C APG:
+     - Desktop: Hover mở (`mouseenter`), Focus mở (`focusin`), Rời vùng đóng (`mouseleave`, `focusout` khi focus chuyển ra ngoài dropdown). Handled hover-to-click transition via `openedByHover` state tracking.
+     - Keyboard: Phím `Enter`/`Space` mở/đóng dropdown và chuyển focus vào menu item đầu tiên; phím `Escape` đóng dropdown và khôi phục focus chính xác về nút bấm mở; phím `ArrowDown`/`ArrowUp` duyệt danh sách item tuần hoàn; phím `Tab` điều hướng tuần tự tự nhiên.
+     - Mobile/Touch: Toggle bằng thao tác tap/click không phụ thuộc hover, collapsible dọc trong mobile drawer khi co màn hình hẹp mà không gây overflow.
+     - Đồng bộ trạng thái active: Tự động highlight dropdown cha và item con dựa trên `window.location.pathname` và URL parameters.
+     - Cập nhật đồng bộ trên 100% 22 file HTML (`frontend/*.html`), bảo toàn tuyệt đối `#navAuthContainer`, session state và flow đăng nhập/đăng xuất.
+
+2. **Cập nhật Trang Bộ Thủ (`frontend/radicals.html` & `frontend/js/pages/radicals-page.js`)**:
+   - **Tái cấu trúc Tabs Danh mục**:
+     - Thay thế dứt điểm nhãn `[ 164 Bộ Thủ Mở Rộng ]` bằng `[ 214 Bộ Thủ Đầy Đủ ]`.
+     - Tab 1: `[ 50 Bộ Thủ Thông Dụng ]` (`#tabCommonRadicals`, hiển thị 50 bộ thủ thông dụng sắp xếp theo `commonRank ASC`).
+     - Tab 2: `[ 214 Bộ Thủ Đầy Đủ ]` (`#tabAllRadicals`, hiển thị toàn bộ 214 bộ thủ Khang Hy sắp xếp theo `radicalId ASC`).
+     - Hỗ trợ deep-link URL: `?category=common50` kích hoạt Tab 50; `?category=all214` kích hoạt Tab 214.
+   - **Tái cấu trúc Vị ngữ Tìm kiếm Bộ thủ (Search Predicate & Normalization)**:
+     - **LOẠI BỎ TRIỆT ĐỂ** `meaningVi` (nghĩa tiếng Việt) và `explanationVi` (giải thích tiếng Việt) khỏi phạm vi đối sánh tìm kiếm.
+     - Tìm kiếm bộ thủ chỉ đối sánh duy nhất 3 trường:
+       1. Chữ Hán (`character`, ví dụ `木`).
+       2. Pinyin có dấu (`pinyin`) và Pinyin không dấu (ví dụ `mù`, `mu`).
+       3. Hán-Việt có dấu (`meaningHanViet`) và Hán-Việt không dấu (ví dụ `Mộc`, `Moc`).
+     - Chuẩn hóa placeholder trực quan: `"Tìm theo chữ Hán (木), Pinyin (mù, shui), Hán-Việt (Mộc, Thủy)..."`.
+     - Khi tìm kiếm: ẩn cả 2 panels và hiển thị kết quả tìm kiếm trên toàn bộ 214 bộ thủ; khi xóa tìm kiếm: khôi phục nguyên vẹn tab đã chọn trước đó.
+   - **Bảo tồn trọn vẹn**: 214 bộ thủ Khang Hy, YouTube video lesson (V11 coverage), start/end timestamps, audio pronunciation / Web Speech fallback, modal detail dialog, an toàn DOM XSS.
+
+3. **Cập nhật Trang Từ Vựng (`frontend/vocabulary.html` & `frontend/js/pages/vocabulary-page.js`)**:
+   - Áp dụng cùng ngôn ngữ thiết kế (Design Language) và UI pattern như trang Bộ thủ.
+   - Bổ sung thanh Segmented Tabs ngay dưới ô tìm kiếm:
+     - `[ HSK 1 ]` (`#tabHsk1`)
+     - `[ HSK 2 ]` (`#tabHsk2`)
+     - `[ HSK 3 ]` (`#tabHsk3`)
+   - Header động (`#vocabCategoryBadge`, `#vocabPageHeading`, `#vocabPageSubheading`) tự động đồng bộ theo level HSK được chọn:
+     - HSK 1: "Cấp độ HSK 1" — "Từ vựng HSK Cấp độ 1 — Nền tảng giao tiếp tiếng Trung cơ bản".
+     - HSK 2: "Cấp độ HSK 2" — "Từ vựng HSK Cấp độ 2 — Giao tiếp thường nhật và mở rộng ngữ cảnh".
+     - HSK 3: "Cấp độ HSK 3" — "Từ vựng HSK Cấp độ 3 — Diễn đạt lưu loát và nâng cao vốn từ".
+   - Chuẩn WAI-ARIA tab pattern (`role="tablist"`, `role="tab"`, keyboard `ArrowLeft`/`ArrowRight`/`Home`/`End`).
+   - Deep-linking URL: hỗ trợ tham số `?hsk=1`, `?hsk=2`, `?hsk=3` để điều hướng trực tiếp từ navbar dropdown.
+
+4. **Kiểm toán Backend / Data Contract & HSK Metadata Blocker Analysis**:
+   - **Thực tế Schema & Backend hiện tại**:
+     - Bảng `VOCABULARY` trong `backend/src/main/resources/db/migration/V1__init_schema.sql` hoàn toàn KHÔNG có cột `hsk_level` hay `hsk_standard` (chỉ có `vocab_id, hanzi, pinyin, pinyin_raw, meaning_han_viet, meaning_vi, audio_url, video_writing_url, example_sentence, example_translation`).
+     - Entity `com.elearning.entity.Vocabulary` và các DTOs `VocabularyResponse`, `VocabularyDetailResponse` không có trường HSK.
+     - Controller `VocabularyController` và repository chỉ hỗ trợ `search`, `page`, `size`.
+     - Bằng chứng thực tế: Unit test backend `ChineseDomainDataAuditTests.java` (lines 306-318) đã khẳng định CSDL không có cột HSK.
+     - Backend hiện đang niêm phong (Sealed Backend - DEC-41), 1101/1101 tests backend đang PASS.
+   - **Kỷ luật phát triển**:
+     - Tuyệt đối không tạo dữ liệu HSK giả (fake data) ở client-side, không hard-code danh sách từ vựng HSK, không phân loại mò mẫm dựa trên vocabId hay lessonId.
+     - Giữ nguyên luồng tải dữ liệu từ API chuẩn `GET /api/v1/vocabulary`.
+   - **Đề xuất Kiến trúc Mở rộng Backend Tương lai (Future Evolution Schema)**:
+     - Migration Flyway `V12__add_vocabulary_hsk_metadata.sql`:
+       ```sql
+       ALTER TABLE VOCABULARY
+         ADD COLUMN hsk_level TINYINT UNSIGNED NULL AFTER meaning_vi,
+         ADD COLUMN hsk_standard VARCHAR(20) NOT NULL DEFAULT 'HSK 3.0' AFTER hsk_level;
+       CREATE INDEX idx_vocab_hsk_level ON VOCABULARY (hsk_level);
+       ```
+     - Tránh thiết kế cứng 3 cờ boolean `hsk1, hsk2, hsk3` nhằm mở rộng linh hoạt cho toàn bộ các cấp độ HSK 3.0 (Cấp 1–9) và nhiều chuẩn khảo thí khác nhau.
+
+### Automated Verification Results
+- **Fast Tier Unit Verification (`verify:frontend:fast`)**: **557/557 PASS** across 144 suites (0 regression, bao gồm cập nhật unit test `radicals-catalog.test.mjs` xác nhận không match meaningVi và Tab 50/214).
+- **Static Tier Invariants (`verify:frontend:static`)**: **177/177 PASS** across 26 suites (0 DOM sink, 0 inline event handler, 0 duplicate IDs, valid SRI).
+- **Radicals E2E Browser Suite (`radicals.browser.mjs`)**: **13/13 PASS** (`RCAT-01`..`RCAT-13` xác minh tab 50, tab 214, search excludes meaningVi, speaker audio, detail dialog, mobile 375px).
+- **Vocabulary E2E Browser Suite (`vocabulary.browser.mjs`)**: **13/13 PASS** (Bổ sung kịch bản `VB16` chuyển tab HSK, `VB17` phím mũi tên bàn phím, `VB18` deep-link URL `?hsk=2`, `VB19` kiểm thử navbar dropdown mở/đóng và A11y).
+- **Responsive Multi-Viewport Suite (`responsive-layout.browser.mjs`)**: **10/10 PASS** (Kiểm tra toàn bộ 22 trang trên Mobile 375px, Tablet 768px, Desktop 1200px; 0px horizontal overflow).
+- **Visual Capture Artifacts**:
+  - `radicals_tab50.png`: Tab 50 Bộ thủ thông dụng hiển thị 50 thẻ bộ thủ.
+  - `radicals_tab214.png`: Tab 214 Bộ thủ đầy đủ hiển thị toàn bộ 214 bộ thủ Khang Hy.
+  - `radicals_dropdown_open.png`: Dropdown `Bộ thủ ▾` mở với 2 lựa chọn trực quan.
+  - `vocab_hsk1.png`: Trang Từ vựng với segmented tabs HSK 1 active và badge cấp độ.
+  - `vocab_hsk2.png`: Trang Từ vựng khi chuyển sang HSK 2.
+  - `vocab_dropdown_open.png`: Dropdown `Từ vựng ▾` mở với HSK 1, HSK 2, HSK 3.
+  - `radicals_mobile_375.png`: Giao diện Responsive trên viewport 375px.
+
+---
+
+## 9H. TASK: ĐỒNG BỘ ICON NÚT PHÁT ÂM GIỮA SRS VÀ TRANG TỪ VỰNG (SPEECH BUTTON SYNCHRONIZATION)
+
+### 1. Bối cảnh & Yêu cầu Kỹ thuật
+- **Vấn đề trước khi sửa**: Trong giao diện phòng ôn tập SRS (`srs-review.html`), nút phát âm hiển thị dưới dạng `[ 🔊 Phát âm ]` với emoji và text, trong khi trang Từ vựng (`vocabulary.html`) đã có nút phát âm dạng icon loa trong hình tròn (`.vocab-speech-btn`) thanh lịch, chuẩn UI design system.
+- **Yêu cầu cốt lõi**:
+  1. Loại bỏ hoàn toàn emoji `🔊` và text `Phát âm` khỏi SRS flashcard.
+  2. Không tự thiết kế một icon loa khác, tái sử dụng CHÍNH icon/component/style từ Vocabulary.
+  3. Bảo toàn 100% cơ chế phát âm Web Speech API hiện tại (`SpeechSynthesisUtterance`, `zh-CN`, `rate: 0.85`, Mandarin voice matching, audio fallback).
+  4. Tránh xung đột phím tắt: Space trên nút phát âm chỉ kích hoạt phát âm, tuyệt đối **không** lật flashcard.
+  5. Refactor thành shared component/helper an toàn DOM (zero `innerHTML`).
+
+### 2. Thiết kế Kiến trúc & Tái sử dụng Component
+1. **Shared UI Primitives (`frontend/js/ui/ui.js`)**:
+   - `createSpeakerIcon(size = 16)`: Hàm tạo phần tử SVG speaker icon an toàn thông qua `document.createElementNS('http://www.w3.org/2000/svg', ...)`. Chứa đúng `<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5">` và `<path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07">`. Thuộc tính `aria-hidden="true"`.
+   - `createSpeechButton(options)`: Hàm tạo phần tử `<button type="button" class="vocab-speech-btn">` gắn kèm SVG speaker icon, thiết lập accessible `aria-label`, `title`, và gắn sự kiện `click` an toàn.
+   - Re-export đồng nhất tại:
+     - `frontend/js/pages/vocabulary-page.js`
+     - `frontend/js/pages/radicals-page.js`
+     - `frontend/js/pages/lesson-detail-page.js`
+     - `frontend/js/pages/srs-review-page.js`
+     *(Loại bỏ triệt để code trùng lặp `createSpeakerIcon` tại 3 controllers trên)*.
+
+2. **CSS Standardized Token Alignment (`frontend/css/style.css`)**:
+   - `.vocab-speech-btn` và `.flashcard-audio-btn`:
+     - Kích thước: `width: 34px`, `height: 34px`.
+     - Hình khối: `border-radius: var(--radius-full)` (9999px / tròn hoàn hảo).
+     - Màu nền & viền: `background-color: var(--color-bg-subtle)`, `border: 1px solid var(--color-border)`.
+     - Màu icon: `color: var(--color-accent-primary)`.
+     - Căn chỉnh: `display: inline-flex`, `align-items: center`, `justify-content: center`.
+     - Hover: `background-color: var(--color-accent-primary)`, `border-color: var(--color-accent-primary)`, `color: #FFFFFF`, `transform: scale(1.08)`.
+     - Focus: `outline: var(--focus-ring-width) solid var(--focus-ring-color)`, `outline-offset: var(--focus-ring-offset)`.
+     - Active: `transform: scale(0.96)`.
+
+3. **SRS Review Markup & Controller Binding (`srs-review.html` & `srs-review-page.js`)**:
+   - Mặt trước (Front): `<button type="button" id="btnAudioPronounceFront" class="vocab-speech-btn" aria-label="Phát âm từ vựng" title="Phát âm (Web Speech API)">` chứa icon SVG.
+   - Mặt sau (Back): `<button type="button" id="btnAudioPronounceBack" class="vocab-speech-btn" aria-label="Phát âm từ vựng" title="Phát âm (Web Speech API)">` đặt cạnh Pinyin mặt sau.
+   - `renderCurrentCard()`: Tự động cập nhật động accessible name và tooltip:
+     - `aria-label="Phát âm từ ${card.hanzi}"`
+     - `title="Phát âm: ${card.hanzi}"`
+   - **Xử lý xung đột bàn phím (Keyboard Conflict Resolution)**:
+     - Trong `srs-review-page.js#handleKeydown(e)`:
+       ```javascript
+       if (e.code === 'Space' || e.key === ' ' || e.key === 'Enter') {
+         if (tag === 'button' && e.target !== this.dom.flashcard) {
+           return; // Để hành vi click gốc của button tự kích hoạt, không lật thẻ!
+         }
+         e.preventDefault();
+         this.toggleFlip();
+       }
+       ```
+     - Trong click handler của nút phát âm: `e.stopPropagation()`.
+     - Trong click handler của `#flashcard`: `if (e.target.closest('button, a')) return;`.
+
+### 3. Kết quả Kiểm thử & Nghiệm thu
+- **Unit Tests**:
+  - `tests/frontend/unit/srs/srs-speech-button.test.mjs`: **15/15 PASS** (kiểm tra không còn emoji 🔊, dùng đúng class .vocab-speech-btn, SVG markup trùng khớp, CSS active/hover, accessible name, handleKeydown không flip card khi bấm Space trên button, re-export across modules, Web Speech API).
+  - `npm run verify:frontend:unit`: **399/399 PASS** across 120 suites.
+  - `npm run verify:frontend:a11y`: **19/19 PASS** across 1 suite.
+- **Browser E2E Tests**:
+  - `tests/frontend/e2e/srs-review.browser.mjs`: **9/9 PASS** (bao gồm `SR-09` kiểm tra kích thước 34x34px, class `vocab-speech-btn`, text rỗng, SVG icon, Space khi focus không lật flashcard, click không lật flashcard, mặt sau speech button hoạt động).
+- **So sánh Trực quan & Toán học (Browser Verification)**:
+  - Computed Styles đo đạc qua Playwright giữa Vocabulary Page và SRS Review Page:
+    - `width`: `34px` == `34px`
+    - `height`: `34px` == `34px`
+    - `borderRadius`: `9999px` == `9999px`
+    - `backgroundColor`: `rgb(243, 239, 234)` == `rgb(243, 239, 234)`
+    - `border`: `1px solid rgb(231, 229, 228)` == `1px solid rgb(231, 229, 228)`
+    - `color`: `rgb(200, 60, 35)` == `rgb(200, 60, 35)`
+    - `cursor`: `pointer` == `pointer`
+    - `display`: `flex` == `flex`
+    - `alignItems`: `center` == `center`
+    - `justifyContent`: `center` == `center`
+  - Visual Artifacts đã chụp:
+    - `vocab_speaker_btn_desktop.png` (Crop nút loa trên trang Từ vựng)
+    - `srs_speaker_btn_desktop.png` (Crop nút loa mặt trước SRS)
+    - `srs_speaker_btn_desktop_back.png` (Crop nút loa mặt sau SRS)
+    - `srs_review_desktop_front.png` (Toàn màn hình SRS Review mặt trước)
+    - `srs_review_desktop_back.png` (Toàn màn hình SRS Review mặt sau)
+    - `vocab_page_desktop.png` (Toàn màn hình Vocabulary Desktop)
+    - `vocab_page_mobile.png` (Toàn màn hình Vocabulary Mobile 390px)
+    - `srs_review_mobile_front.png` (Toàn màn hình SRS Review Mobile 390px)
+    - `srs_review_mobile_back.png` (Toàn màn hình SRS Review Mobile 390px)
+
+---
+
+## 4. CHI TIẾT ĐỢT CHỈNH SỬA UX/FE REMEDIATION (AUDIO ANTI-SPAM + PAGINATION + SRS SETTINGS TO PROFILE + REMOVE MAXREVIEWPERDAY)
+
+### 1. Bối cảnh & Mục tiêu
+- **Vấn đề 1 (Audio Spam)**: Người dùng bấm nút loa liên tục sinh ra toast thông báo lặp (`Không thể phát âm thanh...`), queue nhiều utterance, race condition.
+- **Vấn đề 2 (Pagination)**: Trang từ vựng thiếu nút First/Last (`<<` và `>>`), gây khó khăn khi duyệt danh mục lớn.
+- **Vấn đề 3 (SRS Settings & maxReviewPerDay)**: SRS Dashboard chứa form cài đặt cá nhân làm loãng giao diện; chỉ số `maxReviewPerDay` ("Số lượt ôn tập tối đa mỗi ngày") giới hạn việc ôn tập tự do và hiển thị `x / 100` gây nhầm lẫn hạn ngạch.
+
+### 2. Các thay đổi đã thực hiện
+
+#### 2.1. Audio Anti-Spam Controller (`frontend/js/ui/speech.js`)
+- Xây dựng `SpeechController` đóng vai trò engine trung tâm:
+  - **State Engine**: Quản lý các trạng thái `IDLE`, `SPEAKING`, `ERROR`.
+  - **Active Button Lock**: Khóa nút kích hoạt ngay khi bắt đầu (`disabled = true`, `aria-busy = "true"`, thêm class `.is-speaking`).
+  - **Zero Queueing on Rapid Spam**: Các lần click tiếp theo trong lúc đang `speaking` bị bỏ qua triệt để: không queue utterance, không gọi `speechSynthesis.speak()`, không sinh toast lỗi lặp lại.
+  - **Lifecycle Unlock**: Tự động mở khóa nút khi nhận event `end` hoặc `error`.
+  - **Safety Timeout**: Đặt bộ hẹn giờ bảo vệ 10s tự động unlock nếu trình duyệt nuốt mất event của Web Speech API.
+  - **GC Protection**: Giữ tham chiếu `this._activeUtterance` tránh Chromium garbage collection làm rớt event `onend`.
+  - **Clean Item Switching**: Khi chủ động chuyển từ (item khác), hủy phiên phát âm cũ (`cancel()`), cleanup listener rồi mới khởi tạo phiên mới.
+  - **Toast Throttling**: Rào chắn throttle 2.5s cho toast lỗi, tránh toast bão khi lỗi phát sinh liên tiếp.
+- Tích hợp controller vào `vocabulary-page.js` và `srs-review-page.js`.
+
+#### 2.2. Pagination First/Last (`<< < 1 2 3 > >>`)
+- Cập nhật `frontend/vocabulary.html` & `frontend/js/pages/vocabulary-page.js`:
+  - Thêm `#vocabPaginationFirstBtn` (`<<`, nhãn `Trang đầu`) và `#vocabPaginationLastBtn` (`>>`, nhãn `Trang cuối`).
+  - Sử dụng thẻ `<button type="button">` semantic native với `aria-label` tiếng Việt WCAG 2.2 AA.
+  - Xử lý trạng thái `disabled`:
+    - Trang đầu: `<<` và `<` bị disable.
+    - Trang cuối: `>` và `>>` bị disable.
+    - Một trang duy nhất hoặc rỗng: cả 4 nút điều hướng đều bị disable.
+  - Tính toán chính xác target page: first = 0, last = totalPages - 1, prev = current - 1, next = current + 1.
+
+#### 2.3. Chuyển SRS Settings về Profile & Bỏ hoàn toàn `maxReviewPerDay`
+- **Giao diện Profile (`frontend/profile.html`, `frontend/js/pages/profile-page.js`)**:
+  - Tái cấu trúc thành 2 Tab chuẩn WAI-ARIA: `[ Thông tin cá nhân ]` (`#tabPersonalInfo`) và `[ Cài đặt học tập ]` (`#tabLearningSettings`).
+  - Tab 1: Form hồ sơ cá nhân + chuyển thông tin kỹ thuật (`User ID`, `Account ID`, `Ngày tạo`) xuống nhóm phụ ở đáy.
+  - Tab 2: Khu vực "SRS — Ôn tập cách quãng" với form cấu hình `Thẻ mới mỗi ngày (newCardsPerDay)` (nguyên dương > 0), văn bản hướng dẫn trực quan, live status thông báo lưu thành công/lỗi, nút Lưu và Đặt lại.
+  - **Lazy Loading bảo vệ an ninh**: API `GET /api/v1/srs/settings` chỉ được gọi khi người dùng chuyển sang tab Cài đặt học tập (hoặc truy cập qua URL hash `#srs-settings`), tránh việc gọi thừa API hoặc kích hoạt 401 trên các trang profile đơn thuần.
+  - Lưu cấu hình gọi `PUT /api/v1/srs/settings` với payload `{ newCardsPerDay: Number(...) }`.
+- **Đơn giản hóa SRS Dashboard (`frontend/srs-dashboard.html`, `frontend/js/pages/srs-dashboard-page.js`)**:
+  - Xóa thẻ hạn mức ôn tập (`cardMaxReviewLimit`) và thanh tiến trình/quota text `x / 100` (`statReviewsQuotaText`, `statReviewsProgressBar`).
+  - Giữ lại số lượng review hôm nay dạng số nguyên thuần túy (`statReviewsToday`).
+  - Xóa toàn bộ form cài đặt SRS trên dashboard; thay thế bằng liên kết điều hướng nhẹ sang Profile: `Cài đặt SRS trong Hồ sơ` (`profile.html#srs-settings`).
+- **Backend & Database Behavior**:
+  - `UpdateSrsSettingRequest.java`: Bỏ `@NotNull` trên `maxReviewPerDay`, thêm constructor hỗ trợ cập nhật chỉ `newCardsPerDay`.
+  - `UserSrsSettingServiceImpl.java`: Khi nhận payload không có hoặc null `maxReviewPerDay`, giữ nguyên giá trị hiện có trong DB (không ghi đè null).
+  - `SrsServiceImpl.java`:
+    - `getDueCards()`: Xóa bỏ phép clamp `dueProgressList = dueProgressList.subList(0, Math.min(dueProgressList.size(), remainingReviewsToday))`, trả về đầy đủ các thẻ đến hạn.
+    - `reviewCard()`: Xóa bỏ kiểm tra chặn hạn ngạch review tối đa trong ngày (`todayReviews >= maxReviewPerDay`), cho phép người dùng ôn tập bao nhiêu tùy ý. Giữ nguyên rào chắn thẻ mới `newCardsPerDay`.
+  - Giữ nguyên cột CSDL `max_review_per_day` trong bảng `user_srs_setting` để bảo toàn schema compatibility, không drop column, không sinh Flyway phá hủy.
+
+### 3. Kết quả Kiểm thử & Nghiệm thu
+- **Frontend Fast Tier**: `596/596 PASS` (156 suites) across static + unit tests:
+  - `tests/frontend/unit/ui/speech-controller.test.mjs`: 7/7 PASS.
+  - `tests/frontend/unit/vocabulary/vocabulary-pagination.test.mjs`: 3/3 PASS.
+  - `tests/frontend/unit/srs/srs-dashboard.test.mjs`: 27/27 PASS.
+- **Frontend Browser E2E Tier**: `140/140 PASS` (18 suites):
+  - `srs-dashboard.browser.mjs`: 7/7 PASS (SD-01..SD-07).
+  - `vocabulary.browser.mjs`: 13/13 PASS (VB1..VB19).
+  - `srs-review.browser.mjs`: 9/9 PASS (SR-01..SR-09).
+- **Accessibility Verification**: `19/19 PASS` (`tests/frontend/accessibility/a11y.browser.mjs` WCAG 2.2 AA).
+- **Backend SRS Regression**: `244/244 PASS` (`mvn test -Dtest=*Srs* -f backend/pom.xml`, 0 failures, 0 errors).
+
+### 4. Thông tin Git Commit
+- **Commit**: `2a1c185`
+- **Branch**: `main`
+- **Message**: `feat: improve audio UX, add first-last pagination, and move SRS settings to profile`
+- **Files Staged & Committed**: 20 files (chỉ commit các file thuộc task, bảo toàn tuyệt đối các thay đổi pre-existing unrelated trong working tree).
+
 
 
 

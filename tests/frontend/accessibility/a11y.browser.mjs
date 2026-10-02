@@ -711,7 +711,7 @@ describe('Accessibility Verification: WCAG 2.2 AA Aligned', () => {
         }));
       });
 
-      await page.route('**/api/v1/srs/due', async (route) => {
+      await page.route('**/api/v1/srs/due*', async (route) => {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
@@ -834,30 +834,61 @@ describe('Accessibility Verification: WCAG 2.2 AA Aligned', () => {
         });
       });
 
+      await page.route('**/api/v1/users/profile', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            code: 'SUCCESS',
+            data: {
+              userId: 9999,
+              accountId: 9999,
+              fullName: 'A11y Auditor',
+              emailOrPhone: 'a11y_user@example.com',
+              avatarUrl: null,
+              createdAt: '2026-09-01T08:00:00Z'
+            }
+          })
+        });
+      });
+
+      // Part A: SRS Dashboard Accessibility Audit
       await page.goto(`${baseUrl}/srs-dashboard.html`, { waitUntil: 'domcontentloaded' });
       await page.locator('#dashboardContentSection').waitFor({ state: 'visible' });
 
-      // 1. Inputs have associated labels & aria-describedby
-      const newCardsInput = page.locator('#newCardsPerDayInput');
-      const maxReviewInput = page.locator('#maxReviewPerDayInput');
-      assert.ok(await newCardsInput.getAttribute('aria-describedby'), 'newCardsPerDayInput must have aria-describedby');
-      assert.ok(await maxReviewInput.getAttribute('aria-describedby'), 'maxReviewPerDayInput must have aria-describedby');
+      // 1. Action Buttons Target Sizes (SC 2.5.8 >= 24x24 px)
+      const reviewBtn = page.locator('#btnGoToReview');
+      const settingsLink = page.locator('#btnLinkProfileSettings');
+      const rBox = await reviewBtn.boundingBox();
+      const sBox = await settingsLink.boundingBox();
+      assert.ok(rBox.width >= 44 && rBox.height >= 38, 'Go to review button must meet target size');
+      assert.ok(sBox.width >= 44 && sBox.height >= 38, 'Settings link button must meet target size');
 
-      // 2. Button Target Sizes (SC 2.5.8 >= 24x24 px)
-      const saveBtn = page.locator('#btnSaveSettings');
-      const resetBtn = page.locator('#btnResetSettings');
+      // Part B: Profile SRS Settings Form Accessibility Audit (Moved to profile.html)
+      await page.goto(`${baseUrl}/profile.html#srs-settings`, { waitUntil: 'domcontentloaded' });
+      await page.locator('#profileCard').waitFor({ state: 'visible' });
+
+      // 2. Inputs have associated labels & aria-describedby
+      const newCardsInput = page.locator('#srsNewCardsPerDayInput');
+      assert.ok(await newCardsInput.getAttribute('aria-describedby'), 'srsNewCardsPerDayInput must have aria-describedby');
+      const label = page.locator('label[for="srsNewCardsPerDayInput"]');
+      assert.ok(await label.count() > 0, 'Must have associated label for srsNewCardsPerDayInput');
+
+      // 3. Button Target Sizes (SC 2.5.8 >= 24x24 px)
+      const saveBtn = page.locator('#btnSaveSrsSettings');
+      const resetBtn = page.locator('#btnResetSrsSettings');
       const saveBox = await saveBtn.boundingBox();
       const resetBox = await resetBtn.boundingBox();
       assert.ok(saveBox.width >= 44 && saveBox.height >= 38, 'Save button must meet target size');
       assert.ok(resetBox.width >= 44 && resetBox.height >= 38, 'Reset button must meet target size');
 
-      // 3. Live Regions (SC 4.1.3)
-      const formStatus = page.locator('#settingsFormStatus');
+      // 4. Live Regions (SC 4.1.3)
+      const formStatus = page.locator('#srsSettingsStatus');
       assert.strictEqual(await formStatus.getAttribute('role'), 'status');
       assert.strictEqual(await formStatus.getAttribute('aria-live'), 'polite');
 
       const errors = getRuntimeErrors();
-      assert.strictEqual(errors.length, 0, `Runtime errors during srs dashboard a11y audit:\n${errors.join('\n')}`);
+      assert.strictEqual(errors.length, 0, `Runtime errors during srs dashboard and settings a11y audit:\n${errors.join('\n')}`);
     } finally {
       await context.close();
     }

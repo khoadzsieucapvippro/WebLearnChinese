@@ -45,7 +45,7 @@
               <a class="nav-link-custom" href="index.html">Trang chủ</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link-custom" href="radicals.html">214 Bộ thủ</a>
+              <a class="nav-link-custom" href="radicals.html">Bộ thủ</a>
             </li>
             <li class="nav-item">
               <a class="nav-link-custom" href="vocabulary.html">Từ vựng</a>
@@ -100,90 +100,177 @@
               </div>
             </div>
 
-            <!-- Account Metadata Grid -->
-            <div class="row g-3 p-3 bg-light rounded mb-4 border">
-              <div class="col-6 col-md-3">
-                <div class="small text-secondary">Mã người dùng</div>
-                <div id="profileUserIdDisplay" class="fw-semibold text-dark">---</div>
-              </div>
-              <div class="col-6 col-md-3">
-                <div class="small text-secondary">Mã tài khoản</div>
-                <div id="profileAccountIdDisplay" class="fw-semibold text-dark">---</div>
-              </div>
-              <div class="col-12 col-md-6">
-                <div class="small text-secondary">Ngày tham gia</div>
-                <div id="profileCreatedAtDisplay" class="fw-semibold text-dark">---</div>
-              </div>
-            </div>
+            <!-- Navigation Tabs (IA: Thông tin cá nhân | Cài đặt học tập) -->
+            <ul class="nav nav-tabs mb-4" id="profileTabs" role="tablist" aria-label="Mục hồ sơ người dùng">
+              <li class="nav-item" role="presentation">
+                <button 
+                  class="nav-link active fw-semibold" 
+                  id="tabPersonalInfo" 
+                  data-bs-toggle="tab" 
+                  data-bs-target="#panePersonalInfo" 
+                  type="button" 
+                  role="tab" 
+                  aria-controls="panePersonalInfo" 
+                  aria-selected="true"
+                >
+                  Thông tin cá nhân
+                </button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button 
+                  class="nav-link fw-semibold" 
+                  id="tabLearningSettings" 
+                  data-bs-toggle="tab" 
+                  data-bs-target="#paneLearningSettings" 
+                  type="button" 
+                  role="tab" 
+                  aria-controls="paneLearningSettings" 
+                  aria-selected="false"
+                >
+                  Cài đặt học tập
+                </button>
+              </li>
+            </ul>
 
-            <!-- Role Workspaces Section (Dynamic based on roles) -->
-            <section id="profileRoleWorkspacesSection" class="p-3 bg-light rounded mb-4 border d-none" aria-labelledby="profileWorkspacesHeading">
-              <h2 id="profileWorkspacesHeading" class="h6 fw-bold text-dark mb-2">Chức Năng Theo Vai Trò Của Bạn</h2>
-              <div id="profileWorkspacesContainer" class="d-flex flex-wrap gap-2"></div>
-            </section>
+            <!-- Tab Content Panels -->
+            <div class="tab-content" id="profileTabContent">
 
-            <hr class="my-4">
+              <!-- Tab 1: Thông tin cá nhân -->
+              <div class="tab-pane fade show active" id="panePersonalInfo" role="tabpanel" aria-labelledby="tabPersonalInfo">
+                <!-- Profile Edit Section -->
+                <section aria-labelledby="profileEditHeading">
+                  <h2 class="h5 fw-bold mb-3" id="profileEditHeading">Chỉnh Sửa Thông Tin Cá Nhân</h2>
 
-            <!-- Profile Edit Section -->
-            <section aria-labelledby="profileEditHeading">
-              <h2 class="h5 fw-bold mb-3" id="profileEditHeading">Chỉnh Sửa Thông Tin Cá Nhân</h2>
+                  <!-- Profile Edit Global Alert -->
+                  <div id="profileGlobalAlert" class="alert alert-danger d-none mb-3" role="alert" aria-live="assertive"></div>
 
-              <!-- Profile Edit Global Alert -->
-              <div id="profileGlobalAlert" class="alert alert-danger d-none mb-3" role="alert" aria-live="assertive"></div>
+                  <!-- Profile Edit Form -->
+                  <form id="profileEditForm" novalidate aria-labelledby="profileEditHeading">
+                    <!-- Field: Full Name -->
+                    <div class="mb-3">
+                      <label for="profileFullNameInput" class="form-label fw-semibold">
+                        Họ và tên <span class="text-danger" aria-hidden="true">*</span>
+                      </label>
+                      <input 
+                        type="text" 
+                        id="profileFullNameInput" 
+                        name="fullName" 
+                        class="form-control" 
+                        autocomplete="name"
+                        required 
+                        aria-required="true"
+                        maxlength="100"
+                        aria-describedby="profileFullNameError"
+                      >
+                      <div id="profileFullNameError" class="invalid-feedback d-none" role="alert"></div>
+                    </div>
 
-              <!-- Profile Edit Form -->
-              <form id="profileEditForm" novalidate aria-labelledby="profileEditHeading">
-                <!-- Field: Full Name -->
-                <div class="mb-3">
-                  <label for="profileFullNameInput" class="form-label fw-semibold">
-                    Họ và tên <span class="text-danger" aria-hidden="true">*</span>
-                  </label>
-                  <input 
-                    type="text" 
-                    id="profileFullNameInput" 
-                    name="fullName" 
-                    class="form-control" 
-                    autocomplete="name"
-                    required 
-                    aria-required="true"
-                    maxlength="100"
-                    aria-describedby="profileFullNameError"
-                  >
-                  <div id="profileFullNameError" class="invalid-feedback d-none" role="alert"></div>
-                </div>
+                    <!-- Field: Avatar URL -->
+                    <div class="mb-4">
+                      <label for="profileAvatarUrlInput" class="form-label fw-semibold">
+                        Đường dẫn ảnh đại diện (Tùy chọn)
+                      </label>
+                      <input 
+                        type="url" 
+                        id="profileAvatarUrlInput" 
+                        name="avatarUrl" 
+                        class="form-control" 
+                        maxlength="500"
+                        placeholder="https://example.com/avatar.jpg"
+                        aria-describedby="profileAvatarUrlHelp profileAvatarUrlError"
+                      >
+                      <div id="profileAvatarUrlHelp" class="form-text text-secondary small">
+                        Hỗ trợ URL hình ảnh http:// hoặc https:// hợp lệ (tối đa 500 ký tự).
+                      </div>
+                      <div id="profileAvatarUrlError" class="invalid-feedback d-none" role="alert"></div>
+                    </div>
 
-                <!-- Field: Avatar URL -->
-                <div class="mb-4">
-                  <label for="profileAvatarUrlInput" class="form-label fw-semibold">
-                    Đường dẫn ảnh đại diện (Tùy chọn)
-                  </label>
-                  <input 
-                    type="url" 
-                    id="profileAvatarUrlInput" 
-                    name="avatarUrl" 
-                    class="form-control" 
-                    maxlength="500"
-                    placeholder="https://example.com/avatar.jpg"
-                    aria-describedby="profileAvatarUrlHelp profileAvatarUrlError"
-                  >
-                  <div id="profileAvatarUrlHelp" class="form-text text-secondary small">
-                    Hỗ trợ URL hình ảnh http:// hoặc https:// hợp lệ (tối đa 500 ký tự).
+                    <!-- Form Action Buttons -->
+                    <div class="d-flex align-items-center gap-2">
+                      <button type="submit" id="profileSaveBtn" class="btn-chinese-primary py-2 px-4 d-flex align-items-center gap-2">
+                        <span class="btn-text">Lưu thay đổi</span>
+                        <span class="spinner-border spinner-border-sm d-none" aria-hidden="true"></span>
+                      </button>
+                      <button type="button" id="profileResetBtn" class="btn-chinese-outline py-2 px-3">
+                        Khôi phục
+                      </button>
+                    </div>
+                  </form>
+                </section>
+
+                <!-- Role Workspaces Section (Dynamic based on roles) -->
+                <section id="profileRoleWorkspacesSection" class="p-3 bg-light rounded mt-4 border d-none" aria-labelledby="profileWorkspacesHeading">
+                  <h2 id="profileWorkspacesHeading" class="h6 fw-bold text-dark mb-2">Chức Năng Theo Vai Trò Của Bạn</h2>
+                  <div id="profileWorkspacesContainer" class="d-flex flex-wrap gap-2"></div>
+                </section>
+
+                <!-- Technical Account Metadata (Secondary prominence at bottom) -->
+                <div class="mt-4 pt-3 border-top">
+                  <div class="text-secondary small fw-semibold text-uppercase mb-2" style="font-size: 0.75rem; letter-spacing: 0.05em;">Thông tin hệ thống</div>
+                  <div class="row g-2 p-2 bg-light rounded border text-muted" style="font-size: 0.8125rem;">
+                    <div class="col-6 col-md-4">
+                      <span>Mã người dùng:</span> <span id="profileUserIdDisplay" class="fw-semibold text-dark">---</span>
+                    </div>
+                    <div class="col-6 col-md-4">
+                      <span>Mã tài khoản:</span> <span id="profileAccountIdDisplay" class="fw-semibold text-dark">---</span>
+                    </div>
+                    <div class="col-12 col-md-4">
+                      <span>Ngày tham gia:</span> <span id="profileCreatedAtDisplay" class="fw-semibold text-dark">---</span>
+                    </div>
                   </div>
-                  <div id="profileAvatarUrlError" class="invalid-feedback d-none" role="alert"></div>
                 </div>
+              </div>
 
-                <!-- Form Action Buttons -->
-                <div class="d-flex align-items-center gap-2">
-                  <button type="submit" id="profileSaveBtn" class="btn-chinese-primary py-2 px-4 d-flex align-items-center gap-2">
-                    <span class="btn-text">Lưu thay đổi</span>
-                    <span class="spinner-border spinner-border-sm d-none" aria-hidden="true"></span>
-                  </button>
-                  <button type="button" id="profileResetBtn" class="btn-chinese-outline py-2 px-3">
-                    Khôi phục
-                  </button>
-                </div>
-              </form>
-            </section>
+              <!-- Tab 2: Cài đặt học tập (SRS Settings) -->
+              <div class="tab-pane fade" id="paneLearningSettings" role="tabpanel" aria-labelledby="tabLearningSettings">
+                <section aria-labelledby="srsSettingsHeading">
+                  <div class="mb-4">
+                    <h2 class="h5 fw-bold mb-1" id="srsSettingsHeading">SRS — Ôn tập cách quãng</h2>
+                    <p class="text-secondary small mb-0">
+                      Tùy chỉnh số lượng thẻ mới muốn học mỗi ngày theo thuật toán lặp lại ngắt quãng SuperMemo-2.
+                    </p>
+                  </div>
+
+                  <!-- SRS Settings Form -->
+                  <form id="profileSrsSettingsForm" novalidate aria-labelledby="srsSettingsHeading">
+                    <!-- newCardsPerDay -->
+                    <div class="mb-4" style="max-width: 480px;">
+                      <label for="srsNewCardsPerDayInput" class="form-label fw-semibold text-dark">
+                        Thẻ mới mỗi ngày (newCardsPerDay) <span class="text-danger" aria-hidden="true">*</span>
+                      </label>
+                      <input 
+                        type="number" 
+                        id="srsNewCardsPerDayInput" 
+                        name="newCardsPerDay" 
+                        class="form-control" 
+                        min="1" 
+                        step="1" 
+                        inputmode="numeric" 
+                        required 
+                        aria-describedby="srsNewCardsPerDayHelp srsNewCardsPerDayError"
+                      >
+                      <div id="srsNewCardsPerDayHelp" class="form-text text-secondary small">
+                        Số thẻ mới tối đa nạp vào ôn tập mỗi ngày (số nguyên dương &gt; 0).
+                      </div>
+                      <div id="srsNewCardsPerDayError" class="invalid-feedback d-none" role="alert"></div>
+                    </div>
+
+                    <!-- Form Actions & Status -->
+                    <div class="d-flex align-items-center gap-3 flex-wrap">
+                      <button type="submit" id="btnSaveSrsSettings" class="btn-chinese-primary py-2 px-4 d-inline-flex align-items-center gap-2">
+                        <span class="btn-text">Lưu thay đổi</span>
+                        <span class="spinner-border spinner-border-sm d-none" aria-hidden="true"></span>
+                      </button>
+                      <button type="button" id="btnResetSrsSettings" class="btn-chinese-outline py-2 px-3">
+                        Khôi phục
+                      </button>
+                      <div id="srsSettingsStatus" class="small" role="status" aria-live="polite"></div>
+                    </div>
+                  </form>
+                </section>
+              </div>
+
+            </div>
 
           </div>
 

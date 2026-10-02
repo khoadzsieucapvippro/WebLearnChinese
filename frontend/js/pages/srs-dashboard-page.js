@@ -29,7 +29,7 @@ import { showToast } from '../ui/ui.js';
  * @param {string|number} maxReviewPerDay
  * @returns {{ isValid: boolean, errors: { newCardsPerDay?: string, maxReviewPerDay?: string } }}
  */
-export function validateSrsSettings(newCardsPerDay, maxReviewPerDay) {
+export function validateSrsSettings(newCardsPerDay, maxReviewPerDay = undefined) {
   const errors = {};
 
   // Validate newCardsPerDay
@@ -47,18 +47,20 @@ export function validateSrsSettings(newCardsPerDay, maxReviewPerDay) {
     }
   }
 
-  // Validate maxReviewPerDay
-  const maxReviewStr = String(maxReviewPerDay ?? '').trim();
-  if (!maxReviewStr) {
-    errors.maxReviewPerDay = 'Số lượt ôn tập tối đa không được để trống.';
-  } else {
-    const num = Number(maxReviewStr);
-    if (Number.isNaN(num)) {
-      errors.maxReviewPerDay = 'Số lượt ôn tập phải là một số nguyên hợp lệ.';
-    } else if (!Number.isInteger(num)) {
-      errors.maxReviewPerDay = 'Số lượt ôn tập phải là số nguyên (không chứa phần thập phân).';
-    } else if (num <= 0) {
-      errors.maxReviewPerDay = 'Số lượt ôn tập phải là số nguyên dương lớn hơn 0.';
+  // Validate maxReviewPerDay when passed as argument (for backward compatibility / tests)
+  if (arguments.length >= 2) {
+    const maxReviewStr = String(maxReviewPerDay ?? '').trim();
+    if (!maxReviewStr) {
+      errors.maxReviewPerDay = 'Số lượt ôn tập tối đa không được để trống.';
+    } else {
+      const num = Number(maxReviewStr);
+      if (Number.isNaN(num)) {
+        errors.maxReviewPerDay = 'Số lượt ôn tập phải là một số nguyên hợp lệ.';
+      } else if (!Number.isInteger(num)) {
+        errors.maxReviewPerDay = 'Số lượt ôn tập phải là số nguyên (không chứa phần thập phân).';
+      } else if (num <= 0) {
+        errors.maxReviewPerDay = 'Số lượt ôn tập phải là số nguyên dương lớn hơn 0.';
+      }
     }
   }
 
@@ -93,14 +95,17 @@ export function calculateQuotaPercentage(current, max) {
  * Strictly avoids leaking any userId or accountId (IDOR protection).
  * 
  * @param {string|number} newCardsPerDay
- * @param {string|number} maxReviewPerDay
- * @returns {{ newCardsPerDay: number, maxReviewPerDay: number }}
+ * @param {string|number} [maxReviewPerDay]
+ * @returns {{ newCardsPerDay: number, maxReviewPerDay?: number }}
  */
-export function buildUpdateSettingsPayload(newCardsPerDay, maxReviewPerDay) {
-  return {
-    newCardsPerDay: parseInt(String(newCardsPerDay).trim(), 10),
-    maxReviewPerDay: parseInt(String(maxReviewPerDay).trim(), 10)
+export function buildUpdateSettingsPayload(newCardsPerDay, maxReviewPerDay = undefined) {
+  const payload = {
+    newCardsPerDay: parseInt(String(newCardsPerDay).trim(), 10)
   };
+  if (maxReviewPerDay !== undefined && maxReviewPerDay !== null && String(maxReviewPerDay).trim() !== '') {
+    payload.maxReviewPerDay = parseInt(String(maxReviewPerDay).trim(), 10);
+  }
+  return payload;
 }
 
 /**
@@ -209,22 +214,26 @@ export class SrsDashboardController {
   }
 
   /**
-   * Concurrently loads authoritative stats and settings from the backend.
+   * Concurrently loads authoritative stats from the backend.
    */
   async loadDashboardData() {
     this.showState('loading');
 
     try {
-      const [stats, settings] = await Promise.all([
-        apiClient('/srs/stats'),
-        apiClient('/srs/settings')
-      ]);
-
+      const stats = await apiClient('/srs/stats');
       this.authoritativeStats = stats;
-      this.authoritativeSettings = settings;
-
       this.renderStatistics(stats);
-      this.renderSettings(settings);
+
+      // If settings form elements are present in DOM, populate them
+      if (this.settingsForm) {
+        try {
+          const settings = await apiClient('/srs/settings');
+          this.authoritativeSettings = settings;
+          this.renderSettings(settings);
+        } catch (_) {
+          // Non-fatal if settings fail on dashboard
+        }
+      }
 
       this.showState('content');
     } catch (err) {
@@ -237,7 +246,7 @@ export class SrsDashboardController {
   }
 
   /**
-   * Renders the 5 authoritative backend statistics and quota indicators.
+   * Renders the authoritative backend statistics.
    * Safe DOM: strictly uses textContent and percentage width styling.
    * 
    * @param {object} stats StudyStatsResponse
@@ -249,24 +258,15 @@ export class SrsDashboardController {
     const reviewsToday = stats.reviewsToday ?? 0;
     const newCardsToday = stats.newCardsToday ?? 0;
     const newCardsLimit = stats.newCardsLimit ?? 0;
-    const maxReviewLimit = stats.maxReviewLimit ?? 0;
 
     // 1. Cards Due
     if (this.statCardsDue) {
       this.statCardsDue.textContent = String(cardsDue);
     }
 
-    // 2. Reviews Today & Quota
+    // 2. Reviews Today (No quota text / progress bar - review quota removed)
     if (this.statReviewsToday) {
       this.statReviewsToday.textContent = String(reviewsToday);
-    }
-    if (this.statReviewsQuotaText) {
-      this.statReviewsQuotaText.textContent = `${reviewsToday} / ${maxReviewLimit}`;
-    }
-    if (this.statReviewsProgressBar) {
-      const reviewPct = calculateQuotaPercentage(reviewsToday, maxReviewLimit);
-      this.statReviewsProgressBar.style.width = `${reviewPct}%`;
-      this.statReviewsProgressBar.setAttribute('aria-valuenow', String(reviewPct));
     }
 
     // 3. New Cards Today & Quota
@@ -286,12 +286,8 @@ export class SrsDashboardController {
     if (this.statNewCardsLimit) {
       this.statNewCardsLimit.textContent = String(newCardsLimit);
     }
-
-    // 5. Max Review Limit
-    if (this.statMaxReviewLimit) {
-      this.statMaxReviewLimit.textContent = String(maxReviewLimit);
-    }
   }
+
 
   /**
    * Populates the settings form inputs with authoritative values.
@@ -418,16 +414,17 @@ export class SrsDashboardController {
    */
   async refreshAuthoritativeData() {
     try {
-      const [stats, settings] = await Promise.all([
-        apiClient('/srs/stats'),
-        apiClient('/srs/settings')
-      ]);
-
+      const stats = await apiClient('/srs/stats');
       this.authoritativeStats = stats;
-      this.authoritativeSettings = settings;
-
       this.renderStatistics(stats);
-      this.renderSettings(settings);
+
+      if (this.settingsForm) {
+        try {
+          const settings = await apiClient('/srs/settings');
+          this.authoritativeSettings = settings;
+          this.renderSettings(settings);
+        } catch (_) {}
+      }
     } catch (err) {
       console.warn('[SrsDashboard] Background refresh encountered an issue:', err);
     }

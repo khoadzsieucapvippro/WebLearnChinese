@@ -23,9 +23,12 @@
 import { apiClient, ApiError } from '../api/api.js';
 import { authManager } from '../auth/auth-state.js';
 import { openNotesModal } from '../ui/notes-modal.js';
-import { showToast } from '../ui/ui.js';
+import { showToast, createSpeakerIcon, createSpeechButton } from '../ui/ui.js';
 import { initNavbarAuth } from '../ui/nav.js';
 import { sanitizeResourceUrl } from '../ui/security.js';
+import { speechController, speakHanzi, isSpeechSynthesisAvailable, SpeechState } from '../ui/speech.js';
+
+export { createSpeakerIcon, createSpeechButton, speechController, speakHanzi, isSpeechSynthesisAvailable, SpeechState };
 
 export const MAX_AGAIN_REVIEWS_PER_CARD = 3;
 
@@ -155,41 +158,8 @@ export function handleAgainRequeue(queue, queueItem, maxAgain = MAX_AGAIN_REVIEW
   return { requeued: false, reason: 'MAX_ATTEMPTS_REACHED' };
 }
 
-/**
- * Dispatches speech synthesis for Hanzi pronunciation with safe fallback.
- * 
- * @param {string} text 
- * @param {Object} [options]
- * @returns {boolean}
- */
-export function speakHanzi(text, { lang = 'zh-CN', rate = 0.85 } = {}) {
-  if (!text || typeof text !== 'string' || !text.trim()) {
-    return false;
-  }
-
-  if (typeof window === 'undefined' || !window.speechSynthesis) {
-    return false;
-  }
-
-  try {
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text.trim());
-    utterance.lang = lang;
-    utterance.rate = rate;
-
-    const voices = window.speechSynthesis.getVoices?.() || [];
-    const chineseVoice = voices.find(v => v.lang === 'zh-CN' || v.lang?.startsWith('zh'));
-    if (chineseVoice) {
-      utterance.voice = chineseVoice;
-    }
-
-    window.speechSynthesis.speak(utterance);
-    return true;
-  } catch (e) {
-    console.warn('[SRS Audio] Speech synthesis dispatch failed:', e);
-    return false;
-  }
-}
+// SpeechSynthesis functions (isSpeechSynthesisAvailable, speakHanzi) are imported and
+// re-exported from ../ui/speech.js with centralized anti-spam and lifecycle locking.
 
 /**
  * Interactive SRS Review Session Controller
@@ -267,6 +237,7 @@ export class SrsReviewController {
       btnCardNote: document.getElementById('btnCardNote'),
       cardBackHanzi: document.getElementById('cardBackHanzi'),
       cardBackPinyin: document.getElementById('cardBackPinyin'),
+      btnAudioPronounceBack: document.getElementById('btnAudioPronounceBack'),
       cardBackMeaningHv: document.getElementById('cardBackMeaningHv'),
       cardBackMeaningVi: document.getElementById('cardBackMeaningVi'),
       cardBackExampleBox: document.getElementById('cardBackExampleBox'),
@@ -318,7 +289,14 @@ export class SrsReviewController {
     if (this.dom.btnAudioPronounceFront) {
       this.dom.btnAudioPronounceFront.addEventListener('click', (e) => {
         e.stopPropagation();
-        this.playPronunciation();
+        this.playPronunciation(this.dom.btnAudioPronounceFront);
+      });
+    }
+
+    if (this.dom.btnAudioPronounceBack) {
+      this.dom.btnAudioPronounceBack.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.playPronunciation(this.dom.btnAudioPronounceBack);
       });
     }
 
@@ -412,11 +390,16 @@ export class SrsReviewController {
           params: { lessonId: this.lessonId }
         });
       } else {
-        // Mode A: Retrieve cards due for review
-        cards = await apiClient('/srs/due');
+        // Mode A: Retrieve cards due for review (VOCABULARY-only invariant)
+        cards = await apiClient('/srs/due', {
+          params: { itemType: 'VOCABULARY' }
+        });
       }
 
-      if (!Array.isArray(cards) || cards.length === 0) {
+      // Filter defensively to strictly VOCABULARY items
+      cards = (Array.isArray(cards) ? cards : []).filter(c => (c.itemType || '').toUpperCase() === 'VOCABULARY');
+
+      if (cards.length === 0) {
         if (this.mode === 'LESSON_NEW_CARDS') {
           if (this.dom.emptyTitle) this.dom.emptyTitle.textContent = 'Không có từ mới trong bài học này';
           if (this.dom.emptyDescription) {
@@ -424,10 +407,34 @@ export class SrsReviewController {
               'Tất cả từ vựng trong bài học này đã được thêm vào tiến trình ôn tập SRS, hoặc bài học chưa có từ vựng.';
           }
         } else {
-          if (this.dom.emptyTitle) this.dom.emptyTitle.textContent = 'Không có thẻ đến hạn hôm nay!';
-          if (this.dom.emptyDescription) {
-            this.dom.emptyDescription.textContent = 
-              'Bạn đã hoàn thành toàn bộ các thẻ ôn tập cần thiết. Hãy học thêm bài mới hoặc quay lại vào ngày mai!';
+          // Authoritative differentiation for empty state in Due mode (Section XI)
+          try {
+            const stats = await apiClient('/srs/stats');
+            if (stats && typeof stats.reviewsToday === 'number' && typeof stats.maxReviewLimit === 'number' && stats.reviewsToday >= stats.maxReviewLimit) {
+              if (this.dom.emptyTitle) this.dom.emptyTitle.textContent = 'Đã đạt hạn mức ôn tập hôm nay!';
+              if (this.dom.emptyDescription) {
+                this.dom.emptyDescription.textContent = 
+                  `Bạn đã hoàn thành tối đa số lượt ôn tập cho phép trong ngày (${stats.reviewsToday}/${stats.maxReviewLimit} lượt). Hãy quay lại vào ngày mai hoặc điều chỉnh hạn mức trong Cài đặt SRS!`;
+              }
+            } else if (stats && stats.cardsDue === 0 && stats.reviewsToday === 0) {
+              if (this.dom.emptyTitle) this.dom.emptyTitle.textContent = 'Chưa có thẻ từ vựng trong hàng đợi ôn tập';
+              if (this.dom.emptyDescription) {
+                this.dom.emptyDescription.textContent = 
+                  'Bạn chưa có thẻ từ vựng nào cần ôn tập. Hãy chọn một bài học đã được phê duyệt trong danh mục Bài học để bắt đầu học từ mới qua SRS!';
+              }
+            } else {
+              if (this.dom.emptyTitle) this.dom.emptyTitle.textContent = 'Không có thẻ đến hạn hôm nay!';
+              if (this.dom.emptyDescription) {
+                this.dom.emptyDescription.textContent = 
+                  'Tất cả các thẻ từ vựng của bạn hiện chưa đến lịch ôn tập tiếp theo. Hãy học thêm bài học mới hoặc quay lại sau!';
+              }
+            }
+          } catch (e) {
+            if (this.dom.emptyTitle) this.dom.emptyTitle.textContent = 'Không có thẻ đến hạn hôm nay!';
+            if (this.dom.emptyDescription) {
+              this.dom.emptyDescription.textContent = 
+                'Bạn đã hoàn thành toàn bộ các thẻ ôn tập cần thiết. Hãy học thêm bài mới hoặc quay lại vào ngày mai!';
+            }
           }
         }
         this.setViewState('empty');
@@ -471,6 +478,7 @@ export class SrsReviewController {
    * Renders the current active card in the session.
    */
   renderCurrentCard() {
+    speechController.cancel();
     this.cleanupTimer();
     this.isFlipped = false;
     this.isSubmitting = false;
@@ -502,7 +510,7 @@ export class SrsReviewController {
 
     // Front face
     if (this.dom.cardTypeFront) {
-      this.dom.cardTypeFront.textContent = isVocab ? 'Từ vựng' : 'Bộ thủ';
+      this.dom.cardTypeFront.textContent = 'Từ vựng';
     }
     if (this.dom.cardStatusFront) {
       if (card.isNew) {
@@ -518,9 +526,21 @@ export class SrsReviewController {
     if (this.dom.cardFrontHanzi) this.dom.cardFrontHanzi.textContent = card.hanzi || '';
     if (this.dom.cardFrontPinyin) this.dom.cardFrontPinyin.textContent = card.pinyin || '';
 
+    // Update speech button accessible names and tooltips
+    const speechLabel = `Phát âm từ ${card.hanzi || 'vựng'}`;
+    const speechTitle = `Phát âm: ${card.hanzi || ''}`;
+    if (this.dom.btnAudioPronounceFront) {
+      this.dom.btnAudioPronounceFront.setAttribute('aria-label', speechLabel);
+      this.dom.btnAudioPronounceFront.setAttribute('title', speechTitle);
+    }
+    if (this.dom.btnAudioPronounceBack) {
+      this.dom.btnAudioPronounceBack.setAttribute('aria-label', speechLabel);
+      this.dom.btnAudioPronounceBack.setAttribute('title', speechTitle);
+    }
+
     // Back face
     if (this.dom.cardTypeBack) {
-      this.dom.cardTypeBack.textContent = isVocab ? 'Từ vựng' : 'Bộ thủ';
+      this.dom.cardTypeBack.textContent = 'Từ vựng';
     }
     if (this.dom.cardBackHanzi) this.dom.cardBackHanzi.textContent = card.hanzi || '';
     if (this.dom.cardBackPinyin) this.dom.cardBackPinyin.textContent = card.pinyin || '';
@@ -542,11 +562,7 @@ export class SrsReviewController {
 
     // Contextual Personal Note action (VOCABULARY only)
     if (this.dom.btnCardNote) {
-      if (isVocab) {
-        this.dom.btnCardNote.classList.remove('d-none');
-      } else {
-        this.dom.btnCardNote.classList.add('d-none');
-      }
+      this.dom.btnCardNote.classList.remove('d-none');
     }
 
     // Example Box (Vocabulary only, if present)
@@ -637,8 +653,10 @@ export class SrsReviewController {
    * Dispatches audio playback for the active card.
    * Queries real detail endpoint (/vocabulary/{id} or /radicals/{id}) when not cached,
    * falling back cleanly to Web Speech API.
+   * 
+   * @param {HTMLElement|null} triggerButton
    */
-  async playPronunciation() {
+  async playPronunciation(triggerButton = null) {
     const queueItem = this.sessionQueue[this.currentIndex];
     if (!queueItem || !queueItem.card) return;
     const card = queueItem.card;
@@ -648,11 +666,11 @@ export class SrsReviewController {
     if (this.audioCache.has(cacheKey)) {
       const cachedUrl = this.audioCache.get(cacheKey);
       if (cachedUrl) {
-        this.playAudioUrl(cachedUrl, card.hanzi);
+        this.playAudioUrl(cachedUrl, card.hanzi, triggerButton);
         return;
       }
       // If cached as null, use speech synthesis fallback
-      speakHanzi(card.hanzi);
+      speakHanzi(card.hanzi, { button: triggerButton });
       return;
     }
 
@@ -670,13 +688,13 @@ export class SrsReviewController {
       this.audioCache.set(cacheKey, audioUrl);
 
       if (audioUrl) {
-        this.playAudioUrl(audioUrl, card.hanzi);
+        this.playAudioUrl(audioUrl, card.hanzi, triggerButton);
       } else {
-        speakHanzi(card.hanzi);
+        speakHanzi(card.hanzi, { button: triggerButton });
       }
     } catch (e) {
       console.warn('[SRS Audio] Could not fetch card detail audio, falling back to speech synthesis:', e);
-      speakHanzi(card.hanzi);
+      speakHanzi(card.hanzi, { button: triggerButton });
     }
   }
 
@@ -685,21 +703,43 @@ export class SrsReviewController {
    * 
    * @param {string} rawUrl 
    * @param {string} fallbackHanzi 
+   * @param {HTMLElement|null} triggerButton
    */
-  playAudioUrl(rawUrl, fallbackHanzi) {
+  playAudioUrl(rawUrl, fallbackHanzi, triggerButton = null) {
     const safeUrl = sanitizeResourceUrl(rawUrl);
     if (!safeUrl || safeUrl === 'about:blank') {
-      speakHanzi(fallbackHanzi);
+      speakHanzi(fallbackHanzi, { button: triggerButton });
       return;
     }
 
+    if (triggerButton) {
+      triggerButton.disabled = true;
+      triggerButton.setAttribute('aria-busy', 'true');
+      triggerButton.classList.add('is-speaking');
+    }
+
+    const unlock = () => {
+      if (triggerButton) {
+        triggerButton.disabled = false;
+        triggerButton.removeAttribute('aria-busy');
+        triggerButton.classList.remove('is-speaking');
+      }
+    };
+
     try {
       const audio = new Audio(safeUrl);
+      audio.onended = unlock;
+      audio.onerror = () => {
+        unlock();
+        speakHanzi(fallbackHanzi, { button: triggerButton });
+      };
       audio.play().catch(() => {
-        speakHanzi(fallbackHanzi);
+        unlock();
+        speakHanzi(fallbackHanzi, { button: triggerButton });
       });
     } catch {
-      speakHanzi(fallbackHanzi);
+      unlock();
+      speakHanzi(fallbackHanzi, { button: triggerButton });
     }
   }
 
@@ -906,6 +946,7 @@ export class SrsReviewController {
    */
   destroy() {
     this.cleanupTimer();
+    speechController.cancel();
     window.removeEventListener('keydown', this.onKeydown);
     window.removeEventListener('beforeunload', this.onUnload);
   }

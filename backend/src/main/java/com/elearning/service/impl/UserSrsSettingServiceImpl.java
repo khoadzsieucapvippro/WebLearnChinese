@@ -63,7 +63,7 @@ public class UserSrsSettingServiceImpl implements UserSrsSettingService {
         if (request.getNewCardsPerDay() == null || request.getNewCardsPerDay() <= 0) {
             throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Số thẻ mới mỗi ngày phải là số nguyên dương lớn hơn 0");
         }
-        if (request.getMaxReviewPerDay() == null || request.getMaxReviewPerDay() <= 0) {
+        if (request.getMaxReviewPerDay() != null && request.getMaxReviewPerDay() <= 0) {
             throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Số thẻ ôn tập tối đa mỗi ngày phải là số nguyên dương lớn hơn 0");
         }
 
@@ -72,7 +72,9 @@ public class UserSrsSettingServiceImpl implements UserSrsSettingService {
                 .orElseGet(() -> new UserSrsSetting(user, 20, 100));
 
         setting.setNewCardsPerDay(request.getNewCardsPerDay());
-        setting.setMaxReviewPerDay(request.getMaxReviewPerDay());
+        if (request.getMaxReviewPerDay() != null) {
+            setting.setMaxReviewPerDay(request.getMaxReviewPerDay());
+        }
 
         UserSrsSetting saved = userSrsSettingRepository.save(setting);
         log.info("Updated SRS settings for user_id={}: newCardsPerDay={}, maxReviewPerDay={}",

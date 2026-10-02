@@ -13,11 +13,14 @@ public class UpdateSrsSettingRequest {
     @Positive(message = "Số thẻ mới mỗi ngày phải là số nguyên dương lớn hơn 0")
     private Integer newCardsPerDay;
 
-    @NotNull(message = "Số thẻ ôn tập tối đa mỗi ngày không được để trống")
     @Positive(message = "Số thẻ ôn tập tối đa mỗi ngày phải là số nguyên dương lớn hơn 0")
     private Integer maxReviewPerDay;
 
     public UpdateSrsSettingRequest() {
+    }
+
+    public UpdateSrsSettingRequest(Integer newCardsPerDay) {
+        this.newCardsPerDay = newCardsPerDay;
     }
 
     public UpdateSrsSettingRequest(Integer newCardsPerDay, Integer maxReviewPerDay) {

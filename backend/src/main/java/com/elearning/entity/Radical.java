@@ -48,6 +48,15 @@ public class Radical {
     @Column(name = "video_writing_url", length = 500)
     private String videoWritingUrl;
 
+    @Column(name = "explanation_vi", length = 1000)
+    private String explanationVi;
+
+    @Column(name = "video_lesson_url", length = 500)
+    private String videoLessonUrl;
+
+    @Column(name = "common_rank", columnDefinition = "TINYINT UNSIGNED")
+    private Integer commonRank;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -138,6 +147,30 @@ public class Radical {
 
     public void setVideoWritingUrl(String videoWritingUrl) {
         this.videoWritingUrl = videoWritingUrl;
+    }
+
+    public String getExplanationVi() {
+        return explanationVi;
+    }
+
+    public void setExplanationVi(String explanationVi) {
+        this.explanationVi = explanationVi;
+    }
+
+    public String getVideoLessonUrl() {
+        return videoLessonUrl;
+    }
+
+    public void setVideoLessonUrl(String videoLessonUrl) {
+        this.videoLessonUrl = videoLessonUrl;
+    }
+
+    public Integer getCommonRank() {
+        return commonRank;
+    }
+
+    public void setCommonRank(Integer commonRank) {
+        this.commonRank = commonRank;
     }
 
     public LocalDateTime getCreatedAt() {

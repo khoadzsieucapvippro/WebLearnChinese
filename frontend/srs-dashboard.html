@@ -45,7 +45,7 @@
               <a class="nav-link-custom" href="index.html">Trang chủ</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link-custom" href="radicals.html">214 Bộ thủ</a>
+              <a class="nav-link-custom" href="radicals.html">Bộ thủ</a>
             </li>
             <li class="nav-item">
               <a class="nav-link-custom" href="vocabulary.html">Từ vựng</a>
@@ -81,14 +81,18 @@
         <div>
           <div class="d-inline-flex align-items-center gap-2 mb-1">
             <span class="brand-seal-mark" aria-hidden="true" style="width: 28px; height: 28px; font-size: 0.95rem;">策</span>
-            <span class="text-secondary small fw-semibold text-uppercase" style="letter-spacing: 0.05em;">Học Tập Cá Nhân Hóa (SRS Settings &amp; Stats)</span>
+            <span class="text-secondary small fw-semibold text-uppercase" style="letter-spacing: 0.05em;">Học Tập Cá Nhân Hóa (SRS Dashboard)</span>
           </div>
-          <h1 class="h2 fw-bold text-dark mb-1" id="srsDashboardHeading">Thống Kê Học Tập &amp; Cài Đặt SRS</h1>
+          <h1 class="h2 fw-bold text-dark mb-1" id="srsDashboardHeading">Thống Kê Học Tập SRS</h1>
           <p class="text-secondary mb-0">
-            Theo dõi tiến trình ôn tập trong ngày và tùy chỉnh hạn mức lặp lại ngắt quãng SuperMemo-2.
+            Theo dõi tiến trình ôn tập trong ngày và hiệu quả ghi nhớ theo thuật toán lặp lại ngắt quãng SuperMemo-2.
           </p>
         </div>
         <div class="d-flex align-items-center gap-2 flex-wrap">
+          <a href="profile.html#srs-settings" id="btnLinkProfileSettings" class="btn-chinese-secondary py-2 px-3 text-decoration-none d-inline-flex align-items-center gap-2">
+            <span>Cài đặt SRS trong Hồ sơ</span>
+            <span aria-hidden="true">&rarr;</span>
+          </a>
           <a href="srs-review.html" id="btnGoToReview" class="btn-chinese-primary py-2 px-3 text-decoration-none d-inline-flex align-items-center gap-2">
             <span>Vào phòng ôn tập</span>
             <span aria-hidden="true">&rarr;</span>
@@ -99,7 +103,7 @@
       <!-- State 1: Loading State -->
       <section id="dashboardLoadingState" class="state-container py-5 text-center" role="status" aria-live="polite">
         <div class="state-spinner" aria-hidden="true"></div>
-        <p class="state-loading-text mt-3 text-secondary">Đang nạp dữ liệu thống kê và cấu hình SRS...</p>
+        <p class="state-loading-text mt-3 text-secondary">Đang nạp dữ liệu thống kê SRS...</p>
       </section>
 
       <!-- State 2: Unauthenticated State -->
@@ -108,7 +112,7 @@
           <div class="display-5 mb-3" aria-hidden="true">🔒</div>
           <h2 class="h4 fw-bold text-dark mb-2">Yêu cầu đăng nhập</h2>
           <p class="text-secondary mb-4">
-            Bảng thống kê và cài đặt học tập SRS gắn liền với tài khoản học viên cá nhân. Vui lòng đăng nhập để xem và quản lý cấu hình.
+            Bảng thống kê học tập SRS gắn liền với tài khoản học viên cá nhân. Vui lòng đăng nhập để xem tiến trình học tập.
           </p>
           <a href="login.html?redirect=srs-dashboard.html" id="btnDashboardLoginRedirect" class="btn-chinese-primary py-2 px-4 text-decoration-none">
             Đăng nhập ngay
@@ -131,7 +135,7 @@
       <!-- State 4: Loaded Content Dashboard Section -->
       <section id="dashboardContentSection" class="d-none">
 
-        <!-- 5 Authoritative Study Statistics Cards -->
+        <!-- Authoritative Study Statistics Cards -->
         <section class="mb-4" aria-labelledby="statsSectionHeading">
           <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
             <h2 id="statsSectionHeading" class="h5 fw-bold mb-0">Thống kê học tập hôm nay</h2>
@@ -159,13 +163,7 @@
                 <span class="srs-metric-icon" aria-hidden="true">📝</span>
               </div>
               <div class="srs-metric-value" id="statReviewsToday">-</div>
-              <div class="srs-metric-meta d-flex justify-content-between align-items-center">
-                <span>Hạn mức:</span>
-                <span class="fw-semibold" id="statReviewsQuotaText">- / -</span>
-              </div>
-              <div class="srs-progress-track" aria-hidden="true">
-                <div class="srs-progress-fill srs-progress-fill-review" id="statReviewsProgressBar" style="width: 0%;"></div>
-              </div>
+              <div class="srs-metric-meta">Lượt ôn tập đã hoàn thành</div>
             </div>
 
             <!-- 3. New Cards Today -->
@@ -193,67 +191,25 @@
               <div class="srs-metric-value" id="statNewCardsLimit">-</div>
               <div class="srs-metric-meta">Thẻ mới tối đa / ngày</div>
             </div>
-
-            <!-- 5. Max Review Limit -->
-            <div class="srs-metric-card srs-metric-limit-review" id="cardMaxReviewLimit">
-              <div class="srs-metric-header">
-                <span class="srs-metric-title">Hạn mức ôn tập</span>
-                <span class="srs-metric-icon" aria-hidden="true">⚡</span>
-              </div>
-              <div class="srs-metric-value" id="statMaxReviewLimit">-</div>
-              <div class="srs-metric-meta">Lượt ôn tối đa / ngày</div>
-            </div>
           </div>
         </section>
 
-        <!-- Personal Daily SRS Settings Section -->
-        <section class="srs-settings-card" aria-labelledby="settingsSectionHeading">
-          <div class="mb-4">
-            <h2 id="settingsSectionHeading" class="h5 fw-bold mb-1">Cài đặt học tập SRS hàng ngày</h2>
-            <p class="text-secondary small mb-0">
-              Tùy chỉnh số lượng thẻ mới muốn học và số lượt ôn tập tối đa mỗi ngày. Sau khi cập nhật, hạn mức mới sẽ được áp dụng ngay lập tức trên các phiên ôn tập.
-            </p>
+        <!-- Link to Profile SRS Settings -->
+        <div class="p-4 rounded-3 border bg-light d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mt-4" id="srsSettingsRedirectCard">
+          <div>
+            <div class="fw-semibold text-dark mb-1 d-flex align-items-center gap-2">
+              <span aria-hidden="true">⚙️</span>
+              <span>Cài đặt số lượng thẻ mới hàng ngày</span>
+            </div>
+            <div class="text-secondary small">
+              Tùy chỉnh số lượng thẻ mới nạp vào ôn tập mỗi ngày (newCardsPerDay) đã được chuyển về trang Hồ sơ cá nhân.
+            </div>
           </div>
-
-          <form id="srsSettingsForm" novalidate>
-            <div class="row g-3 mb-4">
-              <!-- newCardsPerDay -->
-              <div class="col-md-6">
-                <label for="newCardsPerDayInput" class="form-label fw-semibold text-dark">
-                  Thẻ mới mỗi ngày (newCardsPerDay) <span class="text-danger" aria-hidden="true">*</span>
-                </label>
-                <input type="number" id="newCardsPerDayInput" name="newCardsPerDay" class="form-control" min="1" step="1" inputmode="numeric" required aria-describedby="newCardsPerDayHelp newCardsPerDayError">
-                <div id="newCardsPerDayHelp" class="form-text text-secondary small">
-                  Số thẻ mới tối đa nạp vào ôn tập mỗi ngày (số nguyên dương &gt; 0).
-                </div>
-                <div id="newCardsPerDayError" class="srs-field-error" aria-live="polite"></div>
-              </div>
-
-              <!-- maxReviewPerDay -->
-              <div class="col-md-6">
-                <label for="maxReviewPerDayInput" class="form-label fw-semibold text-dark">
-                  Lượt ôn tập tối đa mỗi ngày (maxReviewPerDay) <span class="text-danger" aria-hidden="true">*</span>
-                </label>
-                <input type="number" id="maxReviewPerDayInput" name="maxReviewPerDay" class="form-control" min="1" step="1" inputmode="numeric" required aria-describedby="maxReviewPerDayHelp maxReviewPerDayError">
-                <div id="maxReviewPerDayHelp" class="form-text text-secondary small">
-                  Số lượt ôn tập thẻ tối đa cho phép mỗi ngày (số nguyên dương &gt; 0).
-                </div>
-                <div id="maxReviewPerDayError" class="srs-field-error" aria-live="polite"></div>
-              </div>
-            </div>
-
-            <!-- Form Actions & Status -->
-            <div class="d-flex align-items-center gap-3 flex-wrap">
-              <button type="submit" id="btnSaveSettings" class="btn-chinese-primary py-2 px-4">
-                Lưu thay đổi
-              </button>
-              <button type="button" id="btnResetSettings" class="btn-chinese-secondary py-2 px-3">
-                Khôi phục giá trị
-              </button>
-              <div id="settingsFormStatus" class="small" role="status" aria-live="polite"></div>
-            </div>
-          </form>
-        </section>
+          <a href="profile.html#srs-settings" id="btnGoToProfileSettings" class="btn-chinese-secondary py-2 px-3 text-nowrap text-decoration-none d-inline-flex align-items-center gap-1">
+            <span>Cài đặt SRS trong Hồ sơ</span>
+            <span aria-hidden="true">&rarr;</span>
+          </a>
+        </div>
 
       </section>
 

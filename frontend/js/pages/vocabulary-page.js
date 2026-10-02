@@ -21,8 +21,11 @@
 import { apiClient, ApiError } from '../api/api.js';
 import { initNavbarAuth } from '../ui/nav.js';
 import { createSafeElement, clearContainer, sanitizeResourceUrl, sanitizeNavigationUrl } from '../ui/security.js';
-import { setComponentState, showToast } from '../ui/ui.js';
+import { setComponentState, showToast, createSpeakerIcon, createSpeechButton } from '../ui/ui.js';
 import { openNotesModal } from '../ui/notes-modal.js';
+import { speechController, speakHanzi, isSpeechSynthesisAvailable, SpeechState } from '../ui/speech.js';
+
+export { createSpeakerIcon, createSpeechButton, speechController, speakHanzi, isSpeechSynthesisAvailable, SpeechState };
 
 /* -----------------------------------------------------------------------------
  * 1. PURE LOGIC & UTILITY HELPERS (Exported for Testability)
@@ -94,117 +97,8 @@ export function calculatePagination(totalElements, pageIndex, pageSize, maxButto
   };
 }
 
-/**
- * Feature-detects Web Speech API SpeechSynthesis availability in current environment.
- * 
- * @returns {boolean}
- */
-export function isSpeechSynthesisAvailable() {
-  return typeof window !== 'undefined' &&
-    'speechSynthesis' in window &&
-    'SpeechSynthesisUtterance' in window &&
-    typeof window.speechSynthesis?.speak === 'function';
-}
-
-/**
- * Synthesizes Chinese Mandarin pronunciation of given Hanzi text.
- * Gracefully handles missing voices or unsupported environments without throwing.
- * 
- * @param {string} text - Chinese character(s) to pronounce
- * @param {Object} [options]
- * @param {string} [options.lang='zh-CN'] - Language BCP-47 tag
- * @param {number} [options.rate=0.85] - Speech rate (slightly slower for learners)
- * @returns {boolean} true if utterance was dispatched, false otherwise
- */
-export function speakHanzi(text, { lang = 'zh-CN', rate = 0.85 } = {}) {
-  if (!text || typeof text !== 'string' || !text.trim()) {
-    return false;
-  }
-
-  if (!isSpeechSynthesisAvailable()) {
-    if (typeof document !== 'undefined') {
-      showToast({
-        type: 'info',
-        title: 'Phát âm không khả dụng',
-        message: 'Trình duyệt hiện tại không hỗ trợ Web Speech API.'
-      });
-    }
-    return false;
-  }
-
-  try {
-    // 1. Cancel previous pending speech to avoid Chromium queue lock
-    window.speechSynthesis.cancel();
-
-    // 2. Create and configure utterance
-    const utterance = new SpeechSynthesisUtterance(text.trim());
-    utterance.lang = lang;
-    utterance.rate = rate;
-
-    // 3. Try selecting a native Chinese voice if available
-    const voices = window.speechSynthesis.getVoices?.() || [];
-    const chineseVoice = voices.find(v => v && v.lang && (v.lang.startsWith('zh') || v.lang.startsWith('cmn')));
-    if (chineseVoice) {
-      utterance.voice = chineseVoice;
-    }
-
-    // 4. Non-fatal error listener
-    utterance.onerror = (e) => {
-      // Error code 'canceled' is expected on rapid clicks
-      if (e.error !== 'canceled') {
-        console.warn('[SpeechSynthesis] Utterance error:', e.error);
-        if (typeof document !== 'undefined') {
-          showToast({
-            type: 'info',
-            title: 'Phát âm tự động',
-            message: 'Không thể phát âm thanh trên thiết bị này.'
-          });
-        }
-      }
-    };
-
-    window.speechSynthesis.speak(utterance);
-    return true;
-  } catch (err) {
-    console.warn('[SpeechSynthesis] Speech dispatch failed:', err);
-    if (typeof document !== 'undefined') {
-      showToast({
-        type: 'warning',
-        title: 'Lỗi phát âm',
-        message: 'Không thể khởi động bộ phát âm trên trình duyệt.'
-      });
-    }
-    return false;
-  }
-}
-
-/**
- * Safely creates an SVG speaker icon element via createElementNS (Zero unsafe innerHTML).
- * 
- * @returns {SVGElement}
- */
-export function createSpeakerIcon() {
-  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-  svg.setAttribute('width', '16');
-  svg.setAttribute('height', '16');
-  svg.setAttribute('viewBox', '0 0 24 24');
-  svg.setAttribute('fill', 'none');
-  svg.setAttribute('stroke', 'currentColor');
-  svg.setAttribute('stroke-width', '2');
-  svg.setAttribute('stroke-linecap', 'round');
-  svg.setAttribute('stroke-linejoin', 'round');
-  svg.setAttribute('aria-hidden', 'true');
-
-  const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
-  polygon.setAttribute('points', '11 5 6 9 2 9 2 15 6 15 11 19 11 5');
-
-  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-  path.setAttribute('d', 'M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07');
-
-  svg.appendChild(polygon);
-  svg.appendChild(path);
-  return svg;
-}
+// SpeechSynthesis functions (isSpeechSynthesisAvailable, speakHanzi) are imported and
+// re-exported from ../ui/speech.js with centralized anti-spam and lifecycle locking.
 
 /* -----------------------------------------------------------------------------
  * 2. VOCABULARY PAGE CONTROLLER CLASS
@@ -217,6 +111,7 @@ export class VocabularyPageController {
     this.pageSize = 20; // Default matching backend resolveEffectivePageable
     this.activeSearchQuery = '';
     this.activeTriggerEl = null;
+    this.selectedHsk = 1; // HSK Level: 1 | 2 | 3
 
     // Asynchronous Request Management & Stale Response Protection
     this.latestRequestId = 0;
@@ -240,6 +135,23 @@ export class VocabularyPageController {
   init() {
     this.bindDomElements();
     this.bindEvents();
+
+    // Deep-linking: Seed initial HSK tab if present (?hsk=1|2|3 or #hsk1|#hsk2|#hsk3)
+    let initialHsk = 1;
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search || '');
+      const hskParam = Number(urlParams.get('hsk'));
+      const hash = (window.location.hash || '').toLowerCase();
+      if ([1, 2, 3].includes(hskParam)) {
+        initialHsk = hskParam;
+      } else if (hash === '#hsk2' || hash === '#2') {
+        initialHsk = 2;
+      } else if (hash === '#hsk3' || hash === '#3') {
+        initialHsk = 3;
+      }
+    }
+    this.selectedHsk = initialHsk;
+    this.updateHskTabUi(this.selectedHsk);
 
     // Initialize session-aware navigation bar
     initNavbarAuth('navAuthContainer');
@@ -277,6 +189,15 @@ export class VocabularyPageController {
       searchClearBtn: document.getElementById('searchClearBtn'),
       pageSizeSelect: document.getElementById('pageSizeSelect'),
       resultCount: document.getElementById('vocabResultCount'),
+
+      // HSK Level Tabs & Dynamic Category Header
+      tabHsk1: document.getElementById('tabHsk1'),
+      tabHsk2: document.getElementById('tabHsk2'),
+      tabHsk3: document.getElementById('tabHsk3'),
+      vocabCategoryBadge: document.getElementById('vocabCategoryBadge'),
+      vocabPageHeading: document.getElementById('vocabPageHeading'),
+      vocabPageSubheading: document.getElementById('vocabPageSubheading'),
+
       modal: document.getElementById('vocabDetailModal'),
       modalCloseBtn: document.getElementById('modalCloseBtn'),
       modalDismissBtn: document.getElementById('modalDismissBtn'),
@@ -395,7 +316,7 @@ export class VocabularyPageController {
     if (this.elements.modalSpeechBtn) {
       this.elements.modalSpeechBtn.addEventListener('click', () => {
         if (this.currentModalVocab?.hanzi) {
-          speakHanzi(this.currentModalVocab.hanzi);
+          speakHanzi(this.currentModalVocab.hanzi, { button: this.elements.modalSpeechBtn });
         }
       });
     }
@@ -414,6 +335,138 @@ export class VocabularyPageController {
         }
       });
     }
+
+    // 8. HSK Level Tabs Binding & APG Keyboard Navigation
+    const hskTabs = [
+      { el: this.elements.tabHsk1, level: 1 },
+      { el: this.elements.tabHsk2, level: 2 },
+      { el: this.elements.tabHsk3, level: 3 }
+    ].filter(item => item.el);
+
+    hskTabs.forEach(({ el, level }, index) => {
+      el.addEventListener('click', () => {
+        this.switchHsk(level);
+      });
+
+      el.addEventListener('keydown', (e) => {
+        let targetIndex = -1;
+        if (e.key === 'ArrowRight') {
+          targetIndex = (index + 1) % hskTabs.length;
+        } else if (e.key === 'ArrowLeft') {
+          targetIndex = (index - 1 + hskTabs.length) % hskTabs.length;
+        } else if (e.key === 'Home') {
+          targetIndex = 0;
+        } else if (e.key === 'End') {
+          targetIndex = hskTabs.length - 1;
+        }
+
+        if (targetIndex >= 0) {
+          e.preventDefault();
+          this.switchHsk(hskTabs[targetIndex].level, true);
+        }
+      });
+    });
+  }
+
+  /**
+   * Updates HSK tab styling, aria attributes, and headings without triggering reload.
+   * 
+   * @param {number} level 
+   * @param {boolean} [focus=false] 
+   */
+  updateHskTabUi(level, focus = false) {
+    const tabs = [
+      { el: this.elements.tabHsk1, level: 1 },
+      { el: this.elements.tabHsk2, level: 2 },
+      { el: this.elements.tabHsk3, level: 3 }
+    ];
+
+    tabs.forEach(({ el, level: tabLevel }) => {
+      if (!el) return;
+      const isActive = tabLevel === level;
+      el.setAttribute('aria-selected', isActive ? 'true' : 'false');
+      el.setAttribute('tabindex', isActive ? '0' : '-1');
+      el.classList.toggle('active', isActive);
+      if (isActive && focus) {
+        el.focus();
+      }
+    });
+
+    const HSK_INFO = {
+      1: {
+        badge: 'Từ Vựng HSK 1',
+        heading: 'Từ Vựng Tiếng Trung HSK 1',
+        subheading: 'Danh mục từ vựng tiếng Trung cấp độ HSK 1 căn bản với chữ Hán chuẩn mực, phiên âm Pinyin có thanh điệu, giải nghĩa Hán-Việt và câu ví dụ sinh động.'
+      },
+      2: {
+        badge: 'Từ Vựng HSK 2',
+        heading: 'Từ Vựng Tiếng Trung HSK 2',
+        subheading: 'Danh mục từ vựng tiếng Trung cấp độ HSK 2 sơ cấp, mở rộng vốn từ giao tiếp thường nhật và cấu trúc ngữ pháp cơ bản.'
+      },
+      3: {
+        badge: 'Từ Vựng HSK 3',
+        heading: 'Từ Vựng Tiếng Trung HSK 3',
+        subheading: 'Danh mục từ vựng tiếng Trung cấp độ HSK 3 trung cấp, củng cố kỹ năng diễn đạt học thuật và đời sống phong phú.'
+      }
+    };
+
+    const info = HSK_INFO[level] || HSK_INFO[1];
+    if (this.elements.vocabCategoryBadge) {
+      this.elements.vocabCategoryBadge.textContent = info.badge;
+    }
+    if (this.elements.vocabPageHeading) {
+      this.elements.vocabPageHeading.textContent = info.heading;
+    }
+    if (this.elements.vocabPageSubheading) {
+      this.elements.vocabPageSubheading.textContent = info.subheading;
+    }
+  }
+
+  /**
+   * Switches the active HSK level tab, updates URL query, and reloads catalog.
+   * 
+   * @param {number} level 
+   * @param {boolean} [focus=false] 
+   */
+  switchHsk(level, focus = false) {
+    const validLevel = [1, 2, 3].includes(Number(level)) ? Number(level) : 1;
+    if (validLevel === this.selectedHsk) {
+      if (focus) {
+        const tabEl = this.elements[`tabHsk${validLevel}`];
+        if (tabEl) tabEl.focus();
+      }
+      return;
+    }
+
+    this.selectedHsk = validLevel;
+    this.updateHskTabUi(validLevel, focus);
+
+    // Deep link synchronization via history.replaceState
+    if (typeof window !== 'undefined' && window.history && typeof window.history.replaceState === 'function') {
+      try {
+        const url = new URL(window.location.href);
+        url.searchParams.set('hsk', String(validLevel));
+        window.history.replaceState({}, '', url.toString());
+      } catch {
+        // Fallback for non-standard environments
+      }
+    }
+
+    // Reset pagination to first page
+    this.currentPage = 0;
+
+    // Clear search keyword when changing HSK level so user sees the catalog
+    if (this.activeSearchQuery.trim().length > 0) {
+      this.activeSearchQuery = '';
+      if (this.elements.searchInput) {
+        this.elements.searchInput.value = '';
+      }
+      if (this.elements.searchClearBtn) {
+        this.elements.searchClearBtn.classList.add('d-none');
+      }
+    }
+
+    this.loadCatalog();
   }
 
   /**
@@ -509,6 +562,9 @@ export class VocabularyPageController {
         page: this.currentPage,
         size: this.pageSize
       };
+      if (this.selectedHsk) {
+        params.hsk = this.selectedHsk;
+      }
       if (isSearching) {
         params.search = this.activeSearchQuery;
       }
@@ -545,10 +601,19 @@ export class VocabularyPageController {
             onAction: () => this.handleClearSearch()
           });
         } else {
+          let emptyTitle = 'Danh mục trống';
+          let emptyDesc = 'Hiện chưa có dữ liệu từ vựng nào trong hệ thống.';
+          if (this.selectedHsk === 2) {
+            emptyTitle = 'Chưa có dữ liệu từ vựng HSK 2';
+            emptyDesc = 'Hiện chưa có dữ liệu từ vựng cho cấp độ HSK 2 trong hệ thống. Dữ liệu đang được biên soạn theo chuẩn HSK 3.0.';
+          } else if (this.selectedHsk === 3) {
+            emptyTitle = 'Chưa có dữ liệu từ vựng HSK 3';
+            emptyDesc = 'Hiện chưa có dữ liệu từ vựng cho cấp độ HSK 3 trong hệ thống. Dữ liệu đang được biên soạn theo chuẩn HSK 3.0.';
+          }
           setComponentState(this.elements.stateContainer, 'EMPTY', {
             glyph: '空',
-            title: 'Danh mục trống',
-            description: 'Hiện chưa có dữ liệu từ vựng nào trong hệ thống.'
+            title: emptyTitle,
+            description: emptyDesc
           });
         }
 
@@ -701,7 +766,7 @@ export class VocabularyPageController {
       speechBtn.addEventListener('click', (e) => {
         e.stopPropagation(); // Do not trigger card detail opening
         if (vocab.hanzi) {
-          speakHanzi(vocab.hanzi);
+          speakHanzi(vocab.hanzi, { button: speechBtn });
         }
       });
 
@@ -784,7 +849,28 @@ export class VocabularyPageController {
       attrs: { role: 'group', 'aria-label': 'Điều khiển chuyển trang từ vựng' }
     });
 
-    // Previous Button
+    // 1. First Page Button (<<)
+    const firstBtn = createSafeElement('button', {
+      className: 'pagination-btn',
+      attrs: {
+        type: 'button',
+        'aria-label': 'Trang đầu',
+        id: 'vocabPaginationFirstBtn'
+      },
+      text: '«'
+    });
+    if (pag.pageIndex === 0) {
+      firstBtn.setAttribute('disabled', 'true');
+      firstBtn.disabled = true;
+    } else {
+      firstBtn.addEventListener('click', () => {
+        this.currentPage = 0;
+        this.loadCatalog();
+      });
+    }
+    controls.appendChild(firstBtn);
+
+    // 2. Previous Button (<)
     const prevBtn = createSafeElement('button', {
       className: 'pagination-btn',
       attrs: {
@@ -796,6 +882,7 @@ export class VocabularyPageController {
     });
     if (pag.pageIndex === 0) {
       prevBtn.setAttribute('disabled', 'true');
+      prevBtn.disabled = true;
     } else {
       prevBtn.addEventListener('click', () => {
         this.currentPage = pag.pageIndex - 1;
@@ -804,7 +891,7 @@ export class VocabularyPageController {
     }
     controls.appendChild(prevBtn);
 
-    // Numbered Buttons (Smart Window)
+    // 3. Numbered Buttons (Smart Window)
     for (let p = pag.startPage; p <= pag.endPage; p++) {
       const pageBtn = createSafeElement('button', {
         className: `pagination-btn ${p === pag.pageIndex ? 'active' : ''}`,
@@ -827,7 +914,7 @@ export class VocabularyPageController {
       controls.appendChild(pageBtn);
     }
 
-    // Next Button
+    // 4. Next Button (>)
     const nextBtn = createSafeElement('button', {
       className: 'pagination-btn',
       attrs: {
@@ -839,6 +926,7 @@ export class VocabularyPageController {
     });
     if (pag.pageIndex >= pag.totalPages - 1) {
       nextBtn.setAttribute('disabled', 'true');
+      nextBtn.disabled = true;
     } else {
       nextBtn.addEventListener('click', () => {
         this.currentPage = pag.pageIndex + 1;
@@ -846,6 +934,27 @@ export class VocabularyPageController {
       });
     }
     controls.appendChild(nextBtn);
+
+    // 5. Last Page Button (>>)
+    const lastBtn = createSafeElement('button', {
+      className: 'pagination-btn',
+      attrs: {
+        type: 'button',
+        'aria-label': 'Trang cuối',
+        id: 'vocabPaginationLastBtn'
+      },
+      text: '»'
+    });
+    if (pag.pageIndex >= pag.totalPages - 1) {
+      lastBtn.setAttribute('disabled', 'true');
+      lastBtn.disabled = true;
+    } else {
+      lastBtn.addEventListener('click', () => {
+        this.currentPage = pag.totalPages - 1;
+        this.loadCatalog();
+      });
+    }
+    controls.appendChild(lastBtn);
 
     this.elements.pagination.appendChild(summary);
     this.elements.pagination.appendChild(controls);
@@ -1138,10 +1247,8 @@ export class VocabularyPageController {
       this.elements.modalAudioPlayer.pause();
     }
 
-    // Cancel any active speech
-    if (isSpeechSynthesisAvailable()) {
-      window.speechSynthesis.cancel();
-    }
+    // Cancel any active speech and release button state
+    speechController.cancel();
 
     // Close modal
     if (typeof this.elements.modal.close === 'function') {

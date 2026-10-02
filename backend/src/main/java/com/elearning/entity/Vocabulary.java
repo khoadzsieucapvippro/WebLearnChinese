@@ -48,6 +48,12 @@ public class Vocabulary {
     @Column(name = "meaning_vi", nullable = false, length = 255)
     private String meaningVi;
 
+    @Column(name = "hsk_level", columnDefinition = "TINYINT UNSIGNED")
+    private Integer hskLevel;
+
+    @Column(name = "hsk_standard", length = 20)
+    private String hskStandard = "HSK 3.0";
+
     @Column(name = "audio_url", length = 500)
     private String audioUrl;
 
@@ -161,6 +167,22 @@ public class Vocabulary {
 
     public void setMeaningVi(String meaningVi) {
         this.meaningVi = meaningVi;
+    }
+
+    public Integer getHskLevel() {
+        return hskLevel;
+    }
+
+    public void setHskLevel(Integer hskLevel) {
+        this.hskLevel = hskLevel;
+    }
+
+    public String getHskStandard() {
+        return hskStandard;
+    }
+
+    public void setHskStandard(String hskStandard) {
+        this.hskStandard = hskStandard;
     }
 
     public String getAudioUrl() {

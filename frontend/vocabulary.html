@@ -45,10 +45,10 @@
               <a class="nav-link-custom" href="index.html">Trang chủ</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link-custom" href="radicals.html">214 Bộ thủ</a>
+              <a class="nav-link-custom" href="radicals.html">Bộ thủ</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link-custom active" href="vocabulary.html" aria-current="page">Từ vựng</a>
+              <a class="nav-link-custom active" href="vocabulary.html">Từ vựng</a>
             </li>
             <li class="nav-item">
               <a class="nav-link-custom" href="lessons.html">Bài học</a>
@@ -80,16 +80,16 @@
       <div class="mb-4">
         <div class="d-flex align-items-center gap-2 mb-1">
           <span class="brand-seal-mark" aria-hidden="true" style="width: 28px; height: 28px; font-size: 0.95rem;">词</span>
-          <span class="text-secondary small fw-semibold text-uppercase" style="letter-spacing: 0.05em;">Danh Mục Từ Vựng</span>
+          <span class="text-secondary small fw-semibold text-uppercase" id="vocabCategoryBadge" style="letter-spacing: 0.05em;">Từ Vựng HSK 1</span>
         </div>
-        <h1 class="h2 fw-bold text-dark mb-2" id="vocabPageHeading">Tra Cứu &amp; Học Từ Vựng Tiếng Trung</h1>
-        <p class="text-secondary mb-0" style="max-width: 50rem;">
-          Khám phá kho từ vựng tiếng Trung phong phú với chữ Hán chuẩn mực, phiên âm Pinyin có thanh điệu, giải nghĩa Hán-Việt, cấu trúc bộ thủ cấu thành và câu ví dụ ngữ cảnh sinh động.
+        <h1 class="h2 fw-bold text-dark mb-2" id="vocabPageHeading">Từ Vựng Tiếng Trung HSK 1</h1>
+        <p class="text-secondary mb-0" id="vocabPageSubheading" style="max-width: 50rem;">
+          Danh mục từ vựng tiếng Trung cấp độ HSK 1 căn bản với chữ Hán chuẩn mực, phiên âm Pinyin có thanh điệu, giải nghĩa Hán-Việt và câu ví dụ sinh động.
         </p>
       </div>
 
       <!-- Catalog Search & Filter Toolbar -->
-      <section class="catalog-toolbar" aria-label="Bộ lọc và tìm kiếm từ vựng">
+      <section class="catalog-toolbar mb-4" aria-label="Bộ lọc và tìm kiếm từ vựng">
         <div class="row g-3 align-items-center">
           <!-- Search input -->
           <div class="col-12 col-md-7 col-lg-8">
@@ -131,6 +131,46 @@
           </div>
         </div>
       </section>
+
+      <!-- HSK Level Tabs (Matching Radical Categories pattern) -->
+      <div class="vocab-tabs-wrapper mb-4" role="tablist" aria-label="Phân cấp độ từ vựng HSK">
+        <button 
+          type="button" 
+          role="tab" 
+          id="tabHsk1" 
+          aria-selected="true" 
+          aria-controls="vocabGrid" 
+          tabindex="0"
+          class="vocab-tab-btn active"
+          data-hsk="1"
+        >
+          HSK 1
+        </button>
+        <button 
+          type="button" 
+          role="tab" 
+          id="tabHsk2" 
+          aria-selected="false" 
+          aria-controls="vocabGrid" 
+          tabindex="-1"
+          class="vocab-tab-btn"
+          data-hsk="2"
+        >
+          HSK 2
+        </button>
+        <button 
+          type="button" 
+          role="tab" 
+          id="tabHsk3" 
+          aria-selected="false" 
+          aria-controls="vocabGrid" 
+          tabindex="-1"
+          class="vocab-tab-btn"
+          data-hsk="3"
+        >
+          HSK 3
+        </button>
+      </div>
 
       <!-- 3-State UI Container (Loading / Empty / Error + Retry) -->
       <div id="vocabStateContainer" class="mb-4"></div>

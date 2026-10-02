@@ -169,23 +169,8 @@ public class SrsServiceImpl implements SrsService {
     public List<DueCardResponse> getDueCards(String itemTypeFilter, Integer limit) {
         UserProfile user = resolveCurrentUserProfile();
 
-        // 1. Resolve daily limits
-        UserSrsSetting setting = userSrsSettingRepository.findByUser(user).orElse(null);
-        int maxReviewPerDay = setting != null ? setting.getMaxReviewPerDay() : 100;
-
-        // 2. Count today's completed reviews
-        LocalDateTime startOfDay = LocalDate.now(businessClock).atStartOfDay();
-        long reviewsToday = reviewLogRepository.countByUserAndReviewedAtGreaterThanEqual(user, startOfDay);
-        int remainingQuota = (int) Math.max(0, maxReviewPerDay - reviewsToday);
-
-        if (remainingQuota == 0) {
-            log.info("Learner user_id={} has reached daily review limit ({}/{})", user.getUserId(), reviewsToday, maxReviewPerDay);
-            return Collections.emptyList();
-        }
-
-        // 3. Apply limit
-        int effectiveLimit = (limit != null && limit > 0) ? Math.min(limit, remainingQuota) : remainingQuota;
-        Pageable pageable = PageRequest.of(0, effectiveLimit);
+        // Apply query limit if provided, otherwise unpaged (maxReviewPerDay no longer restricts reviews)
+        Pageable pageable = (limit != null && limit > 0) ? PageRequest.of(0, limit) : Pageable.unpaged();
         LocalDateTime now = LocalDateTime.now(businessClock);
 
         // 4. Query due card progress
@@ -345,17 +330,9 @@ public class SrsServiceImpl implements SrsService {
         // 5. Resolve user profile with pessimistic lock to serialize quota-consuming reviews for this user (BE-CONC-002)
         UserProfile user = resolveCurrentUserProfileWithLock();
 
-        // 6. Authoritative daily review quota enforcement (BE-CONC-002)
+        // 6. Resolve user SRS settings and business calendar for new-card quota enforcement
         UserSrsSetting setting = userSrsSettingRepository.findByUser(user).orElse(null);
-        int maxReviewPerDay = setting != null ? setting.getMaxReviewPerDay() : 100;
-
         LocalDateTime startOfDay = LocalDate.now(businessClock).atStartOfDay();
-        List<Long> todayLogIds = reviewLogRepository.findTodayLogIdsWithLock(user, startOfDay);
-        int reviewsToday = todayLogIds.size();
-        if (reviewsToday >= maxReviewPerDay) {
-            log.warn("Learner user_id={} has reached daily review limit ({}/{})", user.getUserId(), reviewsToday, maxReviewPerDay);
-            throw new BusinessException(ErrorCode.CONFLICT, "Bạn đã đạt giới hạn ôn tập tối đa trong ngày (" + maxReviewPerDay + " thẻ)");
-        }
 
         // 7. Load existing progress or initialize new card progress (protected by @Version optimistic locking)
         Optional<CardProgress> optProgress = cardProgressRepository.findByUserAndItemTypeAndItemId(user, itemTypeUpper, request.getItemId());
@@ -466,7 +443,7 @@ public class SrsServiceImpl implements SrsService {
         int maxReviewLimit = setting != null ? setting.getMaxReviewPerDay() : 100;
 
         LocalDateTime now = LocalDateTime.now(businessClock);
-        long cardsDue = cardProgressRepository.countByUserAndNextReviewAtLessThanEqual(user, now);
+        long cardsDue = cardProgressRepository.countByUserAndItemTypeAndNextReviewAtLessThanEqual(user, "VOCABULARY", now);
 
         LocalDateTime startOfDay = LocalDate.now(businessClock).atStartOfDay();
         long reviewsToday = reviewLogRepository.countByUserAndReviewedAtGreaterThanEqual(user, startOfDay);

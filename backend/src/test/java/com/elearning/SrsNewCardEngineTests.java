@@ -266,7 +266,6 @@ class SrsNewCardEngineTests {
             when(vocabularyRepository.findByIdWithLock(1L)).thenReturn(Optional.of(vocab1));
             when(lessonVocabularyRepository.existsApprovedLessonForVocabulary(1L)).thenReturn(true);
             when(userSrsSettingRepository.findByUser(testUser)).thenReturn(Optional.of(userSetting));
-            when(reviewLogRepository.findTodayLogIdsWithLock(eq(testUser), any(LocalDateTime.class))).thenReturn(Collections.emptyList());
             when(cardProgressRepository.findByUserAndItemTypeAndItemId(testUser, "VOCABULARY", 1L)).thenReturn(Optional.empty());
             when(reviewLogRepository.findTodayReviewLogsWithLock(eq(testUser), any(LocalDateTime.class))).thenReturn(Collections.emptyList());
 
@@ -296,7 +295,6 @@ class SrsNewCardEngineTests {
             when(vocabularyRepository.findByIdWithLock(1L)).thenReturn(Optional.of(vocab1));
             when(lessonVocabularyRepository.existsApprovedLessonForVocabulary(1L)).thenReturn(true);
             when(userSrsSettingRepository.findByUser(testUser)).thenReturn(Optional.of(userSetting));
-            when(reviewLogRepository.findTodayLogIdsWithLock(eq(testUser), any(LocalDateTime.class))).thenReturn(List.of(1L, 2L, 3L));
             when(cardProgressRepository.findByUserAndItemTypeAndItemId(testUser, "VOCABULARY", 1L)).thenReturn(Optional.empty());
 
             // Build 10 distinct review logs for today
@@ -330,7 +328,6 @@ class SrsNewCardEngineTests {
             when(userProfileRepository.findByAccountEmailOrPhoneWithLock("learner@test.com")).thenReturn(Optional.of(testUser));
             when(vocabularyRepository.findByIdWithLock(1L)).thenReturn(Optional.of(vocab1));
             when(userSrsSettingRepository.findByUser(testUser)).thenReturn(Optional.of(userSetting));
-            when(reviewLogRepository.findTodayLogIdsWithLock(eq(testUser), any(LocalDateTime.class))).thenReturn(List.of(1L, 2L));
             when(cardProgressRepository.findByUserAndItemTypeAndItemId(testUser, "VOCABULARY", 1L)).thenReturn(Optional.of(existingProgress));
             when(cardProgressRepository.save(any(CardProgress.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -354,7 +351,7 @@ class SrsNewCardEngineTests {
         void testGetStudyStatsAccurate() {
             when(userProfileRepository.findByAccountEmailOrPhone("learner@test.com")).thenReturn(Optional.of(testUser));
             when(userSrsSettingRepository.findByUser(testUser)).thenReturn(Optional.of(userSetting));
-            when(cardProgressRepository.countByUserAndNextReviewAtLessThanEqual(eq(testUser), any(LocalDateTime.class))).thenReturn(5L);
+            when(cardProgressRepository.countByUserAndItemTypeAndNextReviewAtLessThanEqual(eq(testUser), eq("VOCABULARY"), any(LocalDateTime.class))).thenReturn(5L);
             when(reviewLogRepository.countByUserAndReviewedAtGreaterThanEqual(eq(testUser), any(LocalDateTime.class))).thenReturn(12L);
             when(reviewLogRepository.countNewItemsIntroducedToday(eq(testUser), eq("VOCABULARY"), any(LocalDateTime.class))).thenReturn(4L);
 

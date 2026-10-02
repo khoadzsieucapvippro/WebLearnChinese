@@ -1,15 +1,18 @@
 /**
  * =============================================================================
- * BROWSER E2E TEST: SRS STUDY STATISTICS & DAILY SETTINGS DASHBOARD (TASK 9C.4)
+ * BROWSER E2E TEST: SRS STUDY STATISTICS & PROFILE SETTINGS INTEGRATION
  * File: tests/frontend/e2e/srs-dashboard.browser.mjs
  *
  * Verifies:
  * - SD-01: Anonymous user displays login-required state without calling protected SRS APIs.
- * - SD-02: Authenticated user loads dashboard, displays 5 authoritative statistics & current settings.
- * - SD-03: Client-side validation rejects invalid inputs (0, negative, float, empty) without submitting PUT.
- * - SD-04: Successful settings update submits exact payload and immediately refreshes authoritative statistics.
- * - SD-05: Reset settings button restores original authoritative values.
- * - SD-06: Cross-navigation between SRS Dashboard and SRS Review Room.
+ * - SD-02: Authenticated user loads dashboard, displays authoritative statistics (CardsDue, ReviewsToday, NewCardsToday, NewCardsLimit).
+ *          Verifies maxReviewLimit and reviewsQuotaText are NOT displayed (review quota removed).
+ *          Verifies links to Profile SRS Settings are present.
+ * - SD-03: Cross-navigation between SRS Dashboard, SRS Review Room, and Profile Settings.
+ * - SD-04: Profile Learning Settings tab loads and pre-fills newCardsPerDay without maxReviewPerDay input.
+ * - SD-05: Profile SRS Settings validation rejects invalid inputs (0, negative, decimal, empty) without submitting PUT.
+ * - SD-06: Profile SRS Settings successful update submits clean payload and reflects updated setting.
+ * - SD-07: Profile SRS Settings reset button restores original authoritative values into inputs.
  * =============================================================================
  */
 
@@ -38,6 +41,18 @@ function createMockUserSrsSetting(overrides = {}) {
   };
 }
 
+function createMockUserProfile(overrides = {}) {
+  return {
+    userId: 501,
+    accountId: 1001,
+    fullName: 'Học Viên Dashboard',
+    emailOrPhone: 'srs_dashboard_user@example.com',
+    avatarUrl: null,
+    createdAt: '2026-01-15T08:30:00Z',
+    ...overrides
+  };
+}
+
 async function setupAuthenticatedSession(page) {
   await page.addInitScript(() => {
     localStorage.setItem('access_token', 'test_srs_learner_jwt');
@@ -50,7 +65,7 @@ async function setupAuthenticatedSession(page) {
   });
 }
 
-describe('Browser E2E: SRS Dashboard & Daily Settings (9C.4)', () => {
+describe('Browser E2E: SRS Dashboard & Profile Settings Integration', () => {
   let serverHandle;
   let browser;
   let baseUrl;
@@ -108,8 +123,8 @@ describe('Browser E2E: SRS Dashboard & Daily Settings (9C.4)', () => {
     }
   });
 
-  // SD-02: Authenticated Load & Metric Presentation
-  test('SD-02: Authenticated user loads dashboard, displays 5 authoritative statistics & current settings', async () => {
+  // SD-02: Authenticated Dashboard Metrics & Removal of Review Quota
+  test('SD-02: Authenticated user loads dashboard, displays authoritative stats, without review quota or maxReviewLimit card', async () => {
     const { page, context, getRuntimeErrors } = await createMonitoredPage(browser, {
       viewportWidth: 1280,
       viewportHeight: 720
@@ -119,7 +134,6 @@ describe('Browser E2E: SRS Dashboard & Daily Settings (9C.4)', () => {
       await setupAuthenticatedSession(page);
 
       const mockStats = createMockStudyStats();
-      const mockSettings = createMockUserSrsSetting();
 
       await page.route('**/api/v1/srs/stats', async (route) => {
         await route.fulfill({
@@ -133,7 +147,7 @@ describe('Browser E2E: SRS Dashboard & Daily Settings (9C.4)', () => {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
-          body: JSON.stringify({ code: 'SUCCESS', data: mockSettings })
+          body: JSON.stringify({ code: 'SUCCESS', data: createMockUserSrsSetting() })
         });
       });
 
@@ -142,25 +156,28 @@ describe('Browser E2E: SRS Dashboard & Daily Settings (9C.4)', () => {
       // Content section becomes visible
       await page.locator('#dashboardContentSection').waitFor({ state: 'visible' });
 
-      // 1. Verify 5 authoritative statistics values
+      // 1. Verify authoritative statistics values
       assert.strictEqual(await page.locator('#statCardsDue').textContent(), '8');
       assert.strictEqual(await page.locator('#statReviewsToday').textContent(), '12');
       assert.strictEqual(await page.locator('#statNewCardsToday').textContent(), '5');
       assert.strictEqual(await page.locator('#statNewCardsLimit').textContent(), '20');
-      assert.strictEqual(await page.locator('#statMaxReviewLimit').textContent(), '100');
 
-      // Verify quota text
-      const reviewQuota = await page.locator('#statReviewsQuotaText').textContent();
-      assert.strictEqual(reviewQuota, '12 / 100');
+      // 2. Verify review quota elements are completely removed
+      const hasMaxReviewCard = await page.locator('#cardMaxReviewLimit').count();
+      assert.strictEqual(hasMaxReviewCard, 0, 'cardMaxReviewLimit must be removed from dashboard');
 
+      const hasReviewQuotaText = await page.locator('#statReviewsQuotaText').count();
+      assert.strictEqual(hasReviewQuotaText, 0, 'statReviewsQuotaText must be removed from dashboard');
+
+      // 3. Verify new cards quota text is kept
       const newCardsQuota = await page.locator('#statNewCardsQuotaText').textContent();
       assert.strictEqual(newCardsQuota, '5 / 20');
 
-      // 2. Verify form pre-filled with authoritative settings
-      const newCardsInputVal = await page.locator('#newCardsPerDayInput').inputValue();
-      const maxReviewInputVal = await page.locator('#maxReviewPerDayInput').inputValue();
-      assert.strictEqual(newCardsInputVal, '20');
-      assert.strictEqual(maxReviewInputVal, '100');
+      // 4. Verify link to Profile SRS Settings
+      const profileLink = page.locator('#btnLinkProfileSettings');
+      await profileLink.waitFor({ state: 'visible' });
+      const href = await profileLink.getAttribute('href');
+      assert.ok(href.includes('profile.html#srs-settings'), 'Must link to profile.html#srs-settings');
 
       const errors = getRuntimeErrors();
       assert.strictEqual(errors.length, 0, `Runtime errors during dashboard load:\n${errors.join('\n')}`);
@@ -169,162 +186,8 @@ describe('Browser E2E: SRS Dashboard & Daily Settings (9C.4)', () => {
     }
   });
 
-  // SD-03: Client-side Validation Rejection
-  test('SD-03: Client-side validation rejects invalid inputs (0, negative, decimal, empty) without submitting PUT', async () => {
-    const { page, context, getRuntimeErrors } = await createMonitoredPage(browser, {
-      viewportWidth: 1280,
-      viewportHeight: 720
-    });
-
-    try {
-      await setupAuthenticatedSession(page);
-
-      let putCalled = false;
-      await page.route('**/api/v1/srs/stats', async (route) => {
-        await route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify({ code: 'SUCCESS', data: createMockStudyStats() })
-        });
-      });
-
-      await page.route('**/api/v1/srs/settings', async (route) => {
-        if (route.request().method() === 'PUT') {
-          putCalled = true;
-          await route.fulfill({ status: 500 });
-        } else {
-          await route.fulfill({
-            status: 200,
-            contentType: 'application/json',
-            body: JSON.stringify({ code: 'SUCCESS', data: createMockUserSrsSetting() })
-          });
-        }
-      });
-
-      await page.goto(`${baseUrl}/srs-dashboard.html`, { waitUntil: 'domcontentloaded' });
-      await page.locator('#dashboardContentSection').waitFor({ state: 'visible' });
-
-      // Test 1: Zero value rejection
-      await page.locator('#newCardsPerDayInput').fill('0');
-      await page.locator('#maxReviewPerDayInput').fill('-10');
-      await page.locator('#btnSaveSettings').click();
-
-      assert.strictEqual(putCalled, false, 'PUT must not be called when input is 0 or negative');
-      const errNew = await page.locator('#newCardsPerDayError').textContent();
-      const errMax = await page.locator('#maxReviewPerDayError').textContent();
-      assert.ok(errNew.includes('lớn hơn 0'), `Expected positive integer error, got "${errNew}"`);
-      assert.ok(errMax.includes('lớn hơn 0'), `Expected positive integer error, got "${errMax}"`);
-
-      // Test 2: Empty value rejection
-      await page.locator('#newCardsPerDayInput').fill('');
-      await page.locator('#btnSaveSettings').click();
-      assert.strictEqual(putCalled, false, 'PUT must not be called when input is empty');
-      const errEmpty = await page.locator('#newCardsPerDayError').textContent();
-      assert.ok(errEmpty.includes('không được để trống'), `Expected empty error, got "${errEmpty}"`);
-
-      const errors = getRuntimeErrors();
-      assert.strictEqual(errors.length, 0, `Runtime errors during validation test:\n${errors.join('\n')}`);
-    } finally {
-      await context.close();
-    }
-  });
-
-  // SD-04: Successful Update & Immediate Authoritative Refresh
-  test('SD-04: Successful settings update submits exact payload and immediately refreshes authoritative statistics', async () => {
-    const { page, context, getRuntimeErrors } = await createMonitoredPage(browser, {
-      viewportWidth: 1280,
-      viewportHeight: 720
-    });
-
-    try {
-      await setupAuthenticatedSession(page);
-
-      let currentStats = createMockStudyStats({ newCardsLimit: 20, maxReviewLimit: 100 });
-      let currentSettings = createMockUserSrsSetting({ newCardsPerDay: 20, maxReviewPerDay: 100 });
-      let putPayload = null;
-
-      await page.route('**/api/v1/srs/stats', async (route) => {
-        await route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify({ code: 'SUCCESS', data: currentStats })
-        });
-      });
-
-      await page.route('**/api/v1/srs/settings', async (route) => {
-        if (route.request().method() === 'PUT') {
-          putPayload = JSON.parse(route.request().postData());
-          // Update backend state mock
-          currentSettings = {
-            settingId: 101,
-            newCardsPerDay: putPayload.newCardsPerDay,
-            maxReviewPerDay: putPayload.maxReviewPerDay
-          };
-          currentStats = {
-            ...currentStats,
-            newCardsLimit: putPayload.newCardsPerDay,
-            maxReviewLimit: putPayload.maxReviewPerDay
-          };
-          await route.fulfill({
-            status: 200,
-            contentType: 'application/json',
-            body: JSON.stringify({
-              code: 'SUCCESS',
-              message: 'Cập nhật cấu hình học tập thành công',
-              data: currentSettings
-            })
-          });
-        } else {
-          await route.fulfill({
-            status: 200,
-            contentType: 'application/json',
-            body: JSON.stringify({ code: 'SUCCESS', data: currentSettings })
-          });
-        }
-      });
-
-      await page.goto(`${baseUrl}/srs-dashboard.html`, { waitUntil: 'domcontentloaded' });
-      await page.locator('#dashboardContentSection').waitFor({ state: 'visible' });
-
-      // Change values to 25 and 150
-      await page.locator('#newCardsPerDayInput').fill('25');
-      await page.locator('#maxReviewPerDayInput').fill('150');
-
-      // Click save while simultaneously waiting for PUT response
-      const [response] = await Promise.all([
-        page.waitForResponse(res => res.url().includes('/api/v1/srs/settings') && res.request().method() === 'PUT'),
-        page.locator('#btnSaveSettings').click()
-      ]);
-
-      assert.ok(response, 'PUT response received');
-      assert.deepStrictEqual(putPayload, {
-        newCardsPerDay: 25,
-        maxReviewPerDay: 150
-      }, 'PUT request must contain exact validated integer values and zero account/user leakages');
-
-      // Wait for refresh to update DOM
-      await page.locator('#settingsFormStatus').waitFor({ state: 'visible' });
-      const statusText = await page.locator('#settingsFormStatus').textContent();
-      assert.ok(statusText.includes('thành công'), `Expected success status, got "${statusText}"`);
-
-      // Verify that authoritative metrics updated in the UI!
-      await page.waitForFunction(() => document.getElementById('statNewCardsLimit')?.textContent === '25');
-      assert.strictEqual(await page.locator('#statNewCardsLimit').textContent(), '25');
-      assert.strictEqual(await page.locator('#statMaxReviewLimit').textContent(), '150');
-
-      // Quota text updated as well
-      assert.strictEqual(await page.locator('#statNewCardsQuotaText').textContent(), '5 / 25');
-      assert.strictEqual(await page.locator('#statReviewsQuotaText').textContent(), '12 / 150');
-
-      const errors = getRuntimeErrors();
-      assert.strictEqual(errors.length, 0, `Runtime errors during update test:\n${errors.join('\n')}`);
-    } finally {
-      await context.close();
-    }
-  });
-
-  // SD-05: Reset Settings Button
-  test('SD-05: Reset settings button restores original authoritative values into inputs', async () => {
+  // SD-03: Cross-Navigation
+  test('SD-03: Cross-navigation between SRS Dashboard, Review Room, and Profile Settings', async () => {
     const { page, context, getRuntimeErrors } = await createMonitoredPage(browser, {
       viewportWidth: 1280,
       viewportHeight: 720
@@ -338,61 +201,6 @@ describe('Browser E2E: SRS Dashboard & Daily Settings (9C.4)', () => {
           status: 200,
           contentType: 'application/json',
           body: JSON.stringify({ code: 'SUCCESS', data: createMockStudyStats() })
-        });
-      });
-
-      await page.route('**/api/v1/srs/settings', async (route) => {
-        await route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify({ code: 'SUCCESS', data: createMockUserSrsSetting({ newCardsPerDay: 30, maxReviewPerDay: 80 }) })
-        });
-      });
-
-      await page.goto(`${baseUrl}/srs-dashboard.html`, { waitUntil: 'domcontentloaded' });
-      await page.locator('#dashboardContentSection').waitFor({ state: 'visible' });
-
-      // Change input values locally without submitting
-      await page.locator('#newCardsPerDayInput').fill('999');
-      await page.locator('#maxReviewPerDayInput').fill('888');
-
-      // Click Reset
-      await page.locator('#btnResetSettings').click();
-
-      // Check values restored
-      assert.strictEqual(await page.locator('#newCardsPerDayInput').inputValue(), '30');
-      assert.strictEqual(await page.locator('#maxReviewPerDayInput').inputValue(), '80');
-
-      const errors = getRuntimeErrors();
-      assert.strictEqual(errors.length, 0, `Runtime errors during reset test:\n${errors.join('\n')}`);
-    } finally {
-      await context.close();
-    }
-  });
-
-  // SD-06: Cross-Navigation
-  test('SD-06: Cross-navigation between SRS Dashboard and SRS Review Room operates smoothly', async () => {
-    const { page, context, getRuntimeErrors } = await createMonitoredPage(browser, {
-      viewportWidth: 1280,
-      viewportHeight: 720
-    });
-
-    try {
-      await setupAuthenticatedSession(page);
-
-      await page.route('**/api/v1/srs/stats', async (route) => {
-        await route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify({ code: 'SUCCESS', data: createMockStudyStats() })
-        });
-      });
-
-      await page.route('**/api/v1/srs/settings', async (route) => {
-        await route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify({ code: 'SUCCESS', data: createMockUserSrsSetting() })
         });
       });
 
@@ -417,8 +225,247 @@ describe('Browser E2E: SRS Dashboard & Daily Settings (9C.4)', () => {
       await returnLink.click();
       await page.waitForURL('**/srs-dashboard.html');
 
+      // On dashboard, click link to Profile Settings
+      await page.locator('#btnLinkProfileSettings').click();
+      await page.waitForURL('**/profile.html#srs-settings');
+
       const errors = getRuntimeErrors();
       assert.strictEqual(errors.length, 0, `Runtime errors during cross-navigation:\n${errors.join('\n')}`);
+    } finally {
+      await context.close();
+    }
+  });
+
+  // SD-04: Profile Learning Settings Tab Activation & Pre-fill
+  test('SD-04: Profile Learning Settings tab activates via hash and displays newCardsPerDay without maxReviewPerDay', async () => {
+    const { page, context, getRuntimeErrors } = await createMonitoredPage(browser, {
+      viewportWidth: 1280,
+      viewportHeight: 720
+    });
+
+    try {
+      await setupAuthenticatedSession(page);
+
+      await page.route('**/api/v1/users/profile', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ code: 'SUCCESS', data: createMockUserProfile() })
+        });
+      });
+
+      await page.route('**/api/v1/srs/settings', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ code: 'SUCCESS', data: createMockUserSrsSetting({ newCardsPerDay: 15, maxReviewPerDay: 80 }) })
+        });
+      });
+
+      // Navigate directly to profile with hash #srs-settings
+      await page.goto(`${baseUrl}/profile.html#srs-settings`, { waitUntil: 'domcontentloaded' });
+
+      // Profile card becomes visible
+      await page.locator('#profileCard').waitFor({ state: 'visible' });
+
+      // Check that Learning Settings tab is active
+      const isSettingsTabActive = await page.locator('#tabLearningSettings').evaluate(el => el.classList.contains('active'));
+      assert.strictEqual(isSettingsTabActive, true, 'Learning Settings tab must be active when hash is #srs-settings');
+
+      // Check input pre-filled with newCardsPerDay
+      const newCardsInput = page.locator('#srsNewCardsPerDayInput');
+      await page.waitForFunction(() => document.getElementById('srsNewCardsPerDayInput')?.value === '15');
+      assert.strictEqual(await newCardsInput.inputValue(), '15');
+
+      // Check that maxReviewPerDay input is NOT present in profile
+      const hasMaxReviewInput = await page.locator('#maxReviewPerDayInput, input[name="maxReviewPerDay"]').count();
+      assert.strictEqual(hasMaxReviewInput, 0, 'maxReviewPerDay input must NOT exist on profile page');
+
+      const errors = getRuntimeErrors();
+      assert.strictEqual(errors.length, 0, `Runtime errors during profile load:\n${errors.join('\n')}`);
+    } finally {
+      await context.close();
+    }
+  });
+
+  // SD-05: Profile SRS Settings Client-side Validation Rejection
+  test('SD-05: Profile SRS Settings validation rejects invalid inputs without submitting PUT', async () => {
+    const { page, context, getRuntimeErrors } = await createMonitoredPage(browser, {
+      viewportWidth: 1280,
+      viewportHeight: 720
+    });
+
+    try {
+      await setupAuthenticatedSession(page);
+
+      let putCalled = false;
+      await page.route('**/api/v1/users/profile', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ code: 'SUCCESS', data: createMockUserProfile() })
+        });
+      });
+
+      await page.route('**/api/v1/srs/settings', async (route) => {
+        if (route.request().method() === 'PUT') {
+          putCalled = true;
+          await route.fulfill({ status: 500 });
+        } else {
+          await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({ code: 'SUCCESS', data: createMockUserSrsSetting() })
+          });
+        }
+      });
+
+      await page.goto(`${baseUrl}/profile.html#srs-settings`, { waitUntil: 'domcontentloaded' });
+      await page.locator('#profileCard').waitFor({ state: 'visible' });
+
+      // Test 1: Zero value rejection
+      await page.locator('#srsNewCardsPerDayInput').fill('0');
+      await page.locator('#btnSaveSrsSettings').click();
+
+      assert.strictEqual(putCalled, false, 'PUT must not be called when input is 0');
+      const errZero = await page.locator('#srsNewCardsPerDayError').textContent();
+      assert.ok(errZero.includes('lớn hơn 0'), `Expected positive integer error, got "${errZero}"`);
+
+      // Test 2: Negative value rejection
+      await page.locator('#srsNewCardsPerDayInput').fill('-5');
+      await page.locator('#btnSaveSrsSettings').click();
+      assert.strictEqual(putCalled, false, 'PUT must not be called when input is negative');
+
+      // Test 3: Empty value rejection
+      await page.locator('#srsNewCardsPerDayInput').fill('');
+      await page.locator('#btnSaveSrsSettings').click();
+      assert.strictEqual(putCalled, false, 'PUT must not be called when input is empty');
+      const errEmpty = await page.locator('#srsNewCardsPerDayError').textContent();
+      assert.ok(errEmpty.includes('không được để trống'), `Expected empty error, got "${errEmpty}"`);
+
+      const errors = getRuntimeErrors();
+      assert.strictEqual(errors.length, 0, `Runtime errors during validation test:\n${errors.join('\n')}`);
+    } finally {
+      await context.close();
+    }
+  });
+
+  // SD-06: Profile SRS Settings Successful Update
+  test('SD-06: Profile SRS Settings submits clean newCardsPerDay payload and updates state', async () => {
+    const { page, context, getRuntimeErrors } = await createMonitoredPage(browser, {
+      viewportWidth: 1280,
+      viewportHeight: 720
+    });
+
+    try {
+      await setupAuthenticatedSession(page);
+
+      let putPayload = null;
+      let currentSettings = createMockUserSrsSetting({ newCardsPerDay: 20 });
+
+      await page.route('**/api/v1/users/profile', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ code: 'SUCCESS', data: createMockUserProfile() })
+        });
+      });
+
+      await page.route('**/api/v1/srs/settings', async (route) => {
+        if (route.request().method() === 'PUT') {
+          putPayload = JSON.parse(route.request().postData());
+          currentSettings = {
+            ...currentSettings,
+            newCardsPerDay: putPayload.newCardsPerDay
+          };
+          await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({
+              code: 'SUCCESS',
+              message: 'Cập nhật cấu hình học tập thành công',
+              data: currentSettings
+            })
+          });
+        } else {
+          await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({ code: 'SUCCESS', data: currentSettings })
+          });
+        }
+      });
+
+      await page.goto(`${baseUrl}/profile.html#srs-settings`, { waitUntil: 'domcontentloaded' });
+      await page.locator('#profileCard').waitFor({ state: 'visible' });
+
+      // Change value to 35
+      await page.locator('#srsNewCardsPerDayInput').fill('35');
+
+      // Click save
+      const [response] = await Promise.all([
+        page.waitForResponse(res => res.url().includes('/api/v1/srs/settings') && res.request().method() === 'PUT'),
+        page.locator('#btnSaveSrsSettings').click()
+      ]);
+
+      assert.ok(response, 'PUT response received');
+      assert.deepStrictEqual(putPayload, {
+        newCardsPerDay: 35
+      }, 'PUT request must contain only newCardsPerDay, no maxReviewPerDay, and no user leakage');
+
+      // Verify success status displayed
+      const statusText = await page.locator('#srsSettingsStatus').textContent();
+      assert.ok(statusText.includes('thành công'), `Expected success status, got "${statusText}"`);
+      assert.strictEqual(await page.locator('#srsNewCardsPerDayInput').inputValue(), '35');
+
+      const errors = getRuntimeErrors();
+      assert.strictEqual(errors.length, 0, `Runtime errors during update test:\n${errors.join('\n')}`);
+    } finally {
+      await context.close();
+    }
+  });
+
+  // SD-07: Profile SRS Settings Reset Button
+  test('SD-07: Profile SRS Settings reset button restores original authoritative value', async () => {
+    const { page, context, getRuntimeErrors } = await createMonitoredPage(browser, {
+      viewportWidth: 1280,
+      viewportHeight: 720
+    });
+
+    try {
+      await setupAuthenticatedSession(page);
+
+      await page.route('**/api/v1/users/profile', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ code: 'SUCCESS', data: createMockUserProfile() })
+        });
+      });
+
+      await page.route('**/api/v1/srs/settings', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ code: 'SUCCESS', data: createMockUserSrsSetting({ newCardsPerDay: 25 }) })
+        });
+      });
+
+      await page.goto(`${baseUrl}/profile.html#srs-settings`, { waitUntil: 'domcontentloaded' });
+      await page.locator('#profileCard').waitFor({ state: 'visible' });
+      await page.waitForFunction(() => document.getElementById('srsNewCardsPerDayInput')?.value === '25');
+
+      // Change input value locally without submitting
+      await page.locator('#srsNewCardsPerDayInput').fill('999');
+
+      // Click Reset
+      await page.locator('#btnResetSrsSettings').click();
+
+      // Check value restored
+      assert.strictEqual(await page.locator('#srsNewCardsPerDayInput').inputValue(), '25');
+
+      const errors = getRuntimeErrors();
+      assert.strictEqual(errors.length, 0, `Runtime errors during reset test:\n${errors.join('\n')}`);
     } finally {
       await context.close();
     }
