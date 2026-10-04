@@ -17,6 +17,9 @@ public class RadicalResponse {
     private String meaningVi;
     private String audioUrl;
     private String videoWritingUrl;
+    private String explanationVi;
+    private String videoLessonUrl;
+    private Integer commonRank;
 
     public RadicalResponse() {
     }
@@ -33,11 +36,21 @@ public class RadicalResponse {
         this.videoWritingUrl = videoWritingUrl;
     }
 
+    public RadicalResponse(Integer radicalId, String character, String pinyin,
+                           String meaningHanViet, String meaningVi,
+                           String audioUrl, String videoWritingUrl,
+                           String explanationVi, String videoLessonUrl, Integer commonRank) {
+        this(radicalId, character, pinyin, meaningHanViet, meaningVi, audioUrl, videoWritingUrl);
+        this.explanationVi = explanationVi;
+        this.videoLessonUrl = videoLessonUrl;
+        this.commonRank = commonRank;
+    }
+
     public static RadicalResponse fromEntity(Radical radical) {
         if (radical == null) {
             return null;
         }
-        return new RadicalResponse(
+        RadicalResponse response = new RadicalResponse(
                 radical.getRadicalId(),
                 radical.getCharacter(),
                 radical.getPinyin(),
@@ -46,6 +59,10 @@ public class RadicalResponse {
                 radical.getAudioUrl(),
                 radical.getVideoWritingUrl()
         );
+        response.setExplanationVi(radical.getExplanationVi());
+        response.setVideoLessonUrl(radical.getVideoLessonUrl());
+        response.setCommonRank(radical.getCommonRank());
+        return response;
     }
 
     public Integer getRadicalId() {
@@ -102,6 +119,30 @@ public class RadicalResponse {
 
     public void setVideoWritingUrl(String videoWritingUrl) {
         this.videoWritingUrl = videoWritingUrl;
+    }
+
+    public String getExplanationVi() {
+        return explanationVi;
+    }
+
+    public void setExplanationVi(String explanationVi) {
+        this.explanationVi = explanationVi;
+    }
+
+    public String getVideoLessonUrl() {
+        return videoLessonUrl;
+    }
+
+    public void setVideoLessonUrl(String videoLessonUrl) {
+        this.videoLessonUrl = videoLessonUrl;
+    }
+
+    public Integer getCommonRank() {
+        return commonRank;
+    }
+
+    public void setCommonRank(Integer commonRank) {
+        this.commonRank = commonRank;
     }
 
     @Override

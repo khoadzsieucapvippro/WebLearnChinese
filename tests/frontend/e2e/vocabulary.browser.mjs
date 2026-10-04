@@ -672,4 +672,250 @@ describe('Browser E2E: Chinese Vocabulary Catalog & Search UI', () => {
     }
   });
 
+  test('VB16: HSK 1/2/3 level tabs exist, default to HSK 1, and switch view heading, badge, and URL query on click', async () => {
+    const { page, context, getRuntimeErrors } = await createMonitoredPage(browser);
+
+    try {
+      await page.route('**/api/v1/vocabulary*', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            code: 'SUCCESS',
+            message: 'OK',
+            data: {
+              page: 0,
+              size: 20,
+              totalElements: 4,
+              totalPages: 1,
+              first: true,
+              last: true,
+              items: createMockVocabularyItems()
+            }
+          })
+        });
+      });
+
+      await page.goto(`${baseUrl}/vocabulary.html`, { waitUntil: 'domcontentloaded' });
+      await page.waitForSelector('.vocab-card');
+
+      // Verify all 3 tabs are present with exact accessible names
+      const tab1 = page.locator('#tabHsk1');
+      const tab2 = page.locator('#tabHsk2');
+      const tab3 = page.locator('#tabHsk3');
+
+      assert.strictEqual(await tab1.isVisible(), true);
+      assert.strictEqual(await tab2.isVisible(), true);
+      assert.strictEqual(await tab3.isVisible(), true);
+
+      assert.strictEqual((await tab1.textContent()).trim(), 'HSK 1');
+      assert.strictEqual((await tab2.textContent()).trim(), 'HSK 2');
+      assert.strictEqual((await tab3.textContent()).trim(), 'HSK 3');
+
+      // Default active tab is HSK 1
+      assert.strictEqual(await tab1.getAttribute('aria-selected'), 'true');
+      assert.strictEqual(await tab1.getAttribute('tabindex'), '0');
+      assert.strictEqual(await tab2.getAttribute('aria-selected'), 'false');
+      assert.strictEqual(await tab2.getAttribute('tabindex'), '-1');
+      assert.strictEqual(await tab3.getAttribute('aria-selected'), 'false');
+
+      // Heading and badge reflect HSK 1
+      assert.strictEqual((await page.locator('#vocabCategoryBadge').textContent()).trim(), 'Từ Vựng HSK 1');
+      assert.strictEqual((await page.locator('#vocabPageHeading').textContent()).trim(), 'Từ Vựng Tiếng Trung HSK 1');
+
+      // Click HSK 2
+      await page.click('#tabHsk2');
+
+      // State updates to HSK 2
+      assert.strictEqual(await tab2.getAttribute('aria-selected'), 'true');
+      assert.strictEqual(await tab1.getAttribute('aria-selected'), 'false');
+      assert.strictEqual((await page.locator('#vocabCategoryBadge').textContent()).trim(), 'Từ Vựng HSK 2');
+      assert.strictEqual((await page.locator('#vocabPageHeading').textContent()).trim(), 'Từ Vựng Tiếng Trung HSK 2');
+      assert.ok(page.url().includes('hsk=2'), 'URL must reflect ?hsk=2');
+
+      // Click HSK 3
+      await page.click('#tabHsk3');
+
+      // State updates to HSK 3
+      assert.strictEqual(await tab3.getAttribute('aria-selected'), 'true');
+      assert.strictEqual(await tab2.getAttribute('aria-selected'), 'false');
+      assert.strictEqual((await page.locator('#vocabCategoryBadge').textContent()).trim(), 'Từ Vựng HSK 3');
+      assert.strictEqual((await page.locator('#vocabPageHeading').textContent()).trim(), 'Từ Vựng Tiếng Trung HSK 3');
+      assert.ok(page.url().includes('hsk=3'), 'URL must reflect ?hsk=3');
+
+      const errors = getRuntimeErrors();
+      assert.strictEqual(errors.length, 0, `Runtime errors: ${errors.join('\n')}`);
+    } finally {
+      await context.close();
+    }
+  });
+
+  test('VB17: HSK tabs keyboard navigation: ArrowLeft/Right, Home/End, visible focus', async () => {
+    const { page, context, getRuntimeErrors } = await createMonitoredPage(browser);
+
+    try {
+      await page.route('**/api/v1/vocabulary*', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            code: 'SUCCESS',
+            message: 'OK',
+            data: {
+              page: 0,
+              size: 20,
+              totalElements: 4,
+              totalPages: 1,
+              first: true,
+              last: true,
+              items: createMockVocabularyItems()
+            }
+          })
+        });
+      });
+
+      await page.goto(`${baseUrl}/vocabulary.html`, { waitUntil: 'domcontentloaded' });
+      await page.waitForSelector('.vocab-card');
+
+      // 1. Focus Tab HSK 1
+      await page.focus('#tabHsk1');
+      assert.strictEqual(await page.locator('#tabHsk1').getAttribute('aria-selected'), 'true');
+
+      // 2. Press ArrowRight -> activates HSK 2
+      await page.keyboard.press('ArrowRight');
+      assert.strictEqual(await page.locator('#tabHsk2').getAttribute('aria-selected'), 'true');
+
+      // 3. Press ArrowRight -> activates HSK 3
+      await page.keyboard.press('ArrowRight');
+      assert.strictEqual(await page.locator('#tabHsk3').getAttribute('aria-selected'), 'true');
+
+      // 4. Press Home -> jumps to HSK 1
+      await page.keyboard.press('Home');
+      assert.strictEqual(await page.locator('#tabHsk1').getAttribute('aria-selected'), 'true');
+
+      // 5. Press End -> jumps to HSK 3
+      await page.keyboard.press('End');
+      assert.strictEqual(await page.locator('#tabHsk3').getAttribute('aria-selected'), 'true');
+
+      // 6. Press ArrowLeft -> activates HSK 2
+      await page.keyboard.press('ArrowLeft');
+      assert.strictEqual(await page.locator('#tabHsk2').getAttribute('aria-selected'), 'true');
+
+      const errors = getRuntimeErrors();
+      assert.strictEqual(errors.length, 0, `Runtime errors: ${errors.join('\n')}`);
+    } finally {
+      await context.close();
+    }
+  });
+
+  test('VB18: Direct URL navigation with ?hsk=2 activates HSK 2 tab and updates heading', async () => {
+    const { page, context, getRuntimeErrors } = await createMonitoredPage(browser);
+
+    try {
+      await page.route('**/api/v1/vocabulary*', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            code: 'SUCCESS',
+            message: 'OK',
+            data: {
+              page: 0,
+              size: 20,
+              totalElements: 4,
+              totalPages: 1,
+              first: true,
+              last: true,
+              items: createMockVocabularyItems()
+            }
+          })
+        });
+      });
+
+      await page.goto(`${baseUrl}/vocabulary.html?hsk=2`, { waitUntil: 'domcontentloaded' });
+      await page.waitForSelector('.vocab-card');
+
+      assert.strictEqual(await page.locator('#tabHsk2').getAttribute('aria-selected'), 'true');
+      assert.strictEqual(await page.locator('#tabHsk1').getAttribute('aria-selected'), 'false');
+      assert.strictEqual((await page.locator('#vocabPageHeading').textContent()).trim(), 'Từ Vựng Tiếng Trung HSK 2');
+
+      const errors = getRuntimeErrors();
+      assert.strictEqual(errors.length, 0, `Runtime errors: ${errors.join('\n')}`);
+    } finally {
+      await context.close();
+    }
+  });
+
+  test('VB19: Navbar is flat with direct links: "Bộ thủ" and "Từ vựng" have zero dropdowns/submenus', async () => {
+    const { page, context, getRuntimeErrors } = await createMonitoredPage(browser);
+
+    try {
+      await page.route('**/api/v1/vocabulary*', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            code: 'SUCCESS',
+            message: 'OK',
+            data: {
+              page: 0,
+              size: 20,
+              totalElements: 4,
+              totalPages: 1,
+              first: true,
+              last: true,
+              items: createMockVocabularyItems()
+            }
+          })
+        });
+      });
+
+      await page.goto(`${baseUrl}/vocabulary.html`, { waitUntil: 'domcontentloaded' });
+      await page.waitForSelector('.vocab-card');
+
+      // 1. Verify zero dropdown buttons or menus exist in the navbar
+      assert.strictEqual(await page.locator('#navRadicalsDropdownBtn').count(), 0, 'No radicals dropdown button should exist');
+      assert.strictEqual(await page.locator('#navVocabDropdownBtn').count(), 0, 'No vocab dropdown button should exist');
+      assert.strictEqual(await page.locator('#navRadicalsMenu').count(), 0, 'No radicals dropdown menu should exist');
+      assert.strictEqual(await page.locator('#navVocabMenu').count(), 0, 'No vocab dropdown menu should exist');
+      assert.strictEqual(await page.locator('.dropdown-chevron').count(), 0, 'No dropdown chevrons should exist');
+
+      // 2. Verify direct links in navbar
+      const homeLink = page.locator('#primaryNavMenu a[href="index.html"]');
+      const radicalsLink = page.locator('#primaryNavMenu a[href="radicals.html"]');
+      const vocabLink = page.locator('#primaryNavMenu a[href="vocabulary.html"]');
+      const lessonsLink = page.locator('#primaryNavMenu a[href="lessons.html"]');
+      const srsLink = page.locator('#primaryNavMenu a[href="srs-review.html"]');
+
+      assert.strictEqual(await homeLink.isVisible(), true);
+      assert.strictEqual((await homeLink.textContent()).trim(), 'Trang chủ');
+
+      assert.strictEqual(await radicalsLink.isVisible(), true);
+      assert.strictEqual((await radicalsLink.textContent()).trim(), 'Bộ thủ');
+
+      assert.strictEqual(await vocabLink.isVisible(), true);
+      assert.strictEqual((await vocabLink.textContent()).trim(), 'Từ vựng');
+      // On vocabulary.html, Từ vựng link has active class
+      assert.strictEqual(await vocabLink.evaluate(el => el.classList.contains('active')), true);
+
+      assert.strictEqual(await lessonsLink.isVisible(), true);
+      assert.strictEqual((await lessonsLink.textContent()).trim(), 'Bài học');
+
+      assert.strictEqual(await srsLink.isVisible(), true);
+      assert.strictEqual((await srsLink.textContent()).trim(), 'Ôn tập SRS');
+
+      // 3. Hover, click, and keyboard focus on "Từ vựng" produces NO popup/menu
+      await vocabLink.hover();
+      assert.strictEqual(await page.locator('.nav-dropdown-menu').count(), 0);
+
+      await vocabLink.focus();
+      assert.strictEqual(await page.locator('.nav-dropdown-menu').count(), 0);
+
+      const errors = getRuntimeErrors();
+      assert.strictEqual(errors.length, 0, `Runtime errors: ${errors.join('\n')}`);
+    } finally {
+      await context.close();
+    }
+  });
+
 });

@@ -20,6 +20,8 @@ public class VocabularyResponse {
     private String videoWritingUrl;
     private String exampleSentence;
     private String exampleTranslation;
+    private Integer hskLevel;
+    private String hskStandard;
 
     public VocabularyResponse() {
     }
@@ -48,7 +50,7 @@ public class VocabularyResponse {
         if (vocabulary == null) {
             return null;
         }
-        return new VocabularyResponse(
+        VocabularyResponse response = new VocabularyResponse(
                 vocabulary.getVocabId(),
                 vocabulary.getHanzi(),
                 vocabulary.getPinyin(),
@@ -60,6 +62,9 @@ public class VocabularyResponse {
                 vocabulary.getExampleSentence(),
                 vocabulary.getExampleTranslation()
         );
+        response.setHskLevel(vocabulary.getHskLevel());
+        response.setHskStandard(vocabulary.getHskStandard());
+        return response;
     }
 
     public Long getVocabId() {
@@ -140,5 +145,21 @@ public class VocabularyResponse {
 
     public void setExampleTranslation(String exampleTranslation) {
         this.exampleTranslation = exampleTranslation;
+    }
+
+    public Integer getHskLevel() {
+        return hskLevel;
+    }
+
+    public void setHskLevel(Integer hskLevel) {
+        this.hskLevel = hskLevel;
+    }
+
+    public String getHskStandard() {
+        return hskStandard;
+    }
+
+    public void setHskStandard(String hskStandard) {
+        this.hskStandard = hskStandard;
     }
 }

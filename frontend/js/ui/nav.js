@@ -275,3 +275,12 @@ export function initNavbarAuth(containerOrId = 'navAuthContainer') {
     }
   };
 }
+
+/**
+ * Deprecated: Navbar dropdowns removed in favor of direct links.
+ * Kept as no-op for backward compatibility.
+ */
+export function initNavbarDropdowns() {
+  // No-op: Navbar is flat with direct links (Trang chủ, Bộ thủ, Từ vựng, Bài học, Ôn tập SRS)
+}
+

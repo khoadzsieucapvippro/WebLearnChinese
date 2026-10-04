@@ -418,20 +418,20 @@ class SrsConcurrencyIntegrationTests {
         executor.shutdown();
         executor.awaitTermination(5, TimeUnit.SECONDS);
 
-        // 5. Assert: Exactly 1 succeeded and exactly 1 was rejected with CONFLICT
+        // 5. Assert: Both succeed because maxReviewPerDay no longer limits reviews
         assertThat(successCount.get())
-                .as("Exactly one concurrent request must claim the final quota slot")
-                .isEqualTo(1);
+                .as("Both concurrent review requests on distinct cards must succeed")
+                .isEqualTo(2);
         assertThat(quotaConflictCount.get())
-                .as("The other concurrent request must be rejected with 409 CONFLICT daily quota limit reached")
-                .isEqualTo(1);
+                .as("No quota conflict since maxReviewPerDay is removed")
+                .isZero();
         assertThat(otherErrorCount.get()).isZero();
 
-        // 6. Assert: Final review count today must be EXACTLY 3 (limit), never 4
+        // 6. Assert: Final review count today must be EXACTLY 4 (2 pre-seeded + 2 new)
         long finalCountToday = reviewLogRepository.countByUserAndReviewedAtGreaterThanEqual(testLearner, java.time.LocalDate.now().atStartOfDay());
         assertThat(finalCountToday)
-                .as("Final committed ReviewLog count today must not exceed maxReviewPerDay (3)")
-                .isEqualTo(3L);
+                .as("Final committed ReviewLog count today reflects all completed reviews")
+                .isEqualTo(4L);
 
         // Clean up vocabA and vocabB
         lessonVocabularyRepository.deleteAll(lessonVocabularyRepository.findByLesson_LessonIdOrderByOrderIndexAsc(testLesson.getLessonId()));
@@ -440,18 +440,12 @@ class SrsConcurrencyIntegrationTests {
     }
 
     @Test
-    @DisplayName("BE-CONC-002: GIVEN currentCount == maxReviewPerDay WHEN reviewCard() called THEN rejected with CONFLICT and zero side effects")
-    void testSequentialReview_atDailyQuotaLimit_rejectedImmediately() {
+    @DisplayName("BE-CONC-002: Reviewing cards sequentially continues beyond previous daily quota limit")
+    void testSequentialReview_beyondPreviousDailyQuotaLimit_succeeds() {
         UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
                 userEmail, "password", List.of(new SimpleGrantedAuthority("ROLE_LEARNER"))
         );
         SecurityContextHolder.getContext().setAuthentication(auth);
-
-        // Set quota to 1
-        UserSrsSetting setting = userSrsSettingRepository.findByUser(testLearner)
-                .orElseGet(() -> new UserSrsSetting(testLearner, 20, 1));
-        setting.setMaxReviewPerDay(1);
-        userSrsSettingRepository.saveAndFlush(setting);
 
         // 1st review: succeeds (count = 1)
         ReviewCardRequest req1 = new ReviewCardRequest("VOCABULARY", testVocab.getVocabId(), 3, 4);
@@ -460,26 +454,25 @@ class SrsConcurrencyIntegrationTests {
         long countAfterFirst = reviewLogRepository.countByUserAndReviewedAtGreaterThanEqual(testLearner, java.time.LocalDate.now().atStartOfDay());
         assertThat(countAfterFirst).isEqualTo(1L);
 
-        // 2nd review: quota reached (1/1) -> rejected with CONFLICT
+        // 2nd review on different approved vocab: succeeds (count = 2)
         String suffix = UUID.randomUUID().toString().substring(0, 6);
         Vocabulary vocab2 = createApprovedVocab("书" + suffix, "shū", "shu" + suffix, "Thư", "Sách");
         ReviewCardRequest req2 = new ReviewCardRequest("VOCABULARY", vocab2.getVocabId(), 3, 4);
 
-        org.junit.jupiter.api.Assertions.assertThrows(com.elearning.exception.BusinessException.class, () -> {
-            srsService.reviewCard(req2);
-        });
+        DueCardResponse resp2 = srsService.reviewCard(req2);
+        assertThat(resp2).isNotNull();
 
-        // Verify count remains 1 and vocab2 has NO CardProgress
+        // Verify count is now 2
         long countAfterSecond = reviewLogRepository.countByUserAndReviewedAtGreaterThanEqual(testLearner, java.time.LocalDate.now().atStartOfDay());
-        assertThat(countAfterSecond).isEqualTo(1L);
-        assertThat(cardProgressRepository.findByUserAndItemTypeAndItemId(testLearner, "VOCABULARY", vocab2.getVocabId())).isEmpty();
+        assertThat(countAfterSecond).isEqualTo(2L);
+        assertThat(cardProgressRepository.findByUserAndItemTypeAndItemId(testLearner, "VOCABULARY", vocab2.getVocabId())).isPresent();
 
         lessonVocabularyRepository.deleteAll(lessonVocabularyRepository.findByLesson_LessonIdOrderByOrderIndexAsc(testLesson.getLessonId()));
         vocabularyRepository.delete(vocab2);
     }
 
     @Test
-    @DisplayName("BE-CONC-002: User A reaching quota does not block User B from reviewing")
+    @DisplayName("BE-CONC-002: Reviews for distinct users are cleanly isolated")
     void testUserIsolation_userAReachedQuotaDoesNotBlockUserB() {
         // Create User B
         String suffixB = UUID.randomUUID().toString().substring(0, 8);
@@ -497,20 +490,11 @@ class SrsConcurrencyIntegrationTests {
         UserSrsSetting settingB = new UserSrsSetting(userB, 20, 10);
         userSrsSettingRepository.save(settingB);
 
-        // Set User A quota to 1 and exhaust it
-        UserSrsSetting settingA = userSrsSettingRepository.findByUser(testLearner)
-                .orElseGet(() -> new UserSrsSetting(testLearner, 20, 1));
-        settingA.setMaxReviewPerDay(1);
-        userSrsSettingRepository.saveAndFlush(settingA);
-
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(userEmail, "password", List.of(new SimpleGrantedAuthority("ROLE_LEARNER")))
         );
-        srsService.reviewCard(new ReviewCardRequest("VOCABULARY", testVocab.getVocabId(), 3, 4));
-
-        // User A is now exhausted (1/1)
-        assertThatThrownBy(() -> srsService.reviewCard(new ReviewCardRequest("VOCABULARY", testVocab.getVocabId(), 3, 4)))
-                .isInstanceOf(com.elearning.exception.BusinessException.class);
+        DueCardResponse respA = srsService.reviewCard(new ReviewCardRequest("VOCABULARY", testVocab.getVocabId(), 3, 4));
+        assertThat(respA).isNotNull();
 
         // Switch to User B -> should succeed!
         SecurityContextHolder.getContext().setAuthentication(

@@ -198,6 +198,34 @@ export function validateRadicalForm(data) {
     }
   }
 
+  // Explanation Vietnamese validation (Optional, max 1000 chars)
+  const explanationVi = typeof data.explanationVi === 'string' ? data.explanationVi.trim() : '';
+  if (explanationVi && explanationVi.length > 1000) {
+    errors.explanationVi = 'Giải thích tiếng Việt không được vượt quá 1000 ký tự';
+  }
+
+  // Video Lesson URL validation (Optional, max 500 chars, YouTube only)
+  const videoLessonUrl = typeof data.videoLessonUrl === 'string' ? data.videoLessonUrl.trim() : '';
+  if (videoLessonUrl) {
+    if (videoLessonUrl.length > 500) {
+      errors.videoLessonUrl = 'Đường dẫn video bài giảng không được vượt quá 500 ký tự';
+    } else if (!isValidYouTubeUrl(videoLessonUrl)) {
+      errors.videoLessonUrl = 'Đường dẫn video bài giảng phải là URL YouTube hợp lệ (youtube.com, youtu.be, youtube-nocookie.com)';
+    }
+  }
+
+  // Common Rank validation (Optional, strictly 1..50 when present)
+  const rawRank = data.commonRank !== undefined && data.commonRank !== null && String(data.commonRank).trim() !== ''
+    ? Number(data.commonRank)
+    : null;
+  const isCommon = Boolean(data.isCommonRank) || rawRank !== null;
+
+  if (isCommon) {
+    if (rawRank === null || isNaN(rawRank) || !Number.isInteger(rawRank) || rawRank < 1 || rawRank > 50) {
+      errors.commonRank = 'Thứ hạng thông dụng phải là số nguyên từ 1 đến 50';
+    }
+  }
+
   return {
     valid: Object.keys(errors).length === 0,
     errors
@@ -220,11 +248,25 @@ export function isValidMediaUrl(url) {
 }
 
 /**
+ * Validates whether a URL is a valid, trusted YouTube video link.
+ * Supports youtube.com/watch?v=, youtu.be/, and youtube-nocookie.com/embed/
+ * 
+ * @param {string} url 
+ * @returns {boolean}
+ */
+export function isValidYouTubeUrl(url) {
+  if (!url || typeof url !== 'string') return false;
+  const trimmed = url.trim();
+  const pattern = /^https:\/\/(?:www\.|m\.)?(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/|youtube-nocookie\.com\/embed\/)([a-zA-Z0-9_-]{11})(?:[?&].*)?$/;
+  return pattern.test(trimmed);
+}
+
+/**
  * Formats clean request payload for CreateRadicalRequest or UpdateRadicalRequest.
  * Optional URL fields with empty or whitespace-only content are normalized to null.
  * 
  * @param {object} formData 
- * @returns {{ character: string, pinyin: string, meaningHanViet: string, meaningVi: string, audioUrl: string|null, videoWritingUrl: string|null }}
+ * @returns {{ character: string, pinyin: string, meaningHanViet: string, meaningVi: string, audioUrl: string|null, videoWritingUrl: string|null, explanationVi: string|null, videoLessonUrl: string|null, commonRank: number|null }}
  */
 export function buildRadicalPayload(formData) {
   const char = typeof formData.character === 'string' ? formData.character.trim() : '';
@@ -233,6 +275,16 @@ export function buildRadicalPayload(formData) {
   const vi = typeof formData.meaningVi === 'string' ? formData.meaningVi.trim() : '';
   const audio = typeof formData.audioUrl === 'string' ? formData.audioUrl.trim() : '';
   const video = typeof formData.videoWritingUrl === 'string' ? formData.videoWritingUrl.trim() : '';
+  const explanation = typeof formData.explanationVi === 'string' ? formData.explanationVi.trim() : '';
+  const lesson = typeof formData.videoLessonUrl === 'string' ? formData.videoLessonUrl.trim() : '';
+
+  let commonRank = null;
+  const rawRank = formData.commonRank !== undefined && formData.commonRank !== null && String(formData.commonRank).trim() !== ''
+    ? Number(formData.commonRank)
+    : null;
+  if (formData.isCommonRank !== false && rawRank !== null && !isNaN(rawRank) && rawRank >= 1 && rawRank <= 50) {
+    commonRank = Math.floor(rawRank);
+  }
 
   return {
     character: char,
@@ -240,7 +292,10 @@ export function buildRadicalPayload(formData) {
     meaningHanViet: hanViet,
     meaningVi: vi,
     audioUrl: audio.length > 0 ? audio : null,
-    videoWritingUrl: video.length > 0 ? video : null
+    videoWritingUrl: video.length > 0 ? video : null,
+    explanationVi: explanation.length > 0 ? explanation : null,
+    videoLessonUrl: lesson.length > 0 ? lesson : null,
+    commonRank: commonRank
   };
 }
 
@@ -416,12 +471,20 @@ export class AdminRadicalsPageController {
       inputMeaningVi: document.getElementById('inputMeaningVi'),
       inputAudioUrl: document.getElementById('inputAudioUrl'),
       inputVideoWritingUrl: document.getElementById('inputVideoWritingUrl'),
+      inputExplanationVi: document.getElementById('inputExplanationVi'),
+      inputVideoLessonUrl: document.getElementById('inputVideoLessonUrl'),
+      checkIsCommonRank: document.getElementById('checkIsCommonRank'),
+      commonRankInputContainer: document.getElementById('commonRankInputContainer'),
+      inputCommonRank: document.getElementById('inputCommonRank'),
       errorCharacter: document.getElementById('errorCharacter'),
       errorPinyin: document.getElementById('errorPinyin'),
       errorMeaningHanViet: document.getElementById('errorMeaningHanViet'),
       errorMeaningVi: document.getElementById('errorMeaningVi'),
       errorAudioUrl: document.getElementById('errorAudioUrl'),
       errorVideoWritingUrl: document.getElementById('errorVideoWritingUrl'),
+      errorExplanationVi: document.getElementById('errorExplanationVi'),
+      errorVideoLessonUrl: document.getElementById('errorVideoLessonUrl'),
+      errorCommonRank: document.getElementById('errorCommonRank'),
       btnCancelFormModal: document.getElementById('btnCancelFormModal'),
       btnSaveRadical: document.getElementById('btnSaveRadical'),
       saveRadicalBtnSpinner: document.getElementById('saveRadicalBtnSpinner'),
@@ -446,6 +509,30 @@ export class AdminRadicalsPageController {
    * Binds user event listeners.
    */
   bindEvents() {
+    // Toggle Common Rank Input Container
+    if (this.elements.checkIsCommonRank) {
+      this.elements.checkIsCommonRank.addEventListener('change', (e) => {
+        const isChecked = e.target.checked;
+        if (this.elements.commonRankInputContainer) {
+          if (isChecked) {
+            this.elements.commonRankInputContainer.classList.remove('d-none');
+            if (this.elements.inputCommonRank && !this.elements.inputCommonRank.value) {
+              this.elements.inputCommonRank.focus();
+            }
+          } else {
+            this.elements.commonRankInputContainer.classList.add('d-none');
+            if (this.elements.inputCommonRank) {
+              this.elements.inputCommonRank.value = '';
+              this.elements.inputCommonRank.classList.remove('is-invalid');
+            }
+            if (this.elements.errorCommonRank) {
+              this.elements.errorCommonRank.textContent = '';
+            }
+          }
+        }
+      });
+    }
+
     // Search input
     if (this.elements.searchInput) {
       this.elements.searchInput.addEventListener('input', (e) => {
@@ -730,8 +817,8 @@ export class AdminRadicalsPageController {
       const safeVideo = sanitizeResourceUrl(item.videoWritingUrl);
       if (safeVideo && safeVideo !== 'about:blank') {
         const videoLink = createSafeElement('a', {
-          className: 'badge bg-light text-success border text-decoration-none',
-          text: '🎬 Video',
+          className: 'badge bg-light text-success border text-decoration-none me-1',
+          text: '🎬 Viết',
           attrs: {
             href: safeVideo,
             target: '_blank',
@@ -740,6 +827,22 @@ export class AdminRadicalsPageController {
           }
         });
         mediaNodes.push(videoLink);
+      }
+    }
+    if (item.videoLessonUrl) {
+      const safeLesson = sanitizeResourceUrl(item.videoLessonUrl);
+      if (safeLesson && safeLesson !== 'about:blank') {
+        const lessonLink = createSafeElement('a', {
+          className: 'badge bg-light text-danger border text-decoration-none me-1',
+          text: '📺 Bài giảng',
+          attrs: {
+            href: safeLesson,
+            target: '_blank',
+            rel: 'noopener noreferrer',
+            title: `Xem video bài giảng: ${character}`
+          }
+        });
+        mediaNodes.push(lessonLink);
       }
     }
     if (mediaNodes.length === 0) {
@@ -779,7 +882,15 @@ export class AdminRadicalsPageController {
         createSafeElement('td', {
           className: 'text-center',
           children: [
-            createSafeElement('span', { className: 'font-chinese fs-4 text-chinese-red fw-bold', text: character })
+            createSafeElement('span', { className: 'font-chinese fs-4 text-chinese-red fw-bold', text: character }),
+            ...(item.commonRank !== null && item.commonRank !== undefined ? [
+              createSafeElement('span', {
+                className: 'badge bg-warning text-dark d-block mx-auto mt-1',
+                text: `Top #${item.commonRank}`,
+                attrs: { title: `Thuộc 50 bộ thủ thông dụng (Hạng ${item.commonRank})` },
+                style: 'font-size: 0.68rem; max-width: 65px;'
+              })
+            ] : [])
           ]
         }),
         // 3. Pinyin
@@ -933,6 +1044,24 @@ export class AdminRadicalsPageController {
     if (this.elements.inputMeaningVi) this.elements.inputMeaningVi.value = radical.meaningVi || '';
     if (this.elements.inputAudioUrl) this.elements.inputAudioUrl.value = radical.audioUrl || '';
     if (this.elements.inputVideoWritingUrl) this.elements.inputVideoWritingUrl.value = radical.videoWritingUrl || '';
+    if (this.elements.inputExplanationVi) this.elements.inputExplanationVi.value = radical.explanationVi || '';
+    if (this.elements.inputVideoLessonUrl) this.elements.inputVideoLessonUrl.value = radical.videoLessonUrl || '';
+
+    // Handle commonRank toggle and input
+    const hasCommonRank = radical.commonRank !== null && radical.commonRank !== undefined;
+    if (this.elements.checkIsCommonRank) {
+      this.elements.checkIsCommonRank.checked = hasCommonRank;
+    }
+    if (this.elements.commonRankInputContainer) {
+      if (hasCommonRank) {
+        this.elements.commonRankInputContainer.classList.remove('d-none');
+      } else {
+        this.elements.commonRankInputContainer.classList.add('d-none');
+      }
+    }
+    if (this.elements.inputCommonRank) {
+      this.elements.inputCommonRank.value = hasCommonRank ? String(radical.commonRank) : '';
+    }
 
     this.clearValidationErrors();
 
@@ -971,6 +1100,11 @@ export class AdminRadicalsPageController {
     if (this.elements.inputMeaningVi) this.elements.inputMeaningVi.value = '';
     if (this.elements.inputAudioUrl) this.elements.inputAudioUrl.value = '';
     if (this.elements.inputVideoWritingUrl) this.elements.inputVideoWritingUrl.value = '';
+    if (this.elements.inputExplanationVi) this.elements.inputExplanationVi.value = '';
+    if (this.elements.inputVideoLessonUrl) this.elements.inputVideoLessonUrl.value = '';
+    if (this.elements.checkIsCommonRank) this.elements.checkIsCommonRank.checked = false;
+    if (this.elements.commonRankInputContainer) this.elements.commonRankInputContainer.classList.add('d-none');
+    if (this.elements.inputCommonRank) this.elements.inputCommonRank.value = '';
   }
 
   /**
@@ -982,7 +1116,10 @@ export class AdminRadicalsPageController {
       this.elements.formGeneralError.classList.add('d-none');
     }
 
-    const fields = ['Character', 'Pinyin', 'MeaningHanViet', 'MeaningVi', 'AudioUrl', 'VideoWritingUrl'];
+    const fields = [
+      'Character', 'Pinyin', 'MeaningHanViet', 'MeaningVi',
+      'AudioUrl', 'VideoWritingUrl', 'ExplanationVi', 'VideoLessonUrl', 'CommonRank'
+    ];
     fields.forEach(field => {
       const input = this.elements[`input${field}`];
       const errorDiv = this.elements[`error${field}`];
@@ -999,13 +1136,20 @@ export class AdminRadicalsPageController {
 
     this.clearValidationErrors();
 
+    const isCommonRankChecked = Boolean(this.elements.checkIsCommonRank?.checked);
+    const rawCommonRank = this.elements.inputCommonRank ? this.elements.inputCommonRank.value.trim() : '';
+
     const formData = {
       character: this.elements.inputCharacter ? this.elements.inputCharacter.value : '',
       pinyin: this.elements.inputPinyin ? this.elements.inputPinyin.value : '',
       meaningHanViet: this.elements.inputMeaningHanViet ? this.elements.inputMeaningHanViet.value : '',
       meaningVi: this.elements.inputMeaningVi ? this.elements.inputMeaningVi.value : '',
       audioUrl: this.elements.inputAudioUrl ? this.elements.inputAudioUrl.value : '',
-      videoWritingUrl: this.elements.inputVideoWritingUrl ? this.elements.inputVideoWritingUrl.value : ''
+      videoWritingUrl: this.elements.inputVideoWritingUrl ? this.elements.inputVideoWritingUrl.value : '',
+      explanationVi: this.elements.inputExplanationVi ? this.elements.inputExplanationVi.value : '',
+      videoLessonUrl: this.elements.inputVideoLessonUrl ? this.elements.inputVideoLessonUrl.value : '',
+      isCommonRank: isCommonRankChecked,
+      commonRank: isCommonRankChecked ? (rawCommonRank !== '' ? Number(rawCommonRank) : null) : null
     };
 
     // Client-side validation
@@ -1086,7 +1230,10 @@ export class AdminRadicalsPageController {
       meaningHanViet: 'MeaningHanViet',
       meaningVi: 'MeaningVi',
       audioUrl: 'AudioUrl',
-      videoWritingUrl: 'VideoWritingUrl'
+      videoWritingUrl: 'VideoWritingUrl',
+      explanationVi: 'ExplanationVi',
+      videoLessonUrl: 'VideoLessonUrl',
+      commonRank: 'CommonRank'
     };
 
     let firstInvalidInput = null;
@@ -1098,6 +1245,13 @@ export class AdminRadicalsPageController {
           this.elements.formGeneralError.classList.remove('d-none');
         }
         return;
+      }
+
+      if (field === 'commonRank' && this.elements.commonRankInputContainer) {
+        this.elements.commonRankInputContainer.classList.remove('d-none');
+        if (this.elements.checkIsCommonRank) {
+          this.elements.checkIsCommonRank.checked = true;
+        }
       }
 
       const mappedKey = fieldMap[field];

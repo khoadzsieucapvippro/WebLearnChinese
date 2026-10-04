@@ -78,10 +78,11 @@ class RadicalControllerTests {
         objectMapper = new ObjectMapper();
 
         sampleSummary = new RadicalResponse(1, "一", "yī", "Nhất", "Một",
-                "http://audio.mp3", "http://video.mp4");
+                "http://audio.mp3", "http://video.mp4", "Nét ngang một", "https://www.youtube.com/watch?v=kYv9b6-8D-w", 1);
 
         sampleDetail = new RadicalDetailResponse(1, "一", "yī", "Nhất", "Một",
                 "http://audio.mp3", "http://video.mp4",
+                "Nét ngang một", "https://www.youtube.com/watch?v=kYv9b6-8D-w", 1,
                 LocalDateTime.of(2026, 1, 1, 10, 0),
                 LocalDateTime.of(2026, 1, 2, 12, 0));
     }
@@ -106,7 +107,8 @@ class RadicalControllerTests {
                     .andExpect(jsonPath("$.data.items[0].character").value("一"))
                     .andExpect(jsonPath("$.data.items[0].pinyin").value("yī"))
                     .andExpect(jsonPath("$.data.items[0].meaningHanViet").value("Nhất"))
-                    .andExpect(jsonPath("$.data.items[0].meaningVi").value("Một"));
+                    .andExpect(jsonPath("$.data.items[0].meaningVi").value("Một"))
+                    .andExpect(jsonPath("$.data.items[0].commonRank").value(1));
         }
     }
 
@@ -128,7 +130,10 @@ class RadicalControllerTests {
                     .andExpect(jsonPath("$.data.meaningHanViet").value("Nhất"))
                     .andExpect(jsonPath("$.data.meaningVi").value("Một"))
                     .andExpect(jsonPath("$.data.audioUrl").value("http://audio.mp3"))
-                    .andExpect(jsonPath("$.data.videoWritingUrl").value("http://video.mp4"));
+                    .andExpect(jsonPath("$.data.videoWritingUrl").value("http://video.mp4"))
+                    .andExpect(jsonPath("$.data.explanationVi").value("Nét ngang một"))
+                    .andExpect(jsonPath("$.data.videoLessonUrl").value("https://www.youtube.com/watch?v=kYv9b6-8D-w"))
+                    .andExpect(jsonPath("$.data.commonRank").value(1));
         }
 
         @Test
@@ -200,6 +205,21 @@ class RadicalControllerTests {
                     .andExpect(status().isConflict())
                     .andExpect(jsonPath("$.code").value("CONFLICT"))
                     .andExpect(jsonPath("$.message").value("Bộ thủ với ký tự '一' đã tồn tại"));
+        }
+
+        @Test
+        @DisplayName("GIVEN invalid commonRank WHEN POST /api/v1/admin/radicals THEN returns 400 VALIDATION_ERROR")
+        void testCreateRadicalInvalidCommonRank() throws Exception {
+            CreateRadicalRequest invalidRequest = new CreateRadicalRequest(
+                    "口", "kǒu", "Khẩu", "Miệng", null, null, null, null, 99
+            );
+
+            adminMockMvc.perform(post("/api/v1/admin/radicals")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(invalidRequest)))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"))
+                    .andExpect(jsonPath("$.errors").isArray());
         }
     }
 

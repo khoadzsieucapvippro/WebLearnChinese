@@ -224,4 +224,57 @@ describe('Unit: Speech Controller Anti-Spam & Lifecycle', () => {
     assert.strictEqual(controller.currentText, 'B');
     assert.strictEqual(mockSynth.speakCallCount, 2);
   });
+
+  test('8. playPronunciation falls back to speech synthesis when audioUrl is null', () => {
+    const controller = new SpeechController({ toastFn: mockToastFn });
+    const btn = new MockButton();
+
+    controller.playPronunciation({
+      text: '你好',
+      audioUrl: null,
+      button: btn
+    });
+
+    assert.strictEqual(btn.disabled, true);
+    assert.strictEqual(btn.getAttribute('aria-busy'), 'true');
+    assert.ok(btn.classList.has('is-speaking'));
+    assert.strictEqual(mockSynth.speakCallCount, 1);
+    assert.strictEqual(mockSynth.lastUtterance.text, '你好');
+  });
+
+  test('9. playPronunciation handles audio failure and falls back gracefully', () => {
+    const controller = new SpeechController({ toastFn: mockToastFn });
+    const btn = new MockButton();
+
+    // Mock Audio in global/window
+    class MockAudio {
+      constructor(src) {
+        this.src = src;
+        this.onended = null;
+        this.onerror = null;
+      }
+      play() {
+        // Return a rejecting promise to simulate audio failure
+        return Promise.reject(new Error('Audio load failed'));
+      }
+      pause() {}
+    }
+    const prevAudio = global.Audio;
+    global.Audio = MockAudio;
+
+    try {
+      controller.playPronunciation({
+        text: '谢谢',
+        audioUrl: 'https://example.com/audio/test.mp3',
+        button: btn
+      });
+
+      // Since Audio playback rejected, it should fallback to speech synthesis
+      assert.strictEqual(mockSynth.speakCallCount, 1);
+      assert.strictEqual(mockSynth.lastUtterance.text, '谢谢');
+    } finally {
+      global.Audio = prevAudio;
+    }
+  });
 });
+

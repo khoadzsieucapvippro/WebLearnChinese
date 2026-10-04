@@ -187,13 +187,13 @@ class LessonLifecycleAuditIntegrationTests {
     void tearDown() {
         SecurityContextHolder.clearContext();
         txTemplate.executeWithoutResult(status -> {
-            reviewLogRepository.deleteAll();
-            cardProgressRepository.deleteAll();
-            personalNoteRepository.deleteAll();
-            moderationLogRepository.deleteAll();
-            lessonVocabularyRepository.deleteAll();
-            lessonRepository.deleteAll();
-            vocabularyRepository.deleteAll();
+            reviewLogRepository.deleteAllInBatch();
+            cardProgressRepository.deleteAllInBatch();
+            personalNoteRepository.deleteAllInBatch();
+            moderationLogRepository.deleteAllInBatch();
+            lessonVocabularyRepository.deleteAllInBatch();
+            lessonRepository.deleteAllInBatch();
+            vocabularyRepository.deleteByHskLevelIsNull();
         });
     }
 

@@ -132,7 +132,7 @@ describe('Browser E2E: Interactive SRS Flashcard Review Session (9C.3)', () => {
     try {
       await setupAuthenticatedSession(page);
 
-      await page.route('**/api/v1/srs/due', async (route) => {
+      await page.route('**/api/v1/srs/due*', async (route) => {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
@@ -186,7 +186,7 @@ describe('Browser E2E: Interactive SRS Flashcard Review Session (9C.3)', () => {
     try {
       await setupAuthenticatedSession(page);
 
-      await page.route('**/api/v1/srs/due', async (route) => {
+      await page.route('**/api/v1/srs/due*', async (route) => {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
@@ -250,7 +250,7 @@ describe('Browser E2E: Interactive SRS Flashcard Review Session (9C.3)', () => {
     try {
       await setupAuthenticatedSession(page);
 
-      await page.route('**/api/v1/srs/due', async (route) => {
+      await page.route('**/api/v1/srs/due*', async (route) => {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
@@ -326,7 +326,7 @@ describe('Browser E2E: Interactive SRS Flashcard Review Session (9C.3)', () => {
     try {
       await setupAuthenticatedSession(page);
 
-      await page.route('**/api/v1/srs/due', async (route) => {
+      await page.route('**/api/v1/srs/due*', async (route) => {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
@@ -388,7 +388,7 @@ describe('Browser E2E: Interactive SRS Flashcard Review Session (9C.3)', () => {
     try {
       await setupAuthenticatedSession(page);
 
-      await page.route('**/api/v1/srs/due', async (route) => {
+      await page.route('**/api/v1/srs/due*', async (route) => {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
@@ -492,7 +492,7 @@ describe('Browser E2E: Interactive SRS Flashcard Review Session (9C.3)', () => {
     try {
       await setupAuthenticatedSession(page);
 
-      await page.route('**/api/v1/srs/due', async (route) => {
+      await page.route('**/api/v1/srs/due*', async (route) => {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
@@ -541,6 +541,115 @@ describe('Browser E2E: Interactive SRS Flashcard Review Session (9C.3)', () => {
       const closeBtn = page.locator('#notesModalCloseBtn');
       await closeBtn.click();
       await notesModal.waitFor({ state: 'hidden', timeout: 5000 });
+
+      assert.strictEqual(getRuntimeErrors().length, 0, 'Zero unexpected runtime errors');
+    } finally {
+      await context.close();
+    }
+  });
+
+  // SR-09: Speech button visual synchronization and keyboard conflict safety
+  test('SR-09: Speech button matches Vocabulary design system (.vocab-speech-btn) with zero emoji and no flip conflict', async () => {
+    const { page, context, getRuntimeErrors } = await createMonitoredPage(browser, {
+      viewportWidth: 1280,
+      viewportHeight: 720
+    });
+
+    try {
+      await setupAuthenticatedSession(page);
+
+      await page.route('**/api/v1/srs/due*', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            code: 'SUCCESS',
+            message: 'OK',
+            data: [createMockDueCards()[0]] // Vocab card itemId: 101, hanzi: '学'
+          })
+        });
+      });
+
+      await page.route('**/api/v1/vocabulary/101', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            code: 'SUCCESS',
+            message: 'OK',
+            data: { id: 101, hanzi: '学', pinyin: 'xué', audioUrl: null }
+          })
+        });
+      });
+
+      await page.goto(`${baseUrl}/srs-review.html`, { waitUntil: 'domcontentloaded' });
+      await page.locator('#srsActiveSession').waitFor({ state: 'visible', timeout: 5000 });
+
+      const frontSpeechBtn = page.locator('#btnAudioPronounceFront');
+      await frontSpeechBtn.waitFor({ state: 'visible', timeout: 5000 });
+
+      // 1. Visual & Markup Verification
+      const frontClasses = await frontSpeechBtn.getAttribute('class');
+      assert.ok(frontClasses.includes('vocab-speech-btn'), 'SRS front speech button must have class "vocab-speech-btn"');
+
+      const frontText = await frontSpeechBtn.innerText();
+      assert.strictEqual(frontText.trim(), '', 'Front speech button must contain only SVG icon (zero text, no emoji 🔊)');
+
+      const frontSvg = frontSpeechBtn.locator('svg');
+      assert.ok(await frontSvg.isVisible(), 'SVG speaker icon must be present inside speech button');
+
+      const frontAria = await frontSpeechBtn.getAttribute('aria-label');
+      assert.ok(frontAria && frontAria.includes('Phát âm'), 'Must provide accessible name mentioning "Phát âm"');
+
+      // Check computed dimensions
+      const btnBox = await frontSpeechBtn.boundingBox();
+      assert.ok(btnBox, 'Bounding box must exist');
+      assert.ok(Math.abs(btnBox.width - 34) <= 2, `Button width should be ~34px, got ${btnBox.width}`);
+      assert.ok(Math.abs(btnBox.height - 34) <= 2, `Button height should be ~34px, got ${btnBox.height}`);
+
+      // 2. Keyboard conflict test: Space when focused on speech button must NOT flip card
+      const flashcard = page.locator('#flashcard');
+      const cardBack = page.locator('#cardBack');
+
+      await frontSpeechBtn.focus();
+      assert.strictEqual(await flashcard.getAttribute('aria-expanded'), 'false');
+      assert.ok(await cardBack.getAttribute('aria-hidden') === 'true');
+
+      // Press Space while speech button is focused
+      await page.keyboard.press('Space');
+      await page.waitForTimeout(200);
+
+      // Flashcard MUST still be on front face (not flipped)
+      assert.strictEqual(await flashcard.getAttribute('aria-expanded'), 'false', 'Space on speech button must not flip card');
+      assert.strictEqual(await cardBack.getAttribute('aria-hidden'), 'true', 'Card back must remain hidden');
+
+      // Click speech button directly - must also not flip card
+      await frontSpeechBtn.click();
+      await page.waitForTimeout(200);
+      assert.strictEqual(await flashcard.getAttribute('aria-expanded'), 'false', 'Click on speech button must not flip card');
+
+      // 3. Now flip card using Space on the card scene / background
+      await page.locator('#flashcard').click();
+      await page.waitForTimeout(200);
+      assert.strictEqual(await flashcard.getAttribute('aria-expanded'), 'true', 'Click on card body flips card');
+
+      // 4. Back face speech button verification
+      const backSpeechBtn = page.locator('#btnAudioPronounceBack');
+      await backSpeechBtn.waitFor({ state: 'visible', timeout: 5000 });
+
+      const backClasses = await backSpeechBtn.getAttribute('class');
+      assert.ok(backClasses.includes('vocab-speech-btn'), 'SRS back speech button must have class "vocab-speech-btn"');
+
+      const backText = await backSpeechBtn.innerText();
+      assert.strictEqual(backText.trim(), '', 'Back speech button must contain only SVG icon (zero text, no emoji 🔊)');
+
+      const backSvg = backSpeechBtn.locator('svg');
+      assert.ok(await backSvg.isVisible(), 'SVG speaker icon must be present on back face');
+
+      // Click back speech button - card must remain on back face (not unflip)
+      await backSpeechBtn.click();
+      await page.waitForTimeout(200);
+      assert.strictEqual(await flashcard.getAttribute('aria-expanded'), 'true', 'Clicking speech button on back must not unflip card');
 
       assert.strictEqual(getRuntimeErrors().length, 0, 'Zero unexpected runtime errors');
     } finally {

@@ -121,21 +121,21 @@ class ChineseDomainDataAuditTests {
             assertThat(radical49.getCharacter()).isEqualTo("己");
             assertThat(radical49.getPinyin()).isEqualTo("jǐ");
             assertThat(radical49.getMeaningHanViet()).isEqualTo("Kỷ");
-            assertThat(radical49.getMeaningVi()).isEqualTo("");
+            assertThat(radical49.getMeaningVi()).isEqualTo("Bản thân mình");
 
             Radical radical172 = radicalRepository.findById(172)
                     .orElseThrow(() -> new AssertionError("Radical 172 not found"));
             assertThat(radical172.getCharacter()).isEqualTo("隹");
             assertThat(radical172.getPinyin()).isEqualTo("zhuī");
             assertThat(radical172.getMeaningHanViet()).isEqualTo("Chuy");
-            assertThat(radical172.getMeaningVi()).isEqualTo("");
+            assertThat(radical172.getMeaningVi()).isEqualTo("Chim đuôi ngắn");
 
             // Record 23 (匸) has slash 'xǐ/xì'
             assertThat(polyphoneSlashPinyinIds).contains(23);
         }
 
         @Test
-        @DisplayName("GIVEN 214 radicals WHEN auditing Vietnamese meaning fields THEN meaning_han_viet is 100% present and meaning_vi is 100% empty string")
+        @DisplayName("GIVEN 214 radicals WHEN auditing Vietnamese meaning fields THEN meaning_han_viet and meaning_vi are 100% present")
         void testRadicalVietnameseMeaningAudit() {
             List<Radical> radicals = radicalRepository.findAll(Sort.by(Sort.Direction.ASC, "radicalId"));
 
@@ -154,8 +154,8 @@ class ChineseDomainDataAuditTests {
             // Han-Viet transliteration is 100% complete (214/214)
             assertThat(emptyHanVietCount).isEqualTo(0);
 
-            // meaning_vi is currently empty string '' for all 214 records
-            assertThat(emptyMeaningViCount).isEqualTo(214);
+            // meaning_vi is seeded for all 214 records via V9
+            assertThat(emptyMeaningViCount).isEqualTo(0);
         }
     }
 
@@ -254,9 +254,9 @@ class ChineseDomainDataAuditTests {
         @Test
         @DisplayName("GIVEN vocabulary creation WHEN testing polysemy vs homophones THEN verify composite uniqueness on (hanzi, pinyin_raw)")
         void testVocabularyUniquenessAndPolysemy() {
-            // Case 1: Same hanzi, DIFFERENT pinyin_raw -> Allowed (e.g. 行 xíng vs háng)
-            Vocabulary vocab1 = new Vocabulary("行", "xíng", "xing", "Hành", "Đi, làm, thực hiện");
-            Vocabulary vocab2 = new Vocabulary("行", "háng", "hang", "Hàng", "Hàng lối, ngân hàng");
+            // Case 1: Same hanzi, DIFFERENT pinyin_raw -> Allowed (e.g. 朝 cháo vs zhāo)
+            Vocabulary vocab1 = new Vocabulary("朝", "cháo", "chao", "Triều", "Triều đại, hướng về");
+            Vocabulary vocab2 = new Vocabulary("朝", "zhāo", "zhao", "Triêu", "Sáng sớm");
 
             vocabularyRepository.save(vocab1);
             vocabularyRepository.save(vocab2);
@@ -266,9 +266,9 @@ class ChineseDomainDataAuditTests {
             assertThat(vocab2.getVocabId()).isNotNull();
             assertThat(vocab1.getVocabId()).isNotEqualTo(vocab2.getVocabId());
 
-            // Case 2: Different hanzi, SAME pinyin_raw -> Allowed (homophones e.g. 他 tā vs 她 tā)
-            Vocabulary vocab3 = new Vocabulary("他", "tā", "ta", "Tha", "Anh ấy");
-            Vocabulary vocab4 = new Vocabulary("她", "tā", "ta", "Tha", "Cô ấy");
+            // Case 2: Different hanzi, SAME pinyin_raw -> Allowed (homophones e.g. 诗 shī vs 狮 shī)
+            Vocabulary vocab3 = new Vocabulary("诗", "shī", "shi", "Thi", "Thơ ca");
+            Vocabulary vocab4 = new Vocabulary("狮", "shī", "shi", "Sư", "Sư tử");
 
             vocabularyRepository.save(vocab3);
             vocabularyRepository.save(vocab4);
@@ -284,7 +284,7 @@ class ChineseDomainDataAuditTests {
             Radical radHuman = radicalRepository.findById(9).orElseThrow(); // 人(亻)
             Radical radMouth = radicalRepository.findById(30).orElseThrow(); // 口
 
-            Vocabulary vocab = new Vocabulary("你", "nǐ", "ni", "Nhĩ", "Bạn, anh, chị (ngôi thứ 2)");
+            Vocabulary vocab = new Vocabulary("保", "bǎo", "bao", "Bảo", "Bảo vệ, giữ gìn");
             vocab.addRadical(radHuman);
 
             Vocabulary saved = vocabularyRepository.save(vocab);
@@ -303,10 +303,9 @@ class ChineseDomainDataAuditTests {
         }
 
         @Test
-        @DisplayName("GIVEN database schema WHEN auditing HSK metadata THEN prove HSK level column is NOT present in schema")
-        void testHskMetadataNotImplemented() {
-            // Documenting fact: HSK is not present in Vocabulary entity or database table
-            // No getHskLevel() or setHskLevel() exists on Vocabulary class.
+        @DisplayName("GIVEN database schema WHEN auditing HSK metadata THEN prove HSK level column is present in schema")
+        void testHskMetadataImplemented() {
+            // Documenting fact: HSK 3.0 metadata is present in Vocabulary entity and database table
             boolean hasHskField = false;
             for (java.lang.reflect.Field field : Vocabulary.class.getDeclaredFields()) {
                 if (field.getName().toLowerCase().contains("hsk")) {
@@ -314,7 +313,13 @@ class ChineseDomainDataAuditTests {
                     break;
                 }
             }
-            assertThat(hasHskField).isFalse();
+            assertThat(hasHskField).isTrue();
+
+            Vocabulary vocab = new Vocabulary();
+            vocab.setHskLevel(1);
+            vocab.setHskStandard("HSK 3.0");
+            assertThat(vocab.getHskLevel()).isEqualTo(1);
+            assertThat(vocab.getHskStandard()).isEqualTo("HSK 3.0");
         }
     }
 }

@@ -20,6 +20,9 @@ public class RadicalDetailResponse {
     private String meaningVi;
     private String audioUrl;
     private String videoWritingUrl;
+    private String explanationVi;
+    private String videoLessonUrl;
+    private Integer commonRank;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -41,11 +44,22 @@ public class RadicalDetailResponse {
         this.updatedAt = updatedAt;
     }
 
+    public RadicalDetailResponse(Integer radicalId, String character, String pinyin,
+                                 String meaningHanViet, String meaningVi,
+                                 String audioUrl, String videoWritingUrl,
+                                 String explanationVi, String videoLessonUrl, Integer commonRank,
+                                 LocalDateTime createdAt, LocalDateTime updatedAt) {
+        this(radicalId, character, pinyin, meaningHanViet, meaningVi, audioUrl, videoWritingUrl, createdAt, updatedAt);
+        this.explanationVi = explanationVi;
+        this.videoLessonUrl = videoLessonUrl;
+        this.commonRank = commonRank;
+    }
+
     public static RadicalDetailResponse fromEntity(Radical radical) {
         if (radical == null) {
             return null;
         }
-        return new RadicalDetailResponse(
+        RadicalDetailResponse response = new RadicalDetailResponse(
                 radical.getRadicalId(),
                 radical.getCharacter(),
                 radical.getPinyin(),
@@ -56,6 +70,10 @@ public class RadicalDetailResponse {
                 radical.getCreatedAt(),
                 radical.getUpdatedAt()
         );
+        response.setExplanationVi(radical.getExplanationVi());
+        response.setVideoLessonUrl(radical.getVideoLessonUrl());
+        response.setCommonRank(radical.getCommonRank());
+        return response;
     }
 
     public Integer getRadicalId() {
@@ -112,6 +130,30 @@ public class RadicalDetailResponse {
 
     public void setVideoWritingUrl(String videoWritingUrl) {
         this.videoWritingUrl = videoWritingUrl;
+    }
+
+    public String getExplanationVi() {
+        return explanationVi;
+    }
+
+    public void setExplanationVi(String explanationVi) {
+        this.explanationVi = explanationVi;
+    }
+
+    public String getVideoLessonUrl() {
+        return videoLessonUrl;
+    }
+
+    public void setVideoLessonUrl(String videoLessonUrl) {
+        this.videoLessonUrl = videoLessonUrl;
+    }
+
+    public Integer getCommonRank() {
+        return commonRank;
+    }
+
+    public void setCommonRank(Integer commonRank) {
+        this.commonRank = commonRank;
     }
 
     public LocalDateTime getCreatedAt() {

@@ -14,14 +14,33 @@ class MockElement {
     this.tagName = tagName;
     this.children = [];
     this.attrs = {};
+    this._className = '';
     this.classList = {
       _classes: new Set(),
-      add: (c) => this.classList._classes.add(c),
-      remove: (c) => this.classList._classes.delete(c),
+      add: (c) => {
+        this.classList._classes.add(c);
+        this._className = Array.from(this.classList._classes).join(' ');
+      },
+      remove: (c) => {
+        this.classList._classes.delete(c);
+        this._className = Array.from(this.classList._classes).join(' ');
+      },
       contains: (c) => this.classList._classes.has(c)
     };
     this.textContent = '';
     this.listeners = {};
+  }
+
+  set className(val) {
+    this._className = val || '';
+    this.classList._classes.clear();
+    if (this._className) {
+      this._className.split(/\s+/).filter(Boolean).forEach(c => this.classList._classes.add(c));
+    }
+  }
+
+  get className() {
+    return this._className || '';
   }
 
   setAttribute(key, value) {
@@ -59,6 +78,7 @@ globalThis.Node = MockElement;
 globalThis.HTMLElement = MockElement;
 globalThis.document = {
   createElement: (tag) => new MockElement(tag),
+  createElementNS: (ns, tag) => new MockElement(tag),
   createTextNode: (text) => {
     const el = new MockElement('#text');
     el.textContent = text;
@@ -68,7 +88,7 @@ globalThis.document = {
 };
 
 // Dynamic import after globals are established
-const { setComponentState, showLoading, showEmpty, showError } = await import('../../../../frontend/js/ui/ui.js');
+const { setComponentState, showLoading, showEmpty, showError, createSpeakerIcon, createSpeechButton } = await import('../../../../frontend/js/ui/ui.js');
 
 describe('Unit: UI Primitives & Three-State Engine Contract', () => {
 
@@ -133,6 +153,58 @@ describe('Unit: UI Primitives & Three-State Engine Contract', () => {
     setComponentState(container, 'READY');
     assert.strictEqual(container.getAttribute('aria-busy'), null);
     assert.strictEqual(container.children.length, 0, 'READY state clears temporary state banners');
+  });
+
+  test('createSpeakerIcon creates safe SVG icon with polygon and sound waves matching design system', () => {
+    const icon16 = createSpeakerIcon(16);
+    assert.strictEqual(icon16.tagName, 'svg');
+    assert.strictEqual(icon16.getAttribute('width'), '16');
+    assert.strictEqual(icon16.getAttribute('height'), '16');
+    assert.strictEqual(icon16.getAttribute('viewBox'), '0 0 24 24');
+    assert.strictEqual(icon16.getAttribute('fill'), 'none');
+    assert.strictEqual(icon16.getAttribute('stroke'), 'currentColor');
+    assert.strictEqual(icon16.getAttribute('aria-hidden'), 'true');
+    assert.strictEqual(icon16.children.length, 2);
+
+    const polygon = icon16.children[0];
+    assert.strictEqual(polygon.tagName, 'polygon');
+    assert.strictEqual(polygon.getAttribute('points'), '11 5 6 9 2 9 2 15 6 15 11 19 11 5');
+
+    const path = icon16.children[1];
+    assert.strictEqual(path.tagName, 'path');
+    assert.strictEqual(path.getAttribute('d'), 'M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07');
+
+    // Custom size support
+    const icon20 = createSpeakerIcon(20);
+    assert.strictEqual(icon20.getAttribute('width'), '20');
+    assert.strictEqual(icon20.getAttribute('height'), '20');
+  });
+
+  test('createSpeechButton generates standardized circular button matching .vocab-speech-btn contract', () => {
+    let clicked = false;
+    const btn = createSpeechButton({
+      id: 'testSpeechBtn',
+      className: 'custom-speech-class',
+      ariaLabel: 'Phát âm từ 你好',
+      title: 'Phát âm: 你好',
+      iconSize: 16,
+      onClick: () => { clicked = true; }
+    });
+
+    assert.strictEqual(btn.tagName, 'button');
+    assert.strictEqual(btn.getAttribute('type'), 'button');
+    assert.strictEqual(btn.id, 'testSpeechBtn');
+    assert.ok(btn.classList.contains('vocab-speech-btn'));
+    assert.ok(btn.classList.contains('custom-speech-class'));
+    assert.strictEqual(btn.getAttribute('aria-label'), 'Phát âm từ 你好');
+    assert.strictEqual(btn.getAttribute('title'), 'Phát âm: 你好');
+    assert.strictEqual(btn.children.length, 1);
+    assert.strictEqual(btn.children[0].tagName, 'svg');
+
+    // Click handler invocation
+    assert.strictEqual(typeof btn.listeners['click'], 'function');
+    btn.listeners['click']();
+    assert.strictEqual(clicked, true);
   });
 
 });

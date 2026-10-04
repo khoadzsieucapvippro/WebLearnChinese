@@ -28,4 +28,20 @@ public interface RadicalRepository extends JpaRepository<Radical, Integer> {
      * @return true if exists, false otherwise
      */
     boolean existsByCharacter(String character);
+
+    /**
+     * Finds a radical by its common rank.
+     *
+     * @param commonRank the common rank (1..50)
+     * @return Optional containing found Radical or empty if not found
+     */
+    Optional<Radical> findByCommonRank(Integer commonRank);
+
+    /**
+     * Checks whether a radical with the given common rank exists.
+     *
+     * @param commonRank the common rank (1..50)
+     * @return true if exists, false otherwise
+     */
+    boolean existsByCommonRank(Integer commonRank);
 }

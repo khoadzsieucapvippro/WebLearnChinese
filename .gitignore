@@ -105,3 +105,25 @@ playwright-report/
 # Local Agent & IDE Artifacts
 .gemini/
 .agents/scratch/
+
+# Temporary Research, Scraping & Visual Review Artifacts
+/tests/*.pdf
+/tests/*.png
+/tests/*.json
+/tests/*.html
+/tests/*.py
+/tests/*.md
+/tests/*.sql
+/tests/scrape-*.mjs
+/tests/extract-*.mjs
+/tests/analyze-*.mjs
+/tests/build-matrix.mjs
+/tests/check-*.mjs
+/tests/get-*.mjs
+/tests/inspect-*.mjs
+/tests/map-*.mjs
+/tests/parse-*.mjs
+/tests/test-part1-*.mjs
+/tests/verify-*.mjs
+/tests/generate-*.mjs
+/tests/visual-review-*.mjs

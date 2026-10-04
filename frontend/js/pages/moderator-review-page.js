@@ -22,7 +22,7 @@ import { apiClient } from '../api/api.js';
 import { authManager } from '../auth/auth-state.js';
 import { initNavbarAuth } from '../ui/nav.js';
 import { createSafeElement, clearContainer, sanitizeResourceUrl } from '../ui/security.js';
-import { showLoading, showError, showToast } from '../ui/ui.js';
+import { showLoading, showError, showToast, createSpeakerIcon, createSpeechButton, playPronunciation } from '../ui/ui.js';
 
 /* -----------------------------------------------------------------------------
  * 1. PURE LOGIC & UTILITY HELPERS (Exported for Testability)
@@ -1226,14 +1226,14 @@ export class ModeratorReviewController {
     }
 
     const audioBtn = createSafeElement('button', {
-      className: 'btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1',
+      className: 'btn btn-sm btn-chinese-outline d-inline-flex align-items-center gap-1',
       attrs: {
         'type': 'button',
         'aria-label': `Nghe phát âm chuẩn của từ ${vocab.hanzi}`,
         'id': `btn-audio-${vocab.vocabId}`
       },
       children: [
-        createSafeElement('span', { attrs: { 'aria-hidden': 'true' }, text: '🔊' }),
+        createSpeakerIcon(14),
         createSafeElement('span', { text: 'Nghe phát âm' })
       ]
     });
@@ -1246,56 +1246,17 @@ export class ModeratorReviewController {
   }
 
   /**
-   * Plays audio with safe error handling and visual button state indication.
+   * Plays audio with safe error handling via centralized playPronunciation helper.
    * 
    * @param {string} safeUrl 
    * @param {string} fallbackHanzi 
-   * @param {HTMLButtonElement} buttonEl 
+   * @param {HTMLButtonElement} [buttonEl] 
    */
-  playAudio(safeUrl, fallbackHanzi, buttonEl) {
-    if (this.currentAudio) {
-      try {
-        this.currentAudio.pause();
-        this.currentAudio = null;
-      } catch {
-        // Safe ignore
-      }
-    }
-
-    try {
-      const audio = new Audio(safeUrl);
-      this.currentAudio = audio;
-
-      const originalText = buttonEl.querySelector('span:last-child');
-      if (originalText) originalText.textContent = 'Đang phát...';
-
-      audio.play().then(() => {
-        audio.onended = () => {
-          if (originalText) originalText.textContent = 'Nghe phát âm';
-        };
-      }).catch(() => {
-        if (originalText) originalText.textContent = 'Nghe phát âm';
-        this.speakFallback(fallbackHanzi);
-      });
-    } catch {
-      this.speakFallback(fallbackHanzi);
-    }
-  }
-
-  /**
-   * Fallback speech synthesis if audio playback fails.
-   * @param {string} hanzi 
-   */
-  speakFallback(hanzi) {
-    if (typeof window !== 'undefined' && 'speechSynthesis' in window && window.SpeechSynthesisUtterance) {
-      try {
-        const utterance = new SpeechSynthesisUtterance(hanzi);
-        utterance.lang = 'zh-CN';
-        window.speechSynthesis.speak(utterance);
-      } catch {
-        // Safe ignore
-      }
-    }
+  playAudio(safeUrl, fallbackHanzi, buttonEl = null) {
+    return playPronunciation({
+      text: fallbackHanzi,
+      audioUrl: safeUrl
+    });
   }
 
   /**

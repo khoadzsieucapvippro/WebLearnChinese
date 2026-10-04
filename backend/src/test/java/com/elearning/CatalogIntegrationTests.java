@@ -97,20 +97,35 @@ class CatalogIntegrationTests {
         creatorToken = jwtUtil.generateToken("creator@elearning.com", List.of("Creator"));
         moderatorToken = jwtUtil.generateToken("moderator@elearning.com", List.of("Moderator"));
 
-        // Seed vocabulary "你 (nǐ / ni)" linked with radical 9 (人 / 亻) for Checkpoint 4B
-        seededVocabNi = new Vocabulary("你", "nǐ", "ni", "Nhĩ", "Bạn, anh, chị (ngôi thứ 2)");
-        seededVocabNi.setExampleSentence("你好！");
-        seededVocabNi.setExampleTranslation("Xin chào!");
-        radicalRepository.findById(9).ifPresent(seededVocabNi::addRadical);
-        seededVocabNi = vocabularyRepository.save(seededVocabNi);
+        // Seed or retrieve vocabulary "你 (nǐ / ni)" linked with radical 9 (人 / 亻) for Checkpoint 4B
+        seededVocabNi = vocabularyRepository.findByHanziAndPinyinRaw("你", "ni")
+                .orElseGet(() -> {
+                    Vocabulary v = new Vocabulary("你", "nǐ", "ni", "Nhĩ", "Bạn, anh, chị (ngôi thứ 2)");
+                    v.setExampleSentence("你好！");
+                    v.setExampleTranslation("Xin chào!");
+                    radicalRepository.findById(9).ifPresent(v::addRadical);
+                    return vocabularyRepository.save(v);
+                });
+        if (seededVocabNi.getRadicals().isEmpty()) {
+            radicalRepository.findById(9).ifPresent(seededVocabNi::addRadical);
+            seededVocabNi = vocabularyRepository.save(seededVocabNi);
+        }
 
-        // Seed vocabulary "休 (xiū / xiu)" linked with radical 9 and radical 75 (木)
-        seededVocabXiu = new Vocabulary("休", "xiū", "xiu", "Hưu", "Nghỉ ngơi");
-        seededVocabXiu.setExampleSentence("他在休息。");
-        seededVocabXiu.setExampleTranslation("Anh ấy đang nghỉ ngơi.");
-        radicalRepository.findById(9).ifPresent(seededVocabXiu::addRadical);
-        radicalRepository.findById(75).ifPresent(seededVocabXiu::addRadical);
-        seededVocabXiu = vocabularyRepository.save(seededVocabXiu);
+        // Seed or retrieve vocabulary "休 (xiū / xiu)" linked with radical 9 and radical 75 (木)
+        seededVocabXiu = vocabularyRepository.findByHanziAndPinyinRaw("休", "xiu")
+                .orElseGet(() -> {
+                    Vocabulary v = new Vocabulary("休", "xiū", "xiu", "Hưu", "Nghỉ ngơi");
+                    v.setExampleSentence("他在休息。");
+                    v.setExampleTranslation("Anh ấy đang nghỉ ngơi.");
+                    radicalRepository.findById(9).ifPresent(v::addRadical);
+                    radicalRepository.findById(75).ifPresent(v::addRadical);
+                    return vocabularyRepository.save(v);
+                });
+        if (seededVocabXiu.getRadicals().isEmpty()) {
+            radicalRepository.findById(9).ifPresent(seededVocabXiu::addRadical);
+            radicalRepository.findById(75).ifPresent(seededVocabXiu::addRadical);
+            seededVocabXiu = vocabularyRepository.save(seededVocabXiu);
+        }
     }
 
     @Nested
@@ -251,9 +266,8 @@ class CatalogIntegrationTests {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("SUCCESS"))
                     .andExpect(jsonPath("$.data.items").isArray())
-                    .andExpect(jsonPath("$.data.items[0].hanzi").value("你"))
-                    .andExpect(jsonPath("$.data.items[0].pinyin").value("nǐ"))
-                    .andExpect(jsonPath("$.data.items[0].pinyinRaw").value("ni"))
+                    .andExpect(jsonPath("$.data.items[?(@.hanzi == '你')].pinyin").value(org.hamcrest.Matchers.hasItem("nǐ")))
+                    .andExpect(jsonPath("$.data.items[?(@.hanzi == '你')].pinyinRaw").value(org.hamcrest.Matchers.hasItem("ni")))
                     .andExpect(jsonPath("$.data.page").value(0))
                     .andExpect(jsonPath("$.data.size").isNumber())
                     .andExpect(jsonPath("$.data.totalElements").isNumber())
@@ -266,7 +280,7 @@ class CatalogIntegrationTests {
             mockMvc.perform(get("/api/v1/vocabulary?search=nǐ"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("SUCCESS"))
-                    .andExpect(jsonPath("$.data.items[0].hanzi").value("你"));
+                    .andExpect(jsonPath("$.data.items[?(@.hanzi == '你')]").isNotEmpty());
         }
 
         @Test
@@ -275,7 +289,7 @@ class CatalogIntegrationTests {
             mockMvc.perform(get("/api/v1/vocabulary?search=你"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("SUCCESS"))
-                    .andExpect(jsonPath("$.data.items[0].hanzi").value("你"));
+                    .andExpect(jsonPath("$.data.items[?(@.hanzi == '你')]").isNotEmpty());
         }
 
         @Test
@@ -284,7 +298,7 @@ class CatalogIntegrationTests {
             mockMvc.perform(get("/api/v1/vocabulary?search=xiu"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("SUCCESS"))
-                    .andExpect(jsonPath("$.data.items[0].hanzi").value("休"));
+                    .andExpect(jsonPath("$.data.items[?(@.hanzi == '休')]").isNotEmpty());
         }
 
         @Test

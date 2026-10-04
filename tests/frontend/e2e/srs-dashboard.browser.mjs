@@ -471,4 +471,83 @@ describe('Browser E2E: SRS Dashboard & Profile Settings Integration', () => {
     }
   });
 
+  // SD-08: Profile SRS Settings Quick Presets and Stepper Controls
+  test('SD-08: Profile SRS Settings Quick Presets and Stepper Controls update input and submit successfully', async () => {
+    const { page, context, getRuntimeErrors } = await createMonitoredPage(browser, {
+      viewportWidth: 1280,
+      viewportHeight: 720
+    });
+
+    try {
+      await setupAuthenticatedSession(page);
+
+      await page.route('**/api/v1/users/profile', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ code: 'SUCCESS', data: createMockUserProfile() })
+        });
+      });
+
+      let submittedPayload = null;
+      await page.route('**/api/v1/srs/settings', async (route) => {
+        if (route.request().method() === 'PUT') {
+          submittedPayload = JSON.parse(route.request().postData());
+          await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({ code: 'SUCCESS', data: createMockUserSrsSetting({ newCardsPerDay: submittedPayload.newCardsPerDay }) })
+          });
+        } else {
+          await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({ code: 'SUCCESS', data: createMockUserSrsSetting({ newCardsPerDay: 20 }) })
+          });
+        }
+      });
+
+      await page.goto(`${baseUrl}/profile.html#srs-settings`, { waitUntil: 'domcontentloaded' });
+      await page.locator('#profileCard').waitFor({ state: 'visible' });
+      await page.waitForFunction(() => document.getElementById('srsNewCardsPerDayInput')?.value === '20');
+
+      // Initial state: 20 preset chip is active
+      const chip20 = page.locator('.srs-preset-chip[data-preset="20"]');
+      const chip10 = page.locator('.srs-preset-chip[data-preset="10"]');
+      assert.strictEqual(await chip20.evaluate(el => el.classList.contains('active')), true);
+
+      // Click 10 preset chip
+      await chip10.click();
+      assert.strictEqual(await page.locator('#srsNewCardsPerDayInput').inputValue(), '10');
+      assert.strictEqual(await chip10.evaluate(el => el.classList.contains('active')), true);
+      assert.strictEqual(await chip20.evaluate(el => el.classList.contains('active')), false);
+
+      // Click Increment (+5)
+      await page.locator('#btnIncrementNewCards').click();
+      assert.strictEqual(await page.locator('#srsNewCardsPerDayInput').inputValue(), '15');
+      assert.strictEqual(await chip10.evaluate(el => el.classList.contains('active')), false);
+
+      // Click Decrement (-5)
+      await page.locator('#btnDecrementNewCards').click();
+      assert.strictEqual(await page.locator('#srsNewCardsPerDayInput').inputValue(), '10');
+      assert.strictEqual(await chip10.evaluate(el => el.classList.contains('active')), true);
+
+      // Submit Save
+      await page.locator('#btnSaveSrsSettings').click();
+
+      // Verify submitted payload
+      assert.deepStrictEqual(submittedPayload, { newCardsPerDay: 10 });
+
+      // Verify success status
+      await page.locator('#srsSettingsStatus').waitFor({ state: 'visible' });
+      const statusText = await page.locator('#srsSettingsStatus').textContent();
+      assert.ok(statusText.includes('thành công'), `Status must indicate success: ${statusText}`);
+
+      const errors = getRuntimeErrors();
+      assert.strictEqual(errors.length, 0, `Runtime errors during presets/stepper test:\n${errors.join('\n')}`);
+    } finally {
+      await context.close();
+    }
+  });
+
 });

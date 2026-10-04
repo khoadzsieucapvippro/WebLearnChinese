@@ -201,11 +201,11 @@ describe('Static: CSP & Resource Graph Invariants Audit (Task 9G.3)', () => {
       }
     });
 
-    it('enforces object-src "none", frame-ancestors "none", and frame-src "none"', () => {
+    it('enforces object-src "none", frame-ancestors "none", and exact frame-src origin boundary', () => {
       for (const [env, directives] of [['DEV', DEV_CSP_DIRECTIVES], ['PROD', PROD_CSP_DIRECTIVES]]) {
         assert.deepStrictEqual(directives['object-src'], ["'none'"], `${env} object-src must be 'none'`);
         assert.deepStrictEqual(directives['frame-ancestors'], ["'none'"], `${env} frame-ancestors must be 'none'`);
-        assert.deepStrictEqual(directives['frame-src'], ["'none'"], `${env} frame-src must be 'none'`);
+        assert.deepStrictEqual(directives['frame-src'], ["'self'", 'https://www.youtube-nocookie.com'], `${env} frame-src must strictly allow 'self' and https://www.youtube-nocookie.com without wildcards`);
         assert.deepStrictEqual(directives['base-uri'], ["'self'"], `${env} base-uri must be 'self'`);
         assert.deepStrictEqual(directives['form-action'], ["'self'"], `${env} form-action must be 'self'`);
       }

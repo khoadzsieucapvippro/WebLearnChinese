@@ -209,10 +209,10 @@ class SrsTimezoneIntegrationTests {
         DueCardResponse responseDay1 = txTemplate.execute(status -> serviceDay1.reviewCard(req));
         assertThat(responseDay1).isNotNull();
 
-        // Second review on Day 1 (still 23:59:50) must be rejected because maxReviewPerDay=1
+        // Second review on Day 1 on same card must be rejected because card is not due yet
         assertThatThrownBy(() -> txTemplate.execute(status -> serviceDay1.reviewCard(req)))
                 .isInstanceOf(BusinessException.class)
-                .hasMessageContaining("Bạn đã đạt giới hạn ôn tập tối đa trong ngày");
+                .hasMessageContaining("Thẻ chưa đến hạn ôn tập");
 
         // Instant B: 2026-08-31 00:00:10 in Asia/Ho_Chi_Minh (UTC: 2026-08-30 17:00:10) - 20 seconds later, crossed midnight!
         Instant instantAfterMidnight = Instant.parse("2026-08-30T17:00:10Z");

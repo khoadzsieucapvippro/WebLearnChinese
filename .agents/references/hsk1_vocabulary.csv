@@ -1,0 +1,501 @@
+﻿hsk_id,index,hanzi,pinyin,pinyin_raw,meaning_han_viet,meaning_vi,example_sentence,example_translation,hsk_level,hsk_standard,radical_ids
+L1-0001,1,爱,ài,ai,Ái,Yêu; thích; tình cảm,我爱我的家人。,Tôi yêu gia đình của tôi.,1,HSK 3.0,87
+L1-0002,2,爱好,àihào,aihao,Ái Hảo,Thích; đam mê; lấy làm thú vui; say mê; sở thích,我的爱好是听音乐。,Sở thích của tôi là nghe nhạc.,1,HSK 3.0,38;87
+L1-0003,3,八,bā,ba,Bát,Tám; 8,一个星期有七天，不是八天。,"Một tuần có bảy ngày, không phải tám ngày.",1,HSK 3.0,12
+L1-0004,4,爸爸,bàba,baba,Ba Ba,Cha; ba,我爸爸是一名医生。,Bố tôi là một bác sĩ.,1,HSK 3.0,88
+L1-0005,5,吧,ba,ba,Ba,"Trợ từ ngữ khí: nhé, thôi, đi, chứ",我们一起走吧。,Chúng ta cùng đi thôi nào.,1,HSK 3.0,30
+L1-0006,6,白,bái,bai,Bạch,Màu trắng; trắng,这件白色的衣服很好看。,Chiếc áo màu trắng này rất đẹp.,1,HSK 3.0,106
+L1-0007,7,白天,báitiān,baitian,Bạch Thiên,Ban ngày; trong ngày,白天他在学校学习。,Ban ngày anh ấy học ở trường.,1,HSK 3.0,37;106
+L1-0008,8,百,bǎi,bai,Bách,Một trăm; trăm,这本书有一百页。,Cuốn sách này có một trăm trang.,1,HSK 3.0,106
+L1-0009,9,班,bān,ban,Ban,Lớp học; ca làm việc,我们班有二十个学生。,Lớp chúng tôi có hai mươi học sinh.,1,HSK 3.0,96
+L1-0010,10,半,bàn,ban,Bán,Một nửa; bán-,现在是三点半。,Bây giờ là ba rưỡi.,1,HSK 3.0,24
+L1-0011,11,半年,bàn nián,ban nian,Bán Niên,Nửa năm,他在中国住了半年。,Anh ấy đã sống ở Trung Quốc nửa năm.,1,HSK 3.0,24;51
+L1-0012,12,半天,bàntiān,bantian,Bán Thiên,Nửa ngày; một thời gian dài,我等了你半天。,Tôi đã đợi bạn cả buổi trời.,1,HSK 3.0,24;37
+L1-0013,13,帮,bāng,bang,Bang,Giúp; giúp đỡ,请帮我一下。,Xin hãy giúp tôi một chút.,1,HSK 3.0,50
+L1-0014,14,帮忙,bāngmáng,bangmang,Bang Mang,Giúp; giúp đỡ,谢谢你帮我的忙。,Cảm ơn bạn đã giúp đỡ tôi.,1,HSK 3.0,50;61
+L1-0015,15,包,bāo,bao,Bao,Túi; bao; gói,这个包里有很多东西。,Trong chiếc túi này có rất nhiều đồ.,1,HSK 3.0,20
+L1-0016,16,包子,bāozi,baozi,Bao Tử,Bánh bao,中国人喜欢吃包子。,Người Trung Quốc thích ăn bánh bao.,1,HSK 3.0,20;39
+L1-0017,17,杯,bēi,bei,Bôi,Cốc; ly; chén,我喝了一杯水。,Tôi đã uống một cốc nước.,1,HSK 3.0,75
+L1-0018,18,杯子,bēizi,beizi,Bôi Tử,Cốc; ly,桌子上有一个杯子。,Trên bàn có một chiếc cốc.,1,HSK 3.0,39;75
+L1-0019,19,北,běi,bei,Bắc,Phía bắc; bị đánh bại,我家在学校的北边。,Nhà tôi ở phía bắc trường học.,1,HSK 3.0,21
+L1-0020,20,北边,běibian,beibian,Bắc Biên,Phía bắc; mặt bắc,公园在北边。,Công viên ở phía bắc.,1,HSK 3.0,21;162
+L1-0021,21,北京,Běijīng,beijing,Bắc Kinh,"Bắc Kinh, thủ đô nước Cộng hòa Nhân dân Trung Hoa",我想去北京旅游。,Tôi muốn đi Bắc Kinh du lịch.,1,HSK 3.0,8;21
+L1-0022,22,本,běn,ben,Bản,Quyển; cuốn (sách); gốc,我买了两本书。,Tôi đã mua hai cuốn sách.,1,HSK 3.0,75
+L1-0023,23,本子,běnzi,benzi,Bản Tử,Sách; quyển tập,这是一个新本子。,Đây là một quyển vở mới.,1,HSK 3.0,39;75
+L1-0024,24,比,bǐ,bi,Tỷ,So sánh; so với; hơn,今天比昨天冷。,Hôm nay lạnh hơn hôm qua.,1,HSK 3.0,81
+L1-0025,25,别,bié,bie,Biệt,Đừng; chớ; khác,别说话，请听老师讲。,"Đừng nói chuyện, hãy nghe thầy giảng.",1,HSK 3.0,18
+L1-0026,26,别的,biéde,biede,Biệt Đích,Khác,你还需要别的吗？,Bạn còn cần thứ khác không?,1,HSK 3.0,18;106
+L1-0027,27,别人,biérén,bieren,Biệt Nhân,Người khác; những người khác,我们要学会尊重别人。,Chúng ta phải học cách tôn trọng người khác.,1,HSK 3.0,9;18
+L1-0028,28,病,bìng,bing,Bệnh,Bệnh; ốm đau,他生病了，在医院看病。,"Anh ấy bị bệnh rồi, đang khám ở bệnh viện.",1,HSK 3.0,104
+L1-0029,29,病人,bìngrén,bingren,Bệnh Nhân,Người bệnh; bệnh nhân,医生正在照顾病人。,Bác sĩ đang chăm sóc bệnh nhân.,1,HSK 3.0,9;104
+L1-0030,30,不大,bù dà,bu da,Bất Đại,Không quá; không nhiều,这个房间不大。,Căn phòng này không lớn.,1,HSK 3.0,1;37
+L1-0031,31,不对,bùduì,budui,Bất Đối,Không chính xác; sai,这个答案不对。,Đáp án này không đúng.,1,HSK 3.0,1;41
+L1-0032,32,不客气,bù kèqì,bu keqi,Bất Khách Khí,Không có chi; đừng nhắc đến,不客气，这是我应该做的。,"Không có chi, đây là việc tôi nên làm.",1,HSK 3.0,1;40;84
+L1-0033,33,不用,bùyòng,buyong,Bất Dụng,Không cần,不用客气，这是我应该做的。,"Không cần khách sáo, đây là điều tôi nên làm.",1,HSK 3.0,1;101
+L1-0034,34,不,bù,bu,Bất,Không; không phải; không; bất-,我不喝茶，我喝水。,"Tôi không uống trà, tôi uống nước.",1,HSK 3.0,1
+L1-0035,35,菜,cài,cai,Thái,Rau; món ăn,中国菜很好吃。,Món ăn Trung Quốc rất ngon.,1,HSK 3.0,140
+L1-0036,36,茶,chá,cha,Trà,Trà; cây trà,中国人喜欢喝茶。,Người Trung Quốc thích uống trà.,1,HSK 3.0,140
+L1-0037,37,差,chà,cha,Sai,Sự khác biệt; không nhất quán; hiệu số,现在差五分八点。,Bây giờ là tám giờ kém năm.,1,HSK 3.0,48
+L1-0038,38,常,cháng,chang,Thường,Thường; thường xuyên,我常去图书馆看书。,Tôi thường đến thư viện đọc sách.,1,HSK 3.0,50
+L1-0039,39,常常,chángcháng,changchang,Thường Thường,Thường xuyên; thường,周末我常常和朋友聚会。,Cuối tuần tôi thường tụ tập với bạn bè.,1,HSK 3.0,50
+L1-0040,40,唱,chàng,chang,Xướng,Hát; gọi to,大家一起唱歌吧。,Mọi người cùng nhau hát bài hát nào.,1,HSK 3.0,30
+L1-0041,41,唱歌,chànggē,changge,Xướng Ca,Hát một bài hát,我妹妹很喜欢唱歌。,Em gái tôi rất thích ca hát.,1,HSK 3.0,30;76
+L1-0042,42,车,chē,che,Xa,Họ,路上有很多车。,Trên đường có rất nhiều xe cộ.,1,HSK 3.0,159
+L1-0043,43,车票,chēpiào,chepiao,Xa Phiếu,Vé,我买了去北京的车票。,Tôi đã mua vé xe đi Bắc Kinh.,1,HSK 3.0,113;159
+L1-0044,44,车上,chē shang,che shang,Xa Thướng,Trên xe,车上有很多乘客。,Trên xe có rất nhiều hành khách.,1,HSK 3.0,1;159
+L1-0045,45,车站,chēzhàn,chezhan,Xa Trạm,Ga tàu; dừng xe buýt,我们在火车站见。,Chúng ta gặp nhau ở nhà ga nhé.,1,HSK 3.0,117;159
+L1-0046,46,吃,chī,chi,Cật,Ăn; tiêu thụ; ăn ở,你想吃什么？,Bạn muốn ăn gì?,1,HSK 3.0,30
+L1-0047,47,吃饭,chīfàn,chifan,Cật Phạn,Dùng bữa; ăn,我们十二点去吃饭。,Mười hai giờ chúng tôi đi ăn cơm.,1,HSK 3.0,30;184
+L1-0048,48,出,chū,chu,Xuất,Ra; xuất; đi ra,他从房间里走出来了。,Anh ấy từ trong phòng bước ra rồi.,1,HSK 3.0,17
+L1-0049,49,出来,chūlái,chulai,Xuất Lai,Đi ra; xuất hiện,快出来看雪！,Mau ra ngoài xem tuyết rơi nào!,1,HSK 3.0,17;75
+L1-0050,50,出去,chūqù,chuqu,Xuất Khứ,Đi ra ngoài,外面下雨了，不要出去。,"Bên ngoài trời mưa rồi, đừng đi ra ngoài.",1,HSK 3.0,17;28
+L1-0051,51,穿,chuān,chuan,Xuyên,Mặc (áo); đi (giày),今天很冷，多穿点衣服。,"Hôm nay rất lạnh, hãy mặc nhiều áo một chút.",1,HSK 3.0,116
+L1-0052,52,床,chuáng,chuang,Sàng,Giường; ghế dài,房间里有一张大床。,Trong phòng có một chiếc giường lớn.,1,HSK 3.0,53
+L1-0053,53,次,cì,ci,Thứ,Tiếp theo; thứ hai,这是我第一次来这里。,Đây là lần đầu tiên tôi đến đây.,1,HSK 3.0,76
+L1-0054,54,从,cóng,cong,Tòng,Biến thể của 從|从,我从越南来到中国。,Tôi từ Việt Nam đến Trung Quốc.,1,HSK 3.0,9
+L1-0055,55,错,cuò,cuo,Thác,Sai; nhầm lẫn,你说得没错。,Bạn nói không sai.,1,HSK 3.0,167
+L1-0056,56,打,dǎ,da,Tá,Đánh; gọi (điện thoại); chơi (bóng),我们下午去打篮球吧。,Chiều nay chúng ta đi chơi bóng rổ nhé.,1,HSK 3.0,64
+L1-0057,57,打车,dǎchē,dache,Tá Xa,Bắt taxi; đón xe,外面下雨了，我们打车走吧。,"Bên ngoài trời mưa rồi, chúng ta bắt taxi đi thôi.",1,HSK 3.0,64;159
+L1-0058,58,打电话,dǎ diànhuà,da dianhua,Tá Điện Thoại,Gọi điện thoại,他正在给妈妈打电话。,Anh ấy đang gọi điện thoại cho mẹ.,1,HSK 3.0,64;102;149
+L1-0059,59,打开,dǎkāi,dakai,Tá Khai,Mở; cho xem,请打开书本。,Xin hãy mở sách ra.,1,HSK 3.0,55;64
+L1-0060,60,打球,dǎ qiú,da qiu,Tá Cầu,Chơi bóng; chơi với bóng,周末我喜欢和朋友打球。,Cuối tuần tôi thích chơi bóng cùng bạn bè.,1,HSK 3.0,64;96
+L1-0061,61,大,dà,da,Đại,Lớn; to,这个西瓜很大。,Quả dưa hấu này rất to.,1,HSK 3.0,37
+L1-0062,62,大学,dàxué,daxue,Đại Học,"Đại học, một trong Tứ thư 四書|四书 của Nho giáo",他是北京大学的学生。,Anh ấy là sinh viên Đại học Bắc Kinh.,1,HSK 3.0,37;39
+L1-0063,63,大学生,dàxuéshēng,daxuesheng,Đại Học Sinh,Sinh viên đại học; sinh viên cao đẳng,我的哥哥是一名大学生。,Anh trai tôi là một sinh viên đại học.,1,HSK 3.0,37;39;100
+L1-0064,64,到,dào,dao,Đáo,Đến; tới,我们到了火车站。,Chúng tôi đã đến ga xe lửa rồi.,1,HSK 3.0,18
+L1-0065,65,得到,dédào,dedao,Đắc Đáo,Được; đạt được; nhận được,他得到了一份好工作。,Anh ấy đã nhận được một công việc tốt.,1,HSK 3.0,18;60
+L1-0066,66,地,de,de,Địa,Đất; mặt đất; trợ từ trạng ngữ,地上有一本书。,Trên mặt đất có một quyển sách.,1,HSK 3.0,32
+L1-0067,67,的,de,de,Đích,Của; trợ từ sở hữu hoặc bổ nghĩa,这是我的汉语书。,Đây là sách tiếng Trung của tôi.,1,HSK 3.0,106
+L1-0068,68,等,děng,deng,Đẳng,Đợi; chờ đợi; vân vân,请等我五分钟。,Xin hãy đợi tôi năm phút.,1,HSK 3.0,118
+L1-0069,69,地,dì,di,Địa,Đất; mặt đất; trợ từ trạng ngữ,地上有一本书。,Trên mặt đất có một quyển sách.,1,HSK 3.0,32
+L1-0070,70,地点,dìdiǎn,didian,Địa Điểm,Nơi; chỗ,开会的地点在二楼。,Địa điểm họp ở tầng hai.,1,HSK 3.0,32;86
+L1-0071,71,地方,dìfang,difang,Địa Phương,Khu vực; mang tính khu vực,这是一个美丽的地方。,Đây là một nơi tươi đẹp.,1,HSK 3.0,32;70
+L1-0072,72,地上,dìshang,dishang,Địa Thướng,Trên mặt đất; trên sàn nhà,地上有很多落叶。,Dưới đất có rất nhiều lá rụng.,1,HSK 3.0,1;32
+L1-0073,73,地图,dìtú,ditu,Địa Đồ,Bản đồ,请在地图上找一下这个城市。,Xin hãy tìm thành phố này trên bản đồ.,1,HSK 3.0,31;32
+L1-0074,74,弟弟,dìdi,didi,Đệ Đệ,Em trai,我弟弟今年十岁。,Em trai tôi năm nay mười tuổi.,1,HSK 3.0,57
+L1-0075,75,第,dì (dì-èr),di (di-er),Đệ,Thứ hạng mà thí sinh đỗ đạt trong kỳ thi đình được xếp vào; nơi ở của quan chức cao cấp,他是第一个到教室的人。,Anh ấy là người đầu tiên đến lớp học.,1,HSK 3.0,118
+L1-0076,76,点,diǎn,dian,Điểm,Giờ; điểm; chấm; chút ít,现在是早上八点。,Bây giờ là tám giờ sáng.,1,HSK 3.0,86
+L1-0077,77,电,diàn,dian,Điện,Điện; pin,手机没有电了。,Điện thoại hết pin rồi.,1,HSK 3.0,102
+L1-0078,78,电话,diànhuà,dianhua,Điện Thoại,Điện thoại; cuộc gọi điện thoại,请告诉我你的电话号码。,Xin hãy cho tôi biết số điện thoại của bạn.,1,HSK 3.0,102;149
+L1-0079,79,电脑,diànnǎo,diannao,Điện Não,Máy tính,我买了一台新电脑。,Tôi đã mua một chiếc máy tính mới.,1,HSK 3.0,102;130
+L1-0080,80,电视,diànshì,dianshi,Điện Thị,Truyền hình; TV,晚上我们一家人看电视。,Buổi tối cả nhà chúng tôi cùng xem ti vi.,1,HSK 3.0,102;113
+L1-0081,81,电视机,diànshìjī,dianshiji,Điện Thị Cơ,Máy thu hình,客厅里有一台大电视机。,Trong phòng khách có một chiếc ti vi lớn.,1,HSK 3.0,75;102;113
+L1-0082,82,电影,diànyǐng,dianying,Điện Ảnh,Phim; điện ảnh,明天我们去看电影吧。,Ngày mai chúng ta đi xem phim nhé.,1,HSK 3.0,59;102
+L1-0083,83,电影院,diànyǐngyuàn,dianyingyuan,Điện Ảnh Viện,Rạp chiếu phim; rạp phim,电影院在商场三楼。,Rạp chiếu phim ở tầng ba trung tâm thương mại.,1,HSK 3.0,59;102;170
+L1-0084,84,东,dōng,dong,Đông,Họ,太阳从东方升起。,Mặt trời mọc từ hướng đông.,1,HSK 3.0,1
+L1-0085,85,东边,dōngbian,dongbian,Đông Biên,Hướng đông; phía đông,学校东边有一家书店。,Phía đông trường học có một hiệu sách.,1,HSK 3.0,1;162
+L1-0086,86,东西,dōngxi,dongxi,Đông Tây,Đông và tây,桌子上放着很多东西。,Trên bàn đặt rất nhiều đồ đạc.,1,HSK 3.0,1;146
+L1-0087,87,动,dòng,dong,Động,Động; cử động; chuyển động,别动，让我看看。,"Đừng cử động, để tôi xem nào.",1,HSK 3.0,19
+L1-0088,88,动作,dòngzuò,dongzuo,Động Tác,Chuyển động; cử động; hành động; diễn; di chuyển,他的动作很快。,Động tác của anh ấy rất nhanh nhẹn.,1,HSK 3.0,9;19
+L1-0089,89,都,dōu,dou,Đô,Đều; tất cả,我们都是学习汉语的学生。,Chúng tôi đều là những học sinh học tiếng Trung.,1,HSK 3.0,163
+L1-0090,90,读,dú,du,Đậu,Đọc; học tập,请大声读这段课文。,Xin hãy đọc to đoạn bài khóa này.,1,HSK 3.0,149
+L1-0091,91,读书,dúshū,dushu,Đậu Thư,Đọc sách; học,他每天晚上都认真读书。,Mỗi tối anh ấy đều chăm chỉ đọc sách.,1,HSK 3.0,5;149
+L1-0092,92,对,duì,dui,Đối,Đúng; chính xác; đối với,你回答得非常对。,Bạn trả lời rất chính xác.,1,HSK 3.0,41
+L1-0093,93,对不起,duìbuqǐ,duibuqi,Đối Bất Khởi,Tôi xin lỗi; xin thứ lỗi; tôi xin tha thứ; làm  thất vọng; không đạt kỳ vọng,对不起，我来晚了。,"Xin lỗi, tôi đến muộn.",1,HSK 3.0,1;41;156
+L1-0094,94,多,duō,duo,Đa,Nhiều,学校里有很多学生。,Trong trường có rất nhiều học sinh.,1,HSK 3.0,36
+L1-0095,95,多少,duōshao,duoshao,Đa Thiểu,Số lượng; mức độ; phần nào,请问这个西瓜多少钱？,Xin hỏi quả dưa hấu này bao nhiêu tiền?,1,HSK 3.0,36;42
+L1-0096,96,饿,è,e,Ngạ,Đói; làm cho đói,我肚子饿了，想吃东西。,"Bụng tôi đói rồi, muốn ăn gì đó.",1,HSK 3.0,184
+L1-0097,97,儿子,érzi,erzi,Nhân Tử,Con trai,他的儿子很聪明。,Con trai của anh ấy rất thông minh.,1,HSK 3.0,10;39
+L1-0098,98,二,èr,er,Nhị,Hai; 2,一加一等于二。,Một cộng một bằng hai.,1,HSK 3.0,7
+L1-0099,99,饭,fàn,fan,Phạn,Cơm đã nấu; bữa ăn,今天的米饭很香。,Cơm hôm nay rất thơm ngon.,1,HSK 3.0,184
+L1-0100,100,饭店,fàndiàn,fandian,Phạn Điếm,Nhà hàng; khách sạn,我们在饭店吃晚饭。,Chúng tôi ăn tối ở nhà hàng.,1,HSK 3.0,53;184
+L1-0101,101,房间,fángjiān,fangjian,Phòng Gian,Phòng,我的房间很干净。,Phòng của tôi rất sạch sẽ.,1,HSK 3.0,63;169
+L1-0102,102,房子,fángzi,fangzi,Phòng Tử,Nhà; tòa nhà,他们买了一套新房子。,Họ đã mua một ngôi nhà mới.,1,HSK 3.0,39;63
+L1-0103,103,放,fàng,fang,Phóng,Đặt; để; buông; thả,请把书放在桌子上。,Xin hãy để sách lên bàn.,1,HSK 3.0,66
+L1-0104,104,放假,fàngjià,fangjia,Phóng Giả,Nghỉ lễ hoặc kỳ nghỉ,下周我们放假三天。,Tuần tới chúng tôi được nghỉ ba ngày.,1,HSK 3.0,9;66
+L1-0105,105,放学,fàngxué,fangxue,Phóng Học,Tan học,下午五点学生们放学。,Năm giờ chiều học sinh tan học.,1,HSK 3.0,39;66
+L1-0106,106,飞,fēi,fei,Phi,Bay,小鸟在天空中飞。,Chim non đang bay lượn trên bầu trời.,1,HSK 3.0,183
+L1-0107,107,飞机,fēijī,feiji,Phi Cơ,Máy bay,我坐飞机去北京。,Tôi đi máy bay đến Bắc Kinh.,1,HSK 3.0,75;183
+L1-0108,108,非常,fēicháng,feichang,Phi Thường,Rất; thực sự; khác thường; phi thường,这本书非常有意思。,Cuốn sách này vô cùng thú vị.,1,HSK 3.0,50;175
+L1-0109,109,分,fēn,fen,Phân,Phút; điểm; phân chia,现在是八点十分。,Bây giờ là tám giờ mười phút.,1,HSK 3.0,18
+L1-0110,110,风,fēng,feng,Phong,Gió; tin tức,今天外面的风很大。,Hôm nay gió ngoài trời rất to.,1,HSK 3.0,182
+L1-0111,111,干,gān,gan,Can,Làm; khô ráo,衣服已经晾干了。,Quần áo đã phơi khô rồi.,1,HSK 3.0,51
+L1-0112,112,干净,gānjìng,ganjing,Can Tịnh,Sạch; gọn gàng,这个教室真干净。,Lớp học này thật sạch sẽ.,1,HSK 3.0,15;51
+L1-0113,113,干,gàn,gan4,Can,Làm; khô ráo,衣服已经晾干了。,Quần áo đã phơi khô rồi.,1,HSK 3.0,51
+L1-0114,114,干什么,gàn shénme,gan shenme,Can Thậm Yêu,Bạn đang làm gì?; anh ấy đang định làm gì?,你在房间里干什么呢？,Bạn đang làm gì trong phòng thế?,1,HSK 3.0,4;9;51
+L1-0115,115,高,gāo,gao,Cao,Cao,他长得很高。,Anh ấy lớn lên rất cao.,1,HSK 3.0,189
+L1-0116,116,高兴,gāoxìng,gaoxing,Cao Hưng,Vui; vui vẻ,见到你我很高兴。,Gặp được bạn tôi rất vui mừng.,1,HSK 3.0,12;189
+L1-0117,117,告诉,gàosu,gaosu,Cáo Tố,Khởi kiện; nộp đơn khiếu nại,请告诉我发生什么事了。,Xin hãy nói cho tôi biết đã xảy ra chuyện gì.,1,HSK 3.0,30;149
+L1-0118,118,哥哥,gēge,gege,Ca Ca,Anh trai,我哥哥在大学读书。,Anh trai tôi đang học ở trường đại học.,1,HSK 3.0,30
+L1-0119,119,歌,gē,ge,Ca,Bài hát; hát,这首歌真好听。,Bài hát này thật hay.,1,HSK 3.0,76
+L1-0120,120,个,gè,ge,Cá,Cái; quả; con; lượng từ chung,我买了一个苹果。,Tôi đã mua một quả táo.,1,HSK 3.0,2
+L1-0121,121,给,gěi,gei,Cấp,Cho; đưa cho,请给我一杯水。,Xin cho tôi một cốc nước.,1,HSK 3.0,120
+L1-0122,122,跟,gēn,gen,Cân,Cùng; với; theo,我想跟你一起去。,Tôi muốn đi cùng với bạn.,1,HSK 3.0,157
+L1-0123,123,工人,gōngrén,gongren,Công Nhân,"Công nhân; Lượng từ: 個|个, 名",工厂里有很多工人。,Trong nhà máy có rất nhiều công nhân.,1,HSK 3.0,9;48
+L1-0124,124,工作,gōngzuò,gongzuo,Công Tác,Làm việc; vận hành,他在医院工作。,Anh ấy làm việc ở bệnh viện.,1,HSK 3.0,9;48
+L1-0125,125,关,guān,guan,Quan,Đóng; tắt; quan hệ,请关上门。,Xin hãy đóng cửa lại.,1,HSK 3.0,12
+L1-0126,126,关上,guānshang,guanshang,Quan Thướng,Đóng; tắt,离开前请关上灯。,Trước khi rời đi xin hãy tắt đèn.,1,HSK 3.0,1;12
+L1-0127,127,贵,guì,gui,Quý,Đắt; được coi trọng; quý giá,这件衣服有点贵。,Chiếc áo này hơi đắt một chút.,1,HSK 3.0,154
+L1-0128,128,国,guó,guo,Quốc,Họ,中国是一个历史悠久的国度。,Trung Quốc là một quốc gia có lịch sử lâu đời.,1,HSK 3.0,31
+L1-0129,129,国家,guójiā,guojia,Quốc Gia,Quốc gia; dân tộc; nhà nước,世界上有很多国家。,Trên thế giới có rất nhiều quốc gia.,1,HSK 3.0,31;40
+L1-0130,130,国外,guó wài,guo wai,Quốc Ngoại,Ở nước ngoài; ngoại,他打算去国外留学。,Anh ấy dự định ra nước ngoài du học.,1,HSK 3.0,31;36
+L1-0131,131,过,guò,guo,Quá,Qua; qua đi; từng (kinh nghiệm),你去过中国吗？,Bạn đã từng đến Trung Quốc chưa?,1,HSK 3.0,162
+L1-0132,132,还,hái,hai,Hoàn,Vẫn; còn; trả lại,我吃饱了，还想喝点水。,"Tôi ăn no rồi, vẫn muốn uống chút nước.",1,HSK 3.0,162
+L1-0133,133,还是,háishi,haishi,Hoàn Thị,Vẫn; nên,你喝茶还是喝咖啡？,Bạn uống trà hay là uống cà phê?,1,HSK 3.0,72;162
+L1-0134,134,还有,hái yǒu,hai you,Hoàn Hữu,Vẫn còn; còn có; thêm vào đó,桌上有书，还有笔。,"Trên bàn có sách, và còn có bút nữa.",1,HSK 3.0,74;162
+L1-0135,135,孩子,háizi,haizi,Hài Tử,Trẻ em,孩子们在操场上玩。,Lũ trẻ đang chơi đùa trên sân tập.,1,HSK 3.0,39
+L1-0136,136,汉语,Hànyǔ,hanyu,Hán Ngữ,Ngôn ngữ tiếng Trung,学汉语很有趣。,Học tiếng Trung rất thú vị.,1,HSK 3.0,85;149
+L1-0137,137,汉字,Hànzì,hanzi,Hán Tự,Chữ Hán; Nhật: kanji,这个汉字很好写。,Chữ Hán này rất dễ viết.,1,HSK 3.0,39;85
+L1-0138,138,好,hǎo,hao,Hảo,Tốt; đẹp; xong,今天天气真好。,Hôm nay thời tiết thật đẹp.,1,HSK 3.0,38
+L1-0139,139,好吃,hǎochī,haochi,Hảo Cật,Ngon; ngon miệng,妈妈做的菜真好吃。,Món ăn mẹ nấu thật là ngon.,1,HSK 3.0,30;38
+L1-0140,140,好看,hǎokàn,haokan,Hảo Khán,Ưa nhìn; xinh đẹp,这部电影很好看。,Bộ phim này xem rất hay.,1,HSK 3.0,38;109
+L1-0141,141,好听,hǎotīng,haoting,Hảo Dẫn,Nghe hay,这首音乐真好听。,Bản nhạc này thật là hay.,1,HSK 3.0,30;38
+L1-0142,142,好玩儿,hǎowánr,haowanr,Hảo Ngoạn Nhân,Biến thể er hoá của 好玩,这个公园真好玩儿。,Công viên này thật vui vẻ.,1,HSK 3.0,10;38;96
+L1-0143,143,号,hào,hao,Hiệu,Số; ngày (trong tháng),今天是十月一号。,Hôm nay là ngày một tháng mười.,1,HSK 3.0,30
+L1-0144,144,喝,hē,he,Húp,Uống,请喝热茶。,Xin mời uống trà nóng.,1,HSK 3.0,30
+L1-0145,145,和,hé,he,Hoà,Và; cùng với; hòa thuận,我和他是好朋友。,Tôi và anh ấy là bạn tốt của nhau.,1,HSK 3.0,30
+L1-0146,146,很,hěn,hen,Ngận,Rất; lắm,我今天很高兴。,Hôm nay tôi rất vui.,1,HSK 3.0,60
+L1-0147,147,后,hòu,hou,Hậu,Sau; phía sau,三天后我们再见面。,Ba ngày sau chúng ta lại gặp nhau.,1,HSK 3.0,30
+L1-0148,148,后边,hòubian,houbian,Hậu Biên,Phía sau; đằng sau; phần cuối; đằng sau; gần cuối; ở phía sau,学校后边有一条小河。,Phía sau trường có một con sông nhỏ.,1,HSK 3.0,30;162
+L1-0149,149,后天,hòutiān,houtian,Hậu Thiên,Ngày mốt; cuộc sống sau khi sinh,后天是星期天。,Ngày kia là chủ nhật.,1,HSK 3.0,30;37
+L1-0150,150,花,huā,hua,Hoa,"Hoa; tiêu (tiền, thời gian)",花园里开满了花。,Trong vườn hoa nở rực rỡ.,1,HSK 3.0,140
+L1-0151,151,话,huà,hua,Thoại,Phương ngữ; ngôn ngữ,他的话很有道理。,Lời nói của anh ấy rất có lý.,1,HSK 3.0,149
+L1-0152,152,坏,huài,huai,Hoại,Xấu; bị hỏng,我的手表坏了。,Đồng hồ đeo tay của tôi bị hỏng rồi.,1,HSK 3.0,32
+L1-0153,153,还,huán,huan,Hoàn,Vẫn; còn; trả lại,我吃饱了，还想喝点水。,"Tôi ăn no rồi, vẫn muốn uống chút nước.",1,HSK 3.0,162
+L1-0154,154,回,huí,hui,Hồi,Xoay vòng; quay lại,下课后我回家。,Sau khi tan học tôi về nhà.,1,HSK 3.0,31
+L1-0155,155,回答,huídá,huida,Hồi Đáp,Trả lời; đáp; trả lời; đáp án,请回答老师的问题。,Xin hãy trả lời câu hỏi của thầy giáo.,1,HSK 3.0,31;118
+L1-0156,156,回到,huídào,huidao,Hồi Đáo,Trở về,我们晚上回到了家。,Chúng tôi đã trở về nhà vào buổi tối.,1,HSK 3.0,18;31
+L1-0157,157,回家,huí jiā,hui jia,Hồi Gia,Trở về nhà,我要回家吃晚饭。,Tôi phải về nhà ăn tối.,1,HSK 3.0,31;40
+L1-0158,158,回来,huílái,huilai,Hồi Lai,Trở về; quay lại,爸爸什么时候回来？,Khi nào thì bố trở về?,1,HSK 3.0,31;75
+L1-0159,159,回去,huíqù,huiqu,Hồi Khứ,Trở về; quay lại,天黑了，我们回去吧。,"Trời tối rồi, chúng ta về thôi nào.",1,HSK 3.0,28;31
+L1-0160,160,会,huì,hui,Hội,Biết; sẽ; hội họp,我会说汉语。,Tôi biết nói tiếng Trung.,1,HSK 3.0,9
+L1-0161,161,火车,huǒchē,huoche,Hoả Xa,Tàu hỏa,坐火车去旅行很舒服。,Đi tàu hỏa du lịch rất thoải mái.,1,HSK 3.0,86;159
+L1-0162,162,机场,jīchǎng,jichang,Cơ Tràng,Sân bay; phi trường; nhà cung cấp dịch vụ cho Shadowsocks hoặc phần mềm tương tự để vượt kiểm duyệt Internet,我们去机场接朋友。,Chúng tôi đến sân bay đón bạn.,1,HSK 3.0,32;75
+L1-0163,163,机票,jīpiào,jipiao,Cơ Phiếu,Vé máy bay; vé hành khách,我已经买好了飞机票。,Tôi đã mua xong vé máy bay rồi.,1,HSK 3.0,75;113
+L1-0164,164,鸡蛋,jīdàn,jidan,Kê Đản,Trứng; trứng gà,早上我吃了一个鸡蛋。,Buổi sáng tôi đã ăn một quả trứng gà.,1,HSK 3.0,142;196
+L1-0165,165,几,jǐ,ji,Cơ,Mấy; vài,你家里有几口人？,Nhà bạn có mấy người?,1,HSK 3.0,16
+L1-0166,166,记,jì,ji,Ký,Ghi chép; ghi lại,请把这个生词记下来。,Xin hãy ghi nhớ từ mới này.,1,HSK 3.0,149
+L1-0167,167,记得,jìde,jide,Ký Đắc,Nhớ,我记得他的名字。,Tôi vẫn nhớ tên của anh ấy.,1,HSK 3.0,60;149
+L1-0168,168,记住,jìzhù,jizhu,Ký Trú,Nhớ; ghi nhớ,请大家一定要记住这些生词。,Xin mọi người nhất định phải ghi nhớ các từ mới này.,1,HSK 3.0,9;149
+L1-0169,169,家,jiā,jia,Gia,Dùng trong 傢伙|家伙 và 傢俱|家俱,我家在河内。,Nhà tôi ở Hà Nội.,1,HSK 3.0,40
+L1-0170,170,家里,jiā li,jia li,Gia Lý,Nhà,家里只有我和妈妈。,Trong nhà chỉ có tôi và mẹ.,1,HSK 3.0,40;166
+L1-0171,171,家人,jiārén,jiaren,Gia Nhân,Thành viên gia đình; người hầu,我和家人一起生活。,Tôi sống cùng với người nhà.,1,HSK 3.0,9;40
+L1-0172,172,间,jiān,jian,Gian,Giữa; trong số,这是一间新教室。,Đây là một gian phòng học mới.,1,HSK 3.0,169
+L1-0173,173,见,jiàn,jian,Kiến,Gặp; thấy,明天见！,Hẹn gặp lại ngày mai!,1,HSK 3.0,147
+L1-0174,174,见面,jiànmiàn,jianmian,Kiến Diện,Gặp mặt; gặp nhau,很高兴跟你见面。,Rất vui được gặp mặt bạn.,1,HSK 3.0,147;176
+L1-0175,175,教,jiāo,jiao,Giáo,Dạy; giảng dạy,王老师教我们汉语。,Thầy Vương dạy chúng tôi tiếng Trung.,1,HSK 3.0,66
+L1-0176,176,叫,jiào,jiao,Khiếu,Kêu; gọi; tên là,我叫王明。,Tôi tên là Vương Minh.,1,HSK 3.0,30
+L1-0177,177,教学楼,jiàoxuélóu,jiaoxuelou,Giáo Học Lâu,Tòa nhà trường học; tòa nhà học thuật,这是我们学校的教学楼。,Đây là tòa nhà giảng dạy của trường chúng tôi.,1,HSK 3.0,39;66;75
+L1-0178,178,姐姐,jiějie,jiejie,Tỷ Tỷ,Chị gái,我姐姐在医院当护士。,Chị gái tôi làm y tá ở bệnh viện.,1,HSK 3.0,38
+L1-0179,179,介绍,jièshào,jieshao,Giới Thiệu,Giới thiệu; thuyết trình,让我介绍一下我的朋友。,Để tôi giới thiệu một chút về bạn tôi nhé.,1,HSK 3.0,9;120
+L1-0180,180,今年,jīnnián,jinnian,Kim Niên,Năm nay,我今年十八岁。,Tôi năm nay mười tám tuổi.,1,HSK 3.0,9;51
+L1-0181,181,今天,jīntiān,jintian,Kim Thiên,Hôm nay; thời điểm hiện tại; bây giờ,今天星期一。,Hôm nay là thứ hai.,1,HSK 3.0,9;37
+L1-0182,182,进,jìn,jin,Tiến,Vào; tiến vào,请进，请坐。,"Mời vào, mời ngồi.",1,HSK 3.0,162
+L1-0183,183,进来,jìnlái,jinlai,Tiến Lai,Đến; vào,请快点进来吧。,Xin hãy mau chóng vào đây nào.,1,HSK 3.0,75;162
+L1-0184,184,进去,jìnqù,jinqu,Tiến Khứ,Đi vào,我们可以进去参观吗？,Chúng ta có thể đi vào trong tham quan không?,1,HSK 3.0,28;162
+L1-0185,185,九,jiǔ,jiu,Cửu,Chín; 9,教室里有九张桌子。,Trong lớp học có chín chiếc bàn.,1,HSK 3.0,5
+L1-0186,186,就,jiù,jiu,Tựu,Thì; liền; ngay,我就是你要找的人。,Tôi chính là người mà bạn đang tìm kiếm.,1,HSK 3.0,43
+L1-0187,187,觉得,juéde,juede,Giáo Đắc,Nghĩ rằng ...; cảm thấy rằng ...; cảm thấy,我觉得汉语很有趣。,Tôi cảm thấy tiếng Trung rất thú vị.,1,HSK 3.0,60;147
+L1-0188,188,开,kāi,kai,Khai,Mở; lái (xe); bật,请开一下窗户。,Xin mở cửa sổ ra một chút.,1,HSK 3.0,55
+L1-0189,189,开车,kāichē,kaiche,Khai Xa,Lái xe,爸爸开车送我去学校。,Bố lái xe đưa tôi đến trường.,1,HSK 3.0,55;159
+L1-0190,190,开会,kāihuì,kaihui,Khai Hội,Tổ chức cuộc họp; tham gia cuộc họp,经理正在开会。,Giám đốc đang họp.,1,HSK 3.0,9;55
+L1-0191,191,开玩笑,kāi wánxiào,kai wanxiao,Khai Ngoạn Tiếu,Đùa giỡn; chế nhạo; nói đùa,别生气，他只是开玩笑。,"Đừng giận, anh ấy chỉ đùa thôi.",1,HSK 3.0,55;96;118
+L1-0192,192,看,kàn,kan,Khán,Nhìn; xem; thăm,你在看什么书？,Bạn đang xem cuốn sách gì thế?,1,HSK 3.0,109
+L1-0193,193,看病,kànbìng,kanbing,Khán Bệnh,Đi khám bệnh; khám bệnh nhân,他觉得不舒服，去医院看病。,"Anh ấy cảm thấy không khỏe, đi bệnh viện khám bệnh.",1,HSK 3.0,104;109
+L1-0194,194,看到,kàndào,kandao,Khán Đáo,Nhìn thấy,我看到他在操场上跑步。,Tôi nhìn thấy anh ấy đang chạy bộ trên sân tập.,1,HSK 3.0,18;109
+L1-0195,195,看见,kànjiàn,kanjian,Khán Kiến,Nhìn thấy; bắt gặp,我看见了一只可爱的小猫。,Tôi nhìn thấy một chú mèo con đáng yêu.,1,HSK 3.0,109;147
+L1-0196,196,考,kǎo,kao,Khảo,Đánh; đập,明天我们要考汉语。,Ngày mai chúng tôi phải thi tiếng Trung.,1,HSK 3.0,125
+L1-0197,197,考试,kǎoshì,kaoshi,Khảo Thí,Dự thi; kỳ thi,祝你在考试中取得好成绩。,Chúc bạn đạt thành tích tốt trong kỳ thi.,1,HSK 3.0,125;149
+L1-0198,198,渴,kě,ke,Khát,Khát,我渴了，想喝水。,"Tôi khát rồi, muốn uống nước.",1,HSK 3.0,85
+L1-0199,199,课,kè,ke,Khoá,Môn học; khoá học,今天下午我们有两节课。,Chiều nay chúng tôi có hai tiết học.,1,HSK 3.0,149
+L1-0200,200,课本,kèběn,keben,Khoá Bản,Sách giáo khoa,请大家翻开课本第二十页。,Xin mọi người mở sách giáo khoa trang 20.,1,HSK 3.0,75;149
+L1-0201,201,课文,kèwén,kewen,Khoá Văn,Bài đọc,请跟我一起读课文。,Xin hãy cùng tôi đọc bài khóa.,1,HSK 3.0,67;149
+L1-0202,202,口,kǒu,kou,Khẩu,Miệng; lượng từ cho những thứ có miệng,我家有四口人。,Nhà tôi có bốn người.,1,HSK 3.0,30
+L1-0203,203,块,kuài,kuai,Khối,"Cục; tảng; miếng; lượng từ cho miếng vải, bánh, xà phòng, v.v.",这块手表很漂亮。,Chiếc đồng hồ này rất đẹp.,1,HSK 3.0,32
+L1-0204,204,快,kuài,kuai,Khoái,Nhanh; sắp sửa,时间过得真快。,Thời gian trôi qua thật nhanh.,1,HSK 3.0,61
+L1-0205,205,来,lái,lai,Lai,Đến; tới,欢迎你来到我们学校。,Hoan nghênh bạn đến trường của chúng tôi.,1,HSK 3.0,75
+L1-0206,206,来到,láidào,laidao,Lai Đáo,Đến; tới,春天来到了大地。,Mùa xuân đã đến với đất trời.,1,HSK 3.0,18;75
+L1-0207,207,老,lǎo,lao,Lão,Già; cũ; lâu năm,王老师是一位老教师。,Thầy Vương là một giáo viên lâu năm.,1,HSK 3.0,125
+L1-0208,208,老人,lǎorén,laoren,Lão Nhân,Ông già hoặc bà già; người cao tuổi,我们要关爱老人。,Chúng ta cần quan tâm chăm sóc người già.,1,HSK 3.0,9;125
+L1-0209,209,老师,lǎoshī,laoshi,Lão Sư,Giáo viên,张老师教我们中国历史。,Cô Trương dạy chúng tôi lịch sử Trung Quốc.,1,HSK 3.0,50;125
+L1-0210,210,了,le,le,Liễu,Rồi; đã (trợ từ ngữ khí/thời thái),下雨了，带上伞吧。,"Trời mưa rồi, mang theo ô đi nhé.",1,HSK 3.0,6
+L1-0211,211,累,lèi,lei,Luỵ,Tích lũy; liên lụy hoặc dính líu,今天工作很忙，我有点累。,"Hôm nay công việc rất bận, tôi hơi mệt.",1,HSK 3.0,120
+L1-0212,212,冷,lěng,leng,Lạnh,Lạnh,冬天的北京很冷。,Mùa đông ở Bắc Kinh rất lạnh.,1,HSK 3.0,15
+L1-0213,213,里,lǐ,li,Lý,Trong; bên trong,书包里有课本和笔。,Trong cặp sách có sách giáo khoa và bút.,1,HSK 3.0,166
+L1-0214,214,里边,lǐbian,libian,Lý Biên,Bên trong,屋子里边很暖和。,Bên trong căn phòng rất ấm áp.,1,HSK 3.0,162;166
+L1-0215,215,两,liǎng,liang,Lưỡng,Hai; cả hai,我有两个好朋友。,Tôi có hai người bạn tốt.,1,HSK 3.0,1
+L1-0216,216,零,líng,ling,Linh,Không; số không,今天的气温是零度。,Nhiệt độ hôm nay là không độ.,1,HSK 3.0,173
+L1-0217,217,六,liù,liu,Lục,Sáu; 6,一星期有六天需要上学。,Một tuần có sáu ngày cần đi học.,1,HSK 3.0,12
+L1-0218,218,楼,lóu,lou,Lâu,Họ,我住在五楼。,Tôi sống ở tầng năm.,1,HSK 3.0,75
+L1-0219,219,楼上,lóu shàng,lou shang,Lâu Thướng,Tầng trên; người đăng trước trong một chủ đề diễn đàn,他在楼上看书。,Anh ấy đang đọc sách ở trên lầu.,1,HSK 3.0,1;75
+L1-0220,220,楼下,lóu xià,lou xia,Lâu Hạ,Tầng dưới,我们在楼下等你。,Chúng tôi đợi bạn ở dưới lầu.,1,HSK 3.0,1;75
+L1-0221,221,路,lù,lu,Lộ,Họ,这条路非常宽。,Con đường này rất rộng rãi.,1,HSK 3.0,157
+L1-0222,222,路口,lùkǒu,lukou,Lộ Khẩu,Giao lộ; ngã tư,我们在十字路口见。,Chúng ta gặp nhau ở ngã tư đường nhé.,1,HSK 3.0,30;157
+L1-0223,223,路上,lùshang,lushang,Lộ Thướng,Trên đường; trên đường; đang đi,路上车很多，注意安全。,"Trên đường xe cộ rất đông, hãy chú ý an toàn.",1,HSK 3.0,1;157
+L1-0224,224,妈妈,māma,mama,Má Má,Mẹ; má,妈妈每天都为我们做饭。,Mẹ ngày nào cũng nấu cơm cho chúng tôi.,1,HSK 3.0,38
+L1-0225,225,马路,mǎlù,malu,Mã Lộ,Đường phố; đường,过马路要走斑马线。,Sang đường phải đi trên vạch kẻ đường cho người đi bộ.,1,HSK 3.0,157;187
+L1-0226,226,马上,mǎshàng,mashang,Mã Thướng,Ngay lập tức; ngay tức khắc,请稍等，我马上就来。,"Xin đợi một chút, tôi tới ngay đây.",1,HSK 3.0,1;187
+L1-0227,227,吗,ma,ma,Ma,Phải không; không (trợ từ nghi vấn),你是中国人吗？,Bạn là người Trung Quốc phải không?,1,HSK 3.0,30
+L1-0228,228,买,mǎi,mai,Mãi,Mua,我想去超市买点水果。,Tôi muốn đi siêu thị mua chút hoa quả.,1,HSK 3.0,5
+L1-0229,229,慢,màn,man,Mạn,Chậm,他走得很慢。,Anh ấy bước đi rất chậm chạp.,1,HSK 3.0,61
+L1-0230,230,忙,máng,mang,Mang,Bận rộn; bận,最近你工作忙吗？,Dạo này công việc của bạn có bận không?,1,HSK 3.0,61
+L1-0231,231,毛,máo,mao,Mao,Họ,这个苹果五毛钱。,Quả táo này giá năm hào.,1,HSK 3.0,82
+L1-0232,232,没,méi,mei,Một,Không; chưa có,我没去过北京。,Tôi chưa từng đến Bắc Kinh.,1,HSK 3.0,85
+L1-0233,233,没关系,méi guānxi,mei guanxi,Một Quan Hệ,Không sao đâu,没关系，别放在心上。,"Không sao, đừng để trong lòng.",1,HSK 3.0,12;85;120
+L1-0234,234,没什么,méi shénme,mei shenme,Một Thậm Yêu,Không sao; không có gì; đừng bận tâm; nghĩ không có gì; rất hân hạnh; không có chi; không có gì,没什么大不了的事。,Chẳng có việc gì to tát cả.,1,HSK 3.0,4;9;85
+L1-0235,235,没事儿,méishìr,meishir,Một Sự Nhân,Có thời gian rảnh; rảnh rỗi,别担心，我没事儿。,"Đừng lo lắng, tôi không sao đâu.",1,HSK 3.0,6;10;85
+L1-0236,236,没有,méiyǒu,meiyou,Một Hữu,Không có; không tồn tại,书架上没有这本书。,Trên giá sách không có quyển sách này.,1,HSK 3.0,74;85
+L1-0237,237,妹妹,mèimei,meimei,Muội Muội,Em gái; phụ nữ trẻ,我妹妹最喜欢画画。,Em gái tôi thích vẽ tranh nhất.,1,HSK 3.0,38
+L1-0238,238,门,mén,men,Môn,Cửa; cổng,请帮我把门关上。,Xin giúp tôi đóng cửa lại.,1,HSK 3.0,169
+L1-0239,239,门口,ménkǒu,menkou,Môn Khẩu,Cửa ra vào; cổng,我们在学校门口等老师。,Chúng tôi đợi thầy giáo ở cổng trường.,1,HSK 3.0,30;169
+L1-0240,240,门票,ménpiào,menpiao,Môn Phiếu,Vé,故宫的门票多少钱一张？,Vé vào Cố Cung bao nhiêu tiền một vé?,1,HSK 3.0,113;169
+L1-0241,241,们,men (péngyoumen),men (pengyoumen),Môn,Dùng để chỉ số nhiều cho đại từ và danh từ chỉ người,同学们好，请坐下。,"Chào các em học sinh, xin mời ngồi xuống.",1,HSK 3.0,9
+L1-0242,242,米饭,mǐfàn,mifan,Mễ Phạn,Đã nấu,中国人常常吃米饭。,Người Trung Quốc thường xuyên ăn cơm.,1,HSK 3.0,119;184
+L1-0243,243,面包,miànbāo,mianbao,Diện Bao,Bánh mì,早餐我吃面包喝牛奶。,Bữa sáng tôi ăn bánh mì và uống sữa bò.,1,HSK 3.0,20;176
+L1-0244,244,面条儿,miàntiáor,miantiaor,Diện Điều Nhân,Biến thể er hoá của 麵條|面条,中午我想吃一碗热面条儿。,Buổi trưa tôi muốn ăn một bát mì sợi nóng hổi.,1,HSK 3.0,10;75;176
+L1-0245,245,名字,míngzi,mingzi,Danh Tự,Tên,你叫什么名字？,Bạn tên là gì?,1,HSK 3.0,30;39
+L1-0246,246,明白,míngbai,mingbai,Minh Bạch,Rõ ràng; hiển nhiên,老师讲的话我都明白了。,Những lời thầy giảng tôi đều hiểu rõ rồi.,1,HSK 3.0,72;106
+L1-0247,247,明年,míngnián,mingnian,Minh Niên,Năm sau,明年我打算去上海旅游。,Năm tới tôi dự định đi Thượng Hải du lịch.,1,HSK 3.0,51;72
+L1-0248,248,明天,míngtiān,mingtian,Minh Thiên,Ngày mai,明天是星期六，不用上课。,"Ngày mai là thứ bảy, không phải đi học.",1,HSK 3.0,37;72
+L1-0249,249,拿,ná,na,Nã,Cầm; lấy,请帮我拿一下包。,Xin hãy giúp tôi cầm chiếc túi một lát.,1,HSK 3.0,64
+L1-0250,250,哪,nǎ,na,Nả,Như thế nào; cái nào,你想去哪儿旅游？,Bạn muốn đi đâu du lịch?,1,HSK 3.0,30
+L1-0251,251,哪里,nǎlǐ,nali,Nả Lý,Ở đâu?; một nơi nào đó,请问洗手间在哪里？,Xin hỏi nhà vệ sinh ở đâu vậy?,1,HSK 3.0,30;166
+L1-0252,252,哪儿,nǎr,nar,Nả Nhân,Ở đâu?; bất cứ đâu; nơi nào đó,你要去哪儿？,Bạn định đi đâu?,1,HSK 3.0,10;30
+L1-0253,253,哪些,nǎxiē,naxie,Nả Ta,Những cái nào?; ai?,这些书中哪些是你喜欢的？,Trong số những cuốn sách này những cuốn nào bạn thích?,1,HSK 3.0,7;30
+L1-0254,254,那,nà,na,Na,Họ,那是谁的书？,Kia là sách của ai?,1,HSK 3.0,163
+L1-0255,255,那边,nàbiān,nabian,Na Biên,Đằng kia; ở đằng đó,书店在那边。,Hiệu sách ở phía bên kia.,1,HSK 3.0,162;163
+L1-0256,256,那里,nàlǐ,nali,Na Lý,Ở đó; nơi đó,我常常去那里喝茶。,Tôi thường đến chỗ đó uống trà.,1,HSK 3.0,163;166
+L1-0257,257,那儿,nàr,nar,Na Nhân,Ở đó,他在那儿等你。,Anh ấy đang ở đằng kia đợi bạn.,1,HSK 3.0,10;163
+L1-0258,258,那些,nàxiē,naxie,Na Ta,Những cái đó,那些花开得很漂亮。,Những bông hoa kia nở rất đẹp.,1,HSK 3.0,7;163
+L1-0259,259,奶,nǎi,nai,Nãi,Vú; sữa,小猫喜欢喝牛奶。,Mèo con thích uống sữa bò.,1,HSK 3.0,38
+L1-0260,260,奶奶,nǎinai,nainai,Nãi Nãi,Bà; bà chủ nhà,我奶奶今年七十五岁。,Bà nội tôi năm nay bảy mươi lăm tuổi.,1,HSK 3.0,38
+L1-0261,261,男,nán,nan,Nam,"Nam; Nam tước, cấp thấp nhất trong năm cấp bậc quý tộc 五等爵位",他是我们的男班长。,Anh ấy là lớp trưởng nam của chúng tôi.,1,HSK 3.0,102
+L1-0262,262,男孩儿,nánháir,nanhair,Nam Hài Nhân,Biến thể er hoá của 男孩,那个男孩儿非常聪明。,Cậu bé trai đó rất thông minh.,1,HSK 3.0,10;39;102
+L1-0263,263,男朋友,nánpéngyou,nanpengyou,Nam Bằng Hữu,Bạn trai,他是我的男朋友。,Anh ấy là bạn trai của tôi.,1,HSK 3.0,29;74;102
+L1-0264,264,男人,nánrén,nanren,Nam Nhân,Một người đàn ông; một nam giới,那位男人是一位医生。,Người đàn ông đó là một bác sĩ.,1,HSK 3.0,9;102
+L1-0265,265,男生,nánshēng,nansheng,Nam Sinh,Nam sinh; học sinh nam,我们班有十五个男生。,Lớp chúng tôi có mười lăm học sinh nam.,1,HSK 3.0,100;102
+L1-0266,266,南,nán,nan,Nam,Họ,学校的南边是一个大公园。,Phía nam trường học là một công viên lớn.,1,HSK 3.0,24
+L1-0267,267,南边,nánbian,nanbian,Nam Biên,Phía nam; mặt nam,他在南边工作。,Anh ấy làm việc ở phía nam.,1,HSK 3.0,24;162
+L1-0268,268,难,nán,nan,Nan,Khó; nan giải,汉语的发音有点难。,Phát âm tiếng Trung hơi khó một chút.,1,HSK 3.0,172
+L1-0269,269,呢,ne,ne,Ni,Thế; nhỉ; còn... thì sao (trợ từ ngữ khí),我是越南人，你呢？,"Tôi là người Việt Nam, còn bạn thì sao?",1,HSK 3.0,30
+L1-0270,270,能,néng,neng,Năng,Họ,你能帮我翻译这个句子吗？,Bạn có thể giúp tôi dịch câu này không?,1,HSK 3.0,130
+L1-0271,271,你,nǐ,ni,Nễ,Bạn,很高兴认识你。,Rất vui được làm quen với bạn.,1,HSK 3.0,9
+L1-0272,272,你们,nǐmen,nimen,Nễ Môn,Các bạn,你们都是大学生吗？,Các bạn đều là sinh viên đại học phải không?,1,HSK 3.0,9
+L1-0273,273,年,nián,nian,Niên,Họ,一年有十二个月。,Một năm có mười hai tháng.,1,HSK 3.0,51
+L1-0274,274,您,nín,nin,Nâm,Bạn,老师，您好！,Em chào thầy ạ!,1,HSK 3.0,61
+L1-0275,275,牛奶,niúnǎi,niunai,Ngưu Nãi,Sữa bò,喝牛奶对身体很好。,Uống sữa bò rất tốt cho sức khỏe.,1,HSK 3.0,38;93
+L1-0276,276,女,nǚ,nu,Nữ,Nữ; phụ nữ,她是我们的女老师。,Cô ấy là cô giáo của chúng tôi.,1,HSK 3.0,38
+L1-0277,277,女儿,nǚ'ér,nu'er,Nữ Nhân,Con gái,他的女儿正在上小学。,Con gái anh ấy đang học tiểu học.,1,HSK 3.0,10;38
+L1-0278,278,女孩儿,nǚháir,nuhair,Nữ Hài Nhân,Biến thể er hoá của 女孩,那个小女孩儿真漂亮。,Bé gái kia thật xinh xắn.,1,HSK 3.0,10;38;39
+L1-0279,279,女朋友,nǚpéngyou,nupengyou,Nữ Bằng Hữu,Bạn gái,她是我的女朋友。,Cô ấy là bạn gái của tôi.,1,HSK 3.0,29;38;74
+L1-0280,280,女人,nǚrén,nuren,Nữ Nhân,Phụ nữ,那位女人很有才华。,Người phụ nữ đó rất tài năng.,1,HSK 3.0,9;38
+L1-0281,281,女生,nǚshēng,nusheng,Nữ Sinh,Nữ sinh; học sinh nữ,我们班女生比男生多。,Lớp chúng tôi bạn nữ nhiều hơn bạn nam.,1,HSK 3.0,38;100
+L1-0282,282,旁边,pángbiān,pangbian,Bàng Biên,Bên; nơi liền kề,我家旁边有一家便利店。,Bên cạnh nhà tôi có một cửa hàng tiện lợi.,1,HSK 3.0,70;162
+L1-0283,283,跑,pǎo,pao,Bào,Chạy,小狗在草地上飞快地跑。,Chú cún con chạy rất nhanh trên bãi cỏ.,1,HSK 3.0,157
+L1-0284,284,朋友,péngyou,pengyou,Bằng Hữu,Bạn,好朋友会互相帮助。,Bạn bè tốt sẽ luôn giúp đỡ lẫn nhau.,1,HSK 3.0,29;74
+L1-0285,285,票,piào,piao,Phiếu,Vé; phiếu,我们买了两张电影票。,Chúng tôi đã mua hai tấm vé xem phim.,1,HSK 3.0,113
+L1-0286,286,七,qī,qi,Thất,Bảy; 7,一个星期有七天。,Một tuần có bảy ngày.,1,HSK 3.0,1
+L1-0287,287,起,qǐ,qi,Khởi,Dậy; khởi đầu; bắt đầu,早上六点我就起来了。,Sáu giờ sáng tôi đã thức dậy rồi.,1,HSK 3.0,156
+L1-0288,288,起床,qǐchuáng,qichuang,Khởi Sàng,Thức dậy; ngủ dậy,明天早上七点我要起床。,Sáng mai bảy giờ tôi phải thức dậy.,1,HSK 3.0,53;156
+L1-0289,289,起来,qǐlái,qilai,Khởi Lai,Đứng lên; thức dậy; cũng đọc là,快起来，太阳晒屁股了。,"Mau dậy đi, mặt trời lên cao rồi.",1,HSK 3.0,75;156
+L1-0290,290,汽车,qìchē,qiche,Khí Xa,Xe hơi; xe ô tô,路上来来往往很多汽车。,Trên đường xe hơi đi lại tấp nập.,1,HSK 3.0,85;159
+L1-0291,291,前,qián,qian,Tiền,Trước; phía trước,吃饭前要洗手。,Trước khi ăn cơm phải rửa tay.,1,HSK 3.0,18
+L1-0292,292,前边,qiánbian,qianbian,Tiền Biên,Phía trước; mặt trước,他在我们前边走。,Anh ấy đi ở phía trước chúng tôi.,1,HSK 3.0,18;162
+L1-0293,293,前天,qiántiān,qiantian,Tiền Thiên,Ngày hôm kia,前天我们参加了考试。,Hôm kia chúng tôi đã tham gia kỳ thi.,1,HSK 3.0,18;37
+L1-0294,294,钱,qián,qian,Tiền,Họ,买这件衣服花了不少钱。,Mua chiếc áo này tốn không ít tiền.,1,HSK 3.0,167
+L1-0295,295,钱包,qiánbāo,qianbao,Tiền Bao,Ví; bóp tiền,我的钱包掉在车上了。,Ví tiền của tôi bị rơi trên xe rồi.,1,HSK 3.0,20;167
+L1-0296,296,请,qǐng,qing,Thỉnh,Mời; mời mọc,请进，请坐，请喝茶。,"Mời vào, mời ngồi, mời uống trà.",1,HSK 3.0,149
+L1-0297,297,请假,qǐngjià,qingjia,Thỉnh Giả,Xin nghỉ phép,他今天生病，向老师请假。,Hôm nay anh ấy bị ốm nên xin phép thầy nghỉ học.,1,HSK 3.0,9;149
+L1-0298,298,请进,qǐng jìn,qing jin,Thỉnh Tiến,"""mời vào""",外面冷，请进屋坐。,"Bên ngoài lạnh, xin mời vào nhà ngồi.",1,HSK 3.0,149;162
+L1-0299,299,请问,qǐngwèn,qingwen,Thỉnh Vấn,"Xin lỗi, cho tôi hỏi...?",请问去图书馆怎么走？,Xin hỏi đi đến thư viện đi đường nào?,1,HSK 3.0,149;169
+L1-0300,300,请坐,qǐng zuò,qing zuo,Thỉnh Toạ,Xin mời ngồi,客人来了，请坐。,"Khách đến rồi, xin mời ngồi.",1,HSK 3.0,32;149
+L1-0301,301,球,qiú,qiu,Cầu,Quả bóng; hình cầu,孩子们在操场上踢球。,Lũ trẻ đang đá bóng trên sân tập.,1,HSK 3.0,96
+L1-0302,302,去,qù,qu,Khứ,Đi; đi đến,明天我想去书店买书。,Ngày mai tôi muốn đến hiệu sách mua sách.,1,HSK 3.0,28
+L1-0303,303,去年,qùnián,qunian,Khứ Niên,Năm ngoái,去年我在北京学汉语。,Năm ngoái tôi học tiếng Trung ở Bắc Kinh.,1,HSK 3.0,28;51
+L1-0304,304,热,rè,re,Nhiệt,Nóng; nhiệt tình,夏天天气很热。,Mùa hè thời tiết rất nóng nực.,1,HSK 3.0,86
+L1-0305,305,人,rén,ren,Nhân,Người; mọi người,这里的人非常热情。,Người dân ở đây rất nhiệt tình.,1,HSK 3.0,9
+L1-0306,306,认识,rènshi,renshi,Nhận Thức,Biết; nhận ra,认识你很高兴。,Rất vui được làm quen với bạn.,1,HSK 3.0,149
+L1-0307,307,认真,rènzhēn,renzhen,Nhận Chân,Tận tâm; nghiêm túc,大家都在认真地学习汉语。,Mọi người đều đang chăm chỉ học tiếng Trung.,1,HSK 3.0,109;149
+L1-0308,308,日,rì,ri,Nhật,Ngày; mặt trời,十月一日是国庆节。,Ngày một tháng mười là ngày Quốc khánh.,1,HSK 3.0,72
+L1-0309,309,日期,rìqī,riqi,Nhật Kỳ,Ngày tháng,请在表格上写下今天的日期。,Xin hãy ghi ngày tháng hôm nay vào biểu mẫu.,1,HSK 3.0,72;74
+L1-0310,310,肉,ròu,rou,Nhục,Thịt; thịt quả,我不喜欢吃肥肉。,Tôi không thích ăn thịt mỡ.,1,HSK 3.0,130
+L1-0311,311,三,sān,san,Tam,Họ,我们班有三个外国留学生。,Lớp chúng tôi có ba lưu học sinh nước ngoài.,1,HSK 3.0,1
+L1-0312,312,山,shān,shan,Sơn,Họ,这座山真高。,Ngọn núi này thật là cao.,1,HSK 3.0,46
+L1-0313,313,商场,shāngchǎng,shangchang,Thương Tràng,Trung tâm mua sắm; trung tâm thương mại,周末我们去商场购物。,Cuối tuần chúng tôi đến trung tâm thương mại mua sắm.,1,HSK 3.0,30;32
+L1-0314,314,商店,shāngdiàn,shangdian,Thương Điếm,Cửa hàng; tiệm,他在商店买了一支笔。,Anh ấy mua một chiếc bút ở cửa hàng.,1,HSK 3.0,30;53
+L1-0315,315,上,shàng,shang,Thướng,Lên; trên; đi làm; vào học,桌子上有一本汉语词典。,Trên bàn có một cuốn từ điển tiếng Trung.,1,HSK 3.0,1
+L1-0316,316,上班,shàngbān,shangban,Thướng Ban,Đi làm; đi trực,爸爸每天早上八点去上班。,Bố mỗi buổi sáng tám giờ đi làm.,1,HSK 3.0,1;96
+L1-0317,317,上边,shàngbian,shangbian,Thướng Biên,Phía trên; bên trên,书架上边摆放着奖状。,Phía trên giá sách bày các bằng khen.,1,HSK 3.0,1;162
+L1-0318,318,上车,shàng chē,shang che,Thướng Xa,Lên,请大家排队有序上车。,Xin mọi người xếp hàng trật tự lên xe.,1,HSK 3.0,1;159
+L1-0319,319,上次,shàng cì,shang ci,Thướng Thứ,Lần trước,上次见面还是一年前。,Lần trước gặp nhau vẫn là một năm trước.,1,HSK 3.0,1;76
+L1-0320,320,上课,shàngkè,shangke,Thướng Khoá,Đi học; tham dự lớp,我们八点开始上课。,Chúng tôi tám giờ bắt đầu vào học.,1,HSK 3.0,1;149
+L1-0321,321,上网,shàngwǎng,shangwang,Thướng Võng,Lên mạng; kết nối Internet,他喜欢在网上看新闻。,Anh ấy thích lên mạng xem tin tức.,1,HSK 3.0,1;122
+L1-0322,322,上午,shàngwǔ,shangwu,Thướng Ngọ,Buổi sáng,今天上午我有三节汉语课。,Sáng hôm nay tôi có ba tiết học tiếng Trung.,1,HSK 3.0,1;24
+L1-0323,323,上学,shàngxué,shangxue,Thướng Học,Đi học; theo học,孩子们背着书包去上学。,Lũ trẻ đeo cặp sách đi học.,1,HSK 3.0,1;39
+L1-0324,324,少,shǎo,shao,Thiểu,Ít; thiếu,今天来上课的人很少。,Hôm nay người đến lớp học rất ít.,1,HSK 3.0,42
+L1-0325,325,谁,shéi/shuí,shei/shui,Thuỳ,Ai; cũng đọc là,请问那位老师是谁？,Xin hỏi vị thầy giáo kia là ai vậy?,1,HSK 3.0,149
+L1-0326,326,身上,shēnshang,shenshang,Thân Thướng,Trên cơ thể; trong tay,他身上穿了一件黑外套。,Trên người anh ấy mặc một chiếc áo khoác đen.,1,HSK 3.0,1;158
+L1-0327,327,身体,shēntǐ,shenti,Thân Thể,Cơ thể; sức khỏe,祝你身体健康，万事如意。,"Chúc bạn sức khỏe dồi dào, vạn sự như ý.",1,HSK 3.0,9;158
+L1-0328,328,什么,shénme,shenme,Thậm Yêu,Gì?; điều gì đó; bất kỳ điều gì,你想买什么东西？,Bạn muốn mua đồ gì?,1,HSK 3.0,4;9
+L1-0329,329,生病,shēngbìng,shengbing,Sinh Bệnh,Bị ốm,天气变冷了，小心生病。,"Thời tiết trở lạnh rồi, cẩn thận kẻo ốm đấy.",1,HSK 3.0,100;104
+L1-0330,330,生气,shēngqì,shengqi,Sinh Khí,Nổi giận; tức giận; sinh khí; sức sống,不要为这点小事生气。,Đừng vì chuyện nhỏ nhặt này mà tức giận.,1,HSK 3.0,84;100
+L1-0331,331,生日,shēngrì,shengri,Sinh Nhật,Sinh nhật,今天是我的生日。,Hôm nay là sinh nhật của tôi.,1,HSK 3.0,72;100
+L1-0332,332,十,shí,shi,Thập,Mười; 10,十个学生在操场上打球。,Mười học sinh đang chơi bóng trên sân.,1,HSK 3.0,24
+L1-0333,333,时候,shíhou,shihou,Thời Hậu,Thời gian; khoảng thời gian,你什么时候去北京？,Khi nào bạn đi Bắc Kinh?,1,HSK 3.0,9;72
+L1-0334,334,时间,shíjiān,shijian,Thời Gian,Thời gian,我们没有太多时间了。,Chúng ta không còn nhiều thời gian nữa.,1,HSK 3.0,72;169
+L1-0335,335,事,shì,shi,Sự,Sự việc; điều,今天你有什么事吗？,Hôm nay bạn có việc gì không?,1,HSK 3.0,6
+L1-0336,336,试,shì,shi,Thí,Thử; thí nghiệm,这件衣服你可以试一下。,Bộ quần áo này bạn có thể mặc thử một chút.,1,HSK 3.0,149
+L1-0337,337,是,shì,shi,Thị,Là; đúng; phải; thật,我是河内大学的学生。,Tôi là sinh viên trường Đại học Hà Nội.,1,HSK 3.0,72
+L1-0338,338,是不是,shì bu shì,shi bu shi,Thị Bất Thị,Có phải hay không; phải hoặc không,你是不是今天下午要去图书馆？,Có phải chiều nay bạn sẽ đi thư viện không?,1,HSK 3.0,1;72
+L1-0339,339,手,shǒu,shou,Thủ,Tay; cầm,饭前洗手是个好习惯。,Rửa tay trước khi ăn là thói quen tốt.,1,HSK 3.0,64
+L1-0340,340,手机,shǒujī,shouji,Thủ Cơ,Điện thoại di động,我的手机放在桌子上了。,Điện thoại của tôi để trên bàn rồi.,1,HSK 3.0,64;75
+L1-0341,341,书,shū,shu,Thư,Viết tắt của 書經|书经,看书。,Đọc sách.,1,HSK 3.0,5
+L1-0342,342,书包,shūbāo,shubao,Thư Bao,Cặp sách; cặp đeo lưng,新书包里装满了课本和笔。,Trong chiếc cặp sách mới chứa đầy sách vở và bút.,1,HSK 3.0,5;20
+L1-0343,343,书店,shūdiàn,shudian,Thư Điếm,Nhà sách,我们在学校门口的新华书店见面。,Chúng tôi gặp nhau ở hiệu sách Tân Hoa trước cổng trường.,1,HSK 3.0,5;53
+L1-0344,344,树,shù,shu,Thụ,Cây; trồng,校园里种着许多高大的绿树。,Trong khuôn viên trường trồng rất nhiều cây xanh cao lớn.,1,HSK 3.0,75
+L1-0345,345,水,shuǐ,shui,Thuỷ,Họ,多喝温水对身体好。,Uống nhiều nước ấm rất tốt cho cơ thể.,1,HSK 3.0,85
+L1-0346,346,水果,shuǐguǒ,shuiguo,Thuỷ Quả,Trái cây,多吃新鲜水果有益健康。,Ăn nhiều hoa quả tươi có lợi cho sức khỏe.,1,HSK 3.0,75;85
+L1-0347,347,睡,shuì,shui,Thuỵ,Ngủ; nằm xuống,昨天晚上我睡得非常香甜。,Tối hôm qua tôi đã ngủ rất ngon giấc.,1,HSK 3.0,109
+L1-0348,348,睡觉,shuìjiào,shuijiao,Thuỵ Giáo,Đi ngủ; ngủ,早点睡觉，明天还要早起。,"Ngủ sớm đi, ngày mai còn phải dậy sớm.",1,HSK 3.0,109;147
+L1-0349,349,说,shuō,shuo,Thuyết,Nói,老师说汉语说得很清楚。,Thầy giáo nói tiếng Trung rất rõ ràng.,1,HSK 3.0,149
+L1-0350,350,说话,shuōhuà,shuohua,Thuyết Thoại,Nói; trò chuyện,请大家安静，不要说话。,"Xin mọi người hãy giữ trật tự, đừng nói chuyện.",1,HSK 3.0,149
+L1-0351,351,四,sì,si,Tứ,Bốn; 4,一年有四个季节。,Một năm có bốn mùa.,1,HSK 3.0,31
+L1-0352,352,送,sòng,song,Tống,Gửi; giao; truyền; tặng,朋友送了我一本很有趣的书。,Bạn bè đã tặng tôi một cuốn sách rất thú vị.,1,HSK 3.0,162
+L1-0353,353,岁,suì,sui,Tuế,Tuổi,小妹妹今年六岁了。,Em gái nhỏ năm nay sáu tuổi rồi.,1,HSK 3.0,46
+L1-0354,354,他,tā,ta,Tha,Anh ấy; ông ấy; khác,他是我的大学同学。,Anh ấy là bạn học đại học của tôi.,1,HSK 3.0,9
+L1-0355,355,他们,tāmen,tamen,Tha Môn,Họ; bọn họ,他们正在操场上打篮球。,Bọn họ đang chơi bóng rổ trên sân tập.,1,HSK 3.0,9
+L1-0356,356,她,tā,ta,Tha,Cô ấy,她是我们的汉语口语老师。,Cô ấy là giáo viên dạy khẩu ngữ tiếng Trung của chúng tôi.,1,HSK 3.0,38
+L1-0357,357,她们,tāmen,tamen,Tha Môn,Họ; các cô ấy,她们都是来自越南的留学生。,Họ đều là những du học sinh đến từ Việt Nam.,1,HSK 3.0,9;38
+L1-0358,358,太,tài,tai,Thái,Quá; lắm,这件衣服太漂亮了。,Chiếc áo này đẹp quá đi thôi.,1,HSK 3.0,37
+L1-0359,359,天,tiān,tian,Thiên,Ngày; trời,今天天气晴朗，阳光明媚。,"Hôm nay trời quang mây tạnh, ánh nắng chan hòa.",1,HSK 3.0,37
+L1-0360,360,天气,tiānqì,tianqi,Thiên Khí,Thời tiết,今天天气非常好。,Hôm nay thời tiết vô cùng đẹp.,1,HSK 3.0,37;84
+L1-0361,361,听,tīng,ting,Dẫn,Nghe,你喜欢听什么音乐？,Bạn thích nghe loại âm nhạc nào?,1,HSK 3.0,30
+L1-0362,362,听到,tīngdào,tingdao,Dẫn Đáo,Nghe thấy,我听到了小鸟在歌唱。,Tôi nghe thấy tiếng chim hót véo von.,1,HSK 3.0,18;30
+L1-0363,363,听见,tīngjiàn,tingjian,Dẫn Kiến,Nghe thấy,你听见老师说的话了吗？,Bạn có nghe thấy lời thầy nói không?,1,HSK 3.0,30;147
+L1-0364,364,听写,tīngxiě,tingxie,Dẫn Tả,Viết chính tả; bài chính tả; chép lại bằng tai,明天上课有生词听写。,Ngày mai vào lớp có bài kiểm tra chính tả từ mới.,1,HSK 3.0,14;30
+L1-0365,365,同学,tóngxué,tongxue,Đồng Học,Học cùng trường; bạn học,张明是我的同班同学。,Trương Minh là bạn cùng lớp của tôi.,1,HSK 3.0,30;39
+L1-0366,366,图书馆,túshūguǎn,tushuguan,Đồ Thư Quán,Thư viện,图书馆里非常安静。,Trong thư viện vô cùng yên tĩnh.,1,HSK 3.0,5;31;184
+L1-0367,367,外,wài,wai,Ngoại,Bên ngoài; thêm vào,外面的世界真大。,Thế giới bên ngoài thật rộng lớn.,1,HSK 3.0,36
+L1-0368,368,外边,wàibian,waibian,Ngoại Biên,Bên ngoài; bề mặt ngoài,外面正在下大雨。,Bên ngoài trời đang mưa to.,1,HSK 3.0,36;162
+L1-0369,369,外国,wàiguó,waiguo,Ngoại Quốc,Nước ngoài,他很喜欢去外国旅游。,Anh ấy rất thích đi du lịch nước ngoài.,1,HSK 3.0,31;36
+L1-0370,370,外语,wàiyǔ,waiyu,Ngoại Ngữ,Ngôn ngữ nước ngoài; Lượng từ: 門|门,学好一门外语很有用。,Học giỏi một ngoại ngữ rất có ích.,1,HSK 3.0,36;149
+L1-0371,371,玩儿,wánr,wanr,Ngoạn Nhân,Chơi; vui chơi,周末孩子们在公园玩儿。,Cuối tuần lũ trẻ vui chơi ở công viên.,1,HSK 3.0,10;96
+L1-0372,372,晚,wǎn,wan,Vãn,Buổi tối; đêm,时间不早了，我该睡了。,"Thời gian không còn sớm nữa, tôi nên ngủ thôi.",1,HSK 3.0,72
+L1-0373,373,晚饭,wǎnfàn,wanfan,Vãn Phạn,Bữa tối; cơm tối,全家人一起吃丰盛的晚饭。,Cả gia đình cùng ăn bữa tối thịnh soạn.,1,HSK 3.0,72;184
+L1-0374,374,晚上,wǎnshang,wanshang,Vãn Thướng,Buổi tối; đêm,晚上我常常在房间复习功课。,Buổi tối tôi thường ôn bài ở trong phòng.,1,HSK 3.0,1;72
+L1-0375,375,网上,wǎng shang,wang shang,Võng Thướng,Trực tuyến,我喜欢在网上查阅中文学习资料。,Tôi thích tra cứu tài liệu học tiếng Trung trên mạng.,1,HSK 3.0,1;122
+L1-0376,376,网友,wǎngyǒu,wangyou,Võng Hữu,Bạn online; người dùng Internet,他在互联网上结识了许多中国网友。,Anh ấy đã làm quen với nhiều bạn mạng Trung Quốc trên Internet.,1,HSK 3.0,29;122
+L1-0377,377,忘,wàng,wang,Vong,Quên; bỏ qua,不要忘了带你的雨伞。,Đừng quên mang theo chiếc ô của bạn nhé.,1,HSK 3.0,61
+L1-0378,378,忘记,wàngjì,wangji,Vong Ký,Quên,我忘记了他的电话号码。,Tôi quên mất số điện thoại của anh ấy rồi.,1,HSK 3.0,61;149
+L1-0379,379,问,wèn,wen,Vấn,Hỏi,遇到不懂的问题要问老师。,Gặp câu hỏi không hiểu phải hỏi thầy giáo.,1,HSK 3.0,169
+L1-0380,380,我,wǒ,wo,Ngã,Tôi; mình; của tôi,我是越南留学生。,Tôi là du học sinh Việt Nam.,1,HSK 3.0,62
+L1-0381,381,我们,wǒmen,women,Ngã Môn,Chúng tôi; chúng ta; bản thân chúng ta; của chúng tôi,我们一起努力学好汉语。,Chúng ta cùng nỗ lực học giỏi tiếng Trung nhé.,1,HSK 3.0,9;62
+L1-0382,382,五,wǔ,wu,Ngũ,Năm; 5,一个星期工作五天。,Một tuần làm việc năm ngày.,1,HSK 3.0,7
+L1-0383,383,午饭,wǔfàn,wufan,Ngọ Phạn,Bữa trưa,中午我们去食堂吃午饭。,Buổi trưa chúng tôi đến nhà ăn dùng bữa trưa.,1,HSK 3.0,24;184
+L1-0384,384,西,xī,xi,Tây,Phương Tây; tiếng Tây Ban Nha,太阳从西方落下。,Mặt trời lặn về hướng tây.,1,HSK 3.0,146
+L1-0385,385,西边,xībian,xibian,Tây Biên,Phía tây; bên phía tây,学校西边有一家大医院。,Phía tây trường học có một bệnh viện lớn.,1,HSK 3.0,146;162
+L1-0386,386,洗,xǐ,xi,Tẩy,Rửa; tắm; rửa ảnh,饭前要洗手。,Trước khi ăn cơm phải rửa tay.,1,HSK 3.0,85
+L1-0387,387,洗手间,xǐshǒujiān,xishoujian,Tẩy Thủ Gian,Nhà vệ sinh; phòng vệ sinh,请问洗手间在几楼？,Xin hỏi nhà vệ sinh ở tầng mấy vậy?,1,HSK 3.0,64;85;169
+L1-0388,388,喜欢,xǐhuan,xihuan,Hỷ Hoan,Thích; ưa thích,我很喜欢中国书法。,Tôi rất thích thư pháp Trung Hoa.,1,HSK 3.0,30;76
+L1-0389,389,下,xià,xia,Hạ,Dưới; xuống; tan làm; tan học,下星期我们有期中考试。,Tuần sau chúng tôi có bài thi giữa kỳ.,1,HSK 3.0,1
+L1-0390,390,下班,xiàbān,xiaban,Hạ Ban,Tan làm; tan ca,爸爸下午五点半下班。,Bố năm giờ rưỡi chiều tan sở.,1,HSK 3.0,1;96
+L1-0391,391,下边,xiàbian,xiabian,Hạ Biên,Ở dưới; mặt dưới,桌子下边趴着一只小猫。,Dưới gầm bàn có một chú mèo con đang nằm.,1,HSK 3.0,1;162
+L1-0392,392,下车,xià chē,xia che,Hạ Xa,Xuống,到站了，请乘客们下车。,"Đến ga rồi, xin mời quý khách xuống xe.",1,HSK 3.0,1;159
+L1-0393,393,下次,xià cì,xia ci,Hạ Thứ,Lần tới,下次有机会我们再聚。,Lần sau có cơ hội chúng ta lại tụ họp nhé.,1,HSK 3.0,1;76
+L1-0394,394,下课,xiàkè,xiake,Hạ Khoá,Tan học; ra khỏi lớp,老师说下课了，大家休息吧。,"Thầy giáo nói tan học rồi, mọi người nghỉ ngơi đi.",1,HSK 3.0,1;149
+L1-0395,395,下午,xiàwǔ,xiawu,Hạ Ngọ,Buổi chiều; p.m.,今天下午天气很凉快。,Chiều hôm nay thời tiết rất mát mẻ.,1,HSK 3.0,1;24
+L1-0396,396,下雨,xià yǔ,xia yu,Hạ Vũ,Trời mưa,外边下雨了，出门要带伞。,"Bên ngoài trời mưa rồi, ra ngoài nhớ mang ô.",1,HSK 3.0,1;173
+L1-0397,397,先,xiān,xian,Tiên,Trước; tiên quyết,你先请坐，我马上倒茶。,"Bạn hãy ngồi trước đi, tôi đi rót trà ngay.",1,HSK 3.0,10
+L1-0398,398,先生,xiānsheng,xiansheng,Tiên Sinh,Giáo viên; quý ông; ngài; ông,王先生是一位优秀的工程师。,Ông Vương là một kỹ sư xuất sắc.,1,HSK 3.0,10;100
+L1-0399,399,现在,xiànzài,xianzai,Hiện Tại,Bây giờ; hiện tại,现在是北京时间上午九点。,Bây giờ là chín giờ sáng giờ Bắc Kinh.,1,HSK 3.0,32;96
+L1-0400,400,想,xiǎng,xiang,Tưởng,Nghĩ; muốn; nhớ,我想学习汉语口语。,Tôi muốn học khẩu ngữ tiếng Trung.,1,HSK 3.0,61
+L1-0401,401,小,xiǎo,xiao,Tiểu,Nhỏ; bé,这是一只可爱的小花猫。,Đây là một chú mèo hoa nhỏ đáng yêu.,1,HSK 3.0,42
+L1-0402,402,小孩儿,xiǎoháir,xiaohair,Tiểu Hài Nhân,Biến thể er hoá của 小孩,公园里有很多快乐的小孩儿。,Trong công viên có rất nhiều đứa trẻ vui vẻ.,1,HSK 3.0,10;39;42
+L1-0403,403,小姐,xiǎojiě,xiaojie,Tiểu Tỷ,Cô gái; cô,服务小姐态度非常热情。,Cô nhân viên phục vụ thái độ rất nhiệt tình.,1,HSK 3.0,38;42
+L1-0404,404,小朋友,xiǎopéngyǒu,xiaopengyou,Tiểu Bằng Hữu,Trẻ em,小朋友们在操场上做游戏。,Các bạn nhỏ đang chơi trò chơi trên sân.,1,HSK 3.0,29;42;74
+L1-0405,405,小时,xiǎoshí,xiaoshi,Tiểu Thời,Giờ; lượng từ: 個|个,从河内飞北京大约四个小时。,Từ Hà Nội bay đến Bắc Kinh khoảng bốn tiếng đồng hồ.,1,HSK 3.0,42;72
+L1-0406,406,小学,xiǎoxué,xiaoxue,Tiểu Học,Trường tiểu học; trường cấp một,我妹妹在离家不远的小学上学。,Em gái tôi học ở trường tiểu học không xa nhà.,1,HSK 3.0,39;42
+L1-0407,407,小学生,xiǎoxuéshēng,xiaoxuesheng,Tiểu Học Sinh,Học sinh tiểu học; trẻ em đi học,小学生每天早起去学校。,Học sinh tiểu học mỗi ngày đều dậy sớm đến trường.,1,HSK 3.0,39;42;100
+L1-0408,408,笑,xiào,xiao,Tiếu,Biến thể cũ của 笑,她笑起来非常好看。,Cô ấy cười lên trông rất xinh đẹp.,1,HSK 3.0,118
+L1-0409,409,写,xiě,xie,Tả,Viết,老师在黑板上写生词。,Thầy giáo viết từ mới lên trên bảng đen.,1,HSK 3.0,14
+L1-0410,410,谢谢,xièxie,xiexie,Tạ Tạ,Cảm ơn; cảm ơn bạn,谢谢大家对我的关心。,Cảm ơn mọi người đã quan tâm đến tôi.,1,HSK 3.0,149
+L1-0411,411,新,xīn,xin,Tân,Mới,新年新气象。,Năm mới khí sắc mới mẻ.,1,HSK 3.0,69
+L1-0412,412,新年,xīnnián,xinnian,Tân Niên,Năm mới; Lượng từ: 個|个,祝大家新年快乐，万事如意！,"Chúc mọi người năm mới vui vẻ, vạn sự như ý!",1,HSK 3.0,51;69
+L1-0413,413,星期,xīngqī,xingqi,Tinh Kỳ,Tuần; ngày trong tuần,这个星期六我们去看电影。,Thứ bảy tuần này chúng tôi đi xem phim.,1,HSK 3.0,72;74
+L1-0414,414,星期日,xīngqīrì,xingqiri,Tinh Kỳ Nhật,Chủ nhật,星期日我常常在家休息。,Chủ nhật tôi thường ở nhà nghỉ ngơi.,1,HSK 3.0,72;74
+L1-0415,415,星期天,xīngqītiān,xingqitian,Tinh Kỳ Thiên,Chủ Nhật,星期天公园里游人很多。,Chủ nhật trong công viên có rất đông du khách.,1,HSK 3.0,37;72;74
+L1-0416,416,行,xíng,xing,Hàng,Được; đi; thực hiện,如果你时间方便，这样就行。,"Nếu thời gian của bạn thuận tiện, vậy thì được rồi.",1,HSK 3.0,144
+L1-0417,417,休息,xiūxi,xiuxi,Hưu Tức,Nghỉ; nghỉ ngơi,工作累了就休息一会儿吧。,Làm việc mệt rồi thì nghỉ ngơi một lát đi thôi.,1,HSK 3.0,9;61
+L1-0418,418,学,xué,xue,Học,Học; bắt chước,学好汉语需要每天坚持。,Học giỏi tiếng Trung cần kiên trì mỗi ngày.,1,HSK 3.0,39
+L1-0419,419,学生,xuéshēng,xuesheng,Học Sinh,Học sinh; trẻ đi học,教室里坐满了用功的学生。,Trong phòng học ngồi kín những học sinh chăm chỉ.,1,HSK 3.0,39;100
+L1-0420,420,学习,xuéxí,xuexi,Học Tập,Học; tìm hiểu,我们要努力学习科学文化知识。,Chúng ta phải nỗ lực học tập kiến thức khoa học văn hóa.,1,HSK 3.0,5;39
+L1-0421,421,学校,xuéxiào,xuexiao,Học Hiệu,Trường học; Lượng từ: 所,我们的学校非常美丽。,Ngôi trường của chúng tôi vô cùng tươi đẹp.,1,HSK 3.0,39;75
+L1-0422,422,学院,xuéyuàn,xueyuan,Học Viện,Trường cao đẳng; học viện,他在北京语言文化学院学习。,Anh ấy học ở Học viện Ngôn ngữ và Văn hóa Bắc Kinh.,1,HSK 3.0,39;170
+L1-0423,423,要,yào,yao,Yêu,Muốn; cần; phải,明天我要去参加汉语考试。,Ngày mai tôi phải đi tham gia kỳ thi tiếng Trung.,1,HSK 3.0,146
+L1-0424,424,爷爷,yéye,yeye,Gia Gia,Ông nội; ông bên nội,我爷爷每天早上打太极拳。,Ông nội tôi mỗi sáng đều tập Thái Cực Quyền.,1,HSK 3.0,88
+L1-0425,425,也,yě,ye,Dã,Họ,他是大学生，我也是大学生。,"Anh ấy là sinh viên, tôi cũng là sinh viên.",1,HSK 3.0,5
+L1-0426,426,页,yè,ye,Hiệt,Đầu,请大家翻到课本第四十五页。,Xin mời mọi người lật tới trang 45 sách giáo khoa.,1,HSK 3.0,181
+L1-0427,427,一,yī,yi,Nhất,Một; đơn,一人成木，二人成林。,"Một người thành cây, hai người thành rừng.",1,HSK 3.0,1
+L1-0428,428,衣服,yīfu,yifu,Y Phục,Quần áo,这件衣服款式很大方。,Chiếc áo này kiểu dáng rất nhã nhặn.,1,HSK 3.0,74;145
+L1-0429,429,医生,yīshēng,yisheng,Y Sinh,Bác sĩ,医生认真地给病人检查身体。,Bác sĩ cẩn thận kiểm tra sức khỏe cho bệnh nhân.,1,HSK 3.0,23;100
+L1-0430,430,医院,yīyuàn,yiyuan,Y Viện,Bệnh viện,市中心有一家现代化的大医院。,Ở trung tâm thành phố có một bệnh viện lớn hiện đại.,1,HSK 3.0,23;170
+L1-0431,431,一半,yībàn,yiban,Nhất Bán,Một nửa,这个西瓜我们一人吃一半。,Quả dưa hấu này mỗi người chúng ta ăn một nửa.,1,HSK 3.0,1;24
+L1-0432,432,一会儿,yīhuìr,yihuir,Nhất Hội Nhân,Một lúc; một thời gian,请大家稍等一会儿。,Xin mọi người hãy chờ một lát.,1,HSK 3.0,1;9;10
+L1-0433,433,一块儿,yīkuàir,yikuair,Nhất Khối Nhân,Biến thể er hoá của 一塊|一块,周末我们一块儿去爬山吧。,Cuối tuần chúng ta cùng nhau đi leo núi nhé.,1,HSK 3.0,1;10;32
+L1-0434,434,一下儿,yīxiàr,yixiar,Nhất Hạ Nhân,Biến thể er hoá của 一下,请大家稍等我一下儿。,Xin mọi người hãy chờ tôi một lát.,1,HSK 3.0,1;10
+L1-0435,435,一样,yīyàng,yiyang,Nhất Dạng,Giống; như,他的性格跟他爸爸一样。,Tính cách của anh ấy giống y hệt như bố mình.,1,HSK 3.0,1;75
+L1-0436,436,一边,yībiān,yibian,Nhất Biên,Một bên; mỗi bên,他一边听音乐，一边写作业。,"Anh ấy vừa nghe nhạc, vừa làm bài tập.",1,HSK 3.0,1;162
+L1-0437,437,一点儿,yīdiǎnr,yidianr,Nhất Điểm Nhân,Biến thể er hoá của 一點|一点,今天天气比昨天冷一点儿。,Hôm nay thời tiết hơi lạnh hơn hôm qua một chút.,1,HSK 3.0,1;10;86
+L1-0438,438,一起,yīqǐ,yiqi,Nhất Khởi,Ở cùng một nơi; cùng nhau,我们一起努力提高汉语水平。,Chúng ta cùng nhau nỗ lực nâng cao trình độ tiếng Trung.,1,HSK 3.0,1;156
+L1-0439,439,一些,yīxiē,yixie,Nhất Ta,Một số; một vài,桌子上放着一些新鲜的水果。,Trên bàn bày một số hoa quả tươi ngon.,1,HSK 3.0,1;7
+L1-0440,440,用,yòng,yong,Dụng,Dùng; sử dụng,请大家用汉语回答老师的问题。,Xin mời mọi người dùng tiếng Trung trả lời câu hỏi của thầy giáo.,1,HSK 3.0,101
+L1-0441,441,有,yǒu,you,Hữu,Có,图书馆里有许多中文书籍。,Trong thư viện có rất nhiều sách báo tiếng Trung.,1,HSK 3.0,74
+L1-0442,442,有的,yǒude,youde,Hữu Đích,Một số,有的同学在看书，有的在听音乐。,"Có bạn học sinh đang đọc sách, có bạn lại đang nghe nhạc.",1,HSK 3.0,74;106
+L1-0443,443,有名,yǒumíng,youming,Hữu Danh,Nổi tiếng; được biết đến,北京烤鸭是闻名世界的中国名菜。,Vịt quay Bắc Kinh là món ăn nổi tiếng khắp thế giới của Trung Quốc.,1,HSK 3.0,30;74
+L1-0444,444,有时候,yǒushíhou,youshihou,Hữu Thời Hậu,Đôi khi,周末有时候我喜欢一个人去散步。,Cuối tuần đôi khi tôi thích đi dạo một mình.,1,HSK 3.0,9;72;74
+L1-0445,445,有些,yǒu(yī)xiē,you(yi)xie,Hữu Ta,Một số; hơi,这些问题有些难，需要仔细分析。,"Những vấn đề này hơi khó, cần phân tích cẩn thận.",1,HSK 3.0,7;74
+L1-0446,446,有用,yǒuyòng,youyong,Hữu Dụng,Hữu ích,掌握这门技术非常有用。,Nắm vững kỹ thuật này vô cùng hữu ích.,1,HSK 3.0,74;101
+L1-0447,447,右,yòu,you,Hữu,Phải; bên phải,请向右看齐。,Xin hãy nhìn sang bên phải gióng hàng.,1,HSK 3.0,30
+L1-0448,448,右边,yòubian,youbian,Hữu Biên,"Bên phải; phải, về bên phải",学校的右边是一家大超市。,Bên phải trường học là một siêu thị lớn.,1,HSK 3.0,30;162
+L1-0449,449,雨,yǔ,yu,Vũ,"Mưa; Lượng từ: 陣|阵, 場|场",外面的雨渐渐停了。,Cơn mưa bên ngoài dần dần tạnh rồi.,1,HSK 3.0,173
+L1-0450,450,元,yuán,yuan,Nguyên,Họ; triều Nguyên,这本词典售价五十元。,Cuốn từ điển này giá bán năm mươi tệ.,1,HSK 3.0,10
+L1-0451,451,远,yuǎn,yuan,Viễn,Xa; xa xôi,从我家到学校并不远。,Từ nhà tôi đến trường học không hề xa.,1,HSK 3.0,162
+L1-0452,452,月,yuè,yue,Nguyệt,Mặt trăng; tháng,九月是学生们开学的月份。,Tháng chín là tháng học sinh bắt đầu năm học mới.,1,HSK 3.0,74
+L1-0453,453,再,zài,zai,Tái,Lại; một lần nữa; tái-; lần thứ hai; cái khác,欢迎大家下次再来。,Hoan nghênh mọi người lần sau lại đến.,1,HSK 3.0,13
+L1-0454,454,再见,zàijiàn,zaijian,Tái Kiến,Tạm biệt; gặp lại sau,老师再见，明天见！,"Chào tạm biệt thầy cô, hẹn ngày mai gặp lại!",1,HSK 3.0,13;147
+L1-0455,455,在,zài,zai,Tại,Ở; tại; đang,我现在在图书馆查资料。,Bây giờ tôi đang ở thư viện tra cứu tài liệu.,1,HSK 3.0,32
+L1-0456,456,在家,zàijiā,zaijia,Tại Gia,Ở nhà; có mặt,星期天我整天都在家看书。,Chủ nhật tôi cả ngày đều ở nhà đọc sách.,1,HSK 3.0,32;40
+L1-0457,457,早,zǎo,zao,Tảo,Sớm; buổi sáng,早起的鸟儿有虫吃。,Chim dậy sớm mới có sâu ăn.,1,HSK 3.0,72
+L1-0458,458,早饭,zǎofàn,zaofan,Tảo Phạn,Bữa sáng,妈妈已经为我们做好了早饭。,Mẹ đã chuẩn bị xong bữa sáng cho chúng tôi rồi.,1,HSK 3.0,72;184
+L1-0459,459,早上,zǎoshang,zaoshang,Tảo Thướng,Buổi sáng sớm,早上空气格外清新。,Buổi sáng không khí đặc biệt trong lành.,1,HSK 3.0,1;72
+L1-0460,460,怎么,zěnme,zenme,Chẩm Yêu,Như thế nào?; cái gì?,这个生词怎么读？,Từ mới này phát âm như thế nào?,1,HSK 3.0,4;61
+L1-0461,461,站,zhàn,zhan,Trạm,Trạm; đứng,下一站就是天安门广场。,Trạm tiếp theo chính là Quảng trường Thiên An Môn.,1,HSK 3.0,117
+L1-0462,462,找,zhǎo,zhao,Trảo,Tìm; kiếm; thối lại tiền,你在找什么重要的东西？,Bạn đang tìm đồ vật quan trọng gì thế?,1,HSK 3.0,64
+L1-0463,463,找到,zhǎodào,zhaodao,Trảo Đáo,Tìm thấy,我终于找到了丢失的钱包。,Cuối cùng tôi cũng tìm thấy chiếc ví tiền bị mất.,1,HSK 3.0,18;64
+L1-0464,464,这,zhè,zhe,Giá,Này; những...này; này,这是我最喜欢的一本书。,Đây là cuốn sách mà tôi yêu thích nhất.,1,HSK 3.0,162
+L1-0465,465,这边,zhèbiān,zhebian,Giá Biên,Bên này; ở đây,请大家往这边走。,Xin mời mọi người đi sang phía bên này.,1,HSK 3.0,162
+L1-0466,466,这里,zhèlǐ,zheli,Giá Lý,Biến thể của 這裡|这里,这里的风景非常迷人。,Phong cảnh ở nơi đây vô cùng say đắm lòng người.,1,HSK 3.0,162;166
+L1-0467,467,这儿,zhèr,zher,Giá Nhân,Ở đây,这儿有很多来自各地的朋友。,Ở đây có rất nhiều bạn bè đến từ khắp nơi.,1,HSK 3.0,10;162
+L1-0468,468,这些,zhèxiē,zhexie,Giá Ta,Những... này,这些生词大家都要熟记。,Những từ mới này mọi người đều phải ghi nhớ thật kỹ.,1,HSK 3.0,7;162
+L1-0469,469,着,zhe,zhe,Trước,Đang (trợ từ biểu thị trạng thái tiếp diễn),门开着，请直接进来。,"Cửa đang mở, xin mời trực tiếp bước vào.",1,HSK 3.0,109
+L1-0470,470,真,zhēn,zhen,Chân,Thật; sự thật,今天大家聚在一起真开心。,Hôm nay mọi người tụ họp bên nhau thật là vui.,1,HSK 3.0,109
+L1-0471,471,真的,zhēn de,zhen de,Chân Đích,Thực sự; thật sự; quả thật; thật; đúng; chính xác,这件传统中国旗袍真的很漂亮。,Chiếc áo dài sườn xám này thật sự rất đẹp.,1,HSK 3.0,106;109
+L1-0472,472,正,zhèng,zheng,Chinh,Đúng; chính; đang,太阳正当空照着大地。,Mặt trời đang chiếu rọi ngay trên đỉnh đầu xuống mặt đất.,1,HSK 3.0,77
+L1-0473,473,正在,zhèngzài,zhengzai,Chinh Tại,Đang ở; ngay tại,爸爸正在书房里认真阅读报纸。,Bố đang chăm chú đọc báo trong phòng sách.,1,HSK 3.0,32;77
+L1-0474,474,知道,zhīdào,zhidao,Tri Đạo,Biết; nhận thức được; cũng đọc là,你知道去火车站的路怎么走吗？,Bạn có biết đường đi đến nhà ga xe lửa không?,1,HSK 3.0,111;162
+L1-0475,475,知识,zhīshi,zhishi,Tri Thức,Kiến thức; trí thức,书籍是人类进步的阶梯和知识的源泉。,Sách là bậc thang tiến bộ và nguồn tri thức của nhân loại.,1,HSK 3.0,111;149
+L1-0476,476,中,zhōng,zhong,Trung,Trong; giữa; trúng,汉语在国际交流中越来越重要。,Tiếng Trung ngày càng quan trọng trong giao lưu quốc tế.,1,HSK 3.0,2
+L1-0477,477,中国,Zhōngguó,zhongguo,Trung Quốc,Trung Quốc,我想去中国北京留学。,"Tôi muốn đi du học ở Bắc Kinh, Trung Quốc.",1,HSK 3.0,2;31
+L1-0478,478,中间,zhōngjiān,zhongjian,Trung Gian,Ở giữa; bên trong; ở giữa; trong; giữa; trong số,他在人群中间向我们招手。,Anh ấy ở giữa đám đông vẫy tay chào chúng tôi.,1,HSK 3.0,2;169
+L1-0479,479,中文,Zhōngwén,zhongwen,Trung Văn,Ngôn ngữ Trung Quốc,学好中文可以了解博大精深的中国文化。,Học tốt tiếng Trung có thể hiểu được văn hóa Trung Hoa sâu rộng.,1,HSK 3.0,2;67
+L1-0480,480,中午,zhōngwǔ,zhongwu,Trung Ngọ,Buổi trưa; trưa,中午我们在学校食堂吃午饭。,Buổi trưa chúng tôi ăn cơm trưa ở nhà ăn trường.,1,HSK 3.0,2;24
+L1-0481,481,中学,zhōngxué,zhongxue,Trung Học,Trường trung học,我弟弟正在一所重点中学读书。,Em trai tôi đang học ở một trường trung học trọng điểm.,1,HSK 3.0,2;39
+L1-0482,482,中学生,zhōngxuéshēng,zhongxuesheng,Trung Học Sinh,Học sinh trung học; học sinh cấp ba,中学生要认真学好各门课程。,Học sinh trung học cần chăm chỉ học tốt các môn học.,1,HSK 3.0,2;39;100
+L1-0483,483,重,zhòng,zhong,Trùng,Lặp lại; sự lặp lại,这个箱子非常重，我搬不动。,"Chiếc hòm này rất nặng, tôi bê không nổi.",1,HSK 3.0,166
+L1-0484,484,重要,zhòngyào,zhongyao,Trùng Yêu,Quan trọng; đáng kể; chính yếu,身体健康比什么都重要。,Sức khỏe tốt quan trọng hơn bất cứ thứ gì.,1,HSK 3.0,146;166
+L1-0485,485,住,zhù,zhu,Trú,Ở; cư trú,他住在留学生宿舍三号楼。,Anh ấy ở tại tòa nhà số 3 ký túc xá lưu học sinh.,1,HSK 3.0,9
+L1-0486,486,准备,zhǔnbèi,zhunbei,Chuẩn Bị,Sự chuẩn bị; chuẩn bị,我们正在认真准备期末考试。,Chúng tôi đang chăm chỉ chuẩn bị cho kỳ thi cuối kỳ.,1,HSK 3.0,15;34
+L1-0487,487,桌子,zhuōzi,zhuozi,Trác Tử,Bàn; bàn làm việc,教室里摆放着整齐的桌子和椅子。,Trong lớp học xếp những bộ bàn ghế ngay ngắn.,1,HSK 3.0,39;75
+L1-0488,488,字,zì,zi,Tự,Chữ; ký hiệu,这个中国汉字写得非常漂亮。,Chữ Hán này được viết vô cùng đẹp đẽ.,1,HSK 3.0,39
+L1-0489,489,子,zi (zhuōzi),zi (zhuozi),Tử,Con trai; trẻ em,桌子上摆放着几个精致的杯子。,Trên bàn đặt mấy chiếc cốc tinh xảo.,1,HSK 3.0,39
+L1-0490,490,走,zǒu,zou,Tẩu,Đi; rời đi,天色已晚，我们该走了。,"Trời đã tối rồi, chúng ta nên đi thôi.",1,HSK 3.0,156
+L1-0491,491,走路,zǒulù,zoulu,Tẩu Lộ,Đi bộ; đi bằng chân,每天走路半小时对心脏很有益。,Mỗi ngày đi bộ nửa giờ rất có ích cho tim mạch.,1,HSK 3.0,156;157
+L1-0492,492,最,zuì,zui,Tối,Nhất,汉语是我最喜欢的外国语言。,Tiếng Trung là ngoại ngữ mà tôi yêu thích nhất.,1,HSK 3.0,13
+L1-0493,493,最好,zuìhǎo,zuihao,Tối Hảo,Tốt nhất; nên ...; tốt hơn hết nên ...,身体不舒服时最好去医院看医生。,Khi cơ thể không khỏe tốt nhất nên đến bệnh viện khám bác sĩ.,1,HSK 3.0,13;38
+L1-0494,494,最后,zuìhòu,zuihou,Tối Hậu,Cuối cùng; sau cùng,经过大家努力，我们最后取得了胜利。,"Qua sự nỗ lực của mọi người, cuối cùng chúng tôi đã giành thắng lợi.",1,HSK 3.0,13;30
+L1-0495,495,昨天,zuótiān,zuotian,Tạc Thiên,Hôm qua,昨天我和好朋友一起去了博物馆。,Hôm qua tôi và bạn thân đã cùng nhau đi viện bảo tàng.,1,HSK 3.0,37;72
+L1-0496,496,左,zuǒ,zuo,Tả,Trái; bên trái,请各位同学向左转。,Xin mời các bạn học sinh quay sang trái.,1,HSK 3.0,48
+L1-0497,497,左边,zuǒbian,zuobian,Tả Biên,Bên trái; phía trái,学校图书馆在办公楼的左边。,Thư viện trường học nằm ở phía bên trái tòa nhà làm việc.,1,HSK 3.0,48;162
+L1-0498,498,坐,zuò,zuo,Toạ,"Ngồi; đi (xe, tàu)",请大家按座位号坐下。,Xin mời mọi người theo số ghế ngồi xuống.,1,HSK 3.0,32
+L1-0499,499,坐下,zuò xia,zuo xia,Toạ Hạ,Ngồi xuống,老师走进教室，请大家安静坐下。,"Thầy giáo bước vào lớp, xin mời mọi người trật tự ngồi xuống.",1,HSK 3.0,1;32
+L1-0500,500,做,zuò,zuo,Tố,Làm; chế tạo,周末你通常在家做什么？,Cuối tuần bạn thường làm gì ở nhà?,1,HSK 3.0,9

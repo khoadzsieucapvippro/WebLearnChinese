@@ -26,9 +26,9 @@ import { openNotesModal } from '../ui/notes-modal.js';
 import { showToast, createSpeakerIcon, createSpeechButton } from '../ui/ui.js';
 import { initNavbarAuth } from '../ui/nav.js';
 import { sanitizeResourceUrl } from '../ui/security.js';
-import { speechController, speakHanzi, isSpeechSynthesisAvailable, SpeechState } from '../ui/speech.js';
+import { speechController, speakHanzi, playPronunciation, isSpeechSynthesisAvailable, SpeechState } from '../ui/speech.js';
 
-export { createSpeakerIcon, createSpeechButton, speechController, speakHanzi, isSpeechSynthesisAvailable, SpeechState };
+export { createSpeakerIcon, createSpeechButton, speechController, speakHanzi, playPronunciation, isSpeechSynthesisAvailable, SpeechState };
 
 export const MAX_AGAIN_REVIEWS_PER_CARD = 3;
 
@@ -693,48 +693,18 @@ export class SrsReviewController {
   }
 
   /**
-   * Plays sanitized audio URL with fallback to Web Speech.
+   * Plays sanitized audio URL with fallback to Web Speech via centralized speech controller.
    * 
    * @param {string} rawUrl 
    * @param {string} fallbackHanzi 
    * @param {HTMLElement|null} triggerButton
    */
   playAudioUrl(rawUrl, fallbackHanzi, triggerButton = null) {
-    const safeUrl = sanitizeResourceUrl(rawUrl);
-    if (!safeUrl || safeUrl === 'about:blank') {
-      speakHanzi(fallbackHanzi, { button: triggerButton });
-      return;
-    }
-
-    if (triggerButton) {
-      triggerButton.disabled = true;
-      triggerButton.setAttribute('aria-busy', 'true');
-      triggerButton.classList.add('is-speaking');
-    }
-
-    const unlock = () => {
-      if (triggerButton) {
-        triggerButton.disabled = false;
-        triggerButton.removeAttribute('aria-busy');
-        triggerButton.classList.remove('is-speaking');
-      }
-    };
-
-    try {
-      const audio = new Audio(safeUrl);
-      audio.onended = unlock;
-      audio.onerror = () => {
-        unlock();
-        speakHanzi(fallbackHanzi, { button: triggerButton });
-      };
-      audio.play().catch(() => {
-        unlock();
-        speakHanzi(fallbackHanzi, { button: triggerButton });
-      });
-    } catch {
-      unlock();
-      speakHanzi(fallbackHanzi, { button: triggerButton });
-    }
+    return playPronunciation({
+      text: fallbackHanzi,
+      audioUrl: rawUrl,
+      button: triggerButton
+    });
   }
 
   /**

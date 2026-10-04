@@ -84,11 +84,20 @@ class UserSrsSettingDtoTests {
         }
 
         @Test
-        @DisplayName("Null fields fail @NotNull validation")
+        @DisplayName("Null newCardsPerDay fails @NotNull validation while maxReviewPerDay is optional")
         void testNullFields_fail() {
             UpdateSrsSettingRequest request = new UpdateSrsSettingRequest(null, null);
             Set<ConstraintViolation<UpdateSrsSettingRequest>> violations = validator.validate(request);
-            assertThat(violations).hasSize(2);
+            assertThat(violations).hasSize(1);
+            assertThat(violations.iterator().next().getPropertyPath().toString()).isEqualTo("newCardsPerDay");
+        }
+
+        @Test
+        @DisplayName("Valid newCardsPerDay with null maxReviewPerDay passes validation")
+        void testOptionalMaxReview_success() {
+            UpdateSrsSettingRequest request = new UpdateSrsSettingRequest(25);
+            Set<ConstraintViolation<UpdateSrsSettingRequest>> violations = validator.validate(request);
+            assertThat(violations).isEmpty();
         }
     }
 

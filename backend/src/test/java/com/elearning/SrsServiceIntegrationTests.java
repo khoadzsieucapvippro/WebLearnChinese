@@ -348,9 +348,9 @@ class SrsServiceIntegrationTests {
         }
 
         @Test
-        @DisplayName("getDueCards respects maxReviewPerDay setting from USER_SRS_SETTING")
-        void testGetDueCards_respectsSetting() {
-            userSrsSettingRepository.save(new UserSrsSetting(learnerA, 20, 1)); // limit = 1 review/day
+        @DisplayName("getDueCards is not capped by maxReviewPerDay setting or reviews completed today")
+        void testGetDueCards_notCappedBySetting() {
+            userSrsSettingRepository.save(new UserSrsSetting(learnerA, 20, 1)); // legacy limit = 1 review/day
 
             // Complete 1 review today
             reviewLogRepository.save(new ReviewLog(learnerA, "VOCABULARY", testVocab.getVocabId(), (byte) 3, 0, 1, 2));
@@ -360,8 +360,8 @@ class SrsServiceIntegrationTests {
 
             List<DueCardResponse> dueList = srsService.getDueCards(null, 10);
 
-            // Quota exhausted (1/1 reviews completed today) -> empty list
-            assertThat(dueList).isEmpty();
+            // Due card still returned (no longer capped by maxReviewPerDay)
+            assertThat(dueList).isNotEmpty();
         }
 
         @Test

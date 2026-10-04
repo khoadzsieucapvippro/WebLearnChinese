@@ -152,30 +152,28 @@ class SrsServiceTests {
         }
 
         @Test
-        @DisplayName("When daily review limit is reached, returns empty list without querying progress")
-        void testGetDueCards_dailyLimitReached_returnsEmpty() {
+        @DisplayName("Due cards query is not constrained by reviews today (maxReviewPerDay removed)")
+        void testGetDueCards_notConstrainedByReviewsToday() {
             mockCurrentUser();
 
-            UserSrsSetting setting = new UserSrsSetting(testUserProfile, 20, 50);
-            when(userSrsSettingRepository.findByUser(testUserProfile)).thenReturn(Optional.of(setting));
-            when(reviewLogRepository.countByUserAndReviewedAtGreaterThanEqual(eq(testUserProfile), any(LocalDateTime.class)))
-                    .thenReturn(50L); // 50/50 reached
+            CardProgress cp = new CardProgress(testUserProfile, "VOCABULARY", 101L, new BigDecimal("2.50"), 1, 1, LocalDateTime.now().minusHours(1));
+            when(cardProgressRepository.findByUserAndNextReviewAtLessThanEqualOrderByNextReviewAtAsc(eq(testUserProfile), any(LocalDateTime.class), any(Pageable.class)))
+                    .thenReturn(List.of(cp));
+
+            Vocabulary vocab = new Vocabulary("水", "shuǐ", "shui", "Thủy", "Nước");
+            vocab.setVocabId(101L);
+            when(vocabularyRepository.findAllById(any())).thenReturn(List.of(vocab));
 
             List<DueCardResponse> results = srsService.getDueCards(null, 10);
 
-            assertThat(results).isEmpty();
-            verify(cardProgressRepository, never()).findByUserAndNextReviewAtLessThanEqualOrderByNextReviewAtAsc(any(), any(), any());
+            assertThat(results).hasSize(1);
+            assertThat(results.get(0).getItemId()).isEqualTo(101L);
         }
 
         @Test
         @DisplayName("Queries due cards and hydrates vocabulary and radical contents in bulk (BE-PERF-001)")
         void testGetDueCards_hydratesPolymorphicContent() {
             mockCurrentUser();
-
-            UserSrsSetting setting = new UserSrsSetting(testUserProfile, 20, 100);
-            when(userSrsSettingRepository.findByUser(testUserProfile)).thenReturn(Optional.of(setting));
-            when(reviewLogRepository.countByUserAndReviewedAtGreaterThanEqual(eq(testUserProfile), any(LocalDateTime.class)))
-                    .thenReturn(5L);
 
             CardProgress cpVocab = new CardProgress(testUserProfile, "VOCABULARY", 101L, new BigDecimal("2.50"), 1, 1, LocalDateTime.now().minusHours(1));
             CardProgress cpRadical = new CardProgress(testUserProfile, "RADICAL", 5L, new BigDecimal("2.36"), 6, 2, LocalDateTime.now().minusHours(2));
@@ -218,11 +216,6 @@ class SrsServiceTests {
         void testGetDueCards_preservesOriginalCardProgressOrder() {
             mockCurrentUser();
 
-            UserSrsSetting setting = new UserSrsSetting(testUserProfile, 20, 100);
-            when(userSrsSettingRepository.findByUser(testUserProfile)).thenReturn(Optional.of(setting));
-            when(reviewLogRepository.countByUserAndReviewedAtGreaterThanEqual(eq(testUserProfile), any(LocalDateTime.class)))
-                    .thenReturn(0L);
-
             CardProgress cp1 = new CardProgress(testUserProfile, "VOCABULARY", 101L, new BigDecimal("2.50"), 1, 1, LocalDateTime.now().minusHours(4));
             CardProgress cp2 = new CardProgress(testUserProfile, "RADICAL", 5L, new BigDecimal("2.50"), 1, 1, LocalDateTime.now().minusHours(3));
             CardProgress cp3 = new CardProgress(testUserProfile, "VOCABULARY", 102L, new BigDecimal("2.50"), 1, 1, LocalDateTime.now().minusHours(2));
@@ -258,11 +251,6 @@ class SrsServiceTests {
         @DisplayName("BE-PERF-001: Missing item entity is gracefully skipped without errors")
         void testGetDueCards_missingItem_gracefullySkipped() {
             mockCurrentUser();
-
-            UserSrsSetting setting = new UserSrsSetting(testUserProfile, 20, 100);
-            when(userSrsSettingRepository.findByUser(testUserProfile)).thenReturn(Optional.of(setting));
-            when(reviewLogRepository.countByUserAndReviewedAtGreaterThanEqual(eq(testUserProfile), any(LocalDateTime.class)))
-                    .thenReturn(0L);
 
             CardProgress cpExisting = new CardProgress(testUserProfile, "VOCABULARY", 101L, new BigDecimal("2.50"), 1, 1, LocalDateTime.now().minusHours(2));
             CardProgress cpMissing = new CardProgress(testUserProfile, "VOCABULARY", 999L, new BigDecimal("2.50"), 1, 1, LocalDateTime.now().minusHours(1));
@@ -439,30 +427,27 @@ class SrsServiceTests {
         }
 
         @Test
-        @DisplayName("When daily review quota is reached, reviewCard throws CONFLICT and does not update card or save log")
-        void testReviewCard_dailyQuotaReached_throwsConflict() {
+        @DisplayName("Review of due card is not blocked by reviews completed today (maxReviewPerDay limit removed)")
+        void testReviewCard_dailyReviewQuotaRemoved_allowsReview() {
             mockCurrentUser();
 
             ReviewCardRequest request = new ReviewCardRequest("VOCABULARY", 100L, 3, 2);
 
             Vocabulary vocab = new Vocabulary("天", "tiān", "tian", "Thiên", "Trời");
+            vocab.setVocabId(100L);
             when(vocabularyRepository.findByIdWithLock(100L)).thenReturn(Optional.of(vocab));
 
-            UserSrsSetting setting = new UserSrsSetting(testUserProfile, 20, 50);
-            when(userSrsSettingRepository.findByUser(testUserProfile)).thenReturn(Optional.of(setting));
-            List<Long> mockIds = Collections.nCopies(50, 1L);
-            when(reviewLogRepository.findTodayLogIdsWithLock(eq(testUserProfile), any(LocalDateTime.class)))
-                    .thenReturn(mockIds); // 50/50 reached
+            CardProgress cp = new CardProgress(testUserProfile, "VOCABULARY", 100L, new BigDecimal("2.50"), 1, 1, LocalDateTime.now().minusHours(2));
+            when(cardProgressRepository.findByUserAndItemTypeAndItemId(testUserProfile, "VOCABULARY", 100L))
+                    .thenReturn(Optional.of(cp));
+            when(cardProgressRepository.save(any(CardProgress.class))).thenAnswer(inv -> inv.getArgument(0));
+            when(reviewLogRepository.save(any(ReviewLog.class))).thenAnswer(inv -> inv.getArgument(0));
 
-            assertThatThrownBy(() -> srsService.reviewCard(request))
-                    .isInstanceOf(BusinessException.class)
-                    .satisfies(e -> {
-                        assertThat(((BusinessException) e).getErrorCode()).isEqualTo(ErrorCode.CONFLICT);
-                        assertThat(e.getMessage()).contains("đạt giới hạn ôn tập tối đa trong ngày");
-                    });
-
-            verify(cardProgressRepository, never()).save(any());
-            verify(reviewLogRepository, never()).save(any());
+            DueCardResponse response = srsService.reviewCard(request);
+            assertThat(response).isNotNull();
+            assertThat(response.getItemId()).isEqualTo(100L);
+            verify(cardProgressRepository).save(any(CardProgress.class));
+            verify(reviewLogRepository).save(any(ReviewLog.class));
         }
 
         @Test
@@ -549,7 +534,7 @@ class SrsServiceTests {
             UserSrsSetting setting = new UserSrsSetting(testUserProfile, 25, 120);
             when(userSrsSettingRepository.findByUser(testUserProfile)).thenReturn(Optional.of(setting));
 
-            when(cardProgressRepository.countByUserAndNextReviewAtLessThanEqual(eq(testUserProfile), any(LocalDateTime.class)))
+            when(cardProgressRepository.countByUserAndItemTypeAndNextReviewAtLessThanEqual(eq(testUserProfile), eq("VOCABULARY"), any(LocalDateTime.class)))
                     .thenReturn(18L);
             when(reviewLogRepository.countByUserAndReviewedAtGreaterThanEqual(eq(testUserProfile), any(LocalDateTime.class)))
                     .thenReturn(32L);

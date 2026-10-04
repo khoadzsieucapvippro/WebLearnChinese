@@ -79,7 +79,7 @@ describe('Browser E2E: Content Security Policy (CSP) Enforcement (Task 9G.3)', (
     assert.match(cspHeader, /font-src 'self'/, 'Must contain font-src');
     assert.match(cspHeader, /object-src 'none'/, 'Must contain object-src none');
     assert.match(cspHeader, /frame-ancestors 'none'/, 'Must contain frame-ancestors none');
-    assert.match(cspHeader, /frame-src 'none'/, 'Must contain frame-src none');
+    assert.match(cspHeader, /frame-src 'self' https:\/\/www\.youtube-nocookie\.com/, 'Must contain frame-src allowing self and youtube-nocookie');
     assert.match(cspHeader, /connect-src 'self'/, 'Must contain connect-src');
 
     // Verify absence of dangerous keywords in script-src

@@ -17,11 +17,13 @@
  */
 
 import { apiClient } from '../api/api.js';
-import { showLoading, showError, showToast } from '../ui/ui.js';
+import { showLoading, showError, showToast, createSpeakerIcon, createSpeechButton, playPronunciation, speakHanzi } from '../ui/ui.js';
 import { createSafeElement, clearContainer } from '../ui/security.js';
 import { initNavbarAuth } from '../ui/nav.js';
 import { formatLessonDate, sanitizeLessonTitle } from './lessons-page.js';
 import { openNotesModal } from '../ui/notes-modal.js';
+
+export { createSpeakerIcon };
 
 /**
  * Validates the raw lesson ID string from URL parameter.
@@ -39,6 +41,17 @@ export function validateLessonId(idParam) {
   }
   const num = parseInt(str, 10);
   return num > 0 && Number.isSafeInteger(num) ? num : null;
+}
+
+/**
+ * Formats the direct SRS review URL with lessonId for lesson-new-cards mode.
+ * 
+ * @param {number|string|null|undefined} lessonId 
+ * @returns {string} Formatted URL (e.g. "srs-review.html?lessonId=10")
+ */
+export function formatSrsReviewUrl(lessonId) {
+  const validId = validateLessonId(lessonId);
+  return validId ? `srs-review.html?lessonId=${validId}` : 'srs-review.html';
 }
 
 /**
@@ -111,92 +124,8 @@ export function sortVocabulariesByOrderIndex(vocabularies) {
   });
 }
 
-/**
- * Checks if browser supports SpeechSynthesis API safely.
- * 
- * @returns {boolean}
- */
-export function isSpeechSynthesisAvailable() {
-  return typeof window !== 'undefined' &&
-    typeof window.speechSynthesis !== 'undefined' &&
-    typeof window.SpeechSynthesisUtterance !== 'undefined';
-}
-
-/**
- * Pronounces Hanzi text using Web Speech API with Chinese mandarin voice.
- * 
- * @param {string} hanzi 
- * @returns {boolean} true if pronunciation initiated, false if unsupported/error
- */
-export function speakHanzi(hanzi) {
-  if (!hanzi || typeof hanzi !== 'string') {
-    return false;
-  }
-
-  if (!isSpeechSynthesisAvailable()) {
-    if (typeof document !== 'undefined') {
-      showToast('Trình duyệt của bạn không hỗ trợ tính năng phát âm tự động.', 'info');
-    }
-    return false;
-  }
-
-  try {
-    window.speechSynthesis.cancel();
-
-    const utterance = new SpeechSynthesisUtterance(hanzi.trim());
-    utterance.lang = 'zh-CN';
-    utterance.rate = 0.85;
-
-    const voices = window.speechSynthesis.getVoices();
-    if (Array.isArray(voices) && voices.length > 0) {
-      const zhVoice = voices.find(v => v.lang === 'zh-CN') ||
-                      voices.find(v => v.lang.startsWith('zh'));
-      if (zhVoice) {
-        utterance.voice = zhVoice;
-      }
-    }
-
-    utterance.onerror = () => {
-      // Graceful error ignore
-    };
-
-    window.speechSynthesis.speak(utterance);
-    return true;
-  } catch {
-    if (typeof document !== 'undefined') {
-      showToast('Không thể phát âm từ vựng vào lúc này.', 'info');
-    }
-    return false;
-  }
-}
-
-/**
- * Creates an SVG speaker icon element.
- * 
- * @returns {SVGElement}
- */
-export function createSpeakerIcon() {
-  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-  svg.setAttribute('width', '16');
-  svg.setAttribute('height', '16');
-  svg.setAttribute('viewBox', '0 0 24 24');
-  svg.setAttribute('fill', 'none');
-  svg.setAttribute('stroke', 'currentColor');
-  svg.setAttribute('stroke-width', '2');
-  svg.setAttribute('stroke-linecap', 'round');
-  svg.setAttribute('stroke-linejoin', 'round');
-  svg.setAttribute('aria-hidden', 'true');
-
-  const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
-  polygon.setAttribute('points', '11 5 6 9 2 9 2 15 6 15 11 19 11 5');
-  svg.appendChild(polygon);
-
-  const path1 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-  path1.setAttribute('d', 'M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07');
-  svg.appendChild(path1);
-
-  return svg;
-}
+// Centralized Speech Abstraction re-exports
+export { isSpeechSynthesisAvailable, speakHanzi, playPronunciation, speechController } from '../ui/ui.js';
 
 /**
  * Controller managing the public lesson detail page.
@@ -213,7 +142,8 @@ export class LessonDetailPageController {
       heading: null,
       vocabCountBadge: null,
       lessonDate: null,
-      vocabList: null
+      vocabList: null,
+      btnGoToSrsReview: null
     };
   }
 
@@ -228,6 +158,7 @@ export class LessonDetailPageController {
     this.dom.vocabCountBadge = document.getElementById('detailVocabCount');
     this.dom.lessonDate = document.getElementById('detailLessonDate');
     this.dom.vocabList = document.getElementById('lessonVocabList');
+    this.dom.btnGoToSrsReview = document.getElementById('btnGoToSrsReview');
 
     if (!this.dom.stateContainer || !this.dom.contentWrapper) {
       return;
@@ -237,6 +168,10 @@ export class LessonDetailPageController {
     const params = new URLSearchParams(window.location.search);
     const rawId = params.get('id');
     this.lessonId = validateLessonId(rawId);
+
+    if (this.dom.btnGoToSrsReview && this.lessonId) {
+      this.dom.btnGoToSrsReview.href = `srs-review.html?lessonId=${encodeURIComponent(this.lessonId)}`;
+    }
 
     if (!this.lessonId) {
       this.renderInvalidIdState();
@@ -336,6 +271,11 @@ export class LessonDetailPageController {
       }
     }
 
+    // Update SRS Review Link with authoritative lessonId
+    if (this.dom.btnGoToSrsReview && lesson.lessonId) {
+      this.dom.btnGoToSrsReview.href = formatSrsReviewUrl(lesson.lessonId);
+    }
+
     // 3. Render Ordered Vocabulary List
     clearContainer(this.dom.vocabList);
 
@@ -433,19 +373,16 @@ export class LessonDetailPageController {
     // Actions: Speech button & View in dictionary
     const actionsDiv = createSafeElement('div', { className: 'lesson-vocab-actions' });
 
-    // Speech Button
-    const speechBtn = createSafeElement('button', {
-      className: 'vocab-speech-btn btn-vocab-speech',
-      attrs: {
-        type: 'button',
-        'aria-label': `Phát âm từ vựng ${item.hanzi || ''}`,
-        title: 'Phát âm (Web Speech API)'
+    // Speech Button - using shared createSpeechButton with button lock and fallback support
+    const speechBtn = createSpeechButton({
+      className: 'btn-vocab-speech',
+      ariaLabel: `Phát âm từ vựng ${item.hanzi || ''}`,
+      title: 'Phát âm',
+      iconSize: 14,
+      onClick: (e) => {
+        e.stopPropagation();
+        speakHanzi(item.hanzi, { button: speechBtn });
       }
-    });
-    speechBtn.appendChild(createSpeakerIcon());
-    speechBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      speakHanzi(item.hanzi);
     });
     actionsDiv.appendChild(speechBtn);
 

@@ -62,6 +62,7 @@ function resolveTestFiles(tier) {
     'tests/frontend/unit/auth/auth-state.test.mjs',
     'tests/frontend/unit/api/api-client.test.mjs',
     'tests/frontend/unit/auth/auth-forms.test.mjs',
+    'tests/frontend/unit/auth/profile-settings.test.mjs',
     'tests/frontend/unit/radicals/radicals-catalog.test.mjs',
     'tests/frontend/unit/vocabulary/vocabulary-catalog.test.mjs',
     'tests/frontend/unit/lesson/lessons-catalog.test.mjs',

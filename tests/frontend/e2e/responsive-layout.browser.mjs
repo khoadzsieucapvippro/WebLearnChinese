@@ -142,6 +142,25 @@ describe('Responsive & Multi-Viewport Layout Verification (Task 9G.5)', () => {
           })
         });
       }
+      if (url.includes('/radicals')) {
+        return route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            code: 'SUCCESS',
+            data: {
+              page: 0,
+              size: 214,
+              totalElements: 2,
+              totalPages: 1,
+              items: [
+                { radicalId: 1, character: '一', pinyin: 'yī', meaningHanViet: 'Nhất', meaningVi: 'Số một', commonRank: 1 },
+                { radicalId: 2, character: '丨', pinyin: 'gǔn', meaningHanViet: 'Cổn', meaningVi: 'Nét sổ', commonRank: 2 }
+              ]
+            }
+          })
+        });
+      }
       return route.fulfill({
         status: 200,
         contentType: 'application/json',

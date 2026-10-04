@@ -25,6 +25,7 @@ import {
 } from '../../../../frontend/js/pages/lessons-page.js';
 import {
   validateLessonId,
+  formatSrsReviewUrl,
   parseLessonDetailResponse,
   sortVocabulariesByOrderIndex,
   isSpeechSynthesisAvailable,
@@ -198,6 +199,24 @@ describe('Unit: Lesson Catalog & Lesson Detail Engine (Task 9C.1)', () => {
       assert.strictEqual(validateLessonId(NaN), null);
       assert.strictEqual(validateLessonId(Infinity), null);
       assert.strictEqual(validateLessonId('<script>'), null);
+    });
+  });
+
+  describe('5.1. SRS Review URL Helper Contract (formatSrsReviewUrl)', () => {
+    test('formats valid numeric lessonId into srs-review.html?lessonId=X', () => {
+      assert.strictEqual(formatSrsReviewUrl(10), 'srs-review.html?lessonId=10');
+      assert.strictEqual(formatSrsReviewUrl(1), 'srs-review.html?lessonId=1');
+      assert.strictEqual(formatSrsReviewUrl('10'), 'srs-review.html?lessonId=10');
+      assert.strictEqual(formatSrsReviewUrl(' 42 '), 'srs-review.html?lessonId=42');
+    });
+
+    test('falls back safely to default srs-review.html when lessonId is invalid or absent', () => {
+      assert.strictEqual(formatSrsReviewUrl(null), 'srs-review.html');
+      assert.strictEqual(formatSrsReviewUrl(undefined), 'srs-review.html');
+      assert.strictEqual(formatSrsReviewUrl(''), 'srs-review.html');
+      assert.strictEqual(formatSrsReviewUrl('abc'), 'srs-review.html');
+      assert.strictEqual(formatSrsReviewUrl(-5), 'srs-review.html');
+      assert.strictEqual(formatSrsReviewUrl(0), 'srs-review.html');
     });
   });
 

@@ -45,7 +45,7 @@
               <a class="nav-link-custom" href="index.html">Trang chủ</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link-custom" href="radicals.html">214 Bộ thủ</a>
+              <a class="nav-link-custom" href="radicals.html">Bộ thủ</a>
             </li>
             <li class="nav-item">
               <a class="nav-link-custom" href="vocabulary.html">Từ vựng</a>
@@ -648,6 +648,86 @@
                 <span class="small fw-semibold text-secondary d-block mb-1">Kết quả khớp giải thuật:</span>
                 <div id="searchRadicalsResult" class="small font-monospace p-2 rounded bg-white border" style="min-height: 120px; max-height: 160px; overflow-y: auto;" aria-live="polite">
                   Nhấn "Tìm kiếm" hoặc chọn từ khóa mẫu để chạy giải thuật.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Row 2: YouTube Sanitizer & Pronunciation Diagnostics -->
+        <div class="row g-4 mt-1">
+          <!-- Col 3: YouTube Lesson Embed Sanitizer & Lazy-Load Probe -->
+          <div class="col-lg-6">
+            <div class="card-chinese h-100">
+              <div class="d-flex align-items-center justify-content-between mb-3">
+                <h3 class="h6 fw-bold mb-0">4.3 Kiểm Tra YouTube Video Lesson &amp; Sanitizer</h3>
+                <span class="badge-status badge-mode-unit">SECURITY / UX</span>
+              </div>
+              <p class="small text-secondary mb-3">
+                Xác thực định dạng YouTube tin cậy, chuyển đổi sang <code>youtube-nocookie.com</code> có <code>autoplay=1</code>, loại bỏ mã độc (XSS/javascript) và mô phỏng tải lazy iframe khi bấm Play.
+              </p>
+              <div class="mb-3">
+                <div class="input-group input-group-sm mb-2">
+                  <input type="text" id="youtubeTestInput" class="form-control" value="https://www.youtube.com/watch?v=RpBPqAM3GDg" placeholder="Nhập URL YouTube để kiểm tra...">
+                  <button type="button" id="btnTestYouTubeSanitize" class="btn-chinese-secondary">Chẩn đoán toàn diện</button>
+                </div>
+                <div class="d-flex flex-wrap gap-1 mb-2">
+                  <button type="button" id="btnYtWoodVerified" class="btn btn-outline-success btn-sm py-1 px-2" style="font-size: 0.75rem;">✓ Bộ Mộc 木 (RpBPqAM3GDg)</button>
+                  <button type="button" id="btnYtWaterVerified" class="btn btn-outline-success btn-sm py-1 px-2" style="font-size: 0.75rem;">✓ Bộ Thủy 水 (gDQwd4lpe6g)</button>
+                  <button type="button" id="btnYtOverviewVerified" class="btn btn-outline-success btn-sm py-1 px-2" style="font-size: 0.75rem;">✓ Bài tổng hợp (tWMGho6GtVw)</button>
+                  <button type="button" id="btnYtBroken" class="btn btn-outline-danger btn-sm py-1 px-2" style="font-size: 0.75rem;">✕ Video cũ bị xóa 404 (kYv9b6-8D-w)</button>
+                  <button type="button" id="btnYtShort" class="btn btn-outline-secondary btn-sm py-1 px-2" style="font-size: 0.75rem;">youtu.be rút gọn</button>
+                  <button type="button" id="btnYtMalicious" class="btn btn-outline-danger btn-sm py-1 px-2" style="font-size: 0.75rem;">javascript: độc hại</button>
+                  <button type="button" id="btnYtExternal" class="btn btn-outline-warning btn-sm py-1 px-2" style="font-size: 0.75rem;">Domain ngoài</button>
+                </div>
+              </div>
+              <div class="p-3 border rounded bg-light mb-3">
+                <span class="small fw-semibold text-secondary d-block mb-1">Kết quả chẩn đoán 6 cấp độ (URL &bull; Video &bull; Embed &bull; Iframe &bull; Playback &bull; Môi trường):</span>
+                <div id="youtubeSanitizeResult" class="small font-monospace p-2 rounded bg-white border" style="min-height: 120px;" aria-live="polite">
+                  Nhấn "Chẩn đoán toàn diện" hoặc chọn mẫu video để kiểm tra.
+                </div>
+              </div>
+              <!-- Interactive Lazy Player Simulation -->
+              <div class="p-3 border rounded bg-white">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <span class="small fw-bold">Mô phỏng vòng đời Lazy Player:</span>
+                  <div class="d-flex gap-1">
+                    <button type="button" id="btnSimulateYtPlay" class="btn btn-sm btn-outline-primary py-1 px-2" style="font-size: 0.75rem; min-height: 28px;">▶ Bấm Play</button>
+                    <button type="button" id="btnSimulateYtStop" class="btn btn-sm btn-outline-secondary py-1 px-2" style="font-size: 0.75rem; min-height: 28px;">✕ Đóng hộp thoại</button>
+                  </div>
+                </div>
+                <div id="youtubeSimulationContainer" class="ratio ratio-16x9 bg-dark rounded d-flex align-items-center justify-content-center text-white-50 small overflow-hidden" style="max-height: 200px;">
+                  <span id="youtubeSimulationPlaceholder">Chưa tạo iframe (Bảo toàn băng thông &amp; quyền riêng tư)</span>
+                </div>
+                <div id="youtubeSimulationStatus" class="small text-muted mt-1 fst-italic">
+                  Trạng thái: Chưa có iframe trong DOM.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Col 4: Audio & Web Speech Pronunciation Diagnostic -->
+          <div class="col-lg-6">
+            <div class="card-chinese h-100">
+              <div class="d-flex align-items-center justify-content-between mb-3">
+                <h3 class="h6 fw-bold mb-0">4.4 Năng Lực Phát Âm (Audio &amp; Web Speech zh-CN)</h3>
+                <span class="badge-status badge-mode-unit">CAPABILITY</span>
+              </div>
+              <p class="small text-secondary mb-3">
+                Kiểm tra cơ chế ưu tiên phát âm: Sử dụng <code>audioUrl</code> nếu có, tự động fallback mượt mà sang Web Speech API (zh-CN) khi audio rỗng hoặc lỗi mạng.
+              </p>
+              <div class="d-flex flex-wrap gap-2 mb-3">
+                <button type="button" id="btnTestSpeechSynth" class="btn-chinese-secondary btn-sm">
+                  Thử Web Speech zh-CN: "木" (mù)
+                </button>
+                <button type="button" id="btnTestSpeechSynthWater" class="btn-chinese-secondary btn-sm">
+                  Thử Web Speech zh-CN: "水" (shuǐ)
+                </button>
+              </div>
+              <div class="p-3 border rounded bg-light">
+                <span class="small fw-semibold text-secondary d-block mb-1">Trạng thái phát âm trình duyệt:</span>
+                <div id="speechDiagnosticsOutput" class="small font-monospace p-2 rounded bg-white border" style="min-height: 80px;" aria-live="polite">
+                  Nhấn nút thử nghiệm để kiểm tra âm thanh.
                 </div>
               </div>
             </div>

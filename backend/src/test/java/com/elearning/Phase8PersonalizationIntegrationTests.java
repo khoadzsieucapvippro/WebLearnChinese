@@ -196,7 +196,7 @@ class Phase8PersonalizationIntegrationTests {
     class PrimaryPersonalizationTests {
 
         @Test
-        @DisplayName("Phase 8 Checkpoint: Updating maxReviewPerDay directly and dynamically changes returned due-card count in GET /api/v1/srs/due")
+        @DisplayName("Personalization Checkpoint: Updating settings updates stats while GET /api/v1/srs/due remains unconstrained by maxReviewPerDay")
         void testSettingChange_modifiesDueCardCountDirectly() throws Exception {
             // Seed 15 due cards for User A
             seedDueCardsForUser(userA, 15);
@@ -210,8 +210,15 @@ class Phase8PersonalizationIntegrationTests {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data.maxReviewPerDay", is(3)));
 
-            // Verify GET /api/v1/srs/due returns EXACTLY 3 cards
+            // Verify GET /api/v1/srs/due returns ALL 15 cards (maxReviewPerDay no longer caps review cards)
             mockMvc.perform(get("/api/v1/srs/due")
+                            .header("Authorization", "Bearer " + tokenA))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code", is("SUCCESS")))
+                    .andExpect(jsonPath("$.data", hasSize(15)));
+
+            // Verify explicit ?limit=3 query parameter returns exactly 3 cards
+            mockMvc.perform(get("/api/v1/srs/due?limit=3")
                             .header("Authorization", "Bearer " + tokenA))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code", is("SUCCESS")))
@@ -223,51 +230,6 @@ class Phase8PersonalizationIntegrationTests {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data.maxReviewLimit", is(3)))
                     .andExpect(jsonPath("$.data.cardsDue", is(15)));
-
-            // Step 2: PUT settings with maxReviewPerDay = 7
-            UpdateSrsSettingRequest req2 = new UpdateSrsSettingRequest(20, 7);
-            mockMvc.perform(put("/api/v1/srs/settings")
-                            .header("Authorization", "Bearer " + tokenA)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(req2)))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.data.maxReviewPerDay", is(7)));
-
-            // Verify GET /api/v1/srs/due returns EXACTLY 7 cards
-            mockMvc.perform(get("/api/v1/srs/due")
-                            .header("Authorization", "Bearer " + tokenA))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.data", hasSize(7)));
-
-            // Step 3: PUT settings with maxReviewPerDay = 12
-            UpdateSrsSettingRequest req3 = new UpdateSrsSettingRequest(20, 12);
-            mockMvc.perform(put("/api/v1/srs/settings")
-                            .header("Authorization", "Bearer " + tokenA)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(req3)))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.data.maxReviewPerDay", is(12)));
-
-            // Verify GET /api/v1/srs/due returns EXACTLY 12 cards
-            mockMvc.perform(get("/api/v1/srs/due")
-                            .header("Authorization", "Bearer " + tokenA))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.data", hasSize(12)));
-
-            // Step 4: PUT settings down to maxReviewPerDay = 2 (Reverse direction check)
-            UpdateSrsSettingRequest req4 = new UpdateSrsSettingRequest(20, 2);
-            mockMvc.perform(put("/api/v1/srs/settings")
-                            .header("Authorization", "Bearer " + tokenA)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(req4)))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.data.maxReviewPerDay", is(2)));
-
-            // Verify GET /api/v1/srs/due returns EXACTLY 2 cards
-            mockMvc.perform(get("/api/v1/srs/due")
-                            .header("Authorization", "Bearer " + tokenA))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.data", hasSize(2)));
         }
 
         @Test
@@ -367,7 +329,7 @@ class Phase8PersonalizationIntegrationTests {
     class DailyQuotaExhaustionTests {
 
         @Test
-        @DisplayName("Daily reviews counted against maxReviewPerDay; increasing setting immediately restores due card availability")
+        @DisplayName("Reviews completed today are tracked in stats without blocking due cards")
         void testDailyQuotaExhaustion_andRecoveryOnLimitIncrease() throws Exception {
             // Seed 10 due cards for User A
             seedDueCardsForUser(userA, 10);
@@ -385,11 +347,11 @@ class Phase8PersonalizationIntegrationTests {
             reviewLogRepository.save(new ReviewLog(userA, "VOCABULARY", testVocabs.get(1).getVocabId(), 4, 1, 6, 3));
             reviewLogRepository.save(new ReviewLog(userA, "VOCABULARY", testVocabs.get(2).getVocabId(), 2, 1, 1, 5));
 
-            // Quota exhausted (3 reviews out of 3 limit) -> GET /srs/due returns 0 cards
+            // Due cards remain available (not blocked by maxReviewPerDay) -> GET /srs/due returns all 10 cards
             mockMvc.perform(get("/api/v1/srs/due")
                             .header("Authorization", "Bearer " + tokenA))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.data", hasSize(0)));
+                    .andExpect(jsonPath("$.data", hasSize(10)));
 
             // Stats show reviewsToday = 3, maxReviewLimit = 3
             mockMvc.perform(get("/api/v1/srs/stats")
@@ -397,20 +359,6 @@ class Phase8PersonalizationIntegrationTests {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data.reviewsToday", is(3)))
                     .andExpect(jsonPath("$.data.maxReviewLimit", is(3)));
-
-            // Learner increases limit to maxReviewPerDay = 8 -> Remaining quota = 8 - 3 = 5 cards
-            UpdateSrsSettingRequest req2 = new UpdateSrsSettingRequest(20, 8);
-            mockMvc.perform(put("/api/v1/srs/settings")
-                            .header("Authorization", "Bearer " + tokenA)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(req2)))
-                    .andExpect(status().isOk());
-
-            // GET /api/v1/srs/due immediately returns exactly 5 cards
-            mockMvc.perform(get("/api/v1/srs/due")
-                            .header("Authorization", "Bearer " + tokenA))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.data", hasSize(5)));
         }
     }
 
@@ -419,13 +367,13 @@ class Phase8PersonalizationIntegrationTests {
     class UserIsolationTests {
 
         @Test
-        @DisplayName("User A settings modifications do not affect User B settings or due cards")
+        @DisplayName("User A settings modifications do not affect User B settings")
         void testCrossUserPersonalizationIsolation() throws Exception {
             // Seed 15 due cards for User A and 15 due cards for User B
             seedDueCardsForUser(userA, 15);
             seedDueCardsForUser(userB, 15);
 
-            // User A sets limit = 4
+            // User A sets newCards = 25, maxReview = 4
             UpdateSrsSettingRequest reqA = new UpdateSrsSettingRequest(25, 4);
             mockMvc.perform(put("/api/v1/srs/settings")
                             .header("Authorization", "Bearer " + tokenA)
@@ -433,7 +381,7 @@ class Phase8PersonalizationIntegrationTests {
                             .content(objectMapper.writeValueAsString(reqA)))
                     .andExpect(status().isOk());
 
-            // User B sets limit = 9
+            // User B sets newCards = 35, maxReview = 9
             UpdateSrsSettingRequest reqB = new UpdateSrsSettingRequest(35, 9);
             mockMvc.perform(put("/api/v1/srs/settings")
                             .header("Authorization", "Bearer " + tokenB)
@@ -441,34 +389,27 @@ class Phase8PersonalizationIntegrationTests {
                             .content(objectMapper.writeValueAsString(reqB)))
                     .andExpect(status().isOk());
 
-            // Verify User A receives exactly 4 cards
-            mockMvc.perform(get("/api/v1/srs/due")
+            // Verify User A settings
+            mockMvc.perform(get("/api/v1/srs/settings")
+                            .header("Authorization", "Bearer " + tokenA))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.newCardsPerDay", is(25)))
+                    .andExpect(jsonPath("$.data.maxReviewPerDay", is(4)));
+
+            // Verify User B settings
+            mockMvc.perform(get("/api/v1/srs/settings")
+                            .header("Authorization", "Bearer " + tokenB))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.newCardsPerDay", is(35)))
+                    .andExpect(jsonPath("$.data.maxReviewPerDay", is(9)));
+
+            // Verify explicit query limit parameter works accurately for both
+            mockMvc.perform(get("/api/v1/srs/due?limit=4")
                             .header("Authorization", "Bearer " + tokenA))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data", hasSize(4)));
 
-            // Verify User B receives exactly 9 cards
-            mockMvc.perform(get("/api/v1/srs/due")
-                            .header("Authorization", "Bearer " + tokenB))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.data", hasSize(9)));
-
-            // User A increases limit to 11
-            UpdateSrsSettingRequest reqA2 = new UpdateSrsSettingRequest(25, 11);
-            mockMvc.perform(put("/api/v1/srs/settings")
-                            .header("Authorization", "Bearer " + tokenA)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(reqA2)))
-                    .andExpect(status().isOk());
-
-            // User A now receives 11 cards
-            mockMvc.perform(get("/api/v1/srs/due")
-                            .header("Authorization", "Bearer " + tokenA))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.data", hasSize(11)));
-
-            // User B STILL receives 9 cards (complete isolation)
-            mockMvc.perform(get("/api/v1/srs/due")
+            mockMvc.perform(get("/api/v1/srs/due?limit=9")
                             .header("Authorization", "Bearer " + tokenB))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data", hasSize(9)));
@@ -480,11 +421,8 @@ class Phase8PersonalizationIntegrationTests {
     class ValidationProtectionTests {
 
         @Test
-        @DisplayName("Invalid PUT request (zero value) returns 400 and does NOT alter existing due card limits")
+        @DisplayName("Invalid PUT request (zero value) returns 400 and does NOT alter existing settings")
         void testInvalidSettingPUT_doesNotMutateDueCardLimits() throws Exception {
-            // Seed 10 due cards for User A
-            seedDueCardsForUser(userA, 10);
-
             // Establish valid setting: maxReviewPerDay = 4
             UpdateSrsSettingRequest validReq = new UpdateSrsSettingRequest(20, 4);
             mockMvc.perform(put("/api/v1/srs/settings")
@@ -492,12 +430,6 @@ class Phase8PersonalizationIntegrationTests {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(validReq)))
                     .andExpect(status().isOk());
-
-            // Verify due count is 4
-            mockMvc.perform(get("/api/v1/srs/due")
-                            .header("Authorization", "Bearer " + tokenA))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.data", hasSize(4)));
 
             // Send invalid PUT (zero maxReviewPerDay)
             UpdateSrsSettingRequest invalidReq = new UpdateSrsSettingRequest(20, 0);
@@ -508,11 +440,12 @@ class Phase8PersonalizationIntegrationTests {
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.code", is("VALIDATION_ERROR")));
 
-            // Verify due count remains strictly 4 (no DB corruption or mutation)
-            mockMvc.perform(get("/api/v1/srs/due")
+            // Verify settings remain strictly newCardsPerDay=20, maxReviewPerDay=4
+            mockMvc.perform(get("/api/v1/srs/settings")
                             .header("Authorization", "Bearer " + tokenA))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.data", hasSize(4)));
+                    .andExpect(jsonPath("$.data.newCardsPerDay", is(20)))
+                    .andExpect(jsonPath("$.data.maxReviewPerDay", is(4)));
         }
     }
 }

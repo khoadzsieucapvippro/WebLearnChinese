@@ -12,6 +12,7 @@ import com.elearning.entity.Vocabulary;
 import com.elearning.repository.AccountRepository;
 import com.elearning.repository.LessonRepository;
 import com.elearning.repository.LessonVocabularyRepository;
+import com.elearning.repository.ModerationLogRepository;
 import com.elearning.repository.VocabularyRepository;
 import com.elearning.security.JwtUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -93,6 +94,12 @@ class LessonLifecycleIntegrationTests {
 
     @Autowired
     private VocabularyRepository vocabularyRepository;
+
+    @Autowired
+    private ModerationLogRepository moderationLogRepository;
+
+    @Autowired
+    private org.springframework.transaction.support.TransactionTemplate txTemplate;
 
     @Autowired
     private Flyway flyway;
@@ -185,10 +192,12 @@ class LessonLifecycleIntegrationTests {
     void tearDown() {
         // Reset spy if modified
         Mockito.reset(lessonVocabularyRepository);
-        lessonVocabularyRepository.deleteAll();
-        lessonRepository.deleteAll();
-        vocabularyRepository.deleteAll();
-        accountRepository.deleteAll();
+        txTemplate.executeWithoutResult(status -> {
+            moderationLogRepository.deleteAllInBatch();
+            lessonVocabularyRepository.deleteAllInBatch();
+            lessonRepository.deleteAllInBatch();
+            vocabularyRepository.deleteByHskLevelIsNull();
+        });
     }
 
     private byte[] createWorkbook(String[] headers, String[][] data) throws IOException {
@@ -395,7 +404,7 @@ class LessonLifecycleIntegrationTests {
             String[] headers = {"Chữ Hán", "Pinyin", "Hán-Việt", "Nghĩa tiếng Việt", "Câu ví dụ", "Dịch câu ví dụ"};
             String[][] data = {
                     {"学", "xué", "Học", "Học tập", "好好学习。", "Học tập chăm chỉ."}, // Existing
-                    {"书", "shū", "Thư", "Sách", "这是一本书。", "Đây là một cuốn sách."} // New
+                    {"火星", "huǒxīng", "Hỏa Tinh", "Sao Hỏa", "火星很大。", "Sao Hỏa rất lớn."} // New (non-HSK1)
             };
             byte[] bytes = createWorkbook(headers, data);
             MockMultipartFile file = new MockMultipartFile("file", "preview_test.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", bytes);
@@ -927,7 +936,7 @@ class LessonLifecycleIntegrationTests {
             var info = flyway.info();
             var applied = info.applied();
             assertThat(applied).isNotEmpty();
-            assertThat(info.current().getVersion().getVersion()).isEqualTo("7");
+            assertThat(info.current().getVersion().getVersion()).isEqualTo("15");
             assertThat(info.pending()).isEmpty();
         }
     }

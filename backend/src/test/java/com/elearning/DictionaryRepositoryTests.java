@@ -91,15 +91,6 @@ class DictionaryRepositoryTests {
         @Test
         @DisplayName("GIVEN hanzi and pinyinRaw matching unique constraint WHEN findByHanziAndPinyinRaw THEN returns correct Vocabulary")
         void testFindByHanziAndPinyinRaw() {
-            Vocabulary vocab = new Vocabulary();
-            vocab.setHanzi("学");
-            vocab.setPinyin("xué");
-            vocab.setPinyinRaw("xue");
-            vocab.setMeaningHanViet("Học");
-            vocab.setMeaningVi("Học tập");
-            entityManager.persistAndFlush(vocab);
-            entityManager.clear();
-
             Optional<Vocabulary> found = vocabularyRepository.findByHanziAndPinyinRaw("学", "xue");
             assertThat(found).isPresent();
             assertThat(found.get().getHanzi()).isEqualTo("学");
@@ -112,45 +103,45 @@ class DictionaryRepositoryTests {
         @Test
         @DisplayName("GIVEN multiple records WHEN findByHanzi with Pageable THEN returns paginated results")
         void testFindByHanziWithPagination() {
-            Vocabulary v1 = new Vocabulary("行", "xíng", "xing", "Hành", "Đi lại");
-            Vocabulary v2 = new Vocabulary("行", "háng", "hang", "Hàng", "Hàng lối, ngân hàng");
+            Vocabulary v1 = new Vocabulary("朝", "cháo", "chao", "Triều", "Triều đại");
+            Vocabulary v2 = new Vocabulary("朝", "zhāo", "zhao", "Triêu", "Sáng sớm");
             entityManager.persist(v1);
             entityManager.persist(v2);
             entityManager.flush();
             entityManager.clear();
 
-            Page<Vocabulary> page = vocabularyRepository.findByHanzi("行", PageRequest.of(0, 10));
+            Page<Vocabulary> page = vocabularyRepository.findByHanzi("朝", PageRequest.of(0, 10));
 
             assertThat(page).isNotNull();
             assertThat(page.getTotalElements()).isEqualTo(2);
             assertThat(page.getContent()).extracting(Vocabulary::getPinyinRaw)
-                    .containsExactlyInAnyOrder("xing", "hang");
+                    .containsExactlyInAnyOrder("chao", "zhao");
         }
 
         @Test
         @DisplayName("GIVEN multiple records WHEN findByPinyinRaw with Pageable THEN returns paginated results")
         void testFindByPinyinRawWithPagination() {
-            Vocabulary v1 = new Vocabulary("买", "mǎi", "mai", "Mãi", "Mua");
-            Vocabulary v2 = new Vocabulary("卖", "mài", "mai", "Mại", "Bán");
+            Vocabulary v1 = new Vocabulary("埋", "mái", "mai_test", "Mai", "Chôn cất");
+            Vocabulary v2 = new Vocabulary("脉", "mài", "mai_test", "Mạch", "Mạch máu");
             entityManager.persist(v1);
             entityManager.persist(v2);
             entityManager.flush();
             entityManager.clear();
 
-            Page<Vocabulary> page = vocabularyRepository.findByPinyinRaw("mai", PageRequest.of(0, 10));
+            Page<Vocabulary> page = vocabularyRepository.findByPinyinRaw("mai_test", PageRequest.of(0, 10));
 
             assertThat(page).isNotNull();
             assertThat(page.getTotalElements()).isEqualTo(2);
             assertThat(page.getContent()).extracting(Vocabulary::getHanzi)
-                    .containsExactlyInAnyOrder("买", "卖");
+                    .containsExactlyInAnyOrder("埋", "脉");
         }
 
         @Test
         @DisplayName("GIVEN search keyword WHEN searchByKeyword THEN matches hanzi, pinyin, or pinyinRaw")
         void testSearchByKeywordCombined() {
-            Vocabulary v1 = new Vocabulary("中国", "zhōngguó", "zhongguo", "Trung Quốc", "Nước Trung Quốc");
-            Vocabulary v2 = new Vocabulary("北京", "běijīng", "beijing", "Bắc Kinh", "Thủ đô Bắc Kinh");
-            Vocabulary v3 = new Vocabulary("中心", "zhōngxīn", "zhongxin", "Trung tâm", "Ở giữa, trọng tâm");
+            Vocabulary v1 = new Vocabulary("测中A", "cèzhōng_a", "cezhong_a", "Trắc Trung A", "Mô tả A");
+            Vocabulary v2 = new Vocabulary("测北B", "cèběi_b", "cebei_b", "Trắc Bắc B", "Mô tả B");
+            Vocabulary v3 = new Vocabulary("测中C", "cèzhōng_c", "cezhong_c", "Trắc Trung C", "Mô tả C");
             entityManager.persist(v1);
             entityManager.persist(v2);
             entityManager.persist(v3);
@@ -158,19 +149,19 @@ class DictionaryRepositoryTests {
             entityManager.clear();
 
             // Match by Hanzi substring
-            Page<Vocabulary> hanziMatches = vocabularyRepository.searchByKeyword("中", PageRequest.of(0, 10));
+            Page<Vocabulary> hanziMatches = vocabularyRepository.searchByKeyword("测中", PageRequest.of(0, 10));
             assertThat(hanziMatches.getContent()).extracting(Vocabulary::getHanzi)
-                    .containsExactlyInAnyOrder("中国", "中心");
+                    .containsExactlyInAnyOrder("测中A", "测中C");
 
             // Match by pinyin substring
-            Page<Vocabulary> pinyinMatches = vocabularyRepository.searchByKeyword("běi", PageRequest.of(0, 10));
+            Page<Vocabulary> pinyinMatches = vocabularyRepository.searchByKeyword("cèběi", PageRequest.of(0, 10));
             assertThat(pinyinMatches.getContent()).extracting(Vocabulary::getHanzi)
-                    .containsExactly("北京");
+                    .containsExactly("测北B");
 
             // Match by pinyin_raw substring (tone-less search)
-            Page<Vocabulary> pinyinRawMatches = vocabularyRepository.searchByKeyword("zhong", PageRequest.of(0, 10));
+            Page<Vocabulary> pinyinRawMatches = vocabularyRepository.searchByKeyword("cezhong", PageRequest.of(0, 10));
             assertThat(pinyinRawMatches.getContent()).extracting(Vocabulary::getHanzi)
-                    .containsExactlyInAnyOrder("中国", "中心");
+                    .containsExactlyInAnyOrder("测中A", "测中C");
 
             // Non-matching keyword
             Page<Vocabulary> noMatches = vocabularyRepository.searchByKeyword("nonexistent_vocab", PageRequest.of(0, 10));
@@ -182,14 +173,14 @@ class DictionaryRepositoryTests {
         @DisplayName("GIVEN N records WHEN querying pages THEN pagination metadata is completely accurate")
         void testPaginationMetadata() {
             for (int i = 1; i <= 5; i++) {
-                Vocabulary v = new Vocabulary("字" + i, "zì" + i, "zi" + i, "Tự" + i, "Nghĩa " + i);
+                Vocabulary v = new Vocabulary("测" + i, "cè" + i, "pagtest" + i, "Trắc" + i, "Nghĩa " + i);
                 entityManager.persist(v);
             }
             entityManager.flush();
             entityManager.clear();
 
             // Page 0 (size 2) -> items 1, 2
-            Page<Vocabulary> page0 = vocabularyRepository.searchByKeyword("zi", PageRequest.of(0, 2, Sort.by("vocabId").ascending()));
+            Page<Vocabulary> page0 = vocabularyRepository.searchByKeyword("pagtest", PageRequest.of(0, 2, Sort.by("vocabId").ascending()));
             assertThat(page0.getNumber()).isEqualTo(0);
             assertThat(page0.getSize()).isEqualTo(2);
             assertThat(page0.getNumberOfElements()).isEqualTo(2);
@@ -198,13 +189,13 @@ class DictionaryRepositoryTests {
             assertThat(page0.hasNext()).isTrue();
 
             // Page 2 (size 2) -> item 5 (last page)
-            Page<Vocabulary> page2 = vocabularyRepository.searchByKeyword("zi", PageRequest.of(2, 2, Sort.by("vocabId").ascending()));
+            Page<Vocabulary> page2 = vocabularyRepository.searchByKeyword("pagtest", PageRequest.of(2, 2, Sort.by("vocabId").ascending()));
             assertThat(page2.getNumber()).isEqualTo(2);
             assertThat(page2.getNumberOfElements()).isEqualTo(1);
             assertThat(page2.hasNext()).isFalse();
 
             // Page 3 (size 2) -> empty page
-            Page<Vocabulary> page3 = vocabularyRepository.searchByKeyword("zi", PageRequest.of(3, 2, Sort.by("vocabId").ascending()));
+            Page<Vocabulary> page3 = vocabularyRepository.searchByKeyword("pagtest", PageRequest.of(3, 2, Sort.by("vocabId").ascending()));
             assertThat(page3.getNumber()).isEqualTo(3);
             assertThat(page3.getNumberOfElements()).isZero();
             assertThat(page3.getContent()).isEmpty();

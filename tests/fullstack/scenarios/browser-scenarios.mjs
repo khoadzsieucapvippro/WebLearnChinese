@@ -111,9 +111,9 @@ export async function runBrowserScenarios(
       // Verify modal opened
       await page.waitForSelector('#radicalDetailModal[open], dialog[open]', { timeout: 5000 });
       const glyph = await page.textContent('#modalRadicalChar');
-      const badge = await page.textContent('#modalRadicalIdBadge');
-      assert.strictEqual(badge.trim(), '#1', 'Modal badge must display #1');
-      assert.strictEqual(glyph.trim(), '一', 'Modal glyph must display 一');
+      assert.ok(glyph.trim().length > 0, 'Modal glyph must display radical character');
+      const pinyin = await page.textContent('#modalRadicalPinyin');
+      assert.ok(pinyin.trim().length > 0, 'Modal pinyin must display');
 
       // Dismiss via Escape key
       await page.keyboard.press('Escape');
@@ -130,7 +130,7 @@ export async function runBrowserScenarios(
       const activeElementClass = await page.evaluate(() => document.activeElement ? document.activeElement.className : '');
       assert.ok(activeElementClass.includes('radical-card'), `Focus must be restored to radical card (got active element class: "${activeElementClass}")`);
 
-      return `Modal for radical #1 opened and closed via Escape with focus restored`;
+      return `Modal for radical "${glyph.trim()}" opened and closed via Escape with focus restored`;
     });
 
     // -------------------------------------------------------------------------

@@ -31,21 +31,40 @@ public class UpdateRadicalRequest {
     @Size(max = 500, message = "Đường dẫn video không được vượt quá 500 ký tự")
     private String videoWritingUrl;
 
+    @Size(max = 1000, message = "Giải thích tiếng Việt không được vượt quá 1000 ký tự")
+    private String explanationVi;
+
+    @Size(max = 500, message = "Đường dẫn video bài giảng không được vượt quá 500 ký tự")
+    private String videoLessonUrl;
+
+    @jakarta.validation.constraints.Min(value = 1, message = "Thứ hạng thông dụng phải từ 1 đến 50")
+    @jakarta.validation.constraints.Max(value = 50, message = "Thứ hạng thông dụng phải từ 1 đến 50")
+    private Integer commonRank;
+
     public UpdateRadicalRequest() {
     }
 
     public UpdateRadicalRequest(String character, String pinyin, String meaningHanViet,
-                                String meaningVi, String audioUrl, String videoWritingUrl) {
+                                String meaningVi, String audioUrl, String videoWritingUrl,
+                                String explanationVi, String videoLessonUrl, Integer commonRank) {
         this.character = character;
         this.pinyin = pinyin;
         this.meaningHanViet = meaningHanViet;
         this.meaningVi = meaningVi;
         this.audioUrl = audioUrl;
         this.videoWritingUrl = videoWritingUrl;
+        this.explanationVi = explanationVi;
+        this.videoLessonUrl = videoLessonUrl;
+        this.commonRank = commonRank;
+    }
+
+    public UpdateRadicalRequest(String character, String pinyin, String meaningHanViet,
+                                String meaningVi, String audioUrl, String videoWritingUrl) {
+        this(character, pinyin, meaningHanViet, meaningVi, audioUrl, videoWritingUrl, null, null, null);
     }
 
     public UpdateRadicalRequest(String character, String pinyin, String meaningHanViet, String meaningVi) {
-        this(character, pinyin, meaningHanViet, meaningVi, null, null);
+        this(character, pinyin, meaningHanViet, meaningVi, null, null, null, null, null);
     }
 
     public String getCharacter() {
@@ -96,6 +115,30 @@ public class UpdateRadicalRequest {
         this.videoWritingUrl = videoWritingUrl;
     }
 
+    public String getExplanationVi() {
+        return explanationVi;
+    }
+
+    public void setExplanationVi(String explanationVi) {
+        this.explanationVi = explanationVi;
+    }
+
+    public String getVideoLessonUrl() {
+        return videoLessonUrl;
+    }
+
+    public void setVideoLessonUrl(String videoLessonUrl) {
+        this.videoLessonUrl = videoLessonUrl;
+    }
+
+    public Integer getCommonRank() {
+        return commonRank;
+    }
+
+    public void setCommonRank(Integer commonRank) {
+        this.commonRank = commonRank;
+    }
+
     @Override
     public String toString() {
         return "UpdateRadicalRequest{" +
@@ -105,6 +148,9 @@ public class UpdateRadicalRequest {
                 ", meaningVi='" + meaningVi + '\'' +
                 ", audioUrl='" + audioUrl + '\'' +
                 ", videoWritingUrl='" + videoWritingUrl + '\'' +
+                ", explanationVi='" + explanationVi + '\'' +
+                ", videoLessonUrl='" + videoLessonUrl + '\'' +
+                ", commonRank=" + commonRank +
                 '}';
     }
 }

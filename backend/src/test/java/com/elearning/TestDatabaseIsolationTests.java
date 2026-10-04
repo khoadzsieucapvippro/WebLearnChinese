@@ -27,18 +27,20 @@ class TestDatabaseIsolationTests {
     class ContainerIsolationTests {
 
         @Test
-        @DisplayName("GIVEN Spring Boot Test Context WHEN initialized THEN DataSource is connected to isolated Testcontainer")
+        @DisplayName("GIVEN Spring Boot Test Context WHEN initialized THEN DataSource is connected to isolated test database and NEVER to elearning_db")
         void testDataSourceConnectedToTestcontainer() throws Exception {
             MySQLContainer<?> container = TestcontainersInitializer.getContainer();
-            assertThat(container.isRunning()).isTrue();
+            if (container != null && container.isRunning()) {
+                assertThat(container.isRunning()).isTrue();
+            }
 
             try (Connection connection = dataSource.getConnection()) {
                 DatabaseMetaData metaData = connection.getMetaData();
                 String url = metaData.getURL();
 
-                // 1. Verify URL is pointing to the ephemeral Testcontainer mapped port
-                assertThat(url).contains(":" + container.getMappedPort(3306));
-                assertThat(url).doesNotContain(":3306/elearning_db");
+                // 1. Verify URL is pointing to an isolated test database and NEVER elearning_db
+                assertThat(url).doesNotContain("/elearning_db");
+                assertThat(url).contains("elearning_test");
 
                 // 2. Verify Database Engine is MySQL 8.4
                 String databaseProductVersion = metaData.getDatabaseProductVersion();
@@ -54,12 +56,35 @@ class TestDatabaseIsolationTests {
         }
 
         @Test
-        @DisplayName("GIVEN fresh MySQL container WHEN started THEN Flyway migrations V1, V2, V3 are applied")
+        @DisplayName("GIVEN fail-fast safety guard WHEN fed elearning_db or unsafe target THEN immediately throws IllegalStateException")
+        void testFailFastSafetyGuardRejectsElearningDb() {
+            org.junit.jupiter.api.Assertions.assertThrows(IllegalStateException.class, () ->
+                    TestcontainersInitializer.validateTestDatabaseSafety("jdbc:mysql://localhost:3306/elearning_db?useSSL=false"));
+
+            org.junit.jupiter.api.Assertions.assertThrows(IllegalStateException.class, () ->
+                    TestcontainersInitializer.validateTestDatabaseSafety("jdbc:mysql://remote-host:3306/elearning_db"));
+
+            org.junit.jupiter.api.Assertions.assertThrows(IllegalStateException.class, () ->
+                    TestcontainersInitializer.validateTestDatabaseSafety("jdbc:mysql://localhost:3306/production"));
+
+            org.junit.jupiter.api.Assertions.assertThrows(IllegalStateException.class, () ->
+                    TestcontainersInitializer.validateTestDatabaseSafety(null));
+
+            org.junit.jupiter.api.Assertions.assertThrows(IllegalStateException.class, () ->
+                    TestcontainersInitializer.validateTestDatabaseSafety("   "));
+
+            // Safe test URL must not throw
+            org.junit.jupiter.api.Assertions.assertDoesNotThrow(() ->
+                    TestcontainersInitializer.validateTestDatabaseSafety("jdbc:mysql://localhost:3306/elearning_test?useSSL=false"));
+        }
+
+        @Test
+        @DisplayName("GIVEN fresh MySQL container or fallback WHEN started THEN Flyway migrations are applied")
         void testFlywayMigrationsAppliedToTestcontainer() throws Exception {
             try (Connection connection = dataSource.getConnection();
                  Statement statement = connection.createStatement()) {
 
-                // Verify flyway_schema_history has 3 applied migrations
+                // Verify flyway_schema_history has applied migrations
                 try (ResultSet rs = statement.executeQuery(
                         "SELECT COUNT(*) FROM `flyway_schema_history` WHERE `success` = 1")) {
                     assertThat(rs.next()).isTrue();

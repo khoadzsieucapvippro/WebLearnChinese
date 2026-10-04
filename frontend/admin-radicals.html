@@ -45,7 +45,7 @@
               <a class="nav-link-custom" href="index.html">Trang chủ</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link-custom" href="radicals.html">214 Bộ thủ</a>
+              <a class="nav-link-custom" href="radicals.html">Bộ thủ</a>
             </li>
             <li class="nav-item">
               <a class="nav-link-custom" href="vocabulary.html">Từ vựng</a>
@@ -362,6 +362,68 @@
               autocomplete="off"
             >
             <div id="errorVideoWritingUrl" class="invalid-feedback small"></div>
+          </div>
+
+          <!-- Explanation Vietnamese Field -->
+          <div class="col-12">
+            <label for="inputExplanationVi" class="form-label small fw-semibold text-dark mb-1">
+              Giải thích học tập <span class="text-muted fw-normal">(Ghi nhớ ngắn, tối đa 1000 ký tự)</span>
+            </label>
+            <textarea
+              id="inputExplanationVi"
+              class="form-control form-control-chinese"
+              rows="3"
+              maxlength="1000"
+              placeholder="Giải thích hình thái, nguồn gốc gợi nhớ (ví dụ: Hình cây có thân, cành và rễ cắm sâu vào đất)..."
+            ></textarea>
+            <div id="errorExplanationVi" class="invalid-feedback small"></div>
+          </div>
+
+          <!-- Video Lesson URL Field -->
+          <div class="col-12">
+            <label for="inputVideoLessonUrl" class="form-label small fw-semibold text-dark mb-1">
+              Video bài giảng YouTube <span class="text-muted fw-normal">(Tùy chọn, tối đa 500 ký tự)</span>
+            </label>
+            <input
+              type="url"
+              id="inputVideoLessonUrl"
+              class="form-control form-control-chinese"
+              maxlength="500"
+              placeholder="https://www.youtube.com/watch?v=... hoặc https://youtu.be/... hoặc https://www.youtube-nocookie.com/embed/..."
+              autocomplete="off"
+            >
+            <div id="errorVideoLessonUrl" class="invalid-feedback small"></div>
+            <div class="form-text small text-muted">Chỉ chấp nhận liên kết YouTube hợp lệ qua HTTPS. Video chỉ load khi người học nhấn phát.</div>
+          </div>
+
+          <!-- Common Rank Group (50 Bộ Thủ Thông Dụng) -->
+          <div class="col-12">
+            <div class="card p-3 bg-light border-0 rounded-2">
+              <div class="form-check form-switch mb-2">
+                <input class="form-check-input" type="checkbox" role="switch" id="checkIsCommonRank">
+                <label class="form-check-label fw-semibold small text-dark" for="checkIsCommonRank">
+                  Thuộc nhóm 50 Bộ Thủ Thông Dụng
+                </label>
+              </div>
+              <div id="commonRankInputContainer" class="d-none ps-4 pt-1">
+                <label for="inputCommonRank" class="form-label small fw-semibold text-secondary mb-1">
+                  Thứ hạng thông dụng (1 – 50) <span class="text-danger">*</span>
+                </label>
+                <input
+                  type="number"
+                  id="inputCommonRank"
+                  class="form-control form-control-chinese"
+                  min="1"
+                  max="50"
+                  placeholder="1 - 50"
+                  style="max-width: 130px;"
+                >
+                <div id="errorCommonRank" class="invalid-feedback small"></div>
+                <div class="form-text small text-muted">
+                  Thứ hạng từ 1 đến 50, duy nhất không trùng lặp. Bỏ chọn công tắc để chuyển thành bộ thủ thường (Nhóm 164).
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 

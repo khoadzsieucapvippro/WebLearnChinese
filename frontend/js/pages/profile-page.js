@@ -169,6 +169,10 @@ function renderProfileData(profile) {
   if (emailDisplay) {
     emailDisplay.textContent = profile?.emailOrPhone || '---';
   }
+  const settingsEmailDisplay = document.getElementById('settingsAccountEmailDisplay');
+  if (settingsEmailDisplay) {
+    settingsEmailDisplay.textContent = profile?.emailOrPhone || '---';
+  }
   if (userIdDisplay) {
     userIdDisplay.textContent = profile?.userId != null ? String(profile.userId) : '---';
   }
@@ -435,6 +439,24 @@ export function validateProfileSrsSettings(newCardsPerDay) {
 }
 
 /**
+ * Synchronizes active visual state across preset chips based on numeric value.
+ * 
+ * @param {string|number} value 
+ */
+export function syncPresetChips(value) {
+  const numVal = parseInt(String(value ?? '').trim(), 10);
+  const chips = document.querySelectorAll('.srs-preset-chip');
+  chips.forEach(chip => {
+    const presetVal = parseInt(chip.dataset.preset, 10);
+    if (!isNaN(numVal) && presetVal === numVal) {
+      chip.classList.add('active');
+    } else {
+      chip.classList.remove('active');
+    }
+  });
+}
+
+/**
  * Loads SRS settings from backend via GET /api/v1/srs/settings.
  */
 export async function loadSrsSettings() {
@@ -444,6 +466,7 @@ export async function loadSrsSettings() {
     currentSrsSettings = settings;
     if (input && settings?.newCardsPerDay != null) {
       input.value = String(settings.newCardsPerDay);
+      syncPresetChips(settings.newCardsPerDay);
     }
   } catch (err) {
     console.warn('[ProfilePage] Failed to load SRS settings:', err);
@@ -462,6 +485,9 @@ export function initProfileSrsSettingsForm() {
   const saveBtn = document.getElementById('btnSaveSrsSettings');
   const resetBtn = document.getElementById('btnResetSrsSettings');
   const statusEl = document.getElementById('srsSettingsStatus');
+  const btnDecrement = document.getElementById('btnDecrementNewCards');
+  const btnIncrement = document.getElementById('btnIncrementNewCards');
+  const presetChips = document.querySelectorAll('.srs-preset-chip');
 
   function clearSrsErrors() {
     if (input) {
@@ -478,6 +504,47 @@ export function initProfileSrsSettingsForm() {
     }
   }
 
+  // Stepper: Decrement (-5)
+  if (btnDecrement) {
+    btnDecrement.addEventListener('click', () => {
+      clearSrsErrors();
+      const current = parseInt(input?.value || '20', 10);
+      const nextVal = Math.max(1, isNaN(current) ? 20 : current - 5);
+      if (input) {
+        input.value = String(nextVal);
+        syncPresetChips(nextVal);
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+    });
+  }
+
+  // Stepper: Increment (+5)
+  if (btnIncrement) {
+    btnIncrement.addEventListener('click', () => {
+      clearSrsErrors();
+      const current = parseInt(input?.value || '20', 10);
+      const nextVal = isNaN(current) ? 20 : current + 5;
+      if (input) {
+        input.value = String(nextVal);
+        syncPresetChips(nextVal);
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+    });
+  }
+
+  // Preset Chips Quick Pick
+  presetChips.forEach(chip => {
+    chip.addEventListener('click', () => {
+      clearSrsErrors();
+      const preset = chip.dataset.preset;
+      if (input && preset) {
+        input.value = preset;
+        syncPresetChips(preset);
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+    });
+  });
+
   if (input) {
     input.addEventListener('input', () => {
       input.classList.remove('is-invalid');
@@ -486,6 +553,7 @@ export function initProfileSrsSettingsForm() {
         errorEl.textContent = '';
         errorEl.classList.add('d-none');
       }
+      syncPresetChips(input.value);
     });
   }
 
@@ -519,7 +587,7 @@ export function initProfileSrsSettingsForm() {
       if (spinner) spinner.classList.remove('d-none');
     }
     if (statusEl) {
-      statusEl.textContent = 'Đang lưu cài đặt...';
+      statusEl.textContent = 'Đang lưu cài đặt học tập...';
       statusEl.className = 'small text-secondary mt-2';
     }
 
@@ -534,17 +602,18 @@ export function initProfileSrsSettingsForm() {
       currentSrsSettings = updated;
       if (input && updated?.newCardsPerDay != null) {
         input.value = String(updated.newCardsPerDay);
+        syncPresetChips(updated.newCardsPerDay);
       }
 
       if (statusEl) {
-        statusEl.textContent = '✓ Đã cập nhật cài đặt SRS thành công!';
+        statusEl.textContent = '✓ Đã cập nhật cài đặt học tập SRS thành công!';
         statusEl.className = 'small text-success fw-semibold mt-2';
       }
 
       showToast({
         type: 'success',
-        title: 'Cài đặt SRS',
-        message: 'Đã lưu cài đặt số thẻ mới mỗi ngày thành công.'
+        title: 'Cài đặt học tập',
+        message: 'Đã lưu số thẻ mới mỗi ngày thành công.'
       });
     } catch (err) {
       console.error('[ProfilePage] Failed to save SRS settings:', err);
@@ -564,7 +633,7 @@ export function initProfileSrsSettingsForm() {
         saveBtn.disabled = false;
         const btnText = saveBtn.querySelector('.btn-text');
         const spinner = saveBtn.querySelector('.spinner-border');
-        if (btnText) btnText.textContent = 'Lưu thay đổi';
+        if (btnText) btnText.textContent = 'Lưu cài đặt học tập';
         if (spinner) spinner.classList.add('d-none');
       }
     }
@@ -575,6 +644,7 @@ export function initProfileSrsSettingsForm() {
       clearSrsErrors();
       if (currentSrsSettings && input && currentSrsSettings.newCardsPerDay != null) {
         input.value = String(currentSrsSettings.newCardsPerDay);
+        syncPresetChips(currentSrsSettings.newCardsPerDay);
         if (statusEl) {
           statusEl.textContent = 'Đã khôi phục giá trị đã lưu.';
           statusEl.className = 'small text-muted mt-2';
@@ -585,8 +655,8 @@ export function initProfileSrsSettingsForm() {
 }
 
 /**
- * Manages tab switching between Personal Info and Learning Settings.
- * Supports URL hash navigation (#srs-settings / #personal-info) and accessible attributes.
+ * Manages tab switching between Personal Info and Settings.
+ * Supports URL hash navigation (#srs-settings / #settings / #personal-info) and accessible attributes.
  */
 export function initProfileTabs() {
   const tabPersonal = document.getElementById('tabPersonalInfo');
@@ -625,15 +695,26 @@ export function initProfileTabs() {
     activateSettingsTab();
     loadSrsSettings();
     if (typeof history !== 'undefined' && history.replaceState) {
-      history.replaceState(null, '', '#srs-settings');
+      history.replaceState(null, '', '#settings');
     }
   });
 
   function checkHash() {
-    if (typeof window !== 'undefined' && window.location.hash === '#srs-settings') {
+    const hash = (typeof window !== 'undefined' && window.location.hash) || '';
+    if (hash === '#srs-settings' || hash === '#settings') {
       activateSettingsTab();
       loadSrsSettings();
-    } else if (typeof window !== 'undefined' && window.location.hash === '#personal-info') {
+      if (hash === '#srs-settings') {
+        const srsCard = document.getElementById('srs-settings-card');
+        const srsInput = document.getElementById('srsNewCardsPerDayInput');
+        if (srsCard && typeof srsCard.scrollIntoView === 'function') {
+          srsCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        if (srsInput && typeof srsInput.focus === 'function') {
+          srsInput.focus();
+        }
+      }
+    } else if (hash === '#personal-info') {
       activatePersonalTab();
     }
   }
@@ -643,6 +724,7 @@ export function initProfileTabs() {
     window.addEventListener('hashchange', checkHash);
   }
 }
+
 
 if (typeof document !== 'undefined' && typeof document.addEventListener === 'function') {
   document.addEventListener('DOMContentLoaded', () => {

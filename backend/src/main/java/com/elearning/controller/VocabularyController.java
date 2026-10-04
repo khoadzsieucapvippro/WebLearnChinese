@@ -36,8 +36,11 @@ public class VocabularyController {
     @GetMapping
     public ResponseEntity<ApiResponse<PageResponse<VocabularyResponse>>> getVocabularies(
             @RequestParam(value = "search", required = false) String search,
+            @RequestParam(value = "hsk", required = false) Integer hsk,
+            @RequestParam(value = "hskLevel", required = false) Integer hskLevel,
             Pageable pageable) {
-        VocabularySearchCriteria criteria = VocabularySearchCriteria.byKeyword(search);
+        Integer effectiveHsk = hsk != null ? hsk : hskLevel;
+        VocabularySearchCriteria criteria = VocabularySearchCriteria.byKeywordAndHsk(search, effectiveHsk);
         Page<VocabularyResponse> page = vocabularyService.searchVocabularies(criteria, pageable);
         return ResponseEntity.ok(ApiResponse.success(PageResponse.from(page)));
     }

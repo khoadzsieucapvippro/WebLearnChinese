@@ -28,6 +28,8 @@ public class VocabularyDetailResponse {
     private String exampleSentence;
     private String exampleTranslation;
     private List<RadicalResponse> radicals = new ArrayList<>();
+    private Integer hskLevel;
+    private String hskStandard;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -73,7 +75,7 @@ public class VocabularyDetailResponse {
                     .toList();
         }
 
-        return new VocabularyDetailResponse(
+        VocabularyDetailResponse response = new VocabularyDetailResponse(
                 vocabulary.getVocabId(),
                 vocabulary.getHanzi(),
                 vocabulary.getPinyin(),
@@ -88,6 +90,9 @@ public class VocabularyDetailResponse {
                 vocabulary.getCreatedAt(),
                 vocabulary.getUpdatedAt()
         );
+        response.setHskLevel(vocabulary.getHskLevel());
+        response.setHskStandard(vocabulary.getHskStandard());
+        return response;
     }
 
     public Long getVocabId() {
@@ -192,5 +197,21 @@ public class VocabularyDetailResponse {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public Integer getHskLevel() {
+        return hskLevel;
+    }
+
+    public void setHskLevel(Integer hskLevel) {
+        this.hskLevel = hskLevel;
+    }
+
+    public String getHskStandard() {
+        return hskStandard;
+    }
+
+    public void setHskStandard(String hskStandard) {
+        this.hskStandard = hskStandard;
     }
 }

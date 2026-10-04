@@ -45,7 +45,7 @@
               <a class="nav-link-custom" href="index.html">Trang chủ</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link-custom" href="radicals.html">214 Bộ thủ</a>
+              <a class="nav-link-custom" href="radicals.html">Bộ thủ</a>
             </li>
             <li class="nav-item">
               <a class="nav-link-custom" href="vocabulary.html">Từ vựng</a>
@@ -88,7 +88,7 @@
         </p>
         <div class="mt-2">
           <a href="srs-dashboard.html" id="linkToSrsDashboard" class="btn btn-sm btn-chinese-outline py-1 px-3 text-decoration-none">
-            📊 Thống kê &amp; Cài đặt SRS
+            📊 Thống kê Tiến độ SRS
           </a>
         </div>
       </div>
@@ -181,10 +181,21 @@
               
               <div class="my-auto py-3">
                 <div id="cardFrontHanzi" class="flashcard-hanzi" lang="zh-CN">学</div>
-                <div id="cardFrontPinyin" class="flashcard-pinyin">xué</div>
-                <button type="button" id="btnAudioPronounceFront" class="flashcard-audio-btn" aria-label="Phát âm chữ Hán">
-                  <span aria-hidden="true">🔊</span> <span>Phát âm</span>
-                </button>
+                <div class="d-flex align-items-center justify-content-center gap-2 mt-1">
+                  <div id="cardFrontPinyin" class="flashcard-pinyin mb-0">xué</div>
+                  <button 
+                    type="button" 
+                    id="btnAudioPronounceFront" 
+                    class="vocab-speech-btn" 
+                    aria-label="Phát âm từ vựng" 
+                    title="Phát âm (Web Speech API)"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                      <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                    </svg>
+                  </button>
+                </div>
               </div>
 
               <div class="flashcard-reveal-hint mt-auto">
@@ -203,7 +214,21 @@
 
               <div class="my-auto py-2 w-100">
                 <div id="cardBackHanzi" class="flashcard-hanzi" lang="zh-CN" style="font-size: clamp(2.5rem, 7vw, 3.5rem); margin-bottom: 0.25rem;">学</div>
-                <div id="cardBackPinyin" class="flashcard-pinyin mb-2" style="font-size: 1.25rem;">xué</div>
+                <div class="d-flex align-items-center justify-content-center gap-2 mb-2">
+                  <div id="cardBackPinyin" class="flashcard-pinyin mb-0" style="font-size: 1.25rem;">xué</div>
+                  <button 
+                    type="button" 
+                    id="btnAudioPronounceBack" 
+                    class="vocab-speech-btn" 
+                    aria-label="Phát âm từ vựng" 
+                    title="Phát âm (Web Speech API)"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                      <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                    </svg>
+                  </button>
+                </div>
                 <div class="mb-3">
                   <span id="cardBackMeaningHv" class="badge bg-secondary-subtle text-secondary me-2">Học</span>
                   <span id="cardBackMeaningVi" class="flashcard-meaning-vi">Học tập, nghiên cứu</span>

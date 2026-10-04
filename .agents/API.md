@@ -78,8 +78,8 @@ Hầu hết các phản hồi API nghiệp vụ sử dụng phong bì `ApiRespon
 - `GET /actuator/health`: Endpoint kiểm tra trạng thái hoạt động của hệ thống (Public). Trả về: `{"status":"UP"}`.
 
 ### 2.2. Phân hệ Tra cứu Bộ thủ & Từ vựng (Public Content)
-- `GET /api/v1/radicals`: Danh sách 214 Bộ thủ có phân trang (Public). Params: `page`, `size`. Trả về: `ApiResponse<PageResponse<RadicalResponse>>`.
-- `GET /api/v1/radicals/{id}`: Chi tiết một bộ thủ (Public). Path variable `id` kiểu `Integer` (1..214). Trả về: `ApiResponse<RadicalDetailResponse>`.
+- `GET /api/v1/radicals`: Danh sách 214 Bộ thủ có phân trang (Public). Params: `page`, `size`. Trả về: `ApiResponse<PageResponse<RadicalResponse>>` (`radicalId`, `character`, `pinyin`, `meaningHanViet`, `meaningVi`, `audioUrl`, `videoWritingUrl`, `explanationVi`, `videoLessonUrl`, `commonRank`).
+- `GET /api/v1/radicals/{id}`: Chi tiết một bộ thủ (Public). Path variable `id` kiểu `Integer` (1..214). Trả về: `ApiResponse<RadicalDetailResponse>` (`radicalId`, `character`, `pinyin`, `meaningHanViet`, `meaningVi`, `audioUrl`, `videoWritingUrl`, `explanationVi`, `videoLessonUrl`, `commonRank`).
 - `GET /api/v1/vocabulary`: Danh sách Từ vựng có phân trang và tìm kiếm (Public). Params: `page`, `size`, `search` (sử dụng query param `search`, không dùng `q`). Trả về: `ApiResponse<PageResponse<VocabularyResponse>>`.
 - `GET /api/v1/vocabulary/{id}`: Chi tiết một từ vựng kèm danh sách bộ thủ cấu thành (Public). Trả về: `ApiResponse<VocabularyDetailResponse>`.
 
@@ -134,8 +134,8 @@ Hầu hết các phản hồi API nghiệp vụ sử dụng phong bì `ApiRespon
 - `GET /api/v1/admin/roles`: Danh mục tất cả vai trò trong hệ thống (`Admin`, `Creator`, `Moderator`, `Learner`). Trả về: `ApiResponse<List<RoleResponse>>`.
 - `PUT /api/v1/admin/accounts/{id}/roles`: Phân quyền / gán danh sách vai trò cho tài khoản. Body: `UpdateAccountRolesRequest` (`roles` — danh sách tên role như `["Creator"]`, `["Admin"]`). Trả về: `ApiResponse<AccountResponse>` (bảo vệ chống tự tước quyền Admin; đồng bộ hóa và tăng `authorization_version` để thu hồi token cũ ngay lập tức).
 - `GET /api/v1/admin/lessons`: Quản lý toàn bộ danh sách bài học hệ thống qua mọi trạng thái (`Draft`, `Pending`, `Approved`, `Rejected`). Params: `status`, `page`, `size`. Trả về: `ApiResponse<PageResponse<LessonSummaryResponse>>`.
-- `POST /api/v1/admin/radicals`: Tạo bộ thủ mới. Request: `CreateRadicalRequest` (`character`, `pinyin`, `meaningHanViet`, `meaningVi`, `audioUrl`, `videoWritingUrl`). Trả về: `201 Created` kèm `ApiResponse<RadicalDetailResponse>`.
-- `PUT /api/v1/admin/radicals/{id}`: Cập nhật thông tin bộ thủ (Path variable `id` kiểu `Integer`). Request: `UpdateRadicalRequest` (`character`, `pinyin`, `meaningHanViet`, `meaningVi`, `audioUrl`, `videoWritingUrl`). Trả về: `200 OK` kèm `ApiResponse<RadicalDetailResponse>`.
+- `POST /api/v1/admin/radicals`: Tạo bộ thủ mới. Request: `CreateRadicalRequest` (`character`, `pinyin`, `meaningHanViet`, `meaningVi`, `audioUrl`, `videoWritingUrl`, `explanationVi`, `videoLessonUrl`, `commonRank`). Trả về: `201 Created` kèm `ApiResponse<RadicalDetailResponse>`.
+- `PUT /api/v1/admin/radicals/{id}`: Cập nhật thông tin bộ thủ (Path variable `id` kiểu `Integer`). Request: `UpdateRadicalRequest` (`character`, `pinyin`, `meaningHanViet`, `meaningVi`, `audioUrl`, `videoWritingUrl`, `explanationVi`, `videoLessonUrl`, `commonRank`). Trả về: `200 OK` kèm `ApiResponse<RadicalDetailResponse>`.
 - `DELETE /api/v1/admin/radicals/{id}`: Xóa bộ thủ gốc (Path variable `id` kiểu `Integer`). Trả về: `204 No Content` (không có response body; không gọi `response.json()`).
 - `POST /api/v1/admin/vocabulary`: Tạo từ vựng mới. Request: `CreateVocabularyRequest` (`hanzi`, `pinyin`, `pinyinRaw`, `meaningHanViet`, `meaningVi`, `audioUrl`, `videoWritingUrl`, `exampleSentence`, `exampleTranslation`, `radicalIds`). Trả về: `201 Created` kèm `ApiResponse<VocabularyDetailResponse>`.
 - `PUT /api/v1/admin/vocabulary/{id}`: Cập nhật từ vựng. Request: `UpdateVocabularyRequest` (`hanzi`, `pinyin`, `pinyinRaw`, `meaningHanViet`, `meaningVi`, `audioUrl`, `videoWritingUrl`, `exampleSentence`, `exampleTranslation`, `radicalIds`). Trả về: `200 OK` kèm `ApiResponse<VocabularyDetailResponse>`.

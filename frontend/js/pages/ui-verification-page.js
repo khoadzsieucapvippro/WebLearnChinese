@@ -20,7 +20,7 @@ import { initNavbarAuth } from '../ui/nav.js';
 import { initNavbar } from '../app.js';
 import { apiClient, getBaseUrl, buildUrl, ApiError } from '../api/api.js';
 import { authManager } from '../auth/auth-state.js';
-import { filterRadicals, validateRadicalDataset } from './radicals-page.js';
+import { filterRadicals, validateRadicalDataset, partitionRadicals, sanitizeYouTubeEmbedUrl, speakHanzi } from './radicals-page.js';
 import { isSpeechSynthesisAvailable } from './vocabulary-page.js';
 import { sortVocabulariesByOrderIndex } from './lesson-detail-page.js';
 import { validateNoteContent, openNotesModal } from '../ui/notes-modal.js';
@@ -835,24 +835,28 @@ export function initRadicalsDiagnostics() {
   const btnDetail = document.getElementById('btnProbeRadicalDetail');
   const detailOutput = document.getElementById('radicalDetailOutput');
 
-  // 4.1 Real Radicals Catalog Probe
+  // 4.1 Real Radicals Catalog Probe with 50/164 Partition & Invariants
   if (btnCatalog && catalogOutput) {
     btnCatalog.addEventListener('click', async () => {
-      catalogOutput.textContent = 'Đang truy vấn GET /api/v1/radicals?page=0&size=10...';
+      catalogOutput.textContent = 'Đang truy vấn GET /api/v1/radicals?page=0&size=214...';
 
       try {
-        const data = await apiClient('/radicals', { params: { page: 0, size: 10 } });
-        const total = data?.totalElements || 0;
-        const count = Array.isArray(data?.items) ? data.items.length : 0;
-        const first = count > 0 ? data.items[0] : null;
-        const last = count > 0 ? data.items[count - 1] : null;
+        const data = await apiClient('/radicals', { params: { page: 0, size: 214 } });
+        const items = Array.isArray(data?.items) ? data.items : [];
+        const total = data?.totalElements || items.length;
+        const count = items.length;
 
-        const validation = validateRadicalDataset(data.items, count);
+        const validation = validateRadicalDataset(items, count === 214 ? 214 : count);
+        const { commonRadicals, remainingRadicals } = partitionRadicals(items);
+
+        const explanationCount = items.filter(r => r.explanationVi && r.explanationVi.trim().length > 0).length;
+        const videoCount = items.filter(r => r.videoLessonUrl && r.videoLessonUrl.trim().length > 0).length;
 
         catalogOutput.textContent = `[HTTP 200 OK] Nhận ${count} bộ thủ (Tổng toàn CSDL: ${total}).\n` +
-          `- Bộ thủ đầu tiên: #${first?.radicalId} '${first?.character}' (${first?.meaningHanViet})\n` +
-          `- Bộ thủ thứ ${count}: #${last?.radicalId} '${last?.character}' (${last?.meaningHanViet})\n` +
-          `- Kiểm tra toàn vẹn mảng: ${validation.valid ? '✓ Hợp lệ (Không trùng lặp ID, không có ID âm)' : '✕ Lỗi: ' + validation.errors.join(', ')}`;
+          `- Điều hướng 2 Tab Học tập: [50 Bộ Thủ Thông Dụng] (${commonRadicals.length}) + [164 Bộ Thủ Mở Rộng] (${remainingRadicals.length})\n` +
+          `- Độ phủ dữ liệu học tập: ${explanationCount}/214 có giải thích học tập, ${videoCount}/214 có video bài giảng\n` +
+          `- Kiểm tra toàn vẹn bộ thủ: ${validation.valid ? '✓ PASS (Đủ 214, không trùng lặp ID, rank 1..50 chuẩn)' : '✕ FAIL: ' + validation.errors.join('; ')}`;
+
         showToast({ type: 'success', title: 'Radicals Catalog', message: `Nhận ${count}/${total} bộ thủ từ backend.` });
       } catch (err) {
         catalogOutput.textContent = `[Lỗi API] ${err.message || err}`;
@@ -861,7 +865,7 @@ export function initRadicalsDiagnostics() {
     });
   }
 
-  // 4.2 Radical Detail #1 Probe
+  // 4.2 Radical Detail #1 Probe with Learning Fields
   if (btnDetail && detailOutput) {
     btnDetail.addEventListener('click', async () => {
       detailOutput.textContent = 'Đang truy vấn GET /api/v1/radicals/1...';
@@ -869,12 +873,19 @@ export function initRadicalsDiagnostics() {
       try {
         const data = await apiClient('/radicals/1');
         const hasStrokesField = 'strokes' in data || 'strokeCount' in data;
+        const rankDesc = data?.commonRank !== null && data?.commonRank !== undefined
+          ? `#${data.commonRank} (Thuộc 50 Bộ Thủ Thông Dụng)`
+          : 'Không có (Thuộc 164 Bộ Thủ Còn Lại)';
 
         detailOutput.textContent = `[HTTP 200 OK] Bộ thủ #1 '${data?.character}':\n` +
           `- Pinyin: ${data?.pinyin || '--'}\n` +
           `- Hán-Việt: ${data?.meaningHanViet || '--'}\n` +
-          `- Nghĩa Tiếng Việt: ${data?.meaningVi || '(Rỗng - Đúng seed CSDL)'}\n` +
+          `- Nghĩa Tiếng Việt: ${data?.meaningVi || '(Chưa có)'}\n` +
+          `- Thứ hạng thông dụng (commonRank): ${rankDesc}\n` +
+          `- Giải thích học tập (explanationVi): ${data?.explanationVi || '(Chưa có)'}\n` +
+          `- Video bài giảng (videoLessonUrl): ${data?.videoLessonUrl || '(Chưa có)'}\n` +
           `- Kiểm tra trường giả mạo strokes: ${hasStrokesField ? 'CẢNH BÁO: Phát hiện strokes field' : '✓ Hợp đồng chuẩn: Không chứa strokes/strokeCount'}`;
+
         showToast({ type: 'success', title: 'Radical Detail #1', message: `Đã nạp bộ thủ #${data?.radicalId} '${data?.character}'.` });
       } catch (err) {
         detailOutput.textContent = `[Lỗi Chi Tiết] ${err.message || err}`;
@@ -883,7 +894,7 @@ export function initRadicalsDiagnostics() {
     });
   }
 
-  // 4.3 Client-Side Search Engine Diagnostic (filterRadicals)
+  // 4.3 Client-Side Search Engine Diagnostic (Toneless & Multi-field)
   const searchInput = document.getElementById('searchRadicalTestInput');
   const btnSearch = document.getElementById('btnTestClientSearch');
   const searchResult = document.getElementById('searchRadicalsResult');
@@ -892,13 +903,12 @@ export function initRadicalsDiagnostics() {
   const btnWithoutDiacritics = document.getElementById('btnSearchWithoutDiacritics');
 
   const sampleRadicals = [
-    { radicalId: 1, character: '一', pinyin: 'yī', meaningHanViet: 'Nhất', meaningVi: 'Số một' },
-    { radicalId: 2, character: '丨', pinyin: 'gǔn', meaningHanViet: 'Cổn', meaningVi: 'Nét sổ' },
-    { radicalId: 4, character: '丿', pinyin: 'piě', meaningHanViet: 'Phiệt', meaningVi: 'Nét phẩy' },
-    { radicalId: 75, character: '木', pinyin: 'mù', meaningHanViet: 'Mộc', meaningVi: 'Cây cối, gỗ' },
-    { radicalId: 85, character: '水', pinyin: 'shuǐ', meaningHanViet: 'Thủy', meaningVi: 'Nước' },
-    { radicalId: 86, character: '火', pinyin: 'huǒ', meaningHanViet: 'Hỏa', meaningVi: 'Lửa' },
-    { radicalId: 140, character: '艸', pinyin: 'cǎo', meaningHanViet: 'Thảo', meaningVi: 'Cỏ cây' }
+    { radicalId: 1, character: '一', pinyin: 'yī', meaningHanViet: 'Nhất', meaningVi: 'Số một', commonRank: 1, explanationVi: 'Nét ngang' },
+    { radicalId: 30, character: '口', pinyin: 'kǒu', meaningHanViet: 'Khẩu', meaningVi: 'Cái miệng', commonRank: 6, explanationVi: 'Hình miệng' },
+    { radicalId: 75, character: '木', pinyin: 'mù', meaningHanViet: 'Mộc', meaningVi: 'Cây cối, gỗ', commonRank: 10, explanationVi: 'Hình cây' },
+    { radicalId: 85, character: '水', pinyin: 'shuǐ', meaningHanViet: 'Thủy', meaningVi: 'Nước, dòng nước', commonRank: 11, explanationVi: 'Dòng nước uốn' },
+    { radicalId: 86, character: '火', pinyin: 'huǒ', meaningHanViet: 'Hỏa', meaningVi: 'Lửa, ngọn lửa', commonRank: 12, explanationVi: 'Ngọn lửa' },
+    { radicalId: 140, character: '艸', pinyin: 'cǎo', meaningHanViet: 'Thảo', meaningVi: 'Cỏ cây', commonRank: 14, explanationVi: 'Bụi cỏ' }
   ];
 
   function runSearch(query) {
@@ -910,7 +920,7 @@ export function initRadicalsDiagnostics() {
       return;
     }
 
-    const lines = matches.map(m => `#${m.radicalId} [${m.character}] - Hán-Việt: ${m.meaningHanViet} - Nghĩa: ${m.meaningVi}`).join('\n');
+    const lines = matches.map(m => `#${m.radicalId} [${m.character}] - Pinyin: ${m.pinyin} - Hán-Việt: ${m.meaningHanViet} - Nghĩa: ${m.meaningVi}`).join('\n');
     searchResult.textContent = `Tìm thấy ${matches.length} kết quả khớp với "${query}":\n${lines}`;
   }
 
@@ -939,6 +949,315 @@ export function initRadicalsDiagnostics() {
       searchInput.value = 'moc';
       runSearch('moc');
     });
+  }
+
+  // 4.4 YouTube Lesson Embed & Multi-Stage Diagnostic Probe
+  const ytInput = document.getElementById('youtubeTestInput');
+  const btnYtSanitize = document.getElementById('btnTestYouTubeSanitize');
+  const ytResult = document.getElementById('youtubeSanitizeResult');
+  const btnYtWoodVerified = document.getElementById('btnYtWoodVerified');
+  const btnYtWaterVerified = document.getElementById('btnYtWaterVerified');
+  const btnYtOverviewVerified = document.getElementById('btnYtOverviewVerified');
+  const btnYtVerified = document.getElementById('btnYtVerified'); // compat fallback
+  const btnYtBroken = document.getElementById('btnYtBroken');
+  const btnYtShort = document.getElementById('btnYtShort');
+  const btnYtMalicious = document.getElementById('btnYtMalicious');
+  const btnYtExternal = document.getElementById('btnYtExternal');
+
+  const btnSimulateYtPlay = document.getElementById('btnSimulateYtPlay');
+  const btnSimulateYtStop = document.getElementById('btnSimulateYtStop');
+  const simContainer = document.getElementById('youtubeSimulationContainer');
+  const simStatus = document.getElementById('youtubeSimulationStatus');
+
+  const KNOWN_VIDEOS = {
+    'RpBPqAM3GDg': {
+      status: 'VERIFIED_ACTIVE',
+      title: '汉字部首“木”和相关汉语词汇 Chinese Radical “木” and Connected Vocabulary (Chinese Characters 3000)',
+      oembed: '200 OK (Public & Embeddable)',
+      playable: true,
+      notes: 'Video công khai, chuyên sâu bộ Mộc (木), cho phép nhúng, không hạn chế bản quyền'
+    },
+    'gDQwd4lpe6g': {
+      status: 'VERIFIED_ACTIVE',
+      title: 'Chinese Radical #1: 水 (water) 💧 (Dinara Min School)',
+      oembed: '200 OK (Public & Embeddable)',
+      playable: true,
+      notes: 'Video công khai, chuyên sâu bộ Thủy (水/氵), cho phép nhúng, không hạn chế bản quyền'
+    },
+    '-x3OgoFffeY': {
+      status: 'VERIFIED_ACTIVE',
+      title: 'Radical 亻: One Human, Endless Meanings (Queen Mandarin)',
+      oembed: '200 OK (Public & Embeddable)',
+      playable: true,
+      notes: 'Video công khai, chuyên sâu bộ Nhân (人/亻), cho phép nhúng'
+    },
+    '8azgvtJXqw0': {
+      status: 'VERIFIED_ACTIVE',
+      title: '口 The Chinese Mouth Character and Radical (Easy Chinese)',
+      oembed: '200 OK (Public & Embeddable)',
+      playable: true,
+      notes: 'Video công khai, chuyên sâu bộ Khẩu (口), cho phép nhúng'
+    },
+    'agtDkyK739E': {
+      status: 'VERIFIED_ACTIVE',
+      title: 'How to write heart 心 in Chinese (Learn Chinese with Leo)',
+      oembed: '200 OK (Public & Embeddable)',
+      playable: true,
+      notes: 'Video công khai, chuyên sâu bộ Tâm (心/忄), cho phép nhúng'
+    },
+    'bYbXddAEpgE': {
+      status: 'VERIFIED_ACTIVE',
+      title: '10 Essential Chinese Characters with 手 (I Heart Mandarin)',
+      oembed: '200 OK (Public & Embeddable)',
+      playable: true,
+      notes: 'Video công khai, chuyên sâu bộ Thủ (手/扌), cho phép nhúng'
+    },
+    'DYWgJQs5bvc': {
+      status: 'VERIFIED_ACTIVE',
+      title: 'Chinese Radical #16: 女 (woman) (Dinara Min School)',
+      oembed: '200 OK (Public & Embeddable)',
+      playable: true,
+      notes: 'Video công khai, chuyên sâu bộ Nữ (女), cho phép nhúng'
+    },
+    'ypNH_POJGNs': {
+      status: 'VERIFIED_ACTIVE',
+      title: 'Chinese Radical #18: 火 (fire) (Dinara Min School)',
+      oembed: '200 OK (Public & Embeddable)',
+      playable: true,
+      notes: 'Video công khai, chuyên sâu bộ Hỏa (火/灬), cho phép nhúng'
+    },
+    'L7orZW6etC0': {
+      status: 'VERIFIED_ACTIVE',
+      title: 'Chinese Radical #10: 土 (soil) (Dinara Min School)',
+      oembed: '200 OK (Public & Embeddable)',
+      playable: true,
+      notes: 'Video công khai, chuyên sâu bộ Thổ (土), cho phép nhúng'
+    },
+    'zs6Fh_BFpv4': {
+      status: 'VERIFIED_ACTIVE',
+      title: '日 Chinese Sun Character and Radical (Easy Chinese)',
+      oembed: '200 OK (Public & Embeddable)',
+      playable: true,
+      notes: 'Video công khai, chuyên sâu bộ Nhật (日), cho phép nhúng'
+    },
+    'ooc0Av3-yXI': {
+      status: 'VERIFIED_ACTIVE',
+      title: 'Chinese Radical #12: 月 (moon) (Dinara Min School)',
+      oembed: '200 OK (Public & Embeddable)',
+      playable: true,
+      notes: 'Video công khai, chuyên sâu bộ Nguyệt (月), cho phép nhúng'
+    },
+    '1XmwznQ7dBg': {
+      status: 'VERIFIED_ACTIVE',
+      title: 'Chinese Radical #32: 刀 (knife) (Dinara Min School)',
+      oembed: '200 OK (Public & Embeddable)',
+      playable: true,
+      notes: 'Video công khai, chuyên sâu bộ Đao (刀/刂), cho phép nhúng'
+    },
+    'Tismw6PCK2I': {
+      status: 'VERIFIED_ACTIVE',
+      title: 'Chinese Radical #8: 金 (gold, metal) (Dinara Min School)',
+      oembed: '200 OK (Public & Embeddable)',
+      playable: true,
+      notes: 'Video công khai, chuyên sâu bộ Kim (金/钅), cho phép nhúng'
+    },
+    'YEKQgngPZ2A': {
+      status: 'VERIFIED_ACTIVE',
+      title: 'Chinese Radical #24: 山 (mountain) (Dinara Min School)',
+      oembed: '200 OK (Public & Embeddable)',
+      playable: true,
+      notes: 'Video công khai, chuyên sâu bộ Sơn (山), cho phép nhúng'
+    },
+    'tWMGho6GtVw': {
+      status: 'VERIFIED_ACTIVE',
+      title: '214 bộ thủ chữ Hán qua thơ | Học tiếng Trung Quốc (Tiếng Trung Dương Châu)',
+      oembed: '200 OK (Public & Embeddable)',
+      playable: true,
+      notes: 'Video tổng hợp 214 bộ thủ, cho phép nhúng, không hạn chế bản quyền/độ tuổi'
+    },
+    'kYv9b6-8D-w': {
+      status: 'DELETED_OR_INVALID',
+      title: 'Không tồn tại (Mã giả lập cũ)',
+      oembed: '404 Not Found (Video unavailable)',
+      playable: false,
+      notes: 'YouTube trả lời: "Video này không hoạt động" (Code 150/100). Không phải lỗi CSP'
+    }
+  };
+
+  function runYtComprehensiveDiagnosis(url) {
+    if (!ytResult) return;
+    const sanitized = sanitizeYouTubeEmbedUrl(url);
+
+    if (!sanitized) {
+      ytResult.textContent = [
+        '[KẾT QUẢ: TỪ CHỐI / KHÔNG AN TOÀN]',
+        `Input : ${url}`,
+        'Output: null (Bị chặn bởi bộ lọc an toàn)',
+        '1. URL Valid       : KHÔNG HỢP LỆ (Giao thức không an toàn hoặc domain lạ)',
+        '2. Video Verified  : Không xác định',
+        '3. Embed Allowed   : KHÔNG KHẢ DỤNG',
+        '4. Iframe Created  : BỊ CHẶN (Không tạo iframe)',
+        '5. Actual Playback : KHÔNG KHẢ DỤNG',
+        '6. Môi trường      : Đã bảo vệ an toàn chống XSS / domain ngoài'
+      ].join('\n');
+      ytResult.className = 'small font-monospace p-2 rounded bg-white border text-danger';
+      return;
+    }
+
+    const match = sanitized.match(/\/embed\/([a-zA-Z0-9_-]{11})/);
+    const videoId = match ? match[1] : '';
+    const known = KNOWN_VIDEOS[videoId];
+
+    let verifiedStatus = 'CHƯA KIỂM ĐỊNH';
+    let embedStatus = 'CHỜ XÁC MINH';
+    let playbackStatus = 'CHƯA RÕ';
+    let diagNotes = 'Cần kiểm tra trên YouTube trước khi thêm vào cơ sở dữ liệu.';
+
+    if (known) {
+      if (known.status === 'VERIFIED_ACTIVE') {
+        verifiedStatus = 'ĐÃ XÁC MINH CÔNG KHAI';
+        embedStatus = 'CHO PHÉP NHÚNG (Embed Allowed)';
+        playbackStatus = 'SẴN SÀNG PHÁT (Playable)';
+        diagNotes = `Video thực tế: "${known.title}"\noEmbed: ${known.oembed}\nGhi chú: ${known.notes}`;
+      } else {
+        verifiedStatus = 'VIDEO KHÔNG TỒN TẠI / BỊ XÓA (404)';
+        embedStatus = 'KHÔNG KHẢ DỤNG (Embedding unavailable)';
+        playbackStatus = 'LỖI PHÁT (YouTube Code 150/100)';
+        diagNotes = `CHẨN ĐOÁN LỖI: ${known.notes}`;
+      }
+    }
+
+    ytResult.textContent = [
+      '[KẾT QUẢ: HỢP LỆ & ĐƯỢC CHUẨN HÓA]',
+      `Input : ${url}`,
+      `Output: ${sanitized}`,
+      `1. URL Valid       : HỢP LỆ (Video ID: ${videoId})`,
+      `2. Host            : youtube-nocookie.com (Được CSP cho phép)`,
+      `3. Video Verified  : ${verifiedStatus}`,
+      `4. Embed Allowed   : ${embedStatus}`,
+      `5. Iframe Lifecycle: Lazy-load (Chỉ tạo khi bấm Play, tiêu hủy khi đóng modal)`,
+      `6. Playback Status : ${playbackStatus}`,
+      '------------------------------------------------------------',
+      diagNotes
+    ].join('\n');
+    ytResult.className = 'small font-monospace p-2 rounded bg-white border text-dark';
+  }
+
+  function simulatePlay(url) {
+    if (!simContainer || !simStatus) return;
+    const sanitized = sanitizeYouTubeEmbedUrl(url);
+    if (!sanitized) {
+      simStatus.textContent = 'Trạng thái: Không thể tạo iframe do URL không an toàn hoặc không hợp lệ.';
+      simStatus.className = 'small text-danger mt-1';
+      return;
+    }
+
+    const iframe = document.createElement('iframe');
+    iframe.src = sanitized;
+    iframe.setAttribute('title', 'Mô phỏng video bài giảng');
+    iframe.setAttribute('frameborder', '0');
+    iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share');
+    iframe.setAttribute('allowfullscreen', 'true');
+    iframe.className = 'w-100 h-100 border-0';
+    simContainer.replaceChildren(iframe);
+
+    simStatus.textContent = 'Trạng thái: Iframe đã được tạo trong DOM (youtube-nocookie.com). Lưu ý: Iframe load thành công KHÔNG đồng nghĩa video phát được nếu video ID bị xóa/chặn trên YouTube.';
+    simStatus.className = 'small text-success mt-1';
+  }
+
+  function simulateStop() {
+    if (!simContainer || !simStatus) return;
+    const placeholder = document.createElement('span');
+    placeholder.id = 'youtubeSimulationPlaceholder';
+    placeholder.textContent = 'Chưa tạo iframe (Bảo toàn băng thông & quyền riêng tư)';
+    simContainer.replaceChildren(placeholder);
+    simStatus.textContent = 'Trạng thái: Iframe đã được tiêu hủy hoàn toàn khỏi DOM (Đã dọn dẹp bộ nhớ và dừng mạng).';
+    simStatus.className = 'small text-muted mt-1';
+  }
+
+  if (btnYtSanitize && ytInput) {
+    btnYtSanitize.addEventListener('click', () => runYtComprehensiveDiagnosis(ytInput.value));
+  }
+  if (btnYtWoodVerified && ytInput) {
+    btnYtWoodVerified.addEventListener('click', () => {
+      ytInput.value = 'https://www.youtube.com/watch?v=RpBPqAM3GDg';
+      runYtComprehensiveDiagnosis(ytInput.value);
+    });
+  }
+  if (btnYtWaterVerified && ytInput) {
+    btnYtWaterVerified.addEventListener('click', () => {
+      ytInput.value = 'https://www.youtube.com/watch?v=gDQwd4lpe6g';
+      runYtComprehensiveDiagnosis(ytInput.value);
+    });
+  }
+  if (btnYtOverviewVerified && ytInput) {
+    btnYtOverviewVerified.addEventListener('click', () => {
+      ytInput.value = 'https://www.youtube.com/watch?v=tWMGho6GtVw';
+      runYtComprehensiveDiagnosis(ytInput.value);
+    });
+  }
+  if (btnYtVerified && ytInput) {
+    btnYtVerified.addEventListener('click', () => {
+      ytInput.value = 'https://www.youtube.com/watch?v=RpBPqAM3GDg';
+      runYtComprehensiveDiagnosis(ytInput.value);
+    });
+  }
+  if (btnYtBroken && ytInput) {
+    btnYtBroken.addEventListener('click', () => {
+      ytInput.value = 'https://www.youtube.com/watch?v=kYv9b6-8D-w';
+      runYtComprehensiveDiagnosis(ytInput.value);
+    });
+  }
+  if (btnYtShort && ytInput) {
+    btnYtShort.addEventListener('click', () => {
+      ytInput.value = 'https://youtu.be/RpBPqAM3GDg';
+      runYtComprehensiveDiagnosis(ytInput.value);
+    });
+  }
+  if (btnYtMalicious && ytInput) {
+    btnYtMalicious.addEventListener('click', () => {
+      ytInput.value = 'javascript:alert(document.cookie)';
+      runYtComprehensiveDiagnosis(ytInput.value);
+    });
+  }
+  if (btnYtExternal && ytInput) {
+    btnYtExternal.addEventListener('click', () => {
+      ytInput.value = 'https://vimeo.com/12345678';
+      runYtComprehensiveDiagnosis(ytInput.value);
+    });
+  }
+
+  if (btnSimulateYtPlay && ytInput) {
+    btnSimulateYtPlay.addEventListener('click', () => simulatePlay(ytInput.value));
+  }
+  if (btnSimulateYtStop) {
+    btnSimulateYtStop.addEventListener('click', simulateStop);
+  }
+
+  // 4.5 Audio & Web Speech Diagnostics
+  const btnSpeechWood = document.getElementById('btnTestSpeechSynth');
+  const btnSpeechWater = document.getElementById('btnTestSpeechSynthWater');
+  const speechOutput = document.getElementById('speechDiagnosticsOutput');
+
+  function checkAndSpeak(char, pinyin) {
+    if (!speechOutput) return;
+    const supported = typeof window !== 'undefined' && 'speechSynthesis' in window;
+    if (!supported) {
+      speechOutput.textContent = '[KHÔNG HỖ TRỢ] Trình duyệt hiện tại không hỗ trợ Web Speech API.';
+      speechOutput.className = 'small font-monospace p-2 rounded bg-white border text-danger';
+      return;
+    }
+
+    const success = speakHanzi(char);
+    speechOutput.textContent = `[PHÁT ÂM THÀNH CÔNG]\nChữ Hán: "${char}" (${pinyin})\nAPI: Web Speech API (zh-CN, rate: 0.85)\nTrạng thái: ${success ? 'Đang phát âm...' : 'Gặp sự cố khi gọi speak()'}`;
+    speechOutput.className = 'small font-monospace p-2 rounded bg-white border text-success';
+  }
+
+  if (btnSpeechWood) {
+    btnSpeechWood.addEventListener('click', () => checkAndSpeak('木', 'mù'));
+  }
+  if (btnSpeechWater) {
+    btnSpeechWater.addEventListener('click', () => checkAndSpeak('水', 'shuǐ'));
   }
 }
 

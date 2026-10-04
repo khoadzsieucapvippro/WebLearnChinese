@@ -58,6 +58,7 @@ export function showEmpty(container, {
   title = 'Chưa có dữ liệu',
   description = 'Không tìm thấy dữ liệu nào phù hợp.',
   actionText = null,
+  actionId = null,
   onAction = null
 } = {}) {
   if (!container) return;
@@ -81,9 +82,13 @@ export function showEmpty(container, {
   ];
 
   if (actionText && typeof onAction === 'function') {
+    const actionAttrs = { 'type': 'button' };
+    if (actionId) {
+      actionAttrs.id = actionId;
+    }
     const actionBtn = createSafeElement('button', {
       className: 'btn-chinese-primary',
-      attrs: { 'type': 'button' },
+      attrs: actionAttrs,
       text: actionText
     });
     actionBtn.addEventListener('click', onAction);
@@ -410,3 +415,85 @@ export function openModal({
     }
   });
 }
+
+/* -----------------------------------------------------------------------------
+ * 4. STANDARDIZED ACCESSIBLE SPEECH & AUDIO TRIGGER BUTTON
+ * ----------------------------------------------------------------------------- */
+
+/**
+ * Safely creates an SVG speaker icon element via createElementNS (Zero unsafe innerHTML).
+ * Standardized across Vocabulary, Radicals, and SRS Review flashcard views.
+ *
+ * @param {number} [size=16] - icon width and height in pixels
+ * @returns {SVGElement}
+ */
+export function createSpeakerIcon(size = 16) {
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('width', String(size));
+  svg.setAttribute('height', String(size));
+  svg.setAttribute('viewBox', '0 0 24 24');
+  svg.setAttribute('fill', 'none');
+  svg.setAttribute('stroke', 'currentColor');
+  svg.setAttribute('stroke-width', '2');
+  svg.setAttribute('stroke-linecap', 'round');
+  svg.setAttribute('stroke-linejoin', 'round');
+  svg.setAttribute('aria-hidden', 'true');
+
+  const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+  polygon.setAttribute('points', '11 5 6 9 2 9 2 15 6 15 11 19 11 5');
+
+  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  path.setAttribute('d', 'M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07');
+
+  svg.appendChild(polygon);
+  svg.appendChild(path);
+  return svg;
+}
+
+/**
+ * Safely creates a standardized speech/pronunciation trigger button matching Vocabulary visual contract.
+ * Uses .vocab-speech-btn with SVG speaker icon (Zero unsafe innerHTML).
+ *
+ * @param {Object} [options]
+ * @param {string} [options.id] - optional element id
+ * @param {string} [options.className] - additional class names
+ * @param {string} [options.ariaLabel='Phát âm'] - accessible name
+ * @param {string} [options.title='Phát âm'] - tooltip title
+ * @param {number} [options.iconSize=16] - SVG icon size in pixels
+ * @param {Function} [options.onClick] - click handler
+ * @returns {HTMLButtonElement}
+ */
+export function createSpeechButton({
+  id = null,
+  className = '',
+  ariaLabel = 'Phát âm',
+  title = 'Phát âm',
+  iconSize = 16,
+  onClick = null
+} = {}) {
+  const btn = createSafeElement('button', {
+    className: `vocab-speech-btn ${className}`.trim(),
+    attrs: {
+      type: 'button',
+      'aria-label': ariaLabel,
+      title: title
+    }
+  });
+  if (id) {
+    btn.id = id;
+  }
+  btn.appendChild(createSpeakerIcon(iconSize));
+  if (typeof onClick === 'function') {
+    btn.addEventListener('click', onClick);
+  }
+  return btn;
+}
+
+// Re-export speech synthesis primitives from centralized speech controller
+export {
+  SpeechState,
+  isSpeechSynthesisAvailable,
+  speechController,
+  speakHanzi,
+  playPronunciation
+} from './speech.js';

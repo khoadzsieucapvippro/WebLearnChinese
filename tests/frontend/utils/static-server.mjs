@@ -48,7 +48,7 @@ export const DEV_CSP_DIRECTIVES = {
   'base-uri': ["'self'"],
   'form-action': ["'self'"],
   'frame-ancestors': ["'none'"],
-  'frame-src': ["'none'"]
+  'frame-src': ["'self'", 'https://www.youtube-nocookie.com']
 };
 
 export const PROD_CSP_DIRECTIVES = {

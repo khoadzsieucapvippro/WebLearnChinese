@@ -71,4 +71,12 @@ public interface VocabularyRepository extends JpaRepository<Vocabulary, Long>, J
     @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT v FROM Vocabulary v WHERE v.vocabId = :vocabId")
     Optional<Vocabulary> findByIdWithLock(@Param("vocabId") Long vocabId);
+
+    /**
+     * Safely deletes test-created vocabularies with null hsk_level,
+     * preserving canonical HSK seed data.
+     */
+    @org.springframework.data.jpa.repository.Modifying
+    @Query("DELETE FROM Vocabulary v WHERE v.hskLevel IS NULL")
+    void deleteByHskLevelIsNull();
 }

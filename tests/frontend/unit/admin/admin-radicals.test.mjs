@@ -27,6 +27,7 @@ import {
   filterRadicals,
   validateRadicalForm,
   isValidMediaUrl,
+  isValidYouTubeUrl,
   buildRadicalPayload,
   classifyApiError,
   calculatePagination
@@ -249,20 +250,93 @@ describe('Task 9F.3 — Admin Radicals Pure Logic Unit Tests', () => {
       assert.ok(result.errors.audioUrl);
       assert.ok(result.errors.videoWritingUrl);
     });
+
+    test('validates trusted YouTube URLs via isValidYouTubeUrl', () => {
+      assert.strictEqual(isValidYouTubeUrl('https://www.youtube.com/watch?v=kYv9b6-8D-w'), true);
+      assert.strictEqual(isValidYouTubeUrl('https://youtu.be/kYv9b6-8D-w'), true);
+      assert.strictEqual(isValidYouTubeUrl('https://www.youtube-nocookie.com/embed/kYv9b6-8D-w'), true);
+      assert.strictEqual(isValidYouTubeUrl('https://youtube.com/embed/kYv9b6-8D-w'), true);
+
+      // Rejects non-YouTube, insecure, or malicious URLs
+      assert.strictEqual(isValidYouTubeUrl('http://www.youtube.com/watch?v=kYv9b6-8D-w'), false); // requires https
+      assert.strictEqual(isValidYouTubeUrl('https://vimeo.com/123456789'), false);
+      assert.strictEqual(isValidYouTubeUrl('https://malicious.com/watch?v=kYv9b6-8D-w'), false);
+      assert.strictEqual(isValidYouTubeUrl('javascript:alert(1)'), false);
+      assert.strictEqual(isValidYouTubeUrl('not-a-url'), false);
+    });
+
+    test('validates learning fields: explanationVi and videoLessonUrl', () => {
+      const validLearning = {
+        character: '木',
+        pinyin: 'mù',
+        meaningHanViet: 'Mộc',
+        meaningVi: 'Cây, gỗ',
+        explanationVi: 'Hình cây có thân cành rễ',
+        videoLessonUrl: 'https://www.youtube.com/watch?v=kYv9b6-8D-w',
+        commonRank: 1
+      };
+      const res = validateRadicalForm(validLearning);
+      assert.strictEqual(res.valid, true);
+
+      const invalidVideo = {
+        ...validLearning,
+        videoLessonUrl: 'https://vimeo.com/99999'
+      };
+      const resInvalid = validateRadicalForm(invalidVideo);
+      assert.strictEqual(resInvalid.valid, false);
+      assert.ok(resInvalid.errors.videoLessonUrl);
+    });
+
+    test('validates commonRank semantic invariants: strictly 1..50 or null', () => {
+      // Valid common rank (1..50)
+      const validRank = {
+        character: '木',
+        pinyin: 'mù',
+        meaningHanViet: 'Mộc',
+        meaningVi: 'Cây',
+        commonRank: 25
+      };
+      assert.strictEqual(validateRadicalForm(validRank).valid, true);
+
+      // Invalid common rank: 0 (< 1)
+      const zeroRank = { ...validRank, commonRank: 0 };
+      const resZero = validateRadicalForm(zeroRank);
+      assert.strictEqual(resZero.valid, false);
+      assert.ok(resZero.errors.commonRank);
+
+      // Invalid common rank: 51 (> 50)
+      const overRank = { ...validRank, commonRank: 51 };
+      const resOver = validateRadicalForm(overRank);
+      assert.strictEqual(resOver.valid, false);
+      assert.ok(resOver.errors.commonRank);
+
+      // Invalid common rank: 214 (must NOT allow 1..214)
+      const rank214 = { ...validRank, commonRank: 214 };
+      const res214 = validateRadicalForm(rank214);
+      assert.strictEqual(res214.valid, false);
+      assert.ok(res214.errors.commonRank);
+
+      // Omitted common rank is valid (remaining radical group)
+      const nullRank = { ...validRank, commonRank: null, isCommonRank: false };
+      assert.strictEqual(validateRadicalForm(nullRank).valid, true);
+    });
   });
 
   /* ---------------------------------------------------------------------------
    * 5. buildRadicalPayload (Request Construction)
    * --------------------------------------------------------------------------- */
   describe('5. buildRadicalPayload', () => {
-    test('trims whitespace on all string fields', () => {
+    test('trims whitespace on all string fields and normalizes learning fields', () => {
       const raw = {
         character: '  木  ',
         pinyin: '  mù  ',
         meaningHanViet: '  Mộc  ',
         meaningVi: '  Cây, gỗ  ',
         audioUrl: '  https://example.com/mu.mp3  ',
-        videoWritingUrl: '  /media/mu.mp4  '
+        videoWritingUrl: '  /media/mu.mp4  ',
+        explanationVi: '  Hình cây có rễ  ',
+        videoLessonUrl: '  https://www.youtube.com/watch?v=kYv9b6-8D-w  ',
+        commonRank: ' 1 '
       };
       const payload = buildRadicalPayload(raw);
       assert.strictEqual(payload.character, '木');
@@ -271,20 +345,30 @@ describe('Task 9F.3 — Admin Radicals Pure Logic Unit Tests', () => {
       assert.strictEqual(payload.meaningVi, 'Cây, gỗ');
       assert.strictEqual(payload.audioUrl, 'https://example.com/mu.mp3');
       assert.strictEqual(payload.videoWritingUrl, '/media/mu.mp4');
+      assert.strictEqual(payload.explanationVi, 'Hình cây có rễ');
+      assert.strictEqual(payload.videoLessonUrl, 'https://www.youtube.com/watch?v=kYv9b6-8D-w');
+      assert.strictEqual(payload.commonRank, 1);
     });
 
-    test('normalizes empty or whitespace-only optional URLs to null', () => {
+    test('normalizes empty or whitespace-only optional URLs and fields to null', () => {
       const raw = {
         character: '木',
         pinyin: 'mù',
         meaningHanViet: 'Mộc',
         meaningVi: 'Cây, gỗ',
         audioUrl: '   ',
-        videoWritingUrl: ''
+        videoWritingUrl: '',
+        explanationVi: '   ',
+        videoLessonUrl: '',
+        commonRank: null,
+        isCommonRank: false
       };
       const payload = buildRadicalPayload(raw);
       assert.strictEqual(payload.audioUrl, null);
       assert.strictEqual(payload.videoWritingUrl, null);
+      assert.strictEqual(payload.explanationVi, null);
+      assert.strictEqual(payload.videoLessonUrl, null);
+      assert.strictEqual(payload.commonRank, null);
     });
   });
 

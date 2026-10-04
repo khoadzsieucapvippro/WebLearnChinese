@@ -159,7 +159,16 @@ Frontend code must distinguish between response DTOs using Jackson `@JsonInclude
 
 ### Invariant 8: Backend Data Source Authority & Zero-Fictional Feature Boundary
 - **No Fictional UI Features**: Frontend interfaces MUST NOT be constructed around data fields or endpoints that the backend does not provide.
-  - **Radical Stroke Count**: Neither the database table `RADICAL` nor the response DTOs (`RadicalResponse`, `RadicalDetailResponse`) contain a `strokeCount` field. Radicals are characterized exclusively by `radicalId` (1..214), `character`, `pinyin`, `meaningHanViet`, `meaningVi`, `audioUrl`, `videoWritingUrl`. Radical stroke filtering (1–17 strokes) is formally categorized as `FUTURE / BLOCKED — NO AUTHORITATIVE BACKEND DATA SOURCE` and is strictly excluded from current frontend scope.
+  - **Radical Schema & Learning Fields**:
+    - Neither the database table `RADICAL` nor the response DTOs contain a `strokeCount` field (strokes filtering remains out-of-scope).
+    - Under Migrations V8 (`V8__add_radical_learning_fields.sql`) and V9 (`V9__seed_radical_learning_content.sql`), `RADICAL` is augmented with pedagogical learning fields:
+      * `explanation_vi` (VARCHAR(1000) NULL): Verified pedagogical explanation and memory mnemonic.
+      * `video_lesson_url` (VARCHAR(500) NULL): Sanitized YouTube lesson video URL (separate from `video_writing_url`).
+      * `common_rank` (TINYINT UNSIGNED NULL): Curated learner-focused ranking (HSK 1–4 high frequency). Semantics: `1..50` indicates membership in the curated "50 Bộ Thủ Thông Dụng"; `NULL` indicates membership in the "164 Bộ Thủ Còn Lại". Unique constraint `uk_radical_common_rank` and check constraint `chk_radical_common_rank` enforce unbroken, non-duplicate ranks 1..50.
+  - **YouTube Lesson Security Boundary**:
+    * YouTube lesson embeds are strictly converted to privacy-enhanced URLs: `https://www.youtube-nocookie.com/embed/{videoId}?autoplay=1`.
+    * CSP `frame-src` strictly whitelists `'self'` and `'https://www.youtube-nocookie.com'`.
+    * Strict lazy-loading: `<iframe>` is NEVER loaded upon page visit or modal open; it is loaded ONLY after explicit user click on the "Xem bài giảng" Play button, and destroyed immediately upon modal close.
   - **Lesson Metadata**: `CreateLessonRequest` and `UpdateLessonRequest` contain only `title`, `excelFileUrl`, and `vocabularyIds`. There is NO `description` field.
   - **Vocabulary Sequencing**: `POST /{id}/vocabularies/{vocabId}` automatically assigns `nextOrderIndex`; clients MUST NOT send an `orderIndex` parameter on item addition.
 - **Subresource Integrity (SRI) Discipline**: All third-party CDN assets (Bootstrap 5.3.3 CSS and JS bundle) MUST include verified, authentic cryptographic SRI attributes (`integrity="sha384-..."`) and `crossorigin="anonymous"`.

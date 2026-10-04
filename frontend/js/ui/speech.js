@@ -15,6 +15,7 @@
  */
 
 import { showToast } from './ui.js';
+import { sanitizeResourceUrl } from './security.js';
 
 /**
  * Speech Controller state enumeration
@@ -60,6 +61,12 @@ export class SpeechController {
      * @type {SpeechSynthesisUtterance|null}
      */
     this._activeUtterance = null;
+
+    /**
+     * Active HTMLAudioElement instance when playing dedicated audio files.
+     * @type {HTMLAudioElement|null}
+     */
+    this._activeAudio = null;
 
     /** @type {number|null} */
     this._safetyTimer = null;
@@ -118,8 +125,11 @@ export class SpeechController {
 
     try {
       if (typeof this._toastFn === 'function') {
+        if (typeof document === 'undefined' && this._toastFn === showToast) {
+          return;
+        }
         this._toastFn({ type, title, message });
-      } else if (typeof showToast === 'function') {
+      } else if (typeof document !== 'undefined' && typeof showToast === 'function') {
         showToast({ type, title, message });
       }
     } catch (err) {
@@ -136,6 +146,15 @@ export class SpeechController {
     if (this._safetyTimer) {
       clearTimeout(this._safetyTimer);
       this._safetyTimer = null;
+    }
+
+    if (this._activeAudio) {
+      try {
+        this._activeAudio.pause();
+      } catch (_) {}
+      this._activeAudio.onended = null;
+      this._activeAudio.onerror = null;
+      this._activeAudio = null;
     }
 
     if (this._currentButton) {
@@ -157,9 +176,18 @@ export class SpeechController {
   }
 
   /**
-   * Cancels any active speech, cleans up listeners, and resets button state.
+   * Cancels any active speech or audio playback, cleans up listeners, and resets button state.
    */
   cancel() {
+    if (this._activeAudio) {
+      try {
+        this._activeAudio.pause();
+      } catch (_) {}
+      this._activeAudio.onended = null;
+      this._activeAudio.onerror = null;
+      this._activeAudio = null;
+    }
+
     if (isSpeechSynthesisAvailable()) {
       try {
         window.speechSynthesis.cancel();
@@ -225,8 +253,17 @@ export class SpeechController {
       this.cancel();
     }
 
+    return this._speakUtterance(cleanText, { button, lang, rate, onEnd, onError });
+  }
+
+  /**
+   * Dispatches speech utterance after locks and state transitions are established.
+   * 
+   * @private
+   */
+  _speakUtterance(cleanText, { button = null, lang = 'zh-CN', rate = 0.85, onEnd = null, onError = null } = {}) {
     try {
-      // 3. Lock new button and transition state
+      // Lock button and transition state
       this._state = SpeechState.SPEAKING;
       this._currentButton = button || null;
       this._currentText = cleanText;
@@ -237,7 +274,7 @@ export class SpeechController {
         this._currentButton.classList.add('is-speaking');
       }
 
-      // 4. Create and configure Utterance
+      // Create and configure Utterance
       const UtteranceClass = (typeof window !== 'undefined' && window.SpeechSynthesisUtterance) || (typeof SpeechSynthesisUtterance !== 'undefined' ? SpeechSynthesisUtterance : null);
       const utterance = new UtteranceClass(cleanText);
       utterance.lang = lang;
@@ -254,7 +291,7 @@ export class SpeechController {
         // Voice lookup non-fatal
       }
 
-      // 5. Lifecycle event listeners
+      // Lifecycle event listeners
       utterance.onstart = () => {
         this._state = SpeechState.SPEAKING;
       };
@@ -284,15 +321,18 @@ export class SpeechController {
         this._cleanup(true);
       };
 
-      // 6. Safety fallback timer: prevents button lock if browser drops end/error events
+      // Safety fallback timer: prevents button lock if browser drops end/error events
       this._safetyTimer = setTimeout(() => {
         if (this._state === SpeechState.SPEAKING) {
           console.warn('[SpeechController] Safety timeout reached, releasing button lock');
           this._cleanup(false);
         }
       }, 10000);
+      if (this._safetyTimer && typeof this._safetyTimer.unref === 'function') {
+        this._safetyTimer.unref();
+      }
 
-      // 7. Retain reference against GC and dispatch speech
+      // Retain reference against GC and dispatch speech
       this._activeUtterance = utterance;
       window.speechSynthesis.speak(utterance);
       return true;
@@ -307,6 +347,136 @@ export class SpeechController {
       this._cleanup(true);
       return false;
     }
+  }
+
+  /**
+   * Unified pronunciation player with dedicated audio priority and automatic Web Speech API fallback.
+   *
+   * Behavior:
+   * 1. If audioUrl is provided and valid: attempts HTMLAudioElement playback.
+   * 2. If audio fails, errors, or audioUrl is missing: falls back cleanly to Web Speech API.
+   * 3. Synchronizes button state: locked (.is-speaking, disabled, aria-busy) during playback.
+   * 4. Anti-spam: rapid clicks on the same button/item are safely ignored without queueing.
+   *
+   * @param {Object} options
+   * @param {string} [options.text] - Chinese character(s) to pronounce
+   * @param {string|null} [options.audioUrl=null] - Optional audio media URL
+   * @param {HTMLElement|null} [options.button=null] - Triggering button element
+   * @param {string} [options.lang='zh-CN'] - BCP-47 language tag
+   * @param {number} [options.rate=0.85] - Speech rate
+   * @param {Function} [options.onEnd=null] - Completion callback
+   * @param {Function} [options.onError=null] - Error callback
+   * @returns {boolean} true if audio or speech synthesis was dispatched, false otherwise
+   */
+  playPronunciation({
+    text = '',
+    audioUrl = null,
+    button = null,
+    lang = 'zh-CN',
+    rate = 0.85,
+    onEnd = null,
+    onError = null
+  } = {}) {
+    const cleanText = (typeof text === 'string') ? text.trim() : '';
+    const safeAudioUrl = audioUrl ? sanitizeResourceUrl(audioUrl) : null;
+    const hasValidAudio = safeAudioUrl && safeAudioUrl !== 'about:blank';
+
+    if (!cleanText && !hasValidAudio) {
+      return false;
+    }
+
+    // 1. Anti-spam Check: If already speaking/playing
+    if (this._state === SpeechState.SPEAKING) {
+      // If user clicked the SAME button or same text/audioUrl: ignore
+      if (button && this._currentButton === button) {
+        return false;
+      }
+      if (!button && (this._currentText === cleanText || (hasValidAudio && this._currentText === safeAudioUrl))) {
+        return false;
+      }
+
+      // If user clicked a DIFFERENT button or item: cancel prior audio/speech cleanly
+      this.cancel();
+    }
+
+    // 2. Try playing dedicated audio file first if URL is valid and Audio constructor exists
+    if (hasValidAudio && typeof window !== 'undefined' && typeof window.Audio !== 'undefined') {
+      try {
+        this._state = SpeechState.SPEAKING;
+        this._currentButton = button || null;
+        this._currentText = cleanText || safeAudioUrl;
+
+        if (this._currentButton) {
+          this._currentButton.disabled = true;
+          this._currentButton.setAttribute('aria-busy', 'true');
+          this._currentButton.classList.add('is-speaking');
+        }
+
+        const audio = new window.Audio(safeAudioUrl);
+        this._activeAudio = audio;
+
+        audio.onended = () => {
+          this._activeAudio = null;
+          if (typeof onEnd === 'function') {
+            try { onEnd(); } catch (_) {}
+          }
+          this._cleanup(false);
+        };
+
+        audio.onerror = (e) => {
+          this._activeAudio = null;
+          // Audio playback failed, fallback to Web Speech API
+          if (cleanText) {
+            this._speakUtterance(cleanText, { button, lang, rate, onEnd, onError });
+          } else {
+            if (typeof onError === 'function') {
+              try { onError(e); } catch (_) {}
+            }
+            this._cleanup(true);
+          }
+        };
+
+        const playPromise = audio.play();
+        if (playPromise !== undefined && typeof playPromise.catch === 'function') {
+          playPromise.catch((err) => {
+            this._activeAudio = null;
+            // Play rejected (e.g. autoplay policy, 404, or abort) -> fallback to Web Speech
+            if (cleanText) {
+              this._speakUtterance(cleanText, { button, lang, rate, onEnd, onError });
+            } else {
+              if (typeof onError === 'function') {
+                try { onError(err); } catch (_) {}
+              }
+              this._cleanup(true);
+            }
+          });
+        }
+
+        this._safetyTimer = setTimeout(() => {
+          if (this._state === SpeechState.SPEAKING) {
+            console.warn('[SpeechController] Safety timeout reached, releasing button lock');
+            this.cancel();
+          }
+        }, 10000);
+
+        return true;
+      } catch (err) {
+        this._activeAudio = null;
+        if (cleanText) {
+          return this._speakUtterance(cleanText, { button, lang, rate, onEnd, onError });
+        } else {
+          this._cleanup(true);
+          return false;
+        }
+      }
+    }
+
+    // 3. Fallback to Web Speech API
+    if (cleanText) {
+      return this.speak(cleanText, { button, lang, rate, onEnd, onError });
+    }
+
+    return false;
   }
 }
 
@@ -328,4 +498,29 @@ export const speechController = new SpeechController();
  */
 export function speakHanzi(text, { button = null, lang = 'zh-CN', rate = 0.85 } = {}) {
   return speechController.speak(text, { button, lang, rate });
+}
+
+/**
+ * Plays pronunciation with dedicated audio file priority and Web Speech API fallback.
+ *
+ * @param {Object} options
+ * @param {string} [options.text] - Chinese character(s) to pronounce
+ * @param {string|null} [options.audioUrl=null] - Audio URL
+ * @param {HTMLElement|null} [options.button=null] - Triggering button
+ * @param {string} [options.lang='zh-CN'] - Language tag
+ * @param {number} [options.rate=0.85] - Speech rate
+ * @param {Function} [options.onEnd=null] - Completion callback
+ * @param {Function} [options.onError=null] - Error callback
+ * @returns {boolean} true if audio or utterance dispatched
+ */
+export function playPronunciation({
+  text = '',
+  audioUrl = null,
+  button = null,
+  lang = 'zh-CN',
+  rate = 0.85,
+  onEnd = null,
+  onError = null
+} = {}) {
+  return speechController.playPronunciation({ text, audioUrl, button, lang, rate, onEnd, onError });
 }

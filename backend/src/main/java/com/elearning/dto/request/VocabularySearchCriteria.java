@@ -18,16 +18,22 @@ public class VocabularySearchCriteria {
     private String pinyinRaw;
     private Integer radicalId;
     private String search;
+    private Integer hskLevel;
 
     public VocabularySearchCriteria() {
     }
 
     public VocabularySearchCriteria(String hanzi, String pinyin, String pinyinRaw, Integer radicalId, String search) {
+        this(hanzi, pinyin, pinyinRaw, radicalId, search, null);
+    }
+
+    public VocabularySearchCriteria(String hanzi, String pinyin, String pinyinRaw, Integer radicalId, String search, Integer hskLevel) {
         this.hanzi = hanzi;
         this.pinyin = pinyin;
         this.pinyinRaw = pinyinRaw;
         this.radicalId = radicalId;
         this.search = search;
+        this.hskLevel = hskLevel;
     }
 
     public static VocabularySearchCriteria byKeyword(String search) {
@@ -36,8 +42,15 @@ public class VocabularySearchCriteria {
         return criteria;
     }
 
+    public static VocabularySearchCriteria byKeywordAndHsk(String search, Integer hskLevel) {
+        VocabularySearchCriteria criteria = new VocabularySearchCriteria();
+        criteria.setSearch(search);
+        criteria.setHskLevel(hskLevel);
+        return criteria;
+    }
+
     public boolean isEmpty() {
-        return isBlank(hanzi) && isBlank(pinyin) && isBlank(pinyinRaw) && radicalId == null && isBlank(search);
+        return isBlank(hanzi) && isBlank(pinyin) && isBlank(pinyinRaw) && radicalId == null && isBlank(search) && hskLevel == null;
     }
 
     private boolean isBlank(String str) {
@@ -84,6 +97,14 @@ public class VocabularySearchCriteria {
         this.search = search;
     }
 
+    public Integer getHskLevel() {
+        return hskLevel;
+    }
+
+    public void setHskLevel(Integer hskLevel) {
+        this.hskLevel = hskLevel;
+    }
+
     @Override
     public String toString() {
         return "VocabularySearchCriteria{" +
@@ -92,6 +113,7 @@ public class VocabularySearchCriteria {
                 ", pinyinRaw='" + pinyinRaw + '\'' +
                 ", radicalId=" + radicalId +
                 ", search='" + search + '\'' +
+                ", hskLevel=" + hskLevel +
                 '}';
     }
 }

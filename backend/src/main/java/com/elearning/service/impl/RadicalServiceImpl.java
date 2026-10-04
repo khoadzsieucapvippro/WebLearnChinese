@@ -73,6 +73,28 @@ public class RadicalServiceImpl implements RadicalService {
         return RadicalDetailResponse.fromEntity(radical);
     }
 
+    private static final java.util.regex.Pattern YOUTUBE_URL_PATTERN = java.util.regex.Pattern.compile(
+            "^https://(?:www\\.|m\\.)?(?:youtube\\.com/(?:watch\\?v=|embed/)|youtu\\.be/|youtube-nocookie\\.com/embed/)([a-zA-Z0-9_-]{11})(?:[?&].*)?$"
+    );
+
+    private String validateAndNormalizeVideoLessonUrl(String url) {
+        if (url == null || url.trim().isEmpty()) {
+            return null;
+        }
+        String trimmed = url.trim();
+        if (!YOUTUBE_URL_PATTERN.matcher(trimmed).matches()) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR,
+                    "Đường dẫn video bài giảng không hợp lệ. Chỉ chấp nhận liên kết YouTube hợp lệ.");
+        }
+        return trimmed;
+    }
+
+    private void validateCommonRank(Integer commonRank) {
+        if (commonRank != null && (commonRank < 1 || commonRank > 50)) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Thứ hạng thông dụng phải từ 1 đến 50");
+        }
+    }
+
     @Override
     @Transactional
     public RadicalDetailResponse createRadical(CreateRadicalRequest request) {
@@ -87,6 +109,14 @@ public class RadicalServiceImpl implements RadicalService {
             throw new BusinessException(ErrorCode.CONFLICT, "Bộ thủ với ký tự '" + character + "' đã tồn tại");
         }
 
+        validateCommonRank(request.getCommonRank());
+        if (request.getCommonRank() != null && radicalRepository.existsByCommonRank(request.getCommonRank())) {
+            throw new BusinessException(ErrorCode.CONFLICT,
+                    "Thứ hạng thông dụng '" + request.getCommonRank() + "' đã được gán cho bộ thủ khác");
+        }
+
+        String videoLessonUrl = validateAndNormalizeVideoLessonUrl(request.getVideoLessonUrl());
+
         Radical radical = new Radical();
         radical.setCharacter(character);
         radical.setPinyin(request.getPinyin() != null ? request.getPinyin().trim() : "");
@@ -94,6 +124,10 @@ public class RadicalServiceImpl implements RadicalService {
         radical.setMeaningVi(request.getMeaningVi() != null ? request.getMeaningVi().trim() : "");
         radical.setAudioUrl(request.getAudioUrl());
         radical.setVideoWritingUrl(request.getVideoWritingUrl());
+        radical.setExplanationVi(request.getExplanationVi() != null && !request.getExplanationVi().trim().isEmpty()
+                ? request.getExplanationVi().trim() : null);
+        radical.setVideoLessonUrl(videoLessonUrl);
+        radical.setCommonRank(request.getCommonRank());
 
         Radical saved = radicalRepository.save(radical);
         return RadicalDetailResponse.fromEntity(saved);
@@ -123,12 +157,27 @@ public class RadicalServiceImpl implements RadicalService {
             }
         }
 
+        validateCommonRank(request.getCommonRank());
+        if (request.getCommonRank() != null) {
+            Optional<Radical> existingRank = radicalRepository.findByCommonRank(request.getCommonRank());
+            if (existingRank.isPresent() && !existingRank.get().getRadicalId().equals(radicalId)) {
+                throw new BusinessException(ErrorCode.CONFLICT,
+                        "Thứ hạng thông dụng '" + request.getCommonRank() + "' đã được gán cho bộ thủ khác");
+            }
+        }
+
+        String videoLessonUrl = validateAndNormalizeVideoLessonUrl(request.getVideoLessonUrl());
+
         radical.setCharacter(character);
         radical.setPinyin(request.getPinyin() != null ? request.getPinyin().trim() : "");
         radical.setMeaningHanViet(request.getMeaningHanViet() != null ? request.getMeaningHanViet().trim() : "");
         radical.setMeaningVi(request.getMeaningVi() != null ? request.getMeaningVi().trim() : "");
         radical.setAudioUrl(request.getAudioUrl());
         radical.setVideoWritingUrl(request.getVideoWritingUrl());
+        radical.setExplanationVi(request.getExplanationVi() != null && !request.getExplanationVi().trim().isEmpty()
+                ? request.getExplanationVi().trim() : null);
+        radical.setVideoLessonUrl(videoLessonUrl);
+        radical.setCommonRank(request.getCommonRank());
 
         Radical updated = radicalRepository.save(radical);
         return RadicalDetailResponse.fromEntity(updated);
