@@ -97,6 +97,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource(
             @Value("${app.cors.allowed-origins:http://localhost:5500,http://127.0.0.1:5500,http://localhost:3000,http://127.0.0.1:3000}") List<String> allowedOrigins,
+            @Value("${app.cors.allowed-origin-patterns:https://*.github.io}") List<String> allowedOriginPatterns,
             @Value("${app.cors.allowed-methods:GET,POST,PUT,PATCH,DELETE,OPTIONS}") List<String> allowedMethods,
             @Value("${app.cors.allowed-headers:Authorization,Content-Type,Accept,Origin,X-Requested-With}") List<String> allowedHeaders,
             @Value("${app.cors.allow-credentials:false}") boolean allowCredentials,
@@ -104,6 +105,9 @@ public class SecurityConfig {
 
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(allowedOrigins.stream().map(String::trim).toList());
+        if (allowedOriginPatterns != null && !allowedOriginPatterns.isEmpty()) {
+            configuration.setAllowedOriginPatterns(allowedOriginPatterns.stream().map(String::trim).filter(p -> !p.isBlank()).toList());
+        }
         configuration.setAllowedMethods(allowedMethods.stream().map(String::trim).toList());
         configuration.setAllowedHeaders(allowedHeaders.stream().map(String::trim).toList());
         configuration.setAllowCredentials(allowCredentials);
