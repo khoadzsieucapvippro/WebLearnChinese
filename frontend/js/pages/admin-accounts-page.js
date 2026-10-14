@@ -398,8 +398,8 @@ export class AdminAccountsController {
     }
     // Redirect if in real browser environment
     if (typeof window !== 'undefined' && window.location) {
-      const current = encodeURIComponent(window.location.pathname.replace(/^\//, '') || 'admin-accounts.html');
-      window.location.href = `login.html?redirect=${current}`;
+      const returnUrl = `${window.location.pathname}${window.location.search}${window.location.hash}` || 'admin-accounts.html';
+      window.location.href = `login.html?redirect=${encodeURIComponent(returnUrl)}`;
     }
   }
 

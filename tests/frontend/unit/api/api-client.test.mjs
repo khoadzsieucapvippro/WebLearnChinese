@@ -554,6 +554,35 @@ describe('Centralized HTTP API Client Contract', () => {
       assert.strictEqual(result.totalElements, 214);
     });
 
+    test('Does NOT fallback to demo engine when real backend returns HTTP 404 with JSON envelope', async () => {
+      globalThis.fetch = async () => {
+        return createMockResponse({
+          status: 404,
+          body: {
+            code: 'NOT_FOUND',
+            message: 'Bài học không tồn tại',
+            data: null,
+            errors: []
+          },
+          headers: { 'Content-Type': 'application/json' },
+          isJson: true
+        });
+      };
+
+      await assert.rejects(
+        async () => {
+          await apiClient('/lessons/999');
+        },
+        (err) => {
+          assert.ok(err instanceof ApiError);
+          assert.strictEqual(err.status, 404);
+          assert.strictEqual(err.code, 'NOT_FOUND');
+          assert.strictEqual(err.message, 'Bài học không tồn tại');
+          return true;
+        }
+      );
+    });
+
     test('Falls back to demo engine when fetch throws TypeError on GitHub Pages', async () => {
       globalThis.fetch = async () => {
         throw new TypeError('Failed to fetch from cloud backend');

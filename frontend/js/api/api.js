@@ -347,7 +347,9 @@ export async function apiClient(endpoint, options = {}) {
 
     // 5. HTTP 401 Unauthorized Handling (Single Owner transition via authManager)
     if (response.status === 401) {
-      if (endpoint.includes('/auth/login') && (isGitHubPagesEnvironment() || isDemoFallbackActive())) {
+      const authContentType = response.headers.get('content-type') || '';
+      const isAuthJson = authContentType.includes('application/json');
+      if (!isAuthJson && endpoint.includes('/auth/login') && (isGitHubPagesEnvironment() || isDemoFallbackActive())) {
         try {
           return await demoFallbackEngine.handleRequest(endpoint, options);
         } catch (fallbackErr) {
@@ -413,7 +415,8 @@ export async function apiClient(endpoint, options = {}) {
     const isJson = contentType.includes('application/json');
 
     // Smart Cloud Fallback on not OK (404, 405 Method Not Allowed on static pages, 502, 503, etc.)
-    if (!response.ok && (isGitHubPagesEnvironment() || isDemoFallbackActive())) {
+    // Invariant: If response is JSON from a real backend, DO NOT swallow errors with mock data!
+    if (!response.ok && !isJson && (isGitHubPagesEnvironment() || isDemoFallbackActive())) {
       try {
         return await demoFallbackEngine.handleRequest(endpoint, options);
       } catch (fallbackErr) {
@@ -430,7 +433,19 @@ export async function apiClient(endpoint, options = {}) {
       return null;
     }
 
-    const envelope = await response.json();
+    let envelope = null;
+    try {
+      envelope = await response.json();
+    } catch (jsonErr) {
+      if (!response.ok && (isGitHubPagesEnvironment() || isDemoFallbackActive())) {
+        try {
+          return await demoFallbackEngine.handleRequest(endpoint, options);
+        } catch (fallbackErr) {
+          if (fallbackErr instanceof ApiError) throw fallbackErr;
+        }
+      }
+      throw new ApiError(`Lỗi máy chủ (${response.status})`, response.status, 'INVALID_JSON', [], jsonErr);
+    }
 
     // Backend emits code: "SUCCESS" for all successful business responses
     if (!response.ok || envelope?.code !== 'SUCCESS') {

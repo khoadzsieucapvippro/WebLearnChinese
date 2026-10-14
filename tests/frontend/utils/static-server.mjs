@@ -123,7 +123,13 @@ function createEphemeralServer(preferredPort = 3000) {
         reqPath = '/index.html';
       }
 
-      const safePath = path.normalize(reqPath).replace(/^(\.\.[\/\\])+/, '');
+      // Support project base path routing simulation (e.g. /WebLearnChinese/login.html -> /login.html)
+      let resolvedReqPath = reqPath;
+      if (resolvedReqPath.startsWith('/WebLearnChinese/') || resolvedReqPath === '/WebLearnChinese') {
+        resolvedReqPath = resolvedReqPath.slice('/WebLearnChinese'.length) || '/index.html';
+      }
+
+      const safePath = path.normalize(resolvedReqPath).replace(/^(\.\.[\/\\])+/, '');
       const filePath = path.join(FRONTEND_DIR, safePath);
 
       if (reqPath === '/favicon.ico' && !fs.existsSync(filePath)) {

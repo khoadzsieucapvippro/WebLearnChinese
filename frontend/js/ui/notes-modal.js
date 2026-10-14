@@ -439,7 +439,7 @@ export class NotesModalController {
    */
   async promptLogin() {
     const returnUrl = typeof window !== 'undefined' && window.location
-      ? `${window.location.pathname}${window.location.search}`
+      ? `${window.location.pathname}${window.location.search}${window.location.hash}`
       : 'vocabulary.html';
 
     const confirmed = await openModal({

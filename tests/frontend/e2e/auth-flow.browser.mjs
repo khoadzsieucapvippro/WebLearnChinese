@@ -422,4 +422,146 @@ describe('Browser E2E: Authentication UI, Profile & Session Integration', () => 
     }
   });
 
+  test('BF9: Login on project base path with ?redirect=%2FWebLearnChinese%2Fvocabulary.html does NOT duplicate prefix', async () => {
+    const { page, context, getRuntimeErrors } = await createMonitoredPage(browser);
+
+    try {
+      await page.route('**/api/v1/auth/login', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            code: 'SUCCESS',
+            message: 'OK',
+            data: {
+              token: 'jwt-mock-token-redirect-test',
+              accountId: 202,
+              emailOrPhone: 'redirect-test@example.com',
+              fullName: 'Học Viên Điều Hướng',
+              roles: ['Learner']
+            }
+          })
+        });
+      });
+
+      // Visit login.html under project base path /WebLearnChinese/ with redirect query
+      const visitUrl = `${baseUrl}/WebLearnChinese/login.html?redirect=%2FWebLearnChinese%2Fvocabulary.html`;
+      await page.goto(visitUrl, { waitUntil: 'domcontentloaded' });
+      await page.waitForSelector('#loginForm');
+
+      await page.fill('#loginEmail', 'redirect-test@example.com');
+      await page.fill('#loginPassword', 'SecurePassword123!');
+
+      await page.click('#loginSubmitBtn');
+
+      // Wait for navigation
+      await page.waitForURL('**/vocabulary.html*');
+
+      const currentUrl = page.url();
+      const parsedUrl = new URL(currentUrl);
+
+      // Verify pathname is /WebLearnChinese/vocabulary.html and NOT /WebLearnChinese/WebLearnChinese/vocabulary.html
+      assert.strictEqual(parsedUrl.pathname, '/WebLearnChinese/vocabulary.html');
+      assert.ok(
+        !parsedUrl.pathname.includes('/WebLearnChinese/WebLearnChinese/'),
+        `Prefix must not duplicate. Current URL: ${currentUrl}`
+      );
+
+      const errors = getRuntimeErrors();
+      assert.strictEqual(errors.length, 0, `Runtime errors: ${errors.join(', ')}`);
+
+    } finally {
+      await page.close();
+      await context.close();
+    }
+  });
+
+  test('BF10: Unauthenticated Admin page guard on project base path preserves returnUrl and resolves cleanly', async () => {
+    const { page, context, getRuntimeErrors } = await createMonitoredPage(browser);
+
+    try {
+      await page.route('**/api/v1/auth/login', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            code: 'SUCCESS',
+            message: 'OK',
+            data: {
+              token: 'jwt-mock-token-admin-redirect',
+              accountId: 401,
+              emailOrPhone: 'admin-redirect@example.com',
+              fullName: 'Quản Trị Điều Hướng',
+              roles: ['Admin']
+            }
+          })
+        });
+      });
+
+      // Visit admin-accounts.html under project base path /WebLearnChinese/ as unauthenticated visitor
+      await page.goto(`${baseUrl}/WebLearnChinese/admin-accounts.html`, { waitUntil: 'domcontentloaded' });
+
+      // Guard should redirect to login.html with returnUrl
+      await page.waitForURL('**/login.html?redirect=*');
+
+      const loginUrl = new URL(page.url());
+      const redirectParam = loginUrl.searchParams.get('redirect');
+      assert.ok(redirectParam, 'Redirect parameter must be present');
+      assert.ok(
+        redirectParam.includes('admin-accounts.html'),
+        `Redirect param must point to admin-accounts.html: ${redirectParam}`
+      );
+
+      // Perform login
+      await page.waitForSelector('#loginForm');
+      await page.fill('#loginEmail', 'admin-redirect@example.com');
+      await page.fill('#loginPassword', 'SecurePassword123!');
+      await page.click('#loginSubmitBtn');
+
+      // Wait for return navigation back to admin-accounts.html
+      await page.waitForURL('**/admin-accounts.html*');
+
+      const finalUrl = new URL(page.url());
+      assert.strictEqual(finalUrl.pathname, '/WebLearnChinese/admin-accounts.html');
+      assert.ok(
+        !finalUrl.pathname.includes('/WebLearnChinese/WebLearnChinese/'),
+        `Prefix must not duplicate on Admin return: ${finalUrl.href}`
+      );
+
+      const errors = getRuntimeErrors();
+      assert.strictEqual(errors.length, 0, `Runtime errors: ${errors.join(', ')}`);
+
+    } finally {
+      await page.close();
+      await context.close();
+    }
+  });
+
+  test('BF11: 5-cycle cross-page navigation on project base path accumulates zero duplicate prefixes', async () => {
+    const { page, context, getRuntimeErrors } = await createMonitoredPage(browser);
+
+    try {
+      // Start on vocabulary.html under /WebLearnChinese/
+      await page.goto(`${baseUrl}/WebLearnChinese/vocabulary.html`, { waitUntil: 'domcontentloaded' });
+
+      const cyclePages = ['lessons.html', 'radicals.html', 'vocabulary.html'];
+
+      for (let cycle = 1; cycle <= 5; cycle++) {
+        for (const targetPage of cyclePages) {
+          await page.goto(`${baseUrl}/WebLearnChinese/${targetPage}`, { waitUntil: 'domcontentloaded' });
+          const currentPath = new URL(page.url()).pathname;
+          assert.strictEqual(currentPath, `/WebLearnChinese/${targetPage}`);
+          assert.ok(!currentPath.includes('/WebLearnChinese/WebLearnChinese/'), `Cycle ${cycle} to ${targetPage} duplicated prefix`);
+        }
+      }
+
+      const errors = getRuntimeErrors();
+      assert.strictEqual(errors.length, 0, `Runtime errors: ${errors.join(', ')}`);
+
+    } finally {
+      await page.close();
+      await context.close();
+    }
+  });
+
 });

@@ -55,17 +55,29 @@ export async function loadStrokeData(character) {
     return strokeCache.get(cleanChar);
   }
 
+  const codeHex = cleanChar.codePointAt(0) ? cleanChar.codePointAt(0).toString(16).toUpperCase() : '';
+
   // 1. Node.js environment resolution (unit tests / server-side verification)
   if (typeof window === 'undefined') {
     try {
       const fs = await import('node:fs/promises');
       const { fileURLToPath } = await import('node:url');
-      const filePath = fileURLToPath(new URL(`../../../assets/data/strokes/${encodeURIComponent(cleanChar)}.json`, import.meta.url));
-      const content = await fs.readFile(filePath, 'utf-8');
-      const data = JSON.parse(content);
-      if (isValidStrokeData(data)) {
-        strokeCache.set(cleanChar, data);
-        return data;
+      let content = null;
+      try {
+        const filePath = fileURLToPath(new URL(`../../../assets/data/strokes/${encodeURIComponent(cleanChar)}.json`, import.meta.url));
+        content = await fs.readFile(filePath, 'utf-8');
+      } catch (_) {
+        if (codeHex) {
+          const filePathHex = fileURLToPath(new URL(`../../../assets/data/strokes/%23U${codeHex}.json`, import.meta.url));
+          content = await fs.readFile(filePathHex, 'utf-8');
+        }
+      }
+      if (content) {
+        const data = JSON.parse(content);
+        if (isValidStrokeData(data)) {
+          strokeCache.set(cleanChar, data);
+          return data;
+        }
       }
     } catch (err) {
       // Fall through
@@ -75,7 +87,11 @@ export async function loadStrokeData(character) {
   // 2. Browser static asset path (resolved relative to module root)
   try {
     const localUrl = new URL(`../../../assets/data/strokes/${encodeURIComponent(cleanChar)}.json`, import.meta.url).href;
-    const localRes = await fetch(localUrl);
+    let localRes = await fetch(localUrl);
+    if (!localRes.ok && codeHex) {
+      const hexUrl = new URL(`../../../assets/data/strokes/%23U${codeHex}.json`, import.meta.url).href;
+      localRes = await fetch(hexUrl);
+    }
     if (localRes.ok) {
       const data = await localRes.json();
       if (isValidStrokeData(data)) {

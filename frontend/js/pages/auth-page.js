@@ -20,26 +20,58 @@ import { initNavbarAuth } from '../ui/nav.js';
 import { showToast } from '../ui/ui.js';
 
 /**
+ * Resolves the application base URL (directory containing HTML pages).
+ * Respects GitHub Pages project subpath (e.g. /WebLearnChinese/) and root deployments (/).
+ *
+ * @param {string} [baseHref]
+ * @returns {URL}
+ */
+export function getAppBaseUrl(baseHref) {
+  const currentHref = baseHref || (
+    typeof window !== 'undefined' && window.location?.href
+      ? window.location.href
+      : 'http://localhost/index.html'
+  );
+  return new URL('./', currentHref);
+}
+
+/**
  * Validates candidates for internal navigation redirect.
  * Strictly defends against Open Redirect vulnerabilities (CWE-601).
  * Rejects absolute URLs to external hosts, protocol-relative URLs (//),
- * and executable pseudo-protocols (javascript:, data:, vbscript:).
- * 
- * @param {string|null} targetUrl 
- * @returns {string} Safe relative path or 'index.html' fallback
+ * backslash host vectors (/\, \\), and executable schemes (javascript:, data:, vbscript:).
+ *
+ * Handles project-relative, root-relative, and same-origin paths consistently across
+ * both GitHub Pages project sites (/WebLearnChinese/) and local/root deployments (/),
+ * preventing path truncation, directory escape, or duplicated project subpaths.
+ *
+ * @param {string|null} targetUrl Candidate redirect destination
+ * @param {string} [baseHref] Optional context URL for resolution (defaults to current window.location.href)
+ * @returns {string} Safe document-relative path or 'index.html' fallback
  */
-export function validateInternalRedirect(targetUrl) {
+export function validateInternalRedirect(targetUrl, baseHref) {
   if (!targetUrl || typeof targetUrl !== 'string') {
     return 'index.html';
   }
 
-  const trimmed = targetUrl.trim();
+  let trimmed = targetUrl.trim();
   if (!trimmed) {
     return 'index.html';
   }
 
-  // Reject protocol-relative URLs (e.g. //evil.example)
-  if (trimmed.startsWith('//')) {
+  // Reject ASCII control characters (defense against obfuscated protocol injection)
+  // eslint-disable-next-line no-control-regex
+  if (/[\x00-\x1F\x7F]/.test(trimmed)) {
+    return 'index.html';
+  }
+
+  // Reject protocol-relative and backslash host vectors
+  if (
+    trimmed.startsWith('//') ||
+    trimmed.startsWith('/\\') ||
+    trimmed.startsWith('\\') ||
+    trimmed.startsWith('\\/')
+  ) {
     return 'index.html';
   }
 
@@ -49,32 +81,67 @@ export function validateInternalRedirect(targetUrl) {
     lower.startsWith('javascript:') ||
     lower.startsWith('data:') ||
     lower.startsWith('vbscript:') ||
-    lower.startsWith('file:')
+    lower.startsWith('file:') ||
+    lower.startsWith('about:')
   ) {
     return 'index.html';
   }
 
   try {
-    const base = typeof window !== 'undefined' && window.location?.origin 
-      ? window.location.origin 
-      : 'http://localhost';
+    const baseUrl = getAppBaseUrl(baseHref);
+    const basePath = baseUrl.pathname; // e.g. '/WebLearnChinese/' or '/'
+    const baseSubdir = basePath === '/' ? '' : basePath.replace(/^\/+|\/+$/g, ''); // e.g. 'WebLearnChinese'
 
-    const parsed = new URL(trimmed, base);
+    // Normalize input string:
+    // If input starts with project subpath without leading slash (e.g. 'WebLearnChinese/vocabulary.html'),
+    // normalize with leading '/' so standard URL parsing treats it as root-relative.
+    if (baseSubdir && (trimmed.startsWith(`${baseSubdir}/`) || trimmed === baseSubdir)) {
+      trimmed = '/' + trimmed;
+    }
 
-    // Enforce same-origin constraint
-    if (parsed.origin !== base) {
+    let parsed;
+    // Check if trimmed is already an absolute URL with scheme
+    if (/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(trimmed)) {
+      parsed = new URL(trimmed);
+      // Strictly enforce same-origin constraint
+      if (parsed.origin !== baseUrl.origin) {
+        return 'index.html';
+      }
+    } else if (trimmed.startsWith('/')) {
+      // Root-relative path
+      // If deployed in a project subpath (e.g. /WebLearnChinese/), check if input already includes it.
+      if (basePath !== '/') {
+        if (trimmed.startsWith(basePath)) {
+          parsed = new URL(trimmed, baseUrl.origin);
+        } else {
+          // e.g. trimmed is '/vocabulary.html' -> map into app base directory: '/WebLearnChinese/vocabulary.html'
+          const relativePart = trimmed.replace(/^\/+/, '');
+          parsed = new URL(relativePart, baseUrl);
+        }
+      } else {
+        parsed = new URL(trimmed, baseUrl.origin);
+      }
+    } else {
+      // Relative path (e.g. 'vocabulary.html', './vocabulary.html')
+      parsed = new URL(trimmed, baseUrl);
+    }
+
+    // Defense against directory traversal out of app base path:
+    // parsed.pathname MUST start with baseUrl.pathname
+    if (!parsed.pathname.startsWith(baseUrl.pathname)) {
       return 'index.html';
     }
 
-    // Extract pathname and query/hash
-    let path = parsed.pathname;
-    if (path.startsWith('/')) {
-      path = path.slice(1);
+    // Extract app-relative file path by stripping baseUrl.pathname prefix
+    let relativePath = parsed.pathname.slice(baseUrl.pathname.length);
+
+    // If empty or points to directory root or login.html, fallback to index.html
+    if (!relativePath || relativePath === 'login.html') {
+      relativePath = 'index.html';
     }
 
-    // If root or empty, default to index.html
-    const finalPath = path || 'index.html';
-    return `${finalPath}${parsed.search}${parsed.hash}`;
+    // Preserve valid search and hash
+    return `${relativePath}${parsed.search}${parsed.hash}`;
   } catch (_) {
     return 'index.html';
   }

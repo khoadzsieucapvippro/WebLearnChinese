@@ -114,6 +114,13 @@ describe('Unit: Security & URL Sanitization Contract', () => {
       assert.strictEqual(sanitizeNavigationUrl('./lessons.html?id=5'), './lessons.html?id=5');
       assert.strictEqual(sanitizeNavigationUrl('#mainContent'), '#mainContent');
       assert.strictEqual(sanitizeNavigationUrl('/'), '/');
+      assert.strictEqual(sanitizeNavigationUrl('profile.html'), 'profile.html');
+      assert.strictEqual(sanitizeNavigationUrl('lesson-detail.html?id=1'), 'lesson-detail.html?id=1');
+      assert.strictEqual(sanitizeNavigationUrl('creator-lessons.html'), 'creator-lessons.html');
+      assert.strictEqual(sanitizeNavigationUrl('admin-lessons.html'), 'admin-lessons.html');
+      assert.strictEqual(sanitizeNavigationUrl('moderator-queue.html'), 'moderator-queue.html');
+      assert.strictEqual(sanitizeNavigationUrl('../index.html'), '../index.html');
+      assert.strictEqual(sanitizeNavigationUrl('?tab=due'), '?tab=due');
     });
 
     test('permits safe mailto and tel schemes for navigation', () => {
@@ -162,6 +169,8 @@ describe('Unit: Security & URL Sanitization Contract', () => {
       );
       assert.strictEqual(sanitizeResourceUrl('/media/stroke-order/radical_001.svg'), '/media/stroke-order/radical_001.svg');
       assert.strictEqual(sanitizeResourceUrl('./images/logo.png'), './images/logo.png');
+      assert.strictEqual(sanitizeResourceUrl('images/logo.png'), 'images/logo.png');
+      assert.strictEqual(sanitizeResourceUrl('audio/pinyin/xue2.mp3'), 'audio/pinyin/xue2.mp3');
       assert.strictEqual(sanitizeResourceUrl('/'), '/');
     });
 

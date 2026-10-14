@@ -33,9 +33,11 @@ export function escapeHtml(str) {
     .replace(/'/g, '&#39;');
 }
 
+const SCHEME_REGEX = /^[a-zA-Z][a-zA-Z0-9+.-]*:/;
+
 /**
  * Contextual URL Validation for Navigation Sinks (anchor href, window.location).
- * Whitelist: http:, https:, mailto:, tel:, and safe relative paths (/, ./, #).
+ * Whitelist: http:, https:, mailto:, tel:, and safe relative paths (/, ./, #, or plain relative).
  * Strictly rejects protocol-relative (//), backslash host vectors (/\, \\),
  * ASCII control characters, and executable schemes: javascript:, vbscript:, data:, file:.
  * 
@@ -63,34 +65,28 @@ export function sanitizeNavigationUrl(url) {
     return '#';
   }
 
-  // Safe relative paths & anchor fragments
-  if (
-    (/^\/[^/\\]/.test(trimmed)) ||
-    trimmed === '/' ||
-    (trimmed.startsWith('./') && !trimmed.startsWith('./\\')) ||
-    trimmed.startsWith('#')
-  ) {
-    return trimmed;
-  }
-  
-  try {
-    const base = typeof window !== 'undefined' && window.location?.origin 
-      ? window.location.origin 
-      : 'http://localhost';
-    const parsed = new URL(trimmed, base);
-    const protocol = parsed.protocol.toLowerCase();
-    if (['http:', 'https:', 'mailto:', 'tel:'].includes(protocol)) {
-      return parsed.href;
+  // If URL has an explicit scheme, parse and validate against allowlist
+  if (SCHEME_REGEX.test(trimmed)) {
+    try {
+      const parsed = new URL(trimmed);
+      const protocol = parsed.protocol.toLowerCase();
+      if (['http:', 'https:', 'mailto:', 'tel:'].includes(protocol)) {
+        return trimmed;
+      }
+    } catch {
+      // Malformed URL
     }
-  } catch {
-    // Malformed URL
+    return '#';
   }
-  return '#';
+
+  // Scheme-less URLs are relative paths, query strings, or hash fragments.
+  // Returning trimmed preserves document-relative resolution on static hosts (e.g. GitHub Pages repo path)
+  return trimmed;
 }
 
 /**
  * Contextual URL Validation for Media & Resource Sinks (img src, audio src, video src).
- * Strictly restricts schemes to http:, https:, safe relative paths (/, ./), or safe raster data URIs.
+ * Strictly restricts schemes to http:, https:, safe relative paths (/, ./, or plain relative), or safe raster data URIs.
  * Rejects protocol-relative (//), backslash host vectors (/\, \\), ASCII control characters,
  * mailto:, tel:, SVG data URIs, and all executable schemes.
  * 
@@ -118,33 +114,27 @@ export function sanitizeResourceUrl(url) {
     return 'about:blank';
   }
 
-  // Safe relative paths
-  if (
-    (/^\/[^/\\]/.test(trimmed)) ||
-    trimmed === '/' ||
-    (trimmed.startsWith('./') && !trimmed.startsWith('./\\'))
-  ) {
-    return trimmed;
-  }
-
   // Safe raster image data URIs (PNG, JPEG, WebP, GIF only; SVG excluded due to script-carrier risk)
   if (/^data:image\/(png|jpeg|jpg|webp|gif);base64,[A-Za-z0-9+/=]+$/i.test(trimmed)) {
     return trimmed;
   }
 
-  try {
-    const base = typeof window !== 'undefined' && window.location?.origin 
-      ? window.location.origin 
-      : 'http://localhost';
-    const parsed = new URL(trimmed, base);
-    const protocol = parsed.protocol.toLowerCase();
-    if (['http:', 'https:'].includes(protocol)) {
-      return parsed.href;
+  // If URL has an explicit scheme, validate against http: / https: allowlist
+  if (SCHEME_REGEX.test(trimmed)) {
+    try {
+      const parsed = new URL(trimmed);
+      const protocol = parsed.protocol.toLowerCase();
+      if (['http:', 'https:'].includes(protocol)) {
+        return trimmed;
+      }
+    } catch {
+      // Malformed URL
     }
-  } catch {
-    // Malformed URL
+    return 'about:blank';
   }
-  return 'about:blank';
+
+  // Scheme-less URLs are relative paths (e.g. './images/logo.png', 'images/logo.png', '/media/...')
+  return trimmed;
 }
 
 /**

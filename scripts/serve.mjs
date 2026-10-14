@@ -99,13 +99,33 @@ function startServer() {
       reqPath = '/index.html';
     }
 
-    const safePath = path.normalize(reqPath).replace(/^(\.\.[\/\\])+/, '');
+    // Support project base path routing simulation (e.g. /WebLearnChinese/login.html -> /login.html)
+    let resolvedReqPath = reqPath;
+    if (resolvedReqPath.startsWith('/WebLearnChinese/') || resolvedReqPath === '/WebLearnChinese') {
+      resolvedReqPath = resolvedReqPath.slice('/WebLearnChinese'.length) || '/index.html';
+    }
+
+    const safePath = path.normalize(resolvedReqPath).replace(/^(\.\.[\/\\])+/, '');
     const filePath = path.join(FRONTEND_DIR, safePath);
 
     if (reqPath === '/favicon.ico' && !fs.existsSync(filePath)) {
       res.writeHead(204, { 'Content-Type': 'image/x-icon' });
       res.end();
       return;
+    }
+
+    if (reqPath === '/__test__/eval-probe.js') {
+      const fixturePath = path.resolve(__dirname, '../tests/frontend/fixtures/csp-eval-probe.js');
+      if (fs.existsSync(fixturePath)) {
+        const content = fs.readFileSync(fixturePath);
+        res.writeHead(200, {
+          'Content-Type': 'application/javascript; charset=UTF-8',
+          'Content-Length': content.length,
+          'Content-Security-Policy': DEV_CSP_POLICY
+        });
+        res.end(content);
+        return;
+      }
     }
 
     let stat;

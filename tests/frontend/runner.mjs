@@ -83,7 +83,8 @@ function resolveTestFiles(tier) {
     'tests/frontend/unit/lesson/creator-import.test.mjs',
     'tests/frontend/unit/lesson/creator-submission.test.mjs',
     'tests/frontend/unit/moderator/moderator-queue.test.mjs',
-    'tests/frontend/unit/moderator/moderator-review.test.mjs'
+    'tests/frontend/unit/moderator/moderator-review.test.mjs',
+    'tests/frontend/unit/auth/authenticated-links-regression.test.mjs'
   ];
 
   const browserFiles = [
@@ -161,23 +162,28 @@ function runTests(files) {
     });
 
     child.on('close', (exitCode) => {
-      // Parse summary line dynamically from node:test output
+      // Parse summary line dynamically from node:test output (supports both Spec 'ℹ' and TAP '#')
       // e.g. "ℹ tests 37\nℹ suites 9\nℹ pass 37\nℹ fail 0\nℹ duration_ms 167.2"
-      const testsMatch = stdout.match(/ℹ tests (\d+)/);
-      const suitesMatch = stdout.match(/ℹ suites (\d+)/);
-      const passMatch = stdout.match(/ℹ pass (\d+)/);
-      const failMatch = stdout.match(/ℹ fail (\d+)/);
-      const durationMatch = stdout.match(/ℹ duration_ms ([\d.]+)/);
+      // or   "# tests 37\n# pass 37\n# fail 0\n# duration_ms 167.2"
+      const testsMatch = stdout.match(/(?:ℹ|#) tests (\d+)/i);
+      const suitesMatch = stdout.match(/(?:ℹ|#) suites (\d+)/i);
+      const passMatch = stdout.match(/(?:ℹ|#) pass(?:ed)? (\d+)/i);
+      const failMatch = stdout.match(/(?:ℹ|#) fail(?:ed)? (\d+)/i);
+      const durationMatch = stdout.match(/(?:ℹ|#) duration_ms ([\d.]+)/i);
+
+      const failedCount = failMatch ? parseInt(failMatch[1], 10) : 0;
+      const code = exitCode !== null && exitCode !== undefined ? exitCode : (failedCount > 0 ? 1 : 0);
+      const finalExitCode = failedCount > 0 ? (code || 1) : code;
 
       const summary = {
         totalTests: testsMatch ? parseInt(testsMatch[1], 10) : 0,
         totalSuites: suitesMatch ? parseInt(suitesMatch[1], 10) : 0,
         passedTests: passMatch ? parseInt(passMatch[1], 10) : 0,
-        failedTests: failMatch ? parseInt(failMatch[1], 10) : 0,
+        failedTests: failedCount,
         durationMs: durationMatch ? parseFloat(durationMatch[1]) : 0
       };
 
-      resolve({ exitCode: exitCode ?? 1, output: stdout + stderr, summary });
+      resolve({ exitCode: finalExitCode, output: stdout + stderr, summary });
     });
   });
 }

@@ -38,6 +38,7 @@ import { authManager } from '../auth/auth-state.js';
 import { ApiError } from './api.js';
 
 const STORAGE_KEY = 'ELEARNING_DEMO_DATA';
+const CURRENT_DATASET_VERSION = 2;
 
 /**
  * Encodes string or object into Base64URL string compliant with JWT standards.
@@ -90,6 +91,13 @@ class DemoFallbackEngine {
   }
 
   /**
+   * Clears the in-memory cache to force a clean re-read from storage.
+   */
+  resetInMemoryData() {
+    this._data = null;
+  }
+
+  /**
    * Loads or initializes demo database from localStorage.
    */
   getData() {
@@ -107,10 +115,11 @@ class DemoFallbackEngine {
       }
     } catch (_) {}
 
-    if (saved && Array.isArray(saved.radicals) && saved.radicals.length === 214) {
+    if (saved && saved.schemaVersion === CURRENT_DATASET_VERSION && Array.isArray(saved.radicals) && saved.radicals.length === 214) {
       this._data = saved;
     } else {
       this._data = {
+        schemaVersion: CURRENT_DATASET_VERSION,
         accounts: JSON.parse(JSON.stringify(SEED_ACCOUNTS)),
         radicals: JSON.parse(JSON.stringify(SEED_RADICALS)),
         vocabulary: JSON.parse(JSON.stringify(SEED_VOCABULARY)),
@@ -167,6 +176,12 @@ class DemoFallbackEngine {
     if (user && user.accountId) {
       const match = data.accounts.find(a => a.accountId === user.accountId);
       if (match) return match;
+      return {
+        accountId: user.accountId,
+        email: user.emailOrPhone || '',
+        fullName: user.fullName || 'Học Viên',
+        roles: Array.isArray(user.roles) ? [...user.roles] : ['Learner']
+      };
     }
     // Fallback: return default Learner account
     return data.accounts[0];
@@ -874,10 +889,10 @@ class DemoFallbackEngine {
       const todayReviews = data.srsReviews.length;
 
       return {
-        cardsDue: dueCards.length || 5,
-        cardsDueListening: dueCards.filter(c => c.cardType === 'LISTENING').length || 2,
-        cardsDueWriting: dueCards.filter(c => c.cardType === 'WRITING').length || 1,
-        cardsDueReading: dueCards.filter(c => c.cardType === 'READING' || !c.cardType).length || 2,
+        cardsDue: dueCards.length,
+        cardsDueListening: dueCards.filter(c => c.cardType === 'LISTENING').length,
+        cardsDueWriting: dueCards.filter(c => c.cardType === 'WRITING').length,
+        cardsDueReading: dueCards.filter(c => c.cardType === 'READING' || !c.cardType).length,
         reviewsToday: todayReviews,
         newCardsLimit: data.srsSettings.newCardsPerDay || 20,
         maxReviewLimit: data.srsSettings.maxReviewsPerDay || 50,
@@ -919,7 +934,8 @@ class DemoFallbackEngine {
       const lessonId = query.lessonId ? parseInt(query.lessonId, 10) : null;
       const cardType = query.cardType ? query.cardType.toUpperCase() : null;
 
-      let cards = data.srsCards.filter(c => !c.isNew);
+      const now = new Date();
+      let cards = data.srsCards.filter(c => !c.isNew && new Date(c.nextReviewAt) <= now);
       if (lessonId) {
         cards = cards.filter(c => c.lessonId === lessonId);
       }
@@ -927,10 +943,6 @@ class DemoFallbackEngine {
         cards = cards.filter(c => c.cardType === cardType);
       }
 
-      if (cards.length === 0) {
-        // Return first 5 cards so demo session is never blank
-        cards = data.srsCards.slice(0, 5).map(c => ({ ...c, isNew: false }));
-      }
       return cards;
     }
 
@@ -939,9 +951,6 @@ class DemoFallbackEngine {
       let candidates = data.srsCards.filter(c => c.isNew);
       if (lessonId) {
         candidates = candidates.filter(c => c.lessonId === lessonId);
-      }
-      if (candidates.length === 0) {
-        candidates = data.srsCards.slice(5, 10).map(c => ({ ...c, isNew: true }));
       }
       return candidates;
     }
@@ -974,14 +983,17 @@ class DemoFallbackEngine {
     const lessonSrsStatsMatch = cleanPath.match(/^\/srs\/lessons\/(\d+)\/stats$/);
     if (lessonSrsStatsMatch && method === 'GET') {
       const id = parseInt(lessonSrsStatsMatch[1], 10);
-      const lesson = data.lessons.find(l => l.lessonId === id) || data.lessons[0];
-      const total = lesson?.vocabularies?.length || 15;
+      const lessonCards = data.srsCards.filter(c => c.lessonId === id);
+      const now = new Date();
+      const dueCards = lessonCards.filter(c => !c.isNew && new Date(c.nextReviewAt) <= now).length;
+      const learnedCards = lessonCards.filter(c => !c.isNew).length;
+      const newCards = lessonCards.filter(c => c.isNew).length;
       return {
         lessonId: id,
-        totalCards: total,
-        learnedCards: Math.min(10, total),
-        dueCards: 5,
-        newCards: Math.max(0, total - 10)
+        totalCards: lessonCards.length,
+        learnedCards,
+        dueCards,
+        newCards
       };
     }
 
@@ -991,7 +1003,7 @@ class DemoFallbackEngine {
       const itemType = body?.itemType || 'VOCABULARY';
       const cardType = body?.cardType ? body.cardType.toUpperCase() : 'READING';
 
-      let card = data.srsCards.find(c => c.itemId === itemId && c.itemType === itemType);
+      let card = data.srsCards.find(c => c.itemId === itemId && c.itemType === itemType && (c.cardType || 'READING') === cardType);
       if (!card) {
         const v = data.vocabulary.find(item => item.vocabId === itemId) || data.vocabulary[0];
         card = {
@@ -1061,7 +1073,8 @@ class DemoFallbackEngine {
       const vocabId = parseInt(notesListMatch[1], 10);
 
       if (method === 'GET') {
-        const vocabNotes = data.notes.filter(n => n.vocabId === vocabId);
+        const currentAccount = this.getCurrentAccount();
+        const vocabNotes = data.notes.filter(n => n.vocabId === vocabId && (!n.accountId || n.accountId === currentAccount.accountId));
         return {
           items: vocabNotes,
           page: 0,
@@ -1072,8 +1085,10 @@ class DemoFallbackEngine {
       }
 
       if (method === 'POST') {
+        const currentAccount = this.getCurrentAccount();
         const newNote = {
           noteId: Date.now(),
+          accountId: currentAccount.accountId,
           vocabId,
           content: String(body?.content || '').trim(),
           createdAt: new Date().toISOString(),
@@ -1164,3 +1179,12 @@ class DemoFallbackEngine {
 }
 
 export const demoFallbackEngine = new DemoFallbackEngine();
+
+if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+  window.addEventListener('auth:logout', () => {
+    demoFallbackEngine.resetInMemoryData();
+  });
+  window.addEventListener('auth:login', () => {
+    demoFallbackEngine.resetInMemoryData();
+  });
+}
