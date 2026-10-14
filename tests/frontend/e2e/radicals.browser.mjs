@@ -18,7 +18,7 @@
  * - RCAT-08: Detail Modal open, content, keyboard Escape, Close button & focus restoration.
  * - RCAT-09: Mobile 375px viewport: 0 horizontal overflow, tab usable, cards 2 columns.
  * - RCAT-10: Keyboard navigation for tabs: ArrowLeft, ArrowRight, Home, End, visible focus.
- * - RCAT-11: YouTube lazy-loading, privacy host & iframe destruction on close.
+ * - RCAT-11: YouTube video lecture removed; stroke writing & details preserved.
  * - RCAT-12: Adversarial XSS resistance.
  * - RCAT-13: API 500 error state & Retry button recovery.
  * =============================================================================
@@ -39,7 +39,6 @@ function create214MockRadicals() {
       meaningVi: 'Số một',
       commonRank: 1,
       explanationVi: 'Nét ngang cơ bản, đại diện cho sự khởi đầu và thống nhất.',
-      videoLessonUrl: null,
       audioUrl: 'https://cdn.example.com/audio/rad_1.mp3',
       videoWritingUrl: 'https://cdn.example.com/video/rad_1.mp4'
     },
@@ -51,7 +50,6 @@ function create214MockRadicals() {
       meaningVi: 'Cái miệng',
       commonRank: 6,
       explanationVi: 'Hình cái miệng mở ra, liên quan đến ăn uống, nói năng.',
-      videoLessonUrl: null,
       audioUrl: null,
       videoWritingUrl: null
     },
@@ -63,7 +61,6 @@ function create214MockRadicals() {
       meaningVi: 'Cây cối',
       commonRank: 10,
       explanationVi: 'Hình thân cây có cành lá và rễ xòe ra.',
-      videoLessonUrl: 'https://www.youtube.com/watch?v=RpBPqAM3GDg',
       audioUrl: 'https://cdn.example.com/audio/rad_75.mp3',
       videoWritingUrl: null
     },
@@ -75,7 +72,6 @@ function create214MockRadicals() {
       meaningVi: 'Dòng nước',
       commonRank: 11,
       explanationVi: 'Dòng nước uốn lượn với các giọt nước bắn ra xung quanh.',
-      videoLessonUrl: 'https://www.youtube.com/watch?v=gDQwd4lpe6g',
       audioUrl: null,
       videoWritingUrl: 'https://cdn.example.com/video/rad_85.mp4'
     }
@@ -107,7 +103,6 @@ function create214MockRadicals() {
         meaningVi: `Nghĩa tiếng Việt số ${id}`,
         commonRank: rank,
         explanationVi: rank ? `Giải thích học tập cho bộ thủ ${id}` : null,
-        videoLessonUrl: null,
         audioUrl: null,
         videoWritingUrl: null
       });
@@ -594,7 +589,7 @@ describe('Browser E2E: 214 Kangxi Radicals Two Learning Tabs & Presentation UI',
     }
   });
 
-  test('RCAT-11: YouTube lesson iframe security, lazy-load & destruction on close', { timeout: 15000 }, async () => {
+  test('RCAT-11: YouTube lecture section removed while stroke writing demonstration and modal details are preserved', { timeout: 15000 }, async () => {
     const { page, context } = await createMonitoredPage(browser);
     const mockRadicals = create214MockRadicals();
 
@@ -611,37 +606,28 @@ describe('Browser E2E: 214 Kangxi Radicals Two Learning Tabs & Presentation UI',
         });
       });
 
-      // Intercept YouTube requests deterministically
-      await page.route('https://www.youtube-nocookie.com/**', async (route) => {
-        await route.fulfill({
-          status: 200,
-          contentType: 'text/html',
-          body: '<!DOCTYPE html><html><body><div id="mock-player">Mock</div></body></html>'
-        });
-      });
-
       await page.goto(`${baseUrl}/radicals.html`, { waitUntil: 'domcontentloaded', timeout: 5000 });
       await page.waitForSelector('.radical-card', { timeout: 5000 });
 
-      // Open Radical #75 (verified video RpBPqAM3GDg)
+      // Open Radical #75 (木)
       await page.click('button[data-radical-id="75"]');
       await page.waitForSelector('#radicalDetailModal[open]', { timeout: 5000 });
 
-      // Invariant: No iframe before Play click
-      assert.strictEqual(await page.$('#modalVideoLessonContainer iframe'), null);
+      // Invariant 1: YouTube video lecture elements are completely absent from DOM
+      assert.strictEqual(await page.$('#modalVideoLessonSection'), null, 'modalVideoLessonSection must not exist in DOM');
+      assert.strictEqual(await page.$('#btnPlayVideoLesson'), null, 'btnPlayVideoLesson must not exist in DOM');
+      assert.strictEqual(await page.$('#modalVideoLessonContainer'), null, 'modalVideoLessonContainer must not exist in DOM');
 
-      // Click "Xem bài giảng"
-      await page.click('#btnPlayVideoLesson');
+      // Invariant 2: HanziWriter / stroke writing section is preserved
+      assert.notStrictEqual(await page.$('#modalWritingSection'), null, 'modalWritingSection must be preserved');
+      assert.strictEqual(await page.textContent('#modalRadicalChar'), '木');
+      assert.strictEqual(await page.textContent('#modalRadicalPinyin'), 'mù');
+      assert.strictEqual(await page.textContent('#modalRadicalHanViet'), 'Mộc');
+      assert.strictEqual(await page.textContent('#modalRadicalMeaning'), 'Cây cối');
 
-      // Iframe loaded with privacy-enhanced host
-      await page.waitForSelector('#modalVideoLessonContainer iframe', { timeout: 5000 });
-      const iframeSrc = await page.getAttribute('#modalVideoLessonContainer iframe', 'src');
-      assert.ok(iframeSrc.includes('youtube-nocookie.com/embed/RpBPqAM3GDg'));
-
-      // Close modal -> iframe immediately destroyed
+      // Close modal cleanly
       await page.click('#modalCloseBtn');
       await page.waitForFunction(() => !document.getElementById('radicalDetailModal').hasAttribute('open'), { timeout: 5000 });
-      assert.strictEqual(await page.$('#modalVideoLessonContainer iframe'), null, 'Iframe destroyed on close');
     } finally {
       await page.close();
       await context.close();

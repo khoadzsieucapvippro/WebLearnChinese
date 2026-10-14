@@ -1,51 +1,22 @@
 ---
 name: project-constraints
-description: Ràng buộc công nghệ cứng của dự án. LUÔN LUÔN TUÂN THỦ.
+description: Non-negotiable technology and data boundaries for this repository.
 ---
 
-# TECH STACK KHÓA CỨNG
+# Project Constraints
 
-## Frontend
-- HTML
-- CSS
-- JavaScript (Vanilla JS)
-- Các thư viện tĩnh hiện có chỉ được sử dụng khi được lựa chọn cụ thể cho lần triển khai mới.
+## Fixed stack
 
-**KHÔNG tự ý chuyển sang:**
-- React, Vue, Angular, Next.js, Nuxt hoặc bất kỳ frontend framework hiện đại nào.
+- Frontend: semantic HTML, CSS, native ES modules, zero-build Vanilla JS. Bootstrap CDN is an existing supporting dependency; do not introduce React, Vue, Angular, Next.js, or a bundler.
+- Backend: Java 21, Spring Boot 3.3.5, Spring MVC, Spring Security 6, JJWT, Spring Data JPA/Hibernate, Maven.
+- Data: MySQL 8.4 and Flyway. Apache POI is the existing Excel parser.
 
-## Backend
-- Java
-- Spring Boot
-- Spring MVC
-- Spring Web / REST API
-- Spring Security
-- JWT
-- Spring Data JPA
-- Hibernate
-- Maven
+## Hard boundaries
 
-## Database & Migration
-- MySQL
-- Flyway là cơ chế kiểm soát schema migration
+- Keep `ddl-auto: none`; Flyway is the only schema change mechanism.
+- Never edit or renumber an applied migration. Add a new versioned migration for a schema change.
+- Never hardcode JWT secrets, database passwords, credentials, or machine-specific storage paths.
+- Keep request/response DTO boundaries; do not expose JPA entities as public API contracts.
+- Preserve existing API behavior unless the task explicitly changes the contract and all consumers are updated.
+- Keep the Chinese learning domain and SRS behavior intact.
 
-## API Testing & Tools
-- Postman
-
-## Development & Version Control
-- Git
-- GitHub
-- VS Code (Visual Studio Code)
-
-# QUY TẮC CỨNG
-
-- Không dùng `ddl-auto=update`.
-- Không để Hibernate tự ý quản lý schema production/development thay Flyway.
-- Không sửa migration đã được áp dụng chỉ để thay đổi schema. Schema thay đổi phải thông qua migration mới.
-- Không hardcode JWT secret.
-- Không hardcode absolute storage path phụ thuộc một máy cụ thể.
-- Không trả JPA Entity trực tiếp làm public API contract nếu không có lý do đặc biệt được xác định rõ. DTO/API contract phải được kiểm soát riêng.
-- Không tự ý đổi framework hoặc tech stack.
-- Giữ nghiệp vụ cốt lõi của hệ thống học tiếng Trung.
-- Không tự ý phá vỡ API contract đang được sử dụng.
-- Không tự ý thay đổi database structure ngoài migration.

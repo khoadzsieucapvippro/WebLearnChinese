@@ -91,9 +91,12 @@ class LessonIntegrationTests {
                     return accountRepository.save(a);
                 });
 
-        vocab1 = vocabularyRepository.save(new Vocabulary("学", "xué", "xue", "Học", "Học tập"));
-        vocab2 = vocabularyRepository.save(new Vocabulary("生", "shēng", "sheng", "Sinh", "Học sinh"));
-        vocab3 = vocabularyRepository.save(new Vocabulary("校", "xiào", "xiao", "Hiệu", "Trường học"));
+        vocab1 = vocabularyRepository.findByHanziAndPinyinRaw("学", "xue")
+                .orElseGet(() -> vocabularyRepository.save(new Vocabulary("学", "xué", "xue", "Học", "Học tập")));
+        vocab2 = vocabularyRepository.findByHanziAndPinyinRaw("生", "sheng")
+                .orElseGet(() -> vocabularyRepository.save(new Vocabulary("生", "shēng", "sheng", "Sinh", "Học sinh")));
+        vocab3 = vocabularyRepository.findByHanziAndPinyinRaw("校", "xiao")
+                .orElseGet(() -> vocabularyRepository.save(new Vocabulary("校", "xiào", "xiao", "Hiệu", "Trường học")));
 
         // 1. Approved Lesson 1 with 3 items added out-of-order (3, 1, 2)
         approvedLesson1 = new Lesson("Bài 1 - Trường học", creator);
@@ -138,8 +141,8 @@ class LessonIntegrationTests {
                             .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("SUCCESS"))
-                    .andExpect(jsonPath("$.data.totalElements").value(2))
-                    .andExpect(jsonPath("$.data.items", hasSize(2)))
+                    .andExpect(jsonPath("$.data.totalElements").value(12))
+                    .andExpect(jsonPath("$.data.items", hasSize(12)))
                     .andExpect(jsonPath("$.data.items[?(@.title == 'Bài 1 - Trường học')]").exists())
                     .andExpect(jsonPath("$.data.items[?(@.title == 'Bài 2 - Chào hỏi')]").exists())
                     // Verify non-approved lessons are NOT included
@@ -156,7 +159,7 @@ class LessonIntegrationTests {
                             .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("SUCCESS"))
-                    .andExpect(jsonPath("$.data.totalElements").value(2));
+                    .andExpect(jsonPath("$.data.totalElements").value(12));
         }
 
         @Test
@@ -169,8 +172,8 @@ class LessonIntegrationTests {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data.page").value(0))
                     .andExpect(jsonPath("$.data.size").value(1))
-                    .andExpect(jsonPath("$.data.totalElements").value(2))
-                    .andExpect(jsonPath("$.data.totalPages").value(2))
+                    .andExpect(jsonPath("$.data.totalElements").value(12))
+                    .andExpect(jsonPath("$.data.totalPages").value(12))
                     .andExpect(jsonPath("$.data.items", hasSize(1)));
         }
 
@@ -183,7 +186,7 @@ class LessonIntegrationTests {
                             .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data.page").value(999))
-                    .andExpect(jsonPath("$.data.totalElements").value(2))
+                    .andExpect(jsonPath("$.data.totalElements").value(12))
                     .andExpect(jsonPath("$.data.items").isEmpty());
         }
     }

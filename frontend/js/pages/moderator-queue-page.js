@@ -354,11 +354,13 @@ export class ModeratorQueueController {
           // 1. Mã bài
           createSafeElement('td', {
             className: 'text-center font-monospace small text-muted',
+            attrs: { 'data-label': 'Mã bài' },
             text: `#${item.lessonId}`
           }),
 
           // 2. Tiêu đề
           createSafeElement('td', {
+            attrs: { 'data-label': 'Tiêu đề' },
             children: [
               createSafeElement('span', {
                 className: 'fw-bold text-dark d-block',
@@ -369,6 +371,7 @@ export class ModeratorQueueController {
 
           // 3. Tác giả (Email)
           createSafeElement('td', {
+            attrs: { 'data-label': 'Tác giả' },
             children: [
               createSafeElement('span', {
                 className: 'font-monospace small text-secondary d-block text-break',
@@ -380,6 +383,7 @@ export class ModeratorQueueController {
           // 4. Số từ vựng
           createSafeElement('td', {
             className: 'text-center',
+            attrs: { 'data-label': 'Số từ vựng' },
             children: [
               createSafeElement('span', {
                 className: 'badge rounded-pill bg-light text-dark border',
@@ -391,12 +395,14 @@ export class ModeratorQueueController {
           // 5. Cập nhật lần cuối
           createSafeElement('td', {
             className: 'text-center small text-secondary text-nowrap',
+            attrs: { 'data-label': 'Cập nhật' },
             text: formattedDate
           }),
 
           // 6. Trạng thái
           createSafeElement('td', {
             className: 'text-center',
+            attrs: { 'data-label': 'Trạng thái' },
             children: [
               createSafeElement('span', {
                 className: badgeInfo.badgeClass,
@@ -408,6 +414,7 @@ export class ModeratorQueueController {
           // 7. Thao tác (Xem xét)
           createSafeElement('td', {
             className: 'text-end pe-3',
+            attrs: { 'data-label': 'Thao tác' },
             children: [
               createSafeElement('a', {
                 className: 'btn-chinese-primary py-1 px-3 text-decoration-none small text-nowrap',

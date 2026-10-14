@@ -77,7 +77,28 @@ async function probeUrl(targetUrl) {
     const timeoutId = setTimeout(() => controller.abort(), 1000);
     const res = await fetch(targetUrl, { method: 'HEAD', signal: controller.signal });
     clearTimeout(timeoutId);
-    return res.status < 500;
+    if (res.status >= 500) return false;
+
+    // Verify the responding server is serving THIS repository's frontend
+    const srsCheckUrl = new URL('/srs-review.html', targetUrl);
+    const srsRes = await fetch(srsCheckUrl.href, { signal: AbortSignal.timeout(1000) });
+    if (!srsRes.ok) return false;
+    const srsText = await srsRes.text();
+    // If srs-review.html serves obsolete (Phím 1) or lacks srs-skill-tab-toolbar, it is a foreign/stale server
+    if (srsText.includes('(Phím 1)') || !srsText.includes('srs-skill-tab-toolbar')) {
+      return false;
+    }
+
+    // Verify /vocabulary.html contains 'vocabGroupBanner' marker of current repo
+    const vocabCheckUrl = new URL('/vocabulary.html', targetUrl);
+    const vocabRes = await fetch(vocabCheckUrl.href, { signal: AbortSignal.timeout(1000) });
+    if (!vocabRes.ok) return false;
+    const vocabText = await vocabRes.text();
+    if (!vocabText.includes('vocabGroupBanner')) {
+      return false;
+    }
+
+    return true;
   } catch {
     return false;
   }
@@ -92,7 +113,12 @@ function createEphemeralServer(preferredPort = 3000) {
   return new Promise((resolve, reject) => {
     const server = http.createServer((req, res) => {
       const parsedUrl = new URL(req.url, `http://localhost:${preferredPort}`);
-      let reqPath = parsedUrl.pathname;
+      let reqPath;
+      try {
+        reqPath = decodeURIComponent(parsedUrl.pathname);
+      } catch {
+        reqPath = parsedUrl.pathname;
+      }
       if (reqPath === '/' || reqPath === '') {
         reqPath = '/index.html';
       }
@@ -120,7 +146,14 @@ function createEphemeralServer(preferredPort = 3000) {
         }
       }
 
-      if (!fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) {
+      let stat;
+      try {
+        stat = fs.statSync(filePath);
+      } catch {
+        stat = null;
+      }
+
+      if (!stat || stat.isDirectory()) {
         res.writeHead(404, { 'Content-Type': 'text/plain; charset=UTF-8' });
         res.end(`404 Not Found: ${reqPath}`);
         return;
@@ -129,9 +162,48 @@ function createEphemeralServer(preferredPort = 3000) {
       const ext = path.extname(filePath).toLowerCase();
       const contentType = MIME_TYPES[ext] || 'application/octet-stream';
 
+      const isHashed = /\.[a-f0-9]{8,}\.(js|css|png|jpg|jpeg|svg|woff2?)$/i.test(safePath);
+      const cacheControl = isHashed ? 'public, max-age=31536000, immutable' : 'no-cache, must-revalidate';
+
+      const etag = `W/"${stat.size.toString(16)}-${Math.floor(stat.mtimeMs).toString(16)}"`;
+      const lastModified = stat.mtime.toUTCString();
+
+      // Conditional HTTP requests handling (RFC 9110 / RFC 7232)
+      const ifNoneMatch = req.headers['if-none-match'];
+      const ifModifiedSince = req.headers['if-modified-since'];
+
+      let notModified = false;
+      if (ifNoneMatch) {
+        const normalizeTag = (t) => (t ? t.replace(/^W\//, '') : '');
+        const normEtag = normalizeTag(etag);
+        if (ifNoneMatch === etag || ifNoneMatch.split(',').map((s) => normalizeTag(s.trim())).includes(normEtag) || ifNoneMatch === '*') {
+          notModified = true;
+        }
+      } else if (ifModifiedSince) {
+        const imsDate = Date.parse(ifModifiedSince);
+        if (!isNaN(imsDate)) {
+          if (imsDate >= Math.floor(stat.mtimeMs / 1000) * 1000 || new Date(ifModifiedSince) >= stat.mtime) {
+            notModified = true;
+          }
+        }
+      }
+
+      if (notModified) {
+        res.writeHead(304, {
+          'Cache-Control': cacheControl,
+          'ETag': etag,
+          'Last-Modified': lastModified,
+          'Access-Control-Allow-Origin': '*'
+        });
+        res.end();
+        return;
+      }
+
       const headers = {
         'Content-Type': contentType,
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Cache-Control': cacheControl,
+        'ETag': etag,
+        'Last-Modified': lastModified,
         'Access-Control-Allow-Origin': '*',
         'X-Content-Type-Options': 'nosniff'
       };
@@ -140,25 +212,44 @@ function createEphemeralServer(preferredPort = 3000) {
         headers['Content-Security-Policy'] = DEV_CSP_POLICY;
       }
 
+      if (req.method === 'HEAD') {
+        res.writeHead(200, headers);
+        res.end();
+        return;
+      }
+
       res.writeHead(200, headers);
 
-      fs.createReadStream(filePath).pipe(res);
+      const stream = fs.createReadStream(filePath);
+      stream.on('error', () => {
+        if (!res.headersSent) {
+          res.writeHead(500, { 'Content-Type': 'text/plain; charset=UTF-8' });
+          res.end('Server error');
+        }
+      });
+      res.on('close', () => {
+        stream.destroy();
+      });
+      stream.pipe(res);
     });
+
+    const onListening = () => {
+      const addr = server.address();
+      const port = typeof addr === 'object' && addr !== null ? addr.port : preferredPort;
+      resolve({ server, port });
+    };
+
+    server.once('listening', onListening);
 
     server.on('error', (err) => {
       if (err.code === 'EADDRINUSE') {
-        // Try alternate port if preferred port is unexpectedly taken
         server.listen(0, '127.0.0.1');
       } else {
         reject(err);
       }
     });
 
-    server.listen(preferredPort, '127.0.0.1', () => {
-      const addr = server.address();
-      const port = typeof addr === 'object' && addr !== null ? addr.port : preferredPort;
-      resolve({ server, port });
-    });
+    server.listen(preferredPort, '127.0.0.1');
   });
 }
 
@@ -197,4 +288,10 @@ export async function ensureServer({ port = 3000 } = {}) {
       });
     }
   };
+}
+
+if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
+  createEphemeralServer(3000).then(({ port }) => {
+    console.log(`Static server listening on http://localhost:${port}`);
+  });
 }

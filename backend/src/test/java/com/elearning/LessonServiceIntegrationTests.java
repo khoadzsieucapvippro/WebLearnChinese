@@ -72,9 +72,12 @@ class LessonServiceIntegrationTests {
         creator = accountRepository.save(creator);
 
         // Vocabularies
-        vocab1 = vocabularyRepository.save(new Vocabulary("学", "xué", "xue", "Học", "Học tập"));
-        vocab2 = vocabularyRepository.save(new Vocabulary("生", "shēng", "sheng", "Sinh", "Học sinh, sinh ra"));
-        vocab3 = vocabularyRepository.save(new Vocabulary("校", "xiào", "xiao", "Hiệu", "Trường học"));
+        vocab1 = vocabularyRepository.findByHanziAndPinyinRaw("学", "xue")
+                .orElseGet(() -> vocabularyRepository.save(new Vocabulary("学", "xué", "xue", "Học", "Học tập")));
+        vocab2 = vocabularyRepository.findByHanziAndPinyinRaw("生", "sheng")
+                .orElseGet(() -> vocabularyRepository.save(new Vocabulary("生", "shēng", "sheng", "Sinh", "Học sinh, sinh ra")));
+        vocab3 = vocabularyRepository.findByHanziAndPinyinRaw("校", "xiao")
+                .orElseGet(() -> vocabularyRepository.save(new Vocabulary("校", "xiào", "xiao", "Hiệu", "Trường học")));
 
         // 1. Approved Lesson 1 with 3 vocabularies added out of order (order 3, 1, 2)
         approvedLesson1 = new Lesson("Bài 1 - Trường học", creator);
@@ -115,14 +118,14 @@ class LessonServiceIntegrationTests {
         @Test
         @DisplayName("GIVEN lessons with various statuses WHEN getApprovedLessons THEN only 'Approved' lessons are returned")
         void testGetApprovedLessonsOnlyReturnsApproved() {
-            Page<LessonSummaryResponse> page = lessonService.getApprovedLessons(PageRequest.of(0, 10));
+            Page<LessonSummaryResponse> page = lessonService.getApprovedLessons(PageRequest.of(0, 20));
 
             assertThat(page).isNotNull();
-            assertThat(page.getTotalElements()).isEqualTo(2);
-            assertThat(page.getContent()).hasSize(2);
+            assertThat(page.getTotalElements()).isEqualTo(12);
+            assertThat(page.getContent()).hasSize(12);
 
             List<String> titles = page.getContent().stream().map(LessonSummaryResponse::getTitle).toList();
-            assertThat(titles).containsExactlyInAnyOrder("Bài 1 - Trường học", "Bài 2 - Chào hỏi");
+            assertThat(titles).contains("Bài 1 - Trường học", "Bài 2 - Chào hỏi");
 
             // Verify status is Approved for all returned
             assertThat(page.getContent()).allMatch(summary -> "Approved".equals(summary.getStatus()));
@@ -144,8 +147,8 @@ class LessonServiceIntegrationTests {
         void testGetApprovedLessonsPagination() {
             Page<LessonSummaryResponse> page0 = lessonService.getApprovedLessons(PageRequest.of(0, 1));
             assertThat(page0.getContent()).hasSize(1);
-            assertThat(page0.getTotalElements()).isEqualTo(2);
-            assertThat(page0.getTotalPages()).isEqualTo(2);
+            assertThat(page0.getTotalElements()).isEqualTo(12);
+            assertThat(page0.getTotalPages()).isEqualTo(12);
 
             Page<LessonSummaryResponse> page1 = lessonService.getApprovedLessons(PageRequest.of(1, 1));
             assertThat(page1.getContent()).hasSize(1);

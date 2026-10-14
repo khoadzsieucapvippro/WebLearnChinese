@@ -612,6 +612,23 @@ describe('Accessibility Verification: WCAG 2.2 AA Aligned', () => {
         }));
       });
 
+      await page.route('**/api/v1/srs/stats*', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            code: 'SUCCESS',
+            message: 'OK',
+            data: {
+              reviewsToday: 5,
+              newCardsToday: 2,
+              cardsDue: 0,
+              retentionRate: 90
+            }
+          })
+        });
+      });
+
       await page.route(/\/api\/v1\/vocabulary(\?.*)?$/, async (route) => {
         await route.fulfill({
           status: 200,

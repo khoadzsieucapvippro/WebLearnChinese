@@ -23,7 +23,7 @@ import java.time.LocalDateTime;
  */
 @Entity
 @Table(name = "card_progress", uniqueConstraints = {
-        @UniqueConstraint(name = "uk_card_progress_user_item", columnNames = {"user_id", "item_type", "item_id"})
+        @UniqueConstraint(name = "uk_card_progress_user_item_skill", columnNames = {"user_id", "item_type", "item_id", "card_type"})
 })
 public class CardProgress {
 
@@ -41,6 +41,9 @@ public class CardProgress {
 
     @Column(name = "item_id", nullable = false)
     private Long itemId;
+
+    @Column(name = "card_type", nullable = false, length = 20)
+    private String cardType = "LISTENING";
 
     @Column(name = "ease_factor", nullable = false, precision = 4, scale = 2)
     private BigDecimal easeFactor = new BigDecimal("2.50");
@@ -62,9 +65,14 @@ public class CardProgress {
     }
 
     public CardProgress(UserProfile user, String itemType, Long itemId, BigDecimal easeFactor, Integer intervalDays, Integer repetitions, LocalDateTime nextReviewAt) {
+        this(user, itemType, itemId, "LISTENING", easeFactor, intervalDays, repetitions, nextReviewAt);
+    }
+
+    public CardProgress(UserProfile user, String itemType, Long itemId, String cardType, BigDecimal easeFactor, Integer intervalDays, Integer repetitions, LocalDateTime nextReviewAt) {
         this.user = user;
         this.itemType = itemType;
         this.itemId = itemId;
+        this.cardType = cardType != null ? cardType : "LISTENING";
         this.easeFactor = easeFactor;
         this.intervalDays = intervalDays;
         this.repetitions = repetitions;
@@ -101,6 +109,14 @@ public class CardProgress {
 
     public void setItemId(Long itemId) {
         this.itemId = itemId;
+    }
+
+    public String getCardType() {
+        return cardType;
+    }
+
+    public void setCardType(String cardType) {
+        this.cardType = cardType;
     }
 
     public BigDecimal getEaseFactor() {

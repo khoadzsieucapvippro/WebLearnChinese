@@ -22,6 +22,10 @@ public class TestcontainersInitializer implements ApplicationContextInitializer<
         MySQLContainer<?> container = null;
         boolean dockerOk = false;
         try {
+            if ("false".equalsIgnoreCase(System.getProperty("testcontainers.enabled"))
+                    || "false".equalsIgnoreCase(System.getenv("TESTCONTAINERS_ENABLED"))) {
+                throw new IllegalStateException("Testcontainers explicitly disabled by property or environment variable");
+            }
             // Ensure Docker API version compatibility with modern Docker Engine (26+, 28+, 29+) on Windows
             if (System.getProperty("api.version") == null) {
                 System.setProperty("api.version", "1.44");

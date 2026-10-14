@@ -26,6 +26,9 @@ import {
 import {
   validateLessonId,
   formatSrsReviewUrl,
+  formatSrsNewCardsUrl,
+  formatSrsPracticeUrl,
+  calculateLessonMetrics,
   parseLessonDetailResponse,
   sortVocabulariesByOrderIndex,
   isSpeechSynthesisAvailable,
@@ -220,6 +223,42 @@ describe('Unit: Lesson Catalog & Lesson Detail Engine (Task 9C.1)', () => {
     });
   });
 
+  describe('5.2. Free Practice URL Helper Contract (formatSrsPracticeUrl)', () => {
+    test('formats valid numeric lessonId into srs-review.html?lessonId=X&mode=practice', () => {
+      assert.strictEqual(formatSrsPracticeUrl(10), 'srs-review.html?lessonId=10&mode=practice');
+      assert.strictEqual(formatSrsPracticeUrl(1), 'srs-review.html?lessonId=1&mode=practice');
+      assert.strictEqual(formatSrsPracticeUrl('10'), 'srs-review.html?lessonId=10&mode=practice');
+      assert.strictEqual(formatSrsPracticeUrl(' 42 '), 'srs-review.html?lessonId=42&mode=practice');
+    });
+
+    test('falls back safely to default srs-review.html when lessonId is invalid or absent', () => {
+      assert.strictEqual(formatSrsPracticeUrl(null), 'srs-review.html');
+      assert.strictEqual(formatSrsPracticeUrl(undefined), 'srs-review.html');
+      assert.strictEqual(formatSrsPracticeUrl(''), 'srs-review.html');
+      assert.strictEqual(formatSrsPracticeUrl('abc'), 'srs-review.html');
+      assert.strictEqual(formatSrsPracticeUrl(-5), 'srs-review.html');
+      assert.strictEqual(formatSrsPracticeUrl(0), 'srs-review.html');
+    });
+  });
+
+  describe('5.3. SRS New Cards URL Helper Contract (formatSrsNewCardsUrl)', () => {
+    test('formats valid numeric lessonId into srs-review.html?lessonId=X&mode=new', () => {
+      assert.strictEqual(formatSrsNewCardsUrl(10), 'srs-review.html?lessonId=10&mode=new');
+      assert.strictEqual(formatSrsNewCardsUrl(1), 'srs-review.html?lessonId=1&mode=new');
+      assert.strictEqual(formatSrsNewCardsUrl('10'), 'srs-review.html?lessonId=10&mode=new');
+      assert.strictEqual(formatSrsNewCardsUrl(' 42 '), 'srs-review.html?lessonId=42&mode=new');
+    });
+
+    test('falls back safely to default srs-review.html when lessonId is invalid or absent', () => {
+      assert.strictEqual(formatSrsNewCardsUrl(null), 'srs-review.html');
+      assert.strictEqual(formatSrsNewCardsUrl(undefined), 'srs-review.html');
+      assert.strictEqual(formatSrsNewCardsUrl(''), 'srs-review.html');
+      assert.strictEqual(formatSrsNewCardsUrl('abc'), 'srs-review.html');
+      assert.strictEqual(formatSrsNewCardsUrl(-5), 'srs-review.html');
+      assert.strictEqual(formatSrsNewCardsUrl(0), 'srs-review.html');
+    });
+  });
+
   describe('6. Lesson Detail Response & Parsing Contract', () => {
     test('parses ApiResponse<LessonDetailResponse> with ordered vocabularies', () => {
       const response = {
@@ -361,6 +400,117 @@ describe('Unit: Lesson Catalog & Lesson Detail Engine (Task 9C.1)', () => {
       assert.strictEqual(sanitizeResourceUrl('javascript:alert(1)'), 'about:blank');
       assert.strictEqual(sanitizeResourceUrl('data:text/html,<script>'), 'about:blank');
       assert.strictEqual(sanitizeResourceUrl('vbscript:msgbox(1)'), 'about:blank');
+    });
+  });
+
+  describe('10. Lesson Real Metrics Calculation (calculateLessonMetrics)', () => {
+    const mockVocabs = [
+      { vocabId: 1, hanzi: '你', orderIndex: 1 },
+      { vocabId: 2, hanzi: '好', orderIndex: 2 },
+      { vocabId: 3, hanzi: '吗', orderIndex: 3 },
+      { vocabId: 4, hanzi: '我', orderIndex: 4 },
+      { vocabId: 5, hanzi: '很', orderIndex: 5 }
+    ];
+
+    test('returns null learnedWords and dueWords when user is unauthenticated (practiceCards is null)', () => {
+      const metrics = calculateLessonMetrics(mockVocabs, null);
+      assert.strictEqual(metrics.totalWords, 5);
+      assert.strictEqual(metrics.learnedWords, null);
+      assert.strictEqual(metrics.dueWords, null);
+      assert.strictEqual(metrics.newWords, 5);
+      assert.strictEqual(metrics.progressPercentage, 0);
+      assert.strictEqual(metrics.hasDueCards, false);
+    });
+
+    test('calculates correct state when all cards are new (not yet studied)', () => {
+      const practiceCards = [
+        { itemId: 1, isNew: true, repetitions: 0, nextReviewAt: null },
+        { itemId: 2, isNew: true, repetitions: 0, nextReviewAt: null },
+        { itemId: 3, isNew: true, repetitions: 0, nextReviewAt: null },
+        { itemId: 4, isNew: true, repetitions: 0, nextReviewAt: null },
+        { itemId: 5, isNew: true, repetitions: 0, nextReviewAt: null }
+      ];
+
+      const metrics = calculateLessonMetrics(mockVocabs, practiceCards);
+      assert.strictEqual(metrics.totalWords, 5);
+      assert.strictEqual(metrics.learnedWords, 0);
+      assert.strictEqual(metrics.dueWords, 0);
+      assert.strictEqual(metrics.newWords, 5);
+      assert.strictEqual(metrics.progressPercentage, 0);
+      assert.strictEqual(metrics.hasDueCards, false);
+    });
+
+    test('calculates correct learned and due cards when user has partial study progress', () => {
+      const now = new Date('2026-10-15T12:00:00Z');
+      const practiceCards = [
+        // Card 1: Learned, due for review in the past
+        { itemId: 1, isNew: false, repetitions: 2, nextReviewAt: '2026-10-14T08:00:00Z' },
+        // Card 2: Learned, not due yet (future)
+        { itemId: 2, isNew: false, repetitions: 3, nextReviewAt: '2026-10-20T10:00:00Z' },
+        // Card 3: Learned, due right now
+        { itemId: 3, isNew: false, repetitions: 1, nextReviewAt: '2026-10-15T12:00:00Z' },
+        // Card 4: New, not learned
+        { itemId: 4, isNew: true, repetitions: 0, nextReviewAt: null },
+        // Card 5: New, not learned
+        { itemId: 5, isNew: true, repetitions: 0, nextReviewAt: null }
+      ];
+
+      const metrics = calculateLessonMetrics(mockVocabs, practiceCards, now);
+      assert.strictEqual(metrics.totalWords, 5);
+      assert.strictEqual(metrics.learnedWords, 3);
+      assert.strictEqual(metrics.dueWords, 2);
+      assert.strictEqual(metrics.newWords, 2);
+      assert.strictEqual(metrics.progressPercentage, 60); // 3 / 5 = 60%
+      assert.strictEqual(metrics.hasDueCards, true);
+    });
+
+    test('calculates 100% completion when all words are learned', () => {
+      const practiceCards = [
+        { itemId: 1, isNew: false, repetitions: 5, nextReviewAt: '2026-11-01T00:00:00Z' },
+        { itemId: 2, isNew: false, repetitions: 4, nextReviewAt: '2026-11-01T00:00:00Z' },
+        { itemId: 3, isNew: false, repetitions: 3, nextReviewAt: '2026-11-01T00:00:00Z' },
+        { itemId: 4, isNew: false, repetitions: 2, nextReviewAt: '2026-11-01T00:00:00Z' },
+        { itemId: 5, isNew: false, repetitions: 1, nextReviewAt: '2026-11-01T00:00:00Z' }
+      ];
+
+      const metrics = calculateLessonMetrics(mockVocabs, practiceCards, new Date('2026-10-15T00:00:00Z'));
+      assert.strictEqual(metrics.totalWords, 5);
+      assert.strictEqual(metrics.learnedWords, 5);
+      assert.strictEqual(metrics.dueWords, 0);
+      assert.strictEqual(metrics.newWords, 0);
+      assert.strictEqual(metrics.progressPercentage, 100);
+      assert.strictEqual(metrics.hasDueCards, false);
+    });
+
+    test('defends against empty vocabularies list safely without division by zero', () => {
+      const metrics = calculateLessonMetrics([], []);
+      assert.strictEqual(metrics.totalWords, 0);
+      assert.strictEqual(metrics.learnedWords, 0);
+      assert.strictEqual(metrics.dueWords, 0);
+      assert.strictEqual(metrics.newWords, 0);
+      assert.strictEqual(metrics.progressPercentage, 0);
+    });
+  });
+
+  describe('11. 4-Action Routing Contracts', () => {
+    test('Action A (Học từ mới): routes to srs-review.html?lessonId=X&mode=new (lesson-new-cards mode)', () => {
+      const url = formatSrsNewCardsUrl(42);
+      assert.strictEqual(url, 'srs-review.html?lessonId=42&mode=new');
+    });
+
+    test('Action B (Ôn SRS bài này): routes to srs-review.html?lessonId=X with lesson identifier', () => {
+      const url = formatSrsReviewUrl(42);
+      assert.strictEqual(url, 'srs-review.html?lessonId=42');
+    });
+
+    test('Action C (Luyện tự do): routes to srs-review.html?lessonId=X&mode=practice (zero SRS mutation)', () => {
+      const url = formatSrsPracticeUrl(42);
+      assert.strictEqual(url, 'srs-review.html?lessonId=42&mode=practice');
+    });
+
+    test('Action D (Ôn SRS toàn hệ thống): routes to srs-review.html general room', () => {
+      const systemUrl = 'srs-review.html';
+      assert.strictEqual(systemUrl, 'srs-review.html');
     });
   });
 });

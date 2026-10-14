@@ -204,6 +204,8 @@ function setFieldError(inputEl, errorEl, message) {
 function setGlobalAlert(alertEl, message, type = 'danger') {
   if (!alertEl || !message) return;
   alertEl.className = `alert alert-${type} mb-3`;
+  alertEl.setAttribute('role', type === 'danger' ? 'alert' : 'status');
+  alertEl.setAttribute('aria-live', type === 'danger' ? 'assertive' : 'polite');
   alertEl.textContent = message;
   alertEl.classList.remove('d-none');
 }

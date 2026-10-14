@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  app:
+    image: mcr.microsoft.com/devcontainers/java:1-21-bullseye
+    volumes:
+      - ..:/workspaces/elearning:cached
+    command: sleep infinity
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:mysql://db:3306/elearning_db?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
+      SPRING_DATASOURCE_USERNAME: "root"
+      SPRING_DATASOURCE_PASSWORD: ""
+      JWT_SECRET: "elearning-chinese-platform-secret-key-jwt-256-bits-minimum-length-key!"
+      DB_HOST: "db"
+      DB_USER: "root"
+      DB_PASSWORD: ""
+      DB_NAME: "elearning_db"
+      PORT: "3000"
+      BACKEND_ORIGIN: "http://127.0.0.1:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_DATABASE: elearning_db
+    volumes:
+      - mysql-data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  mysql-data:

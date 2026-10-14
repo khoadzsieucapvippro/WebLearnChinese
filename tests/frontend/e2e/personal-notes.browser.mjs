@@ -31,6 +31,23 @@ function createMockVocabularyItem() {
 }
 
 async function setupVocabularyCatalogRoute(page) {
+  await page.route('**/api/v1/srs/stats*', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        code: 'SUCCESS',
+        message: 'OK',
+        data: {
+          reviewsToday: 5,
+          newCardsToday: 2,
+          cardsDue: 0,
+          retentionRate: 90
+        }
+      })
+    });
+  });
+
   await page.route(/\/api\/v1\/vocabulary(\?.*)?$/, async (route) => {
     await route.fulfill({
       status: 200,
@@ -508,6 +525,18 @@ describe('Browser E2E: Contextual Personal Notes Subsystem (9C.2)', () => {
 
     try {
       await setupAuthenticatedSession(page);
+
+      await page.route('**/api/v1/srs/*', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            code: 'SUCCESS',
+            message: 'OK',
+            data: []
+          })
+        });
+      });
 
       // Mock lesson detail with vocabularies
       await page.route('**/api/v1/lessons/1', async (route) => {

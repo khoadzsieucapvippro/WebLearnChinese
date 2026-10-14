@@ -680,17 +680,26 @@ export class AdminLessonsPageController {
       });
 
       // 1. ID Column
-      const tdId = createSafeElement('td', { className: 'text-center text-secondary small ps-3' });
+      const tdId = createSafeElement('td', {
+        className: 'text-center text-secondary small ps-3',
+        attrs: { 'data-label': 'ID' }
+      });
       tdId.appendChild(createSafeElement('code', { text: `#${lesson.lessonId}` }));
       tr.appendChild(tdId);
 
       // 2. Title Column
-      const tdTitle = createSafeElement('td', { className: 'fw-semibold text-dark' });
+      const tdTitle = createSafeElement('td', {
+        className: 'fw-semibold text-dark',
+        attrs: { 'data-label': 'Tên bài học' }
+      });
       tdTitle.appendChild(createSafeElement('span', { text: lesson.title || 'Bài học không tên' }));
       tr.appendChild(tdTitle);
 
       // 3. Status Column
-      const tdStatus = createSafeElement('td', { className: 'text-center' });
+      const tdStatus = createSafeElement('td', {
+        className: 'text-center',
+        attrs: { 'data-label': 'Trạng thái' }
+      });
       const badgeInfo = mapStatusBadge(lesson.status);
       const spanStatus = createSafeElement('span', {
         className: badgeInfo.className,
@@ -700,20 +709,29 @@ export class AdminLessonsPageController {
       tr.appendChild(tdStatus);
 
       // 4. Vocabulary Count Column
-      const tdVocab = createSafeElement('td', { className: 'text-center text-secondary small' });
+      const tdVocab = createSafeElement('td', {
+        className: 'text-center text-secondary small',
+        attrs: { 'data-label': 'Số từ vựng' }
+      });
       const count = typeof lesson.vocabularyCount === 'number' ? lesson.vocabularyCount : 0;
       tdVocab.appendChild(createSafeElement('span', { text: `${count} từ` }));
       tr.appendChild(tdVocab);
 
       // 5. Updated Timestamp Column
-      const tdUpdated = createSafeElement('td', { className: 'text-secondary small' });
+      const tdUpdated = createSafeElement('td', {
+        className: 'text-secondary small',
+        attrs: { 'data-label': 'Cập nhật' }
+      });
       tdUpdated.appendChild(createSafeElement('span', {
         text: formatLessonDate(lesson.updatedAt || lesson.createdAt)
       }));
       tr.appendChild(tdUpdated);
 
       // 6. Actions Column (Read-only Detail View)
-      const tdActions = createSafeElement('td', { className: 'text-end pe-3' });
+      const tdActions = createSafeElement('td', {
+        className: 'text-end pe-3',
+        attrs: { 'data-label': 'Thao tác' }
+      });
       const btnDetail = createSafeElement('button', {
         className: 'btn btn-outline-secondary btn-sm',
         text: 'Xem chi tiết',

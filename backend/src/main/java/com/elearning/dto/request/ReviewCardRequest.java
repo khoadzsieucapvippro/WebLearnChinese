@@ -21,6 +21,9 @@ public class ReviewCardRequest {
     @Positive(message = "ID thẻ phải là số dương")
     private Long itemId;
 
+    @Pattern(regexp = "^(?i)(READING|LISTENING|WRITING)$", message = "cardType phải là READING, LISTENING hoặc WRITING")
+    private String cardType;
+
     @NotNull(message = "Điểm đánh giá (rating) không được để trống")
     @Min(value = 1, message = "Rating phải từ 1 đến 4 (1=Again, 2=Hard, 3=Good, 4=Easy)")
     @Max(value = 4, message = "Rating phải từ 1 đến 4 (1=Again, 2=Hard, 3=Good, 4=Easy)")
@@ -34,8 +37,13 @@ public class ReviewCardRequest {
     }
 
     public ReviewCardRequest(String itemType, Long itemId, Integer rating, Integer reviewTimeSeconds) {
+        this(itemType, itemId, null, rating, reviewTimeSeconds);
+    }
+
+    public ReviewCardRequest(String itemType, Long itemId, String cardType, Integer rating, Integer reviewTimeSeconds) {
         this.itemType = itemType;
         this.itemId = itemId;
+        this.cardType = cardType;
         this.rating = rating;
         this.reviewTimeSeconds = reviewTimeSeconds;
     }
@@ -54,6 +62,14 @@ public class ReviewCardRequest {
 
     public void setItemId(Long itemId) {
         this.itemId = itemId;
+    }
+
+    public String getCardType() {
+        return cardType;
+    }
+
+    public void setCardType(String cardType) {
+        this.cardType = cardType;
     }
 
     public Integer getRating() {

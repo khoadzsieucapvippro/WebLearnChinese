@@ -40,8 +40,9 @@ import { apiClient, ApiError } from '../api/api.js';
 import { initNavbarAuth } from '../ui/nav.js';
 import { createSafeElement, clearContainer, sanitizeResourceUrl } from '../ui/security.js';
 import { setComponentState, showToast, createSpeakerIcon, createSpeechButton, playPronunciation, speechController } from '../ui/ui.js';
+import { CharacterWritingModal } from '../ui/character-writing/character-writing-modal.js';
 
-export { createSpeakerIcon, createSpeechButton, playPronunciation, speechController };
+export { createSpeakerIcon, createSpeechButton, playPronunciation, speechController, CharacterWritingModal };
 
 /* -----------------------------------------------------------------------------
  * 1. PURE LOGIC & UTILITY HELPERS (Exported for Testability)
@@ -514,6 +515,9 @@ export class RadicalsPageController {
 
     // DOM Element References
     this.elements = {};
+
+    // Interactive Character Writing Subsystem
+    this.writingModal = null;
   }
 
   /**
@@ -522,6 +526,13 @@ export class RadicalsPageController {
   init() {
     this.bindDomElements();
     this.bindEvents();
+
+    // Initialize character writing modal controller if container exists
+    if (this.elements.modalWritingSection) {
+      this.writingModal = new CharacterWritingModal({
+        mountElement: this.elements.modalWritingSection
+      });
+    }
 
     // Deep-linking: Support ?category=common50 or ?category=all214 (and hash #common / #all)
     let initialTab = 'common';
@@ -584,16 +595,10 @@ export class RadicalsPageController {
       modalRadicalMeaning: document.getElementById('modalRadicalMeaning'),
       modalRadicalExplanationContainer: document.getElementById('modalRadicalExplanationContainer'),
       modalRadicalExplanation: document.getElementById('modalRadicalExplanation'),
-      modalVideoLessonSection: document.getElementById('modalVideoLessonSection'),
-      modalVideoLessonContainer: document.getElementById('modalVideoLessonContainer'),
-      modalVideoPlaceholder: document.getElementById('modalVideoPlaceholder'),
-      btnPlayVideoLesson: document.getElementById('btnPlayVideoLesson'),
-      modalVideoEmptyState: document.getElementById('modalVideoEmptyState'),
-      modalVideoExternalLink: document.getElementById('modalVideoExternalLink'),
-      modalVideoYouTubeLink: document.getElementById('modalVideoYouTubeLink'),
       modalVideoWritingSection: document.getElementById('modalVideoWritingSection'),
       modalVideoPlayer: document.getElementById('modalVideoPlayer'),
-      modalAudioPlayer: document.getElementById('modalAudioPlayer')
+      modalAudioPlayer: document.getElementById('modalAudioPlayer'),
+      modalWritingSection: document.getElementById('modalWritingSection')
     };
   }
 
@@ -672,13 +677,6 @@ export class RadicalsPageController {
         if (this.activeRadical) {
           playRadicalAudio(this.activeRadical, null, this.elements.modalHeroSpeakerBtn);
         }
-      });
-    }
-
-    // YouTube Video Lesson Play Button (Lazy load on explicit click)
-    if (this.elements.btnPlayVideoLesson) {
-      this.elements.btnPlayVideoLesson.addEventListener('click', () => {
-        this.playVideoLesson();
       });
     }
 
@@ -1101,55 +1099,14 @@ export class RadicalsPageController {
       }
     }
 
-    // 3. YouTube Video Lesson (Show placeholder if valid video exists; show empty state if null/unverified)
-    if (this.elements.modalVideoLessonSection) {
-      // Remove any existing iframes
-      if (this.elements.modalVideoLessonContainer) {
-        const existingIframe = this.elements.modalVideoLessonContainer.querySelector('iframe');
-        if (existingIframe) {
-          existingIframe.remove();
-        }
-      }
-
-      const embedUrl = radical.videoLessonUrl ? sanitizeYouTubeEmbedUrl(radical.videoLessonUrl) : null;
-      if (embedUrl) {
-        if (this.elements.modalVideoLessonContainer) {
-          this.elements.modalVideoLessonContainer.classList.remove('d-none');
-        }
-        if (this.elements.modalVideoPlaceholder) {
-          this.elements.modalVideoPlaceholder.classList.remove('d-none');
-        }
-        if (this.elements.modalVideoEmptyState) {
-          this.elements.modalVideoEmptyState.classList.add('d-none');
-        }
-        if (this.elements.modalVideoExternalLink) {
-          this.elements.modalVideoExternalLink.classList.add('d-none');
-        }
-        if (this.elements.modalVideoYouTubeLink) {
-          const match = embedUrl.match(/\/embed\/([a-zA-Z0-9_-]{11})/);
-          if (match) {
-            let targetUrl = `https://www.youtube.com/watch?v=${match[1]}`;
-            const startMatch = embedUrl.match(/[?&]start=(\d+)/);
-            if (startMatch) {
-              targetUrl += `&t=${startMatch[1]}s`;
-            }
-            this.elements.modalVideoYouTubeLink.href = targetUrl;
-          }
-        }
-      } else {
-        if (this.elements.modalVideoLessonContainer) {
-          this.elements.modalVideoLessonContainer.classList.add('d-none');
-        }
-        if (this.elements.modalVideoExternalLink) {
-          this.elements.modalVideoExternalLink.classList.add('d-none');
-        }
-        if (this.elements.modalVideoEmptyState) {
-          this.elements.modalVideoEmptyState.classList.remove('d-none');
-        }
-      }
+    // 2b. Interactive Character Writing Section (Cách viết / Luyện nét / Luyện viết)
+    if (this.writingModal && radical.character) {
+      this.writingModal.mount(radical.character).catch(err => {
+        console.error('[RadicalsPageController] Error mounting character writing modal:', err);
+      });
     }
 
-    // 4. Stroke Writing Video Demonstration (Optional)
+    // 3. Stroke Writing Video Demonstration (Optional)
     if (this.elements.modalVideoWritingSection && this.elements.modalVideoPlayer) {
       const rawWriting = radical.videoWritingUrl;
       const safeWriting = sanitizeResourceUrl(rawWriting);
@@ -1181,61 +1138,10 @@ export class RadicalsPageController {
   }
 
   /**
-   * Lazily loads the YouTube video lesson on explicit user click.
-   */
-  playVideoLesson() {
-    if (!this.activeRadical || !this.activeRadical.videoLessonUrl) return;
-    const embedUrl = sanitizeYouTubeEmbedUrl(this.activeRadical.videoLessonUrl);
-    if (!embedUrl || !this.elements.modalVideoLessonContainer) return;
-
-    // Hide placeholder
-    if (this.elements.modalVideoPlaceholder) {
-      this.elements.modalVideoPlaceholder.classList.add('d-none');
-    }
-
-    // Remove any lingering iframe
-    const existingIframe = this.elements.modalVideoLessonContainer.querySelector('iframe');
-    if (existingIframe) {
-      existingIframe.remove();
-    }
-
-    // Create secure iframe
-    const iframe = document.createElement('iframe');
-    iframe.src = embedUrl;
-    iframe.setAttribute('title', `Video bài giảng bộ thủ ${this.activeRadical.meaningHanViet || this.activeRadical.character}`);
-    iframe.setAttribute('frameborder', '0');
-    iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share');
-    iframe.setAttribute('allowfullscreen', 'true');
-    iframe.setAttribute('loading', 'lazy');
-    iframe.className = 'w-100 h-100 rounded';
-
-    this.elements.modalVideoLessonContainer.appendChild(iframe);
-
-    // Show external YouTube fallback link
-    if (this.elements.modalVideoExternalLink) {
-      this.elements.modalVideoExternalLink.classList.remove('d-none');
-    }
-  }
-
-  /**
-   * Closes the Detail Modal, destroys any video iframes, stops audio, and restores focus.
+   * Closes the Detail Modal, stops audio/video, and restores focus.
    */
   closeDetailModal() {
     if (!this.elements.modal) return;
-
-    // 1. Destroy YouTube iframe immediately to stop network/audio
-    if (this.elements.modalVideoLessonContainer) {
-      const iframe = this.elements.modalVideoLessonContainer.querySelector('iframe');
-      if (iframe) {
-        iframe.remove();
-      }
-    }
-    if (this.elements.modalVideoPlaceholder) {
-      this.elements.modalVideoPlaceholder.classList.remove('d-none');
-    }
-    if (this.elements.modalVideoExternalLink) {
-      this.elements.modalVideoExternalLink.classList.add('d-none');
-    }
 
     // 2. Stop audio & speech synthesis
     speechController.cancel();
@@ -1244,6 +1150,11 @@ export class RadicalsPageController {
     if (this.elements.modalVideoPlayer) {
       this.elements.modalVideoPlayer.pause();
       this.elements.modalVideoPlayer.removeAttribute('src');
+    }
+
+    // 3b. Stop and clean up interactive writing modal session
+    if (this.writingModal) {
+      this.writingModal.destroy();
     }
 
     // 4. Close dialog

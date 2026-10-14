@@ -127,3 +127,10 @@ playwright-report/
 /tests/verify-*.mjs
 /tests/generate-*.mjs
 /tests/visual-review-*.mjs
+# Playwright CLI output (may contain credentials)
+.playwright-cli/
+
+# Local artifacts & repo dumps
+/artifacts/
+repomix-output.xml
+

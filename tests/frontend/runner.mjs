@@ -39,6 +39,10 @@ function parseTier() {
   if (arg) {
     return arg.split('=')[1].trim().toLowerCase();
   }
+  const tierIndex = process.argv.indexOf('--tier');
+  if (tierIndex !== -1 && process.argv[tierIndex + 1]) {
+    return process.argv[tierIndex + 1].trim().toLowerCase();
+  }
   return 'full';
 }
 
@@ -64,12 +68,14 @@ function resolveTestFiles(tier) {
     'tests/frontend/unit/auth/auth-forms.test.mjs',
     'tests/frontend/unit/auth/profile-settings.test.mjs',
     'tests/frontend/unit/radicals/radicals-catalog.test.mjs',
+    'tests/frontend/unit/radicals/character-writing.test.mjs',
     'tests/frontend/unit/vocabulary/vocabulary-catalog.test.mjs',
     'tests/frontend/unit/lesson/lessons-catalog.test.mjs',
     'tests/frontend/unit/notes/notes-modal.test.mjs',
     'tests/frontend/unit/srs/srs-session.test.mjs',
     'tests/frontend/unit/srs/srs-dashboard.test.mjs',
     'tests/frontend/unit/srs/srs-speech-button.test.mjs',
+    'tests/frontend/unit/srs/srs-skill-writing.test.mjs',
     'tests/frontend/unit/ui/speech-controller.test.mjs',
     'tests/frontend/unit/vocabulary/vocabulary-pagination.test.mjs',
     'tests/frontend/unit/config/config.test.mjs',
@@ -85,11 +91,13 @@ function resolveTestFiles(tier) {
     'tests/frontend/e2e/api-auth.browser.mjs',
     'tests/frontend/e2e/auth-flow.browser.mjs',
     'tests/frontend/e2e/radicals.browser.mjs',
+    'tests/frontend/e2e/character-writing.browser.mjs',
     'tests/frontend/e2e/vocabulary.browser.mjs',
     'tests/frontend/e2e/lessons.browser.mjs',
     'tests/frontend/e2e/personal-notes.browser.mjs',
     'tests/frontend/e2e/srs-review.browser.mjs',
     'tests/frontend/e2e/srs-dashboard.browser.mjs',
+    'tests/frontend/e2e/vocabulary-srs-navigation.browser.mjs',
     'tests/frontend/e2e/verification-center.browser.mjs',
     'tests/frontend/e2e/creator-lessons.browser.mjs',
     'tests/frontend/e2e/creator-import.browser.mjs',

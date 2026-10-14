@@ -2,6 +2,7 @@ package com.elearning.service;
 
 import com.elearning.dto.request.ReviewCardRequest;
 import com.elearning.dto.response.DueCardResponse;
+import com.elearning.dto.response.LessonSrsStatsResponse;
 import com.elearning.dto.response.StudyStatsResponse;
 
 import java.util.List;
@@ -23,6 +24,23 @@ public interface SrsService {
     List<DueCardResponse> getDueCards(String itemType, Integer limit);
 
     /**
+     * Retrieves flashcards due for review filtered by optional itemType and cardType ("LISTENING", "WRITING", "READING").
+     */
+    List<DueCardResponse> getDueCards(String itemType, String cardType, Integer limit);
+
+    /**
+     * Retrieves flashcards due for review filtered by optional itemType, cardType, and lessonId.
+     * When lessonId is present, only returns cards belonging to that lesson,
+     * enforcing that the lesson is Approved or caller has permission.
+     */
+    List<DueCardResponse> getDueCards(String itemType, String cardType, Long lessonId, Integer limit);
+
+    /**
+     * Retrieves SRS review statistics for a specific lesson for the authenticated learner.
+     */
+    LessonSrsStatsResponse getLessonSrsStats(Long lessonId);
+
+    /**
      * Retrieves new-card candidates for an approved lesson for the current authenticated learner.
      * Candidates are unstudied vocabulary items belonging to the specified approved lesson,
      * ordered strictly by order_index ASC, constrained by remaining daily new-card quota (R1-DEC-02, R1-DEC-04).
@@ -33,6 +51,20 @@ public interface SrsService {
      * @return list of {@link DueCardResponse} candidate cards with isNew=true
      */
     List<DueCardResponse> getNewCardCandidates(Long lessonId, Integer limit);
+
+    List<DueCardResponse> getNewCardCandidates(Long lessonId, String cardType, Integer limit);
+
+    /**
+     * Retrieves all vocabulary cards for an approved lesson for free replay / practice (ADR-01 Mode B).
+     * Cards are ordered strictly by order_index ASC and are completely unaffected by daily limits
+     * or existing CardProgress. Creates zero CardProgress records and mutates zero SRS state.
+     *
+     * @param lessonId the approved lesson ID
+     * @return list of {@link DueCardResponse} cards in lesson order
+     */
+    List<DueCardResponse> getPracticeCards(Long lessonId);
+
+    List<DueCardResponse> getPracticeCards(Long lessonId, String cardType);
 
     /**
      * Processes a flashcard review rating submission from the authenticated learner.

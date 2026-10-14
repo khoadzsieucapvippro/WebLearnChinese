@@ -204,16 +204,6 @@ export function validateRadicalForm(data) {
     errors.explanationVi = 'Giải thích tiếng Việt không được vượt quá 1000 ký tự';
   }
 
-  // Video Lesson URL validation (Optional, max 500 chars, YouTube only)
-  const videoLessonUrl = typeof data.videoLessonUrl === 'string' ? data.videoLessonUrl.trim() : '';
-  if (videoLessonUrl) {
-    if (videoLessonUrl.length > 500) {
-      errors.videoLessonUrl = 'Đường dẫn video bài giảng không được vượt quá 500 ký tự';
-    } else if (!isValidYouTubeUrl(videoLessonUrl)) {
-      errors.videoLessonUrl = 'Đường dẫn video bài giảng phải là URL YouTube hợp lệ (youtube.com, youtu.be, youtube-nocookie.com)';
-    }
-  }
-
   // Common Rank validation (Optional, strictly 1..50 when present)
   const rawRank = data.commonRank !== undefined && data.commonRank !== null && String(data.commonRank).trim() !== ''
     ? Number(data.commonRank)
@@ -276,7 +266,6 @@ export function buildRadicalPayload(formData) {
   const audio = typeof formData.audioUrl === 'string' ? formData.audioUrl.trim() : '';
   const video = typeof formData.videoWritingUrl === 'string' ? formData.videoWritingUrl.trim() : '';
   const explanation = typeof formData.explanationVi === 'string' ? formData.explanationVi.trim() : '';
-  const lesson = typeof formData.videoLessonUrl === 'string' ? formData.videoLessonUrl.trim() : '';
 
   let commonRank = null;
   const rawRank = formData.commonRank !== undefined && formData.commonRank !== null && String(formData.commonRank).trim() !== ''
@@ -294,7 +283,6 @@ export function buildRadicalPayload(formData) {
     audioUrl: audio.length > 0 ? audio : null,
     videoWritingUrl: video.length > 0 ? video : null,
     explanationVi: explanation.length > 0 ? explanation : null,
-    videoLessonUrl: lesson.length > 0 ? lesson : null,
     commonRank: commonRank
   };
 }
@@ -472,7 +460,6 @@ export class AdminRadicalsPageController {
       inputAudioUrl: document.getElementById('inputAudioUrl'),
       inputVideoWritingUrl: document.getElementById('inputVideoWritingUrl'),
       inputExplanationVi: document.getElementById('inputExplanationVi'),
-      inputVideoLessonUrl: document.getElementById('inputVideoLessonUrl'),
       checkIsCommonRank: document.getElementById('checkIsCommonRank'),
       commonRankInputContainer: document.getElementById('commonRankInputContainer'),
       inputCommonRank: document.getElementById('inputCommonRank'),
@@ -483,7 +470,6 @@ export class AdminRadicalsPageController {
       errorAudioUrl: document.getElementById('errorAudioUrl'),
       errorVideoWritingUrl: document.getElementById('errorVideoWritingUrl'),
       errorExplanationVi: document.getElementById('errorExplanationVi'),
-      errorVideoLessonUrl: document.getElementById('errorVideoLessonUrl'),
       errorCommonRank: document.getElementById('errorCommonRank'),
       btnCancelFormModal: document.getElementById('btnCancelFormModal'),
       btnSaveRadical: document.getElementById('btnSaveRadical'),
@@ -829,22 +815,6 @@ export class AdminRadicalsPageController {
         mediaNodes.push(videoLink);
       }
     }
-    if (item.videoLessonUrl) {
-      const safeLesson = sanitizeResourceUrl(item.videoLessonUrl);
-      if (safeLesson && safeLesson !== 'about:blank') {
-        const lessonLink = createSafeElement('a', {
-          className: 'badge bg-light text-danger border text-decoration-none me-1',
-          text: '📺 Bài giảng',
-          attrs: {
-            href: safeLesson,
-            target: '_blank',
-            rel: 'noopener noreferrer',
-            title: `Xem video bài giảng: ${character}`
-          }
-        });
-        mediaNodes.push(lessonLink);
-      }
-    }
     if (mediaNodes.length === 0) {
       mediaNodes.push(createSafeElement('span', { className: 'text-muted small', text: '—' }));
     }
@@ -877,10 +847,15 @@ export class AdminRadicalsPageController {
     return createSafeElement('tr', {
       children: [
         // 1. ID
-        createSafeElement('td', { className: 'text-center text-secondary small', text: `#${id}` }),
+        createSafeElement('td', {
+          className: 'text-center text-secondary small',
+          attrs: { 'data-label': 'ID' },
+          text: `#${id}`
+        }),
         // 2. Character
         createSafeElement('td', {
           className: 'text-center',
+          attrs: { 'data-label': 'Ký tự' },
           children: [
             createSafeElement('span', { className: 'font-chinese fs-4 text-chinese-red fw-bold', text: character }),
             ...(item.commonRank !== null && item.commonRank !== undefined ? [
@@ -894,15 +869,35 @@ export class AdminRadicalsPageController {
           ]
         }),
         // 3. Pinyin
-        createSafeElement('td', { className: 'fw-semibold text-dark', text: pinyin }),
+        createSafeElement('td', {
+          className: 'fw-semibold text-dark',
+          attrs: { 'data-label': 'Pinyin' },
+          text: pinyin
+        }),
         // 4. Meaning Han-Viet
-        createSafeElement('td', { className: 'text-dark', text: meaningHanViet }),
+        createSafeElement('td', {
+          className: 'text-dark',
+          attrs: { 'data-label': 'Hán-Việt' },
+          text: meaningHanViet
+        }),
         // 5. Meaning Vietnamese
-        createSafeElement('td', { className: 'text-secondary', text: meaningVi }),
+        createSafeElement('td', {
+          className: 'text-secondary',
+          attrs: { 'data-label': 'Nghĩa tiếng Việt' },
+          text: meaningVi
+        }),
         // 6. Media
-        createSafeElement('td', { className: 'text-center', children: mediaNodes }),
+        createSafeElement('td', {
+          className: 'text-center',
+          attrs: { 'data-label': 'Media' },
+          children: mediaNodes
+        }),
         // 7. Actions
-        createSafeElement('td', { className: 'text-end pe-3 text-nowrap', children: [btnEdit, btnDelete] })
+        createSafeElement('td', {
+          className: 'text-end pe-3 text-nowrap',
+          attrs: { 'data-label': 'Thao tác' },
+          children: [btnEdit, btnDelete]
+        })
       ]
     });
   }
@@ -1045,7 +1040,6 @@ export class AdminRadicalsPageController {
     if (this.elements.inputAudioUrl) this.elements.inputAudioUrl.value = radical.audioUrl || '';
     if (this.elements.inputVideoWritingUrl) this.elements.inputVideoWritingUrl.value = radical.videoWritingUrl || '';
     if (this.elements.inputExplanationVi) this.elements.inputExplanationVi.value = radical.explanationVi || '';
-    if (this.elements.inputVideoLessonUrl) this.elements.inputVideoLessonUrl.value = radical.videoLessonUrl || '';
 
     // Handle commonRank toggle and input
     const hasCommonRank = radical.commonRank !== null && radical.commonRank !== undefined;
@@ -1101,7 +1095,6 @@ export class AdminRadicalsPageController {
     if (this.elements.inputAudioUrl) this.elements.inputAudioUrl.value = '';
     if (this.elements.inputVideoWritingUrl) this.elements.inputVideoWritingUrl.value = '';
     if (this.elements.inputExplanationVi) this.elements.inputExplanationVi.value = '';
-    if (this.elements.inputVideoLessonUrl) this.elements.inputVideoLessonUrl.value = '';
     if (this.elements.checkIsCommonRank) this.elements.checkIsCommonRank.checked = false;
     if (this.elements.commonRankInputContainer) this.elements.commonRankInputContainer.classList.add('d-none');
     if (this.elements.inputCommonRank) this.elements.inputCommonRank.value = '';
@@ -1118,7 +1111,7 @@ export class AdminRadicalsPageController {
 
     const fields = [
       'Character', 'Pinyin', 'MeaningHanViet', 'MeaningVi',
-      'AudioUrl', 'VideoWritingUrl', 'ExplanationVi', 'VideoLessonUrl', 'CommonRank'
+      'AudioUrl', 'VideoWritingUrl', 'ExplanationVi', 'CommonRank'
     ];
     fields.forEach(field => {
       const input = this.elements[`input${field}`];
@@ -1147,7 +1140,6 @@ export class AdminRadicalsPageController {
       audioUrl: this.elements.inputAudioUrl ? this.elements.inputAudioUrl.value : '',
       videoWritingUrl: this.elements.inputVideoWritingUrl ? this.elements.inputVideoWritingUrl.value : '',
       explanationVi: this.elements.inputExplanationVi ? this.elements.inputExplanationVi.value : '',
-      videoLessonUrl: this.elements.inputVideoLessonUrl ? this.elements.inputVideoLessonUrl.value : '',
       isCommonRank: isCommonRankChecked,
       commonRank: isCommonRankChecked ? (rawCommonRank !== '' ? Number(rawCommonRank) : null) : null
     };
@@ -1232,7 +1224,6 @@ export class AdminRadicalsPageController {
       audioUrl: 'AudioUrl',
       videoWritingUrl: 'VideoWritingUrl',
       explanationVi: 'ExplanationVi',
-      videoLessonUrl: 'VideoLessonUrl',
       commonRank: 'CommonRank'
     };
 

@@ -17,7 +17,8 @@ import assert from 'node:assert/strict';
 import {
   validateSrsSettings,
   calculateQuotaPercentage,
-  buildUpdateSettingsPayload
+  buildUpdateSettingsPayload,
+  SrsDashboardController
 } from '../../../../frontend/js/pages/srs-dashboard-page.js';
 
 describe('SRS Dashboard Unit Tests (Task 9C.4)', () => {
@@ -166,9 +167,12 @@ describe('SRS Dashboard Unit Tests (Task 9C.4)', () => {
 
   describe('Contract Verification: StudyStatsResponse & UserSrsSettingResponse', () => {
 
-    test('accepts backend-authoritative stats fields', () => {
+    test('accepts backend-authoritative stats fields including skill breakdowns', () => {
       const mockBackendStats = {
         cardsDue: 8,
+        cardsDueReading: 4,
+        cardsDueListening: 2,
+        cardsDueWriting: 2,
         reviewsToday: 12,
         newCardsToday: 5,
         newCardsLimit: 20,
@@ -176,6 +180,9 @@ describe('SRS Dashboard Unit Tests (Task 9C.4)', () => {
       };
 
       assert.ok('cardsDue' in mockBackendStats);
+      assert.ok('cardsDueReading' in mockBackendStats);
+      assert.ok('cardsDueListening' in mockBackendStats);
+      assert.ok('cardsDueWriting' in mockBackendStats);
       assert.ok('reviewsToday' in mockBackendStats);
       assert.ok('newCardsToday' in mockBackendStats);
       assert.ok('newCardsLimit' in mockBackendStats);
@@ -185,6 +192,9 @@ describe('SRS Dashboard Unit Tests (Task 9C.4)', () => {
     test('handles zero as valid data, not empty or error', () => {
       const mockZeroStats = {
         cardsDue: 0,
+        cardsDueReading: 0,
+        cardsDueListening: 0,
+        cardsDueWriting: 0,
         reviewsToday: 0,
         newCardsToday: 0,
         newCardsLimit: 20,
@@ -192,6 +202,9 @@ describe('SRS Dashboard Unit Tests (Task 9C.4)', () => {
       };
 
       assert.strictEqual(mockZeroStats.cardsDue, 0);
+      assert.strictEqual(mockZeroStats.cardsDueReading, 0);
+      assert.strictEqual(mockZeroStats.cardsDueListening, 0);
+      assert.strictEqual(mockZeroStats.cardsDueWriting, 0);
       assert.strictEqual(mockZeroStats.reviewsToday, 0);
       assert.strictEqual(mockZeroStats.newCardsToday, 0);
     });
@@ -205,6 +218,83 @@ describe('SRS Dashboard Unit Tests (Task 9C.4)', () => {
 
       assert.strictEqual(typeof mockBackendSettings.newCardsPerDay, 'number');
       assert.strictEqual(typeof mockBackendSettings.maxReviewPerDay, 'number');
+    });
+
+  });
+
+  describe('Rendering: renderStatistics & Multi-Skill Due Cards', () => {
+
+    test('renderStatistics assigns cardsDueReading, cardsDueListening, cardsDueWriting safely', () => {
+      const mockContext = {
+        statCardsDue: { textContent: '' },
+        statCardsDueReading: { textContent: '' },
+        statCardsDueListening: { textContent: '' },
+        statCardsDueWriting: { textContent: '' },
+        statReviewsToday: { textContent: '' },
+        statNewCardsToday: { textContent: '' },
+        statNewCardsQuotaText: { textContent: '' },
+        statNewCardsProgressBar: { style: {}, setAttribute: () => {} },
+        statNewCardsLimit: { textContent: '' }
+      };
+
+      SrsDashboardController.prototype.renderStatistics.call(mockContext, {
+        cardsDue: 9,
+        cardsDueReading: 4,
+        cardsDueListening: 3,
+        cardsDueWriting: 2,
+        reviewsToday: 5,
+        newCardsToday: 10,
+        newCardsLimit: 20
+      });
+
+      assert.strictEqual(mockContext.statCardsDue.textContent, '9');
+      assert.strictEqual(mockContext.statCardsDueReading.textContent, '4');
+      assert.strictEqual(mockContext.statCardsDueListening.textContent, '3');
+      assert.strictEqual(mockContext.statCardsDueWriting.textContent, '2');
+      assert.strictEqual(mockContext.statReviewsToday.textContent, '5');
+      assert.strictEqual(mockContext.statNewCardsToday.textContent, '10');
+      assert.strictEqual(mockContext.statNewCardsLimit.textContent, '20');
+    });
+
+    test('renderStatistics falls back to 0 when skill due card metrics are nullish', () => {
+      const mockContext = {
+        statCardsDue: { textContent: '' },
+        statCardsDueReading: { textContent: '' },
+        statCardsDueListening: { textContent: '' },
+        statCardsDueWriting: { textContent: '' },
+        statReviewsToday: { textContent: '' },
+        statNewCardsToday: { textContent: '' },
+        statNewCardsQuotaText: { textContent: '' },
+        statNewCardsProgressBar: { style: {}, setAttribute: () => {} },
+        statNewCardsLimit: { textContent: '' }
+      };
+
+      SrsDashboardController.prototype.renderStatistics.call(mockContext, {
+        cardsDue: 0
+      });
+
+      assert.strictEqual(mockContext.statCardsDue.textContent, '0');
+      assert.strictEqual(mockContext.statCardsDueReading.textContent, '0');
+      assert.strictEqual(mockContext.statCardsDueListening.textContent, '0');
+      assert.strictEqual(mockContext.statCardsDueWriting.textContent, '0');
+    });
+
+    test('renderStatistics safely handles nullish DOM targets without throwing', () => {
+      const mockContext = {
+        statCardsDue: null,
+        statCardsDueReading: null,
+        statCardsDueListening: null,
+        statCardsDueWriting: null
+      };
+
+      assert.doesNotThrow(() => {
+        SrsDashboardController.prototype.renderStatistics.call(mockContext, {
+          cardsDue: 5,
+          cardsDueReading: 2,
+          cardsDueListening: 2,
+          cardsDueWriting: 1
+        });
+      });
     });
 
   });

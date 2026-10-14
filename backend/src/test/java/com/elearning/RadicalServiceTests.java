@@ -384,12 +384,11 @@ class RadicalServiceTests {
     class LearningFieldsTests {
 
         @Test
-        @DisplayName("GIVEN valid learning fields WHEN createRadical THEN persists explanation, videoLessonUrl, commonRank")
+        @DisplayName("GIVEN valid learning fields WHEN createRadical THEN persists explanation and commonRank")
         void testCreateRadicalWithLearningFields() {
             com.elearning.dto.request.CreateRadicalRequest request = new com.elearning.dto.request.CreateRadicalRequest(
                     "木", "mù", "Mộc", "Cây cối", null, null,
-                    "Hình cây có thân, cành và rễ cắm sâu vào lòng đất.",
-                    "https://www.youtube.com/watch?v=kYv9b6-8D-w", 1
+                    "Hình cây có thân, cành và rễ cắm sâu vào lòng đất.", 1
             );
 
             when(radicalRepository.existsByCharacter("木")).thenReturn(false);
@@ -404,7 +403,6 @@ class RadicalServiceTests {
 
             assertThat(response).isNotNull();
             assertThat(response.getExplanationVi()).isEqualTo("Hình cây có thân, cành và rễ cắm sâu vào lòng đất.");
-            assertThat(response.getVideoLessonUrl()).isEqualTo("https://www.youtube.com/watch?v=kYv9b6-8D-w");
             assertThat(response.getCommonRank()).isEqualTo(1);
         }
 
@@ -413,7 +411,7 @@ class RadicalServiceTests {
         void testCreateRadicalDuplicateCommonRank() {
             com.elearning.dto.request.CreateRadicalRequest request = new com.elearning.dto.request.CreateRadicalRequest(
                     "木", "mù", "Mộc", "Cây cối", null, null,
-                    "Giải thích", "https://www.youtube.com/watch?v=kYv9b6-8D-w", 1
+                    "Giải thích", 1
             );
 
             when(radicalRepository.existsByCharacter("木")).thenReturn(false);
@@ -428,14 +426,14 @@ class RadicalServiceTests {
         @DisplayName("GIVEN invalid commonRank (< 1 or > 50) WHEN createRadical THEN throws VALIDATION_ERROR")
         void testCreateRadicalInvalidCommonRankRange() {
             com.elearning.dto.request.CreateRadicalRequest requestUnder = new com.elearning.dto.request.CreateRadicalRequest(
-                    "木", "mù", "Mộc", "Cây cối", null, null, null, null, 0
+                    "木", "mù", "Mộc", "Cây cối", null, null, null, 0
             );
             assertThatThrownBy(() -> radicalService.createRadical(requestUnder))
                     .isInstanceOf(BusinessException.class)
                     .satisfies(ex -> assertThat(((BusinessException) ex).getErrorCode()).isEqualTo(ErrorCode.VALIDATION_ERROR));
 
             com.elearning.dto.request.CreateRadicalRequest requestOver = new com.elearning.dto.request.CreateRadicalRequest(
-                    "木", "mù", "Mộc", "Cây cối", null, null, null, null, 51
+                    "木", "mù", "Mộc", "Cây cối", null, null, null, 51
             );
             assertThatThrownBy(() -> radicalService.createRadical(requestOver))
                     .isInstanceOf(BusinessException.class)
@@ -443,24 +441,11 @@ class RadicalServiceTests {
         }
 
         @Test
-        @DisplayName("GIVEN invalid or non-YouTube URL WHEN createRadical THEN throws VALIDATION_ERROR")
-        void testCreateRadicalInvalidYouTubeUrl() {
-            com.elearning.dto.request.CreateRadicalRequest badUrlReq = new com.elearning.dto.request.CreateRadicalRequest(
-                    "木", "mù", "Mộc", "Cây cối", null, null, null, "https://vimeo.com/123456", 1
-            );
-            when(radicalRepository.existsByCharacter("木")).thenReturn(false);
-
-            assertThatThrownBy(() -> radicalService.createRadical(badUrlReq))
-                    .isInstanceOf(BusinessException.class)
-                    .satisfies(ex -> assertThat(((BusinessException) ex).getErrorCode()).isEqualTo(ErrorCode.VALIDATION_ERROR));
-        }
-
-        @Test
-        @DisplayName("GIVEN valid YouTube nocookie embed URL WHEN updateRadical THEN succeeds")
-        void testUpdateRadicalValidYouTubeEmbed() {
+        @DisplayName("GIVEN valid learning fields WHEN updateRadical THEN succeeds")
+        void testUpdateRadicalWithLearningFields() {
             com.elearning.dto.request.UpdateRadicalRequest request = new com.elearning.dto.request.UpdateRadicalRequest(
                     "一", "yī", "Nhất", "Số một", null, null,
-                    "Nét ngang đơn giản biểu thị một.", "https://www.youtube-nocookie.com/embed/kYv9b6-8D-w", 2
+                    "Nét ngang đơn giản biểu thị một.", 2
             );
 
             when(radicalRepository.findById(1)).thenReturn(Optional.of(sampleRadical1));
@@ -471,7 +456,6 @@ class RadicalServiceTests {
 
             assertThat(response).isNotNull();
             assertThat(response.getExplanationVi()).isEqualTo("Nét ngang đơn giản biểu thị một.");
-            assertThat(response.getVideoLessonUrl()).isEqualTo("https://www.youtube-nocookie.com/embed/kYv9b6-8D-w");
             assertThat(response.getCommonRank()).isEqualTo(2);
         }
     }

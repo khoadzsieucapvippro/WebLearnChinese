@@ -6,6 +6,9 @@ package com.elearning.dto.response;
 public class StudyStatsResponse {
 
     private long cardsDue;
+    private long cardsDueListening;
+    private long cardsDueWriting;
+    private long cardsDueReading;
     private long reviewsToday;
     private int newCardsLimit;
     private int maxReviewLimit;
@@ -19,7 +22,18 @@ public class StudyStatsResponse {
     }
 
     public StudyStatsResponse(long cardsDue, long reviewsToday, int newCardsLimit, int maxReviewLimit, long newCardsToday) {
+        this(cardsDue, 0L, 0L, 0L, reviewsToday, newCardsLimit, maxReviewLimit, newCardsToday);
+    }
+
+    public StudyStatsResponse(long cardsDue, long cardsDueListening, long cardsDueWriting, long reviewsToday, int newCardsLimit, int maxReviewLimit, long newCardsToday) {
+        this(cardsDue, cardsDueListening, cardsDueWriting, 0L, reviewsToday, newCardsLimit, maxReviewLimit, newCardsToday);
+    }
+
+    public StudyStatsResponse(long cardsDue, long cardsDueListening, long cardsDueWriting, long cardsDueReading, long reviewsToday, int newCardsLimit, int maxReviewLimit, long newCardsToday) {
         this.cardsDue = cardsDue;
+        this.cardsDueListening = cardsDueListening;
+        this.cardsDueWriting = cardsDueWriting;
+        this.cardsDueReading = cardsDueReading;
         this.reviewsToday = reviewsToday;
         this.newCardsLimit = newCardsLimit;
         this.maxReviewLimit = maxReviewLimit;
@@ -32,6 +46,30 @@ public class StudyStatsResponse {
 
     public void setCardsDue(long cardsDue) {
         this.cardsDue = cardsDue;
+    }
+
+    public long getCardsDueListening() {
+        return cardsDueListening;
+    }
+
+    public void setCardsDueListening(long cardsDueListening) {
+        this.cardsDueListening = cardsDueListening;
+    }
+
+    public long getCardsDueWriting() {
+        return cardsDueWriting;
+    }
+
+    public void setCardsDueWriting(long cardsDueWriting) {
+        this.cardsDueWriting = cardsDueWriting;
+    }
+
+    public long getCardsDueReading() {
+        return cardsDueReading;
+    }
+
+    public void setCardsDueReading(long cardsDueReading) {
+        this.cardsDueReading = cardsDueReading;
     }
 
     public long getReviewsToday() {

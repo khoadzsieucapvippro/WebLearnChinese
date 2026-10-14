@@ -835,12 +835,18 @@ export class AdminVocabularyPageController {
       });
 
       // 1. ID Column
-      const tdId = createSafeElement('td', { className: 'text-center text-secondary small' });
+      const tdId = createSafeElement('td', {
+        className: 'text-center text-secondary small',
+        attrs: { 'data-label': 'ID' }
+      });
       tdId.appendChild(createSafeElement('code', { text: `#${item.vocabId}` }));
       tr.appendChild(tdId);
 
       // 2. Chữ Hán Column
-      const tdHanzi = createSafeElement('td', { className: 'text-center' });
+      const tdHanzi = createSafeElement('td', {
+        className: 'text-center',
+        attrs: { 'data-label': 'Chữ Hán' }
+      });
       const spanHanzi = createSafeElement('span', {
         className: 'font-chinese fs-4 fw-bold text-chinese-red',
         text: item.hanzi || '—'
@@ -851,6 +857,7 @@ export class AdminVocabularyPageController {
       // 3. Pinyin Column
       const tdPinyin = createSafeElement('td', {
         className: 'fw-semibold text-dark',
+        attrs: { 'data-label': 'Pinyin' },
         text: item.pinyin || '—'
       });
       tr.appendChild(tdPinyin);
@@ -858,6 +865,7 @@ export class AdminVocabularyPageController {
       // 4. Pinyin không dấu Column
       const tdPinyinRaw = createSafeElement('td', {
         className: 'text-secondary font-monospace small',
+        attrs: { 'data-label': 'Pinyin thô' },
         text: item.pinyinRaw || '—'
       });
       tr.appendChild(tdPinyinRaw);
@@ -865,6 +873,7 @@ export class AdminVocabularyPageController {
       // 5. Nghĩa Hán-Việt Column
       const tdHanViet = createSafeElement('td', {
         className: 'text-dark',
+        attrs: { 'data-label': 'Hán-Việt' },
         text: item.meaningHanViet || '—'
       });
       tr.appendChild(tdHanViet);
@@ -872,12 +881,16 @@ export class AdminVocabularyPageController {
       // 6. Nghĩa tiếng Việt Column
       const tdVi = createSafeElement('td', {
         className: 'text-dark',
+        attrs: { 'data-label': 'Nghĩa tiếng Việt' },
         text: item.meaningVi || '—'
       });
       tr.appendChild(tdVi);
 
       // 7. Media indicators
-      const tdMedia = createSafeElement('td', { className: 'text-center' });
+      const tdMedia = createSafeElement('td', {
+        className: 'text-center',
+        attrs: { 'data-label': 'Đa phương tiện' }
+      });
       const mediaGroup = createSafeElement('div', { className: 'd-flex justify-content-center gap-2' });
 
       if (item.audioUrl && isValidMediaUrl(item.audioUrl)) {
@@ -907,7 +920,10 @@ export class AdminVocabularyPageController {
       tr.appendChild(tdMedia);
 
       // 8. Actions Column
-      const tdActions = createSafeElement('td', { className: 'text-end pe-3' });
+      const tdActions = createSafeElement('td', {
+        className: 'text-end pe-3',
+        attrs: { 'data-label': 'Thao tác' }
+      });
       const actionGroup = createSafeElement('div', { className: 'btn-group btn-group-sm' });
 
       // Edit Button

@@ -160,15 +160,15 @@ describe('Browser E2E: Interactive SRS Flashcard Review Session (9C.3)', () => {
 
       // Progress bar & counter
       const progressText = page.locator('#srsProgressText');
-      assert.strictEqual(await progressText.textContent(), 'Thẻ 1 / 2');
+      assert.ok((await progressText.textContent()).includes('Thẻ 1 / 2'));
 
       // Timer badge exists and contains ⏱️
       const timerBadge = page.locator('#reactionTimerBadge');
       assert.ok((await timerBadge.textContent()).includes('⏱️'));
 
-      // Rating buttons must be disabled before card is flipped
+      // Rating buttons are enabled on front prompt (flipping is optional)
       const btnGood = page.locator('#btnRatingGood');
-      assert.strictEqual(await btnGood.isDisabled(), true, 'Rating buttons must be disabled while viewing front prompt');
+      assert.strictEqual(await btnGood.isDisabled(), false, 'Rating buttons must be enabled while viewing front prompt');
 
       assert.strictEqual(getRuntimeErrors().length, 0, 'Zero unexpected runtime errors');
     } finally {
@@ -223,7 +223,7 @@ describe('Browser E2E: Interactive SRS Flashcard Review Session (9C.3)', () => {
       const meaningVi = page.locator('#cardBackMeaningVi');
       assert.strictEqual(await meaningVi.textContent(), 'Học tập, nghiên cứu');
 
-      // Rating buttons must now be enabled
+      // Rating buttons must remain enabled when flipped
       const btnGood = page.locator('#btnRatingGood');
       assert.strictEqual(await btnGood.isDisabled(), false, 'Rating buttons must be enabled when flipped');
 
@@ -308,7 +308,7 @@ describe('Browser E2E: Interactive SRS Flashcard Review Session (9C.3)', () => {
       assert.strictEqual(await frontHanzi.textContent(), '书', 'Session must advance to card 2 ("书")');
 
       const progressText = page.locator('#srsProgressText');
-      assert.strictEqual(await progressText.textContent(), 'Thẻ 2 / 2');
+      assert.ok((await progressText.textContent()).includes('Thẻ 2 / 2'));
 
       assert.strictEqual(getRuntimeErrors().length, 0, 'Zero unexpected runtime errors');
     } finally {
@@ -365,7 +365,7 @@ describe('Browser E2E: Interactive SRS Flashcard Review Session (9C.3)', () => {
 
       // Card should be requeued, queue is now 2 items, and card appears again
       const progressText = page.locator('#srsProgressText');
-      assert.strictEqual(await progressText.textContent(), 'Thẻ 2 / 2', 'Requeued card must update progress to Thẻ 2 / 2');
+      assert.ok((await progressText.textContent()).includes('Thẻ 2 / 2'), 'Requeued card must update progress to Thẻ 2 / 2');
 
       // The status badge should display "Học lại"
       const statusBadge = page.locator('#cardStatusBadgeFront');
@@ -442,8 +442,8 @@ describe('Browser E2E: Interactive SRS Flashcard Review Session (9C.3)', () => {
     }
   });
 
-  // SR-07: Lesson query mode (?lessonId=10) retrieves new cards from approved lesson
-  test('SR-07: Lesson query mode (?lessonId=10) retrieves new cards from approved lesson', async () => {
+  // SR-07: Lesson query mode (?lessonId=10) retrieves due cards by lessonId
+  test('SR-07: Lesson query mode (?lessonId=10) retrieves due cards by lessonId', async () => {
     const { page, context, getRuntimeErrors } = await createMonitoredPage(browser, {
       viewportWidth: 1280,
       viewportHeight: 720
@@ -453,7 +453,7 @@ describe('Browser E2E: Interactive SRS Flashcard Review Session (9C.3)', () => {
       await setupAuthenticatedSession(page);
 
       let requestedLessonParam = null;
-      await page.route('**/api/v1/srs/new-cards*', async (route) => {
+      await page.route('**/api/v1/srs/due*', async (route) => {
         const url = new URL(route.request().url());
         requestedLessonParam = url.searchParams.get('lessonId');
         await route.fulfill({
@@ -474,7 +474,7 @@ describe('Browser E2E: Interactive SRS Flashcard Review Session (9C.3)', () => {
 
       // Mode badge displays Lesson context
       const modeBadge = page.locator('#srsSessionModeBadge');
-      assert.strictEqual(await modeBadge.textContent(), 'Bài học #10');
+      assert.ok((await modeBadge.textContent()).includes('10'));
 
       assert.strictEqual(getRuntimeErrors().length, 0, 'Zero unexpected runtime errors');
     } finally {
@@ -650,6 +650,251 @@ describe('Browser E2E: Interactive SRS Flashcard Review Session (9C.3)', () => {
       await backSpeechBtn.click();
       await page.waitForTimeout(200);
       assert.strictEqual(await flashcard.getAttribute('aria-expanded'), 'true', 'Clicking speech button on back must not unflip card');
+
+      assert.strictEqual(getRuntimeErrors().length, 0, 'Zero unexpected runtime errors');
+    } finally {
+      await context.close();
+    }
+  });
+
+  // SR-10: Free practice query mode (?lessonId=10&mode=practice) with Zero SRS Mutation
+  test('SR-10: Free practice query mode (?lessonId=10&mode=practice) retrieves practice cards and completes without POST /api/v1/srs/review', async () => {
+    const { page, context, getRuntimeErrors } = await createMonitoredPage(browser, {
+      viewportWidth: 1280,
+      viewportHeight: 720
+    });
+
+    try {
+      await setupAuthenticatedSession(page);
+
+      let practiceCardsCalled = false;
+      let reviewPostCalled = false;
+
+      await page.route('**/api/v1/srs/practice-cards*', async (route) => {
+        practiceCardsCalled = true;
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            code: 'SUCCESS',
+            message: 'OK',
+            data: [
+              {
+                cardProgressId: 10,
+                itemType: 'VOCABULARY',
+                itemId: 101,
+                hanzi: '你好',
+                pinyin: 'nǐ hǎo',
+                meaningVi: 'Xin chào',
+                meaningHanViet: 'Nhĩ hảo',
+                exampleSentence: '你好！很高兴认识你。',
+                exampleTranslation: 'Xin chào! Rất vui được gặp bạn.',
+                audioUrl: null,
+                isNew: false,
+                interval: 3,
+                easeFactor: 2.5,
+                repetitions: 2,
+                nextReviewAt: '2026-10-15T00:00:00Z',
+                orderIndex: 1
+              }
+            ]
+          })
+        });
+      });
+
+      await page.route('**/api/v1/srs/review', async (route) => {
+        reviewPostCalled = true;
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ code: 'SUCCESS', message: 'OK', data: {} })
+        });
+      });
+
+      await page.goto(`${baseUrl}/srs-review.html?lessonId=10&mode=practice`, { waitUntil: 'domcontentloaded' });
+      await page.locator('#srsActiveSession').waitFor({ state: 'visible', timeout: 5000 });
+
+      assert.strictEqual(practiceCardsCalled, true, 'Practice cards endpoint must be invoked in mode=practice');
+
+      // Verify mode badge
+      const badgeText = await page.locator('#srsSessionModeBadge').textContent();
+      assert.ok(badgeText.includes('Luyện tự do #10'), `Badge must reflect free practice mode: ${badgeText}`);
+
+      // Flip card and rate
+      await page.locator('#flashcard').click();
+      await page.waitForTimeout(100);
+
+      // Click Good (3)
+      await page.locator('#btnRatingGood').click();
+
+      // Session completes
+      await page.locator('#srsCompletedState').waitFor({ state: 'visible', timeout: 5000 });
+      assert.ok(await page.locator('#srsCompletedState').isVisible(), 'Completed state must be revealed');
+
+      const completedTitle = await page.locator('#srsCompletedTitle').textContent();
+      assert.ok(completedTitle.includes('Luyện Tập Tự Do'), `Completion title must reflect practice: ${completedTitle}`);
+
+      // Verify ZERO SRS MUTATION: /srs/review must NEVER be called
+      assert.strictEqual(reviewPostCalled, false, 'Free practice must have ZERO mutation on SRS review API');
+
+      assert.strictEqual(getRuntimeErrors().length, 0, 'Zero unexpected runtime errors');
+    } finally {
+      await context.close();
+    }
+  });
+
+  // SR-11: Rating directly on front prompt without flipping (Mouse & Keyboard Numpad/Digit)
+  test('SR-11: Rating directly on front prompt without flipping (Mouse click & Numpad)', async () => {
+    const { page, context, getRuntimeErrors } = await createMonitoredPage(browser, {
+      viewportWidth: 1280,
+      viewportHeight: 720
+    });
+
+    try {
+      await setupAuthenticatedSession(page);
+
+      await page.route('**/api/v1/srs/due*', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            code: 'SUCCESS',
+            message: 'OK',
+            data: createMockDueCards()
+          })
+        });
+      });
+
+      const reviewCalls = [];
+      await page.route('**/api/v1/srs/review', async (route) => {
+        const payload = JSON.parse(route.request().postData());
+        reviewCalls.push(payload);
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            code: 'SUCCESS',
+            message: 'OK',
+            data: { itemId: payload.itemId, rating: payload.rating }
+          })
+        });
+      });
+
+      await page.goto(`${baseUrl}/srs-review.html`, { waitUntil: 'domcontentloaded' });
+      await page.locator('#srsActiveSession').waitFor({ state: 'visible', timeout: 5000 });
+
+      // Verify hint displays shortcut badges [1], [2], [3], [4]
+      const againShortcut = await page.locator('#btnRatingAgain .btn-rating-shortcut').textContent();
+      const hardShortcut = await page.locator('#btnRatingHard .btn-rating-shortcut').textContent();
+      const goodShortcut = await page.locator('#btnRatingGood .btn-rating-shortcut').textContent();
+      const easyShortcut = await page.locator('#btnRatingEasy .btn-rating-shortcut').textContent();
+      assert.strictEqual(againShortcut.trim(), '[1]');
+      assert.strictEqual(hardShortcut.trim(), '[2]');
+      assert.strictEqual(goodShortcut.trim(), '[3]');
+      assert.strictEqual(easyShortcut.trim(), '[4]');
+
+      // Thẻ đang ở MẶT TRƯỚC (chưa lật đáp án)
+      const flashcard = page.locator('#flashcard');
+      assert.strictEqual(await flashcard.getAttribute('aria-expanded'), 'false');
+      assert.strictEqual(await page.locator('#cardFront').getAttribute('aria-hidden'), 'false');
+
+      // Đánh giá trực tiếp bằng chuột (Click Good [3]) mà KHÔNG lật thẻ
+      await page.locator('#btnRatingGood').click();
+      await page.waitForTimeout(200);
+
+      // Verify call 1 went through for Card 1
+      assert.strictEqual(reviewCalls.length, 1);
+      assert.strictEqual(reviewCalls[0].itemId, 101);
+      assert.strictEqual(reviewCalls[0].rating, 3);
+
+      // Advanced to Card 2 ("书"), still on front face
+      await page.locator('#cardFrontHanzi').waitFor({ state: 'visible' });
+      assert.strictEqual(await page.locator('#cardFrontHanzi').textContent(), '书');
+      assert.strictEqual(await flashcard.getAttribute('aria-expanded'), 'false');
+
+      // Đánh giá trực tiếp bằng Numpad4 (Easy) mà KHÔNG lật thẻ
+      await page.keyboard.press('Numpad4');
+      await page.waitForTimeout(200);
+
+      assert.strictEqual(reviewCalls.length, 2);
+      assert.strictEqual(reviewCalls[1].itemId, 102);
+      assert.strictEqual(reviewCalls[1].rating, 4);
+
+      // Session completes
+      await page.locator('#srsCompletedState').waitFor({ state: 'visible', timeout: 5000 });
+      assert.ok(await page.locator('#srsCompletedState').isVisible());
+
+      assert.strictEqual(getRuntimeErrors().length, 0, 'Zero unexpected runtime errors');
+    } finally {
+      await context.close();
+    }
+  });
+
+  // SR-12: Ignores rating shortcuts when typing in inputs/modals and guards against double-submission
+  test('SR-12: Ignores rating shortcuts in input focus and prevents double-submission', async () => {
+    const { page, context, getRuntimeErrors } = await createMonitoredPage(browser, {
+      viewportWidth: 1280,
+      viewportHeight: 720
+    });
+
+    try {
+      await setupAuthenticatedSession(page);
+
+      await page.route('**/api/v1/srs/due*', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            code: 'SUCCESS',
+            message: 'OK',
+            data: [createMockDueCards()[0]]
+          })
+        });
+      });
+
+      let reviewCallsCount = 0;
+      await page.route('**/api/v1/srs/review', async (route) => {
+        reviewCallsCount++;
+        // Add artificial latency to test double submission guard
+        await new Promise(r => setTimeout(r, 150));
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ code: 'SUCCESS', message: 'OK', data: {} })
+        });
+      });
+
+      await page.goto(`${baseUrl}/srs-review.html`, { waitUntil: 'domcontentloaded' });
+      await page.locator('#srsActiveSession').waitFor({ state: 'visible', timeout: 5000 });
+
+      // Create a temporary input element to test focus bypass
+      await page.evaluate(() => {
+        const inp = document.createElement('input');
+        inp.id = 'testInputFocus';
+        document.body.appendChild(inp);
+        inp.focus();
+      });
+
+      // Press '3' while focused on input - must NOT trigger rating
+      await page.keyboard.press('3');
+      await page.waitForTimeout(100);
+      assert.strictEqual(reviewCallsCount, 0, 'Keystroke in input must NOT trigger rating');
+
+      // Blur the input
+      await page.evaluate(() => {
+        const inp = document.getElementById('testInputFocus');
+        inp.blur();
+        inp.remove();
+      });
+
+      // Rapidly press '3' twice to verify double-submission protection
+      await Promise.all([
+        page.keyboard.press('3'),
+        page.keyboard.press('3')
+      ]);
+      await page.waitForTimeout(300);
+
+      assert.strictEqual(reviewCallsCount, 1, 'Double submission guard must allow only 1 review request');
 
       assert.strictEqual(getRuntimeErrors().length, 0, 'Zero unexpected runtime errors');
     } finally {

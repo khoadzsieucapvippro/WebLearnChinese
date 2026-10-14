@@ -105,6 +105,23 @@ describe('Browser E2E: Adversarial DOM XSS Prevention & Safe Rendering Audit (Ta
         });
       });
 
+      await page.route('**/api/v1/srs/stats*', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            code: 'SUCCESS',
+            message: 'OK',
+            data: {
+              reviewsToday: 5,
+              newCardsToday: 2,
+              cardsDue: 0,
+              retentionRate: 90
+            }
+          })
+        });
+      });
+
       await page.route('**/api/v1/vocabularies/101/notes*', async (route) => {
         if (route.request().method() === 'GET') {
           await route.fulfill({

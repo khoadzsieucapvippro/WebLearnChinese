@@ -673,11 +673,13 @@ export class CreatorLessonsPageController {
           // ID
           createSafeElement('td', {
             className: 'text-center font-monospace small text-muted',
+            attrs: { 'data-label': 'ID' },
             text: `#${item.lessonId}`
           }),
 
           // Title
           createSafeElement('td', {
+            attrs: { 'data-label': 'Tiêu đề' },
             children: [
               createSafeElement('span', {
                 className: 'fw-bold text-dark d-block',
@@ -689,6 +691,7 @@ export class CreatorLessonsPageController {
           // Status Badge
           createSafeElement('td', {
             className: 'text-center',
+            attrs: { 'data-label': 'Trạng thái' },
             children: [
               createSafeElement('span', {
                 className: getStatusBadgeClass(item.status),
@@ -700,6 +703,7 @@ export class CreatorLessonsPageController {
           // Vocabulary count
           createSafeElement('td', {
             className: 'text-center',
+            attrs: { 'data-label': 'Số từ vựng' },
             children: [
               createSafeElement('span', {
                 className: 'badge rounded-pill bg-light text-dark border',
@@ -711,12 +715,14 @@ export class CreatorLessonsPageController {
           // Updated date
           createSafeElement('td', {
             className: 'text-center small text-secondary',
+            attrs: { 'data-label': 'Cập nhật' },
             text: formatLessonDate(item.updatedAt || item.createdAt)
           }),
 
           // Actions
           createSafeElement('td', {
             className: 'text-end pe-3',
+            attrs: { 'data-label': 'Thao tác' },
             children: [
               createSafeElement('div', {
                 className: 'd-flex align-items-center justify-content-end gap-2 flex-wrap',

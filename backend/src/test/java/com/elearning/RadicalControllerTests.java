@@ -78,11 +78,11 @@ class RadicalControllerTests {
         objectMapper = new ObjectMapper();
 
         sampleSummary = new RadicalResponse(1, "一", "yī", "Nhất", "Một",
-                "http://audio.mp3", "http://video.mp4", "Nét ngang một", "https://www.youtube.com/watch?v=kYv9b6-8D-w", 1);
+                "http://audio.mp3", "http://video.mp4", "Nét ngang một", 1);
 
         sampleDetail = new RadicalDetailResponse(1, "一", "yī", "Nhất", "Một",
                 "http://audio.mp3", "http://video.mp4",
-                "Nét ngang một", "https://www.youtube.com/watch?v=kYv9b6-8D-w", 1,
+                "Nét ngang một", 1,
                 LocalDateTime.of(2026, 1, 1, 10, 0),
                 LocalDateTime.of(2026, 1, 2, 12, 0));
     }
@@ -132,7 +132,7 @@ class RadicalControllerTests {
                     .andExpect(jsonPath("$.data.audioUrl").value("http://audio.mp3"))
                     .andExpect(jsonPath("$.data.videoWritingUrl").value("http://video.mp4"))
                     .andExpect(jsonPath("$.data.explanationVi").value("Nét ngang một"))
-                    .andExpect(jsonPath("$.data.videoLessonUrl").value("https://www.youtube.com/watch?v=kYv9b6-8D-w"))
+                    .andExpect(jsonPath("$.data.videoLessonUrl").doesNotExist())
                     .andExpect(jsonPath("$.data.commonRank").value(1));
         }
 
@@ -211,7 +211,7 @@ class RadicalControllerTests {
         @DisplayName("GIVEN invalid commonRank WHEN POST /api/v1/admin/radicals THEN returns 400 VALIDATION_ERROR")
         void testCreateRadicalInvalidCommonRank() throws Exception {
             CreateRadicalRequest invalidRequest = new CreateRadicalRequest(
-                    "口", "kǒu", "Khẩu", "Miệng", null, null, null, null, 99
+                    "口", "kǒu", "Khẩu", "Miệng", null, null, null, 99
             );
 
             adminMockMvc.perform(post("/api/v1/admin/radicals")

@@ -38,6 +38,9 @@ public class ReviewLog {
     @Column(name = "item_id", nullable = false)
     private Long itemId;
 
+    @Column(name = "card_type", nullable = false, length = 20)
+    private String cardType = "LISTENING";
+
     @Column(name = "rating", nullable = false)
     private Byte rating;
 
@@ -57,9 +60,14 @@ public class ReviewLog {
     }
 
     public ReviewLog(UserProfile user, String itemType, Long itemId, Byte rating, Integer intervalBefore, Integer intervalAfter, Integer reviewTimeSeconds) {
+        this(user, itemType, itemId, "LISTENING", rating, intervalBefore, intervalAfter, reviewTimeSeconds);
+    }
+
+    public ReviewLog(UserProfile user, String itemType, Long itemId, String cardType, Byte rating, Integer intervalBefore, Integer intervalAfter, Integer reviewTimeSeconds) {
         this.user = user;
         this.itemType = itemType;
         this.itemId = itemId;
+        this.cardType = cardType != null ? cardType : "LISTENING";
         this.rating = rating;
         this.intervalBefore = intervalBefore;
         this.intervalAfter = intervalAfter;
@@ -67,7 +75,11 @@ public class ReviewLog {
     }
 
     public ReviewLog(UserProfile user, String itemType, Long itemId, Integer rating, Integer intervalBefore, Integer intervalAfter, Integer reviewTimeSeconds) {
-        this(user, itemType, itemId, rating != null ? rating.byteValue() : null, intervalBefore, intervalAfter, reviewTimeSeconds);
+        this(user, itemType, itemId, "LISTENING", rating != null ? rating.byteValue() : null, intervalBefore, intervalAfter, reviewTimeSeconds);
+    }
+
+    public ReviewLog(UserProfile user, String itemType, Long itemId, String cardType, Integer rating, Integer intervalBefore, Integer intervalAfter, Integer reviewTimeSeconds) {
+        this(user, itemType, itemId, cardType, rating != null ? rating.byteValue() : null, intervalBefore, intervalAfter, reviewTimeSeconds);
     }
 
     @PrePersist
@@ -107,6 +119,14 @@ public class ReviewLog {
 
     public void setItemId(Long itemId) {
         this.itemId = itemId;
+    }
+
+    public String getCardType() {
+        return cardType;
+    }
+
+    public void setCardType(String cardType) {
+        this.cardType = cardType;
     }
 
     public Byte getRating() {

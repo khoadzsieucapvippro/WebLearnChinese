@@ -23,6 +23,8 @@ public interface ReviewLogRepository extends JpaRepository<ReviewLog, Long> {
 
     List<ReviewLog> findByUserAndItemTypeAndItemIdOrderByReviewedAtDesc(UserProfile user, String itemType, Long itemId);
 
+    boolean existsByUserAndItemTypeAndItemId(UserProfile user, String itemType, Long itemId);
+
     long countByUserAndReviewedAtGreaterThanEqual(UserProfile user, LocalDateTime startOfDay);
 
     long countByUserAndItemTypeAndReviewedAtGreaterThanEqual(UserProfile user, String itemType, LocalDateTime startOfDay);

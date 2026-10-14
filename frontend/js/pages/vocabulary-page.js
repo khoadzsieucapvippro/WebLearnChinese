@@ -24,6 +24,7 @@ import { createSafeElement, clearContainer, sanitizeResourceUrl, sanitizeNavigat
 import { setComponentState, showToast, createSpeakerIcon, createSpeechButton } from '../ui/ui.js';
 import { openNotesModal } from '../ui/notes-modal.js';
 import { speechController, speakHanzi, isSpeechSynthesisAvailable, SpeechState } from '../ui/speech.js';
+import { authManager } from '../auth/auth-state.js';
 
 export { createSpeakerIcon, createSpeechButton, speechController, speakHanzi, isSpeechSynthesisAvailable, SpeechState };
 
@@ -94,6 +95,47 @@ export function calculatePagination(totalElements, pageIndex, pageSize, maxButto
     endIndex,
     startPage,
     endPage
+  };
+}
+
+/**
+ * Calculates learning group overview metrics and status label.
+ * 
+ * @param {Object} options
+ * @param {number} [options.totalElements=0]
+ * @param {Object|null} [options.studyStats=null]
+ * @param {number} [options.selectedHsk=1]
+ * @returns {{ totalWords: number, learnedWords: number|null, dueWords: number|null, hskLevel: number, statusLabel: string }}
+ */
+export function calculateVocabGroupMetrics({ totalElements = 0, studyStats = null, selectedHsk = 1 } = {}) {
+  const totalWords = Math.max(0, Number(totalElements) || 0);
+  const hskLevel = [1, 2, 3].includes(Number(selectedHsk)) ? Number(selectedHsk) : 1;
+
+  let learnedWords = null;
+  let dueWords = null;
+  let reviewsToday = 0;
+  let newCardsToday = 0;
+
+  if (studyStats && typeof studyStats === 'object') {
+    dueWords = typeof studyStats.cardsDue === 'number' ? Math.max(0, studyStats.cardsDue) : null;
+    reviewsToday = typeof studyStats.reviewsToday === 'number' ? Math.max(0, studyStats.reviewsToday) : 0;
+    newCardsToday = typeof studyStats.newCardsToday === 'number' ? Math.max(0, studyStats.newCardsToday) : 0;
+    learnedWords = reviewsToday + newCardsToday;
+  }
+
+  let statusLabel = `Cấp độ HSK ${hskLevel}`;
+  if (dueWords !== null && dueWords > 0) {
+    statusLabel = `Có ${dueWords} thẻ đến hạn ôn`;
+  } else if (totalWords > 0) {
+    statusLabel = `Sẵn sàng học tập (${totalWords} từ)`;
+  }
+
+  return {
+    totalWords,
+    learnedWords,
+    dueWords,
+    hskLevel,
+    statusLabel
   };
 }
 
@@ -197,6 +239,15 @@ export class VocabularyPageController {
       vocabCategoryBadge: document.getElementById('vocabCategoryBadge'),
       vocabPageHeading: document.getElementById('vocabPageHeading'),
       vocabPageSubheading: document.getElementById('vocabPageSubheading'),
+
+      // Learning Group Overview Elements
+      groupBanner: document.getElementById('vocabGroupBanner'),
+      groupTotalCount: document.getElementById('vocabGroupTotalCount'),
+      groupLearnedCount: document.getElementById('vocabGroupLearnedCount'),
+      groupDueCount: document.getElementById('vocabGroupDueCount'),
+      groupStatusBadge: document.getElementById('vocabGroupStatusBadge'),
+      vocabBtnSrsReview: document.getElementById('vocabBtnSrsReview'),
+      vocabBtnExploreLessons: document.getElementById('vocabBtnExploreLessons'),
 
       modal: document.getElementById('vocabDetailModal'),
       modalCloseBtn: document.getElementById('modalCloseBtn'),
@@ -366,6 +417,49 @@ export class VocabularyPageController {
         }
       });
     });
+  }
+
+  /**
+   * Updates learning group overview banner and real learner metrics.
+   * 
+   * @param {number} totalElements
+   */
+  async updateGroupOverview(totalElements = 0) {
+    let studyStats = null;
+    if (authManager.isAuthenticated()) {
+      try {
+        const statsRes = await apiClient('/srs/stats');
+        studyStats = (statsRes && statsRes.data) ? statsRes.data : statsRes;
+      } catch {
+        studyStats = null;
+      }
+    }
+
+    const metrics = calculateVocabGroupMetrics({
+      totalElements,
+      studyStats,
+      selectedHsk: this.selectedHsk
+    });
+
+    if (this.elements.groupTotalCount) {
+      this.elements.groupTotalCount.textContent = `${metrics.totalWords} từ`;
+    }
+    if (this.elements.groupLearnedCount) {
+      this.elements.groupLearnedCount.textContent = metrics.learnedWords !== null ? `${metrics.learnedWords} thẻ` : '—';
+    }
+    if (this.elements.groupDueCount) {
+      this.elements.groupDueCount.textContent = metrics.dueWords !== null ? `${metrics.dueWords} thẻ` : '—';
+    }
+    if (this.elements.groupStatusBadge) {
+      this.elements.groupStatusBadge.textContent = metrics.statusLabel;
+    }
+    if (this.elements.vocabBtnSrsReview) {
+      if (metrics.dueWords !== null && metrics.dueWords > 0) {
+        this.elements.vocabBtnSrsReview.textContent = `Ôn tập SRS (${metrics.dueWords} thẻ)`;
+      } else {
+        this.elements.vocabBtnSrsReview.textContent = 'Ôn tập SRS ngay';
+      }
+    }
   }
 
   /**
@@ -618,6 +712,7 @@ export class VocabularyPageController {
         }
 
         this.updateResultCountBadge(0, 0);
+        this.updateGroupOverview(0);
         return;
       }
 
@@ -626,6 +721,7 @@ export class VocabularyPageController {
       this.renderGrid(parsed.items);
       this.renderPagination(parsed);
       this.updateResultCountBadge(parsed.items.length, parsed.totalElements);
+      this.updateGroupOverview(parsed.totalElements);
 
     } catch (err) {
       // Ignore intentional aborts from subsequent typing
@@ -730,6 +826,15 @@ export class VocabularyPageController {
       });
 
       const cardActions = createSafeElement('div', { className: 'd-flex align-items-center gap-1' });
+
+      const hskLevel = vocab.hskLevel || this.selectedHsk;
+      if (hskLevel) {
+        const hskBadge = createSafeElement('span', {
+          className: 'vocab-hsk-badge',
+          text: `HSK ${hskLevel}`
+        });
+        cardActions.appendChild(hskBadge);
+      }
 
       const noteBtn = createSafeElement('button', {
         className: 'vocab-speech-btn vocab-card-note-btn',

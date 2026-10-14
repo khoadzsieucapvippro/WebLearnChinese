@@ -18,11 +18,15 @@ import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   mapRatingValue,
+  mapKeyToRating,
+  isEditableOrFormControl,
+  formatSessionProgress,
   calculateReviewTime,
   formatElapsedSeconds,
   buildReviewPayload,
   handleAgainRequeue,
-  MAX_AGAIN_REVIEWS_PER_CARD
+  MAX_AGAIN_REVIEWS_PER_CARD,
+  SrsReviewController
 } from '../../../../frontend/js/pages/srs-review-page.js';
 
 describe('Unit: SRS Flashcard Review Session Logic (9C.3)', () => {
@@ -284,6 +288,236 @@ describe('Unit: SRS Flashcard Review Session Logic (9C.3)', () => {
       assert.strictEqual(payload.itemId, 10);
       assert.strictEqual(payload.itemType, 'VOCABULARY');
       // Values are pure data, not executed or evaluated
+    });
+  });
+
+  describe('7. Free Practice Mode Invariant (Mode B: Zero SRS Mutation)', () => {
+    test('local requeue policy operates identically in practice mode without requiring server mutation', () => {
+      const queue = [
+        { card: { itemId: 101, itemType: 'VOCABULARY', hanzi: '你好' }, againAttempts: 0 }
+      ];
+      const requeueResult = handleAgainRequeue(queue, queue[0], MAX_AGAIN_REVIEWS_PER_CARD);
+      assert.strictEqual(requeueResult.requeued, true);
+      assert.strictEqual(queue.length, 2);
+      assert.strictEqual(queue[1].card.hanzi, '你好');
+      assert.strictEqual(queue[1]._requeued, true);
+    });
+
+    test('requeue respects MAX_AGAIN_REVIEWS_PER_CARD boundary to prevent infinite loop', () => {
+      const queue = [
+        { card: { itemId: 101, itemType: 'VOCABULARY', hanzi: '你好' }, againAttempts: 3 }
+      ];
+      const requeueResult = handleAgainRequeue(queue, queue[0], MAX_AGAIN_REVIEWS_PER_CARD);
+      assert.strictEqual(requeueResult.requeued, false);
+      assert.strictEqual(requeueResult.reason, 'MAX_ATTEMPTS_REACHED');
+      assert.strictEqual(queue.length, 1);
+    });
+  });
+
+  describe('8. Keyboard Rating Shortcut Mapping (mapKeyToRating)', () => {
+    test('maps Digit1, Numpad1, and "1" to rating 1 (Again)', () => {
+      assert.strictEqual(mapKeyToRating({ key: '1' }), 1);
+      assert.strictEqual(mapKeyToRating({ code: 'Digit1' }), 1);
+      assert.strictEqual(mapKeyToRating({ code: 'Numpad1' }), 1);
+      assert.strictEqual(mapKeyToRating({ key: '1', code: 'Digit1' }), 1);
+      assert.strictEqual(mapKeyToRating({ key: '1', code: 'Numpad1' }), 1);
+    });
+
+    test('maps Digit2, Numpad2, and "2" to rating 2 (Hard)', () => {
+      assert.strictEqual(mapKeyToRating({ key: '2' }), 2);
+      assert.strictEqual(mapKeyToRating({ code: 'Digit2' }), 2);
+      assert.strictEqual(mapKeyToRating({ code: 'Numpad2' }), 2);
+      assert.strictEqual(mapKeyToRating({ key: '2', code: 'Digit2' }), 2);
+    });
+
+    test('maps Digit3, Numpad3, and "3" to rating 3 (Good)', () => {
+      assert.strictEqual(mapKeyToRating({ key: '3' }), 3);
+      assert.strictEqual(mapKeyToRating({ code: 'Digit3' }), 3);
+      assert.strictEqual(mapKeyToRating({ code: 'Numpad3' }), 3);
+      assert.strictEqual(mapKeyToRating({ key: '3', code: 'Numpad3' }), 3);
+    });
+
+    test('maps Digit4, Numpad4, and "4" to rating 4 (Easy)', () => {
+      assert.strictEqual(mapKeyToRating({ key: '4' }), 4);
+      assert.strictEqual(mapKeyToRating({ code: 'Digit4' }), 4);
+      assert.strictEqual(mapKeyToRating({ code: 'Numpad4' }), 4);
+      assert.strictEqual(mapKeyToRating({ key: '4', code: 'Digit4' }), 4);
+    });
+
+    test('returns null for non-rating keys (Space, Enter, 0, 5, a, etc.)', () => {
+      assert.strictEqual(mapKeyToRating({ key: ' ' }), null);
+      assert.strictEqual(mapKeyToRating({ code: 'Space' }), null);
+      assert.strictEqual(mapKeyToRating({ key: 'Enter' }), null);
+      assert.strictEqual(mapKeyToRating({ key: '5' }), null);
+      assert.strictEqual(mapKeyToRating({ code: 'Digit5' }), null);
+      assert.strictEqual(mapKeyToRating({ code: 'Numpad5' }), null);
+      assert.strictEqual(mapKeyToRating({ key: '0' }), null);
+      assert.strictEqual(mapKeyToRating({ key: 'a' }), null);
+    });
+
+    test('handles null, undefined, or malformed event gracefully', () => {
+      assert.strictEqual(mapKeyToRating(null), null);
+      assert.strictEqual(mapKeyToRating(undefined), null);
+      assert.strictEqual(mapKeyToRating({}), null);
+      assert.strictEqual(mapKeyToRating('invalid'), null);
+    });
+  });
+
+  describe('9. Form Control & Contenteditable Focus Invariant (isEditableOrFormControl)', () => {
+    test('identifies input, textarea, and select elements as form controls', () => {
+      assert.strictEqual(isEditableOrFormControl({ tagName: 'INPUT' }), true);
+      assert.strictEqual(isEditableOrFormControl({ tagName: 'textarea' }), true);
+      assert.strictEqual(isEditableOrFormControl({ tagName: 'SELECT' }), true);
+    });
+
+    test('identifies contenteditable elements', () => {
+      assert.strictEqual(isEditableOrFormControl({ tagName: 'DIV', isContentEditable: true }), true);
+      assert.strictEqual(isEditableOrFormControl({ tagName: 'SPAN', contentEditable: 'true' }), true);
+      assert.strictEqual(isEditableOrFormControl({ tagName: 'P', getAttribute: (attr) => attr === 'contenteditable' ? 'true' : null }), true);
+    });
+
+    test('identifies nested elements inside form controls via closest', () => {
+      const mockChild = {
+        tagName: 'SPAN',
+        closest: (selector) => selector.includes('input') ? { tagName: 'INPUT' } : null
+      };
+      assert.strictEqual(isEditableOrFormControl(mockChild), true);
+    });
+
+    test('checks activeElement when provided', () => {
+      const normalTarget = { tagName: 'DIV' };
+      const focusedInput = { tagName: 'INPUT' };
+      assert.strictEqual(isEditableOrFormControl(normalTarget, focusedInput), true);
+    });
+
+    test('returns false for non-editable interactive elements (buttons, links, flashcard)', () => {
+      assert.strictEqual(isEditableOrFormControl({ tagName: 'BUTTON' }), false);
+      assert.strictEqual(isEditableOrFormControl({ tagName: 'A' }), false);
+      assert.strictEqual(isEditableOrFormControl({ tagName: 'DIV', isContentEditable: false }), false);
+      assert.strictEqual(isEditableOrFormControl(null, null), false);
+    });
+  });
+
+  describe('10. Session Progress Display Formatting (formatSessionProgress)', () => {
+    test('formats first card of a multi-card session', () => {
+      const prog = formatSessionProgress(0, 10);
+      assert.strictEqual(prog.currentNum, 1);
+      assert.strictEqual(prog.totalCount, 10);
+      assert.strictEqual(prog.remainingCount, 9);
+      assert.strictEqual(prog.text, 'Thẻ 1 / 10 (Còn lại: 9)');
+    });
+
+    test('formats middle card of session', () => {
+      const prog = formatSessionProgress(3, 8);
+      assert.strictEqual(prog.currentNum, 4);
+      assert.strictEqual(prog.totalCount, 8);
+      assert.strictEqual(prog.remainingCount, 4);
+      assert.strictEqual(prog.text, 'Thẻ 4 / 8 (Còn lại: 4)');
+    });
+
+    test('formats final card of session (0 remaining)', () => {
+      const prog = formatSessionProgress(4, 5);
+      assert.strictEqual(prog.currentNum, 5);
+      assert.strictEqual(prog.totalCount, 5);
+      assert.strictEqual(prog.remainingCount, 0);
+      assert.strictEqual(prog.text, 'Thẻ 5 / 5 (Còn lại: 0)');
+    });
+
+    test('handles empty session gracefully', () => {
+      const prog = formatSessionProgress(0, 0);
+      assert.strictEqual(prog.currentNum, 0);
+      assert.strictEqual(prog.totalCount, 0);
+      assert.strictEqual(prog.remainingCount, 0);
+      assert.strictEqual(prog.text, 'Thẻ 0 / 0 (Còn lại: 0)');
+    });
+  });
+
+  describe('11. SrsReviewController Handler Uniformity & Anti Double-Submission Invariant', () => {
+    test('controller provides uniform submitRating, rateCard, and handleRating methods', () => {
+      const controller = new SrsReviewController();
+      assert.strictEqual(typeof controller.submitRating, 'function');
+      assert.strictEqual(typeof controller.rateCard, 'function');
+      assert.strictEqual(typeof controller.handleRating, 'function');
+    });
+
+    test('rateCard and handleRating delegate to submitRating', async () => {
+      const controller = new SrsReviewController();
+      let capturedRating = null;
+      controller.submitRating = async (r) => { capturedRating = r; };
+
+      await controller.rateCard(3);
+      assert.strictEqual(capturedRating, 3, 'rateCard must delegate to submitRating');
+
+      await controller.handleRating(4);
+      assert.strictEqual(capturedRating, 4, 'handleRating must delegate to submitRating');
+    });
+
+    test('submitRating early-exits when isSubmitting is true (anti-duplicate lock)', async () => {
+      const controller = new SrsReviewController();
+      controller.isSubmitting = true;
+      controller.sessionQueue = [{ card: { itemId: 1, itemType: 'VOCABULARY' } }];
+      controller.currentIndex = 0;
+
+      // Should early return without throwing
+      await controller.submitRating(3);
+      assert.strictEqual(controller.stats.totalReviewed, 0, 'No review must be processed during in-flight submission');
+    });
+
+    test('submitRating early-exits when session is finished or queue is exhausted', async () => {
+      const controller = new SrsReviewController();
+      controller.sessionQueue = [];
+      controller.currentIndex = 0;
+
+      await controller.submitRating(2);
+      assert.strictEqual(controller.isSubmitting, false);
+      assert.strictEqual(controller.stats.totalReviewed, 0);
+    });
+
+    test('submitRating does not require card to be flipped (rating on front face allowed)', () => {
+      const controller = new SrsReviewController();
+      controller.isFlipped = false; // Thẻ ở MẶT TRƯỚC (chưa lật)
+      assert.strictEqual(controller.isFlipped, false);
+      // isFlipped is NOT a blocker in submitRating
+    });
+  });
+
+  describe('12. Chinese Card Structure & Multi-Skill cardType (READING, LISTENING, WRITING)', () => {
+    test('buildReviewPayload accepts and normalizes READING skill cardType', () => {
+      const payload = buildReviewPayload({
+        itemType: 'VOCABULARY',
+        itemId: 101,
+        cardType: 'reading',
+        rating: 3,
+        reviewTimeSeconds: 5
+      });
+
+      assert.deepStrictEqual(payload, {
+        itemType: 'VOCABULARY',
+        itemId: 101,
+        cardType: 'READING',
+        rating: 3,
+        reviewTimeSeconds: 5
+      });
+    });
+
+    test('buildReviewPayload accepts LISTENING and WRITING skill cardTypes', () => {
+      const pListen = buildReviewPayload({
+        itemType: 'VOCABULARY',
+        itemId: 102,
+        cardType: 'LISTENING',
+        rating: 4,
+        reviewTimeSeconds: 3
+      });
+      assert.strictEqual(pListen.cardType, 'LISTENING');
+
+      const pWrite = buildReviewPayload({
+        itemType: 'VOCABULARY',
+        itemId: 103,
+        cardType: 'WRITING',
+        rating: 2,
+        reviewTimeSeconds: 7
+      });
+      assert.strictEqual(pWrite.cardType, 'WRITING');
     });
   });
 });

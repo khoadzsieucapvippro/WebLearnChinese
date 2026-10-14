@@ -122,6 +122,9 @@ export class SrsDashboardController {
 
     // Metric Value Sinks (Safe textContent only)
     this.statCardsDue = document.getElementById('statCardsDue');
+    this.statCardsDueReading = document.getElementById('statCardsDueReading');
+    this.statCardsDueListening = document.getElementById('statCardsDueListening');
+    this.statCardsDueWriting = document.getElementById('statCardsDueWriting');
     this.statReviewsToday = document.getElementById('statReviewsToday');
     this.statReviewsQuotaText = document.getElementById('statReviewsQuotaText');
     this.statReviewsProgressBar = document.getElementById('statReviewsProgressBar');
@@ -255,6 +258,9 @@ export class SrsDashboardController {
     if (!stats) return;
 
     const cardsDue = stats.cardsDue ?? 0;
+    const cardsDueReading = stats.cardsDueReading ?? 0;
+    const cardsDueListening = stats.cardsDueListening ?? 0;
+    const cardsDueWriting = stats.cardsDueWriting ?? 0;
     const reviewsToday = stats.reviewsToday ?? 0;
     const newCardsToday = stats.newCardsToday ?? 0;
     const newCardsLimit = stats.newCardsLimit ?? 0;
@@ -262,6 +268,15 @@ export class SrsDashboardController {
     // 1. Cards Due
     if (this.statCardsDue) {
       this.statCardsDue.textContent = String(cardsDue);
+    }
+    if (this.statCardsDueReading) {
+      this.statCardsDueReading.textContent = String(cardsDueReading);
+    }
+    if (this.statCardsDueListening) {
+      this.statCardsDueListening.textContent = String(cardsDueListening);
+    }
+    if (this.statCardsDueWriting) {
+      this.statCardsDueWriting.textContent = String(cardsDueWriting);
     }
 
     // 2. Reviews Today (No quota text / progress bar - review quota removed)

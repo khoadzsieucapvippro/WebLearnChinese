@@ -5,6 +5,7 @@
   "type": "module",
   "description": "Permanent Frontend Verification Infrastructure for eLearning Kangxi & SRS project (Task 9A.1.1)",
   "scripts": {
+    "serve": "node scripts/serve.mjs",
     "verify:frontend:fast": "node tests/frontend/runner.mjs --tier=fast",
     "verify:frontend:static": "node tests/frontend/runner.mjs --tier=static",
     "verify:frontend:unit": "node tests/frontend/runner.mjs --tier=unit",

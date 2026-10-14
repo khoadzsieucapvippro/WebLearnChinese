@@ -265,26 +265,25 @@ describe('Task 9F.3 — Admin Radicals Pure Logic Unit Tests', () => {
       assert.strictEqual(isValidYouTubeUrl('not-a-url'), false);
     });
 
-    test('validates learning fields: explanationVi and videoLessonUrl', () => {
+    test('validates learning fields: explanationVi and commonRank', () => {
       const validLearning = {
         character: '木',
         pinyin: 'mù',
         meaningHanViet: 'Mộc',
         meaningVi: 'Cây, gỗ',
         explanationVi: 'Hình cây có thân cành rễ',
-        videoLessonUrl: 'https://www.youtube.com/watch?v=kYv9b6-8D-w',
         commonRank: 1
       };
       const res = validateRadicalForm(validLearning);
       assert.strictEqual(res.valid, true);
 
-      const invalidVideo = {
+      const invalidExp = {
         ...validLearning,
-        videoLessonUrl: 'https://vimeo.com/99999'
+        explanationVi: 'a'.repeat(1001)
       };
-      const resInvalid = validateRadicalForm(invalidVideo);
+      const resInvalid = validateRadicalForm(invalidExp);
       assert.strictEqual(resInvalid.valid, false);
-      assert.ok(resInvalid.errors.videoLessonUrl);
+      assert.ok(resInvalid.errors.explanationVi);
     });
 
     test('validates commonRank semantic invariants: strictly 1..50 or null', () => {
@@ -335,7 +334,6 @@ describe('Task 9F.3 — Admin Radicals Pure Logic Unit Tests', () => {
         audioUrl: '  https://example.com/mu.mp3  ',
         videoWritingUrl: '  /media/mu.mp4  ',
         explanationVi: '  Hình cây có rễ  ',
-        videoLessonUrl: '  https://www.youtube.com/watch?v=kYv9b6-8D-w  ',
         commonRank: ' 1 '
       };
       const payload = buildRadicalPayload(raw);
@@ -346,7 +344,6 @@ describe('Task 9F.3 — Admin Radicals Pure Logic Unit Tests', () => {
       assert.strictEqual(payload.audioUrl, 'https://example.com/mu.mp3');
       assert.strictEqual(payload.videoWritingUrl, '/media/mu.mp4');
       assert.strictEqual(payload.explanationVi, 'Hình cây có rễ');
-      assert.strictEqual(payload.videoLessonUrl, 'https://www.youtube.com/watch?v=kYv9b6-8D-w');
       assert.strictEqual(payload.commonRank, 1);
     });
 
@@ -359,7 +356,6 @@ describe('Task 9F.3 — Admin Radicals Pure Logic Unit Tests', () => {
         audioUrl: '   ',
         videoWritingUrl: '',
         explanationVi: '   ',
-        videoLessonUrl: '',
         commonRank: null,
         isCommonRank: false
       };
@@ -367,7 +363,6 @@ describe('Task 9F.3 — Admin Radicals Pure Logic Unit Tests', () => {
       assert.strictEqual(payload.audioUrl, null);
       assert.strictEqual(payload.videoWritingUrl, null);
       assert.strictEqual(payload.explanationVi, null);
-      assert.strictEqual(payload.videoLessonUrl, null);
       assert.strictEqual(payload.commonRank, null);
     });
   });

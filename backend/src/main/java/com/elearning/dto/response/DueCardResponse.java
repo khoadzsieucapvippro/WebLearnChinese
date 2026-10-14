@@ -15,6 +15,7 @@ public class DueCardResponse {
 
     private String itemType;
     private Long itemId;
+    private String cardType;
     private String hanzi;
     private String pinyin;
     private String meaningVi;
@@ -32,9 +33,14 @@ public class DueCardResponse {
     }
 
     public static DueCardResponse fromVocabulary(Vocabulary vocab, CardProgress progress) {
+        return fromVocabulary(vocab, progress, progress != null ? progress.getCardType() : null);
+    }
+
+    public static DueCardResponse fromVocabulary(Vocabulary vocab, CardProgress progress, String cardType) {
         DueCardResponse response = new DueCardResponse();
         response.setItemType("VOCABULARY");
         response.setItemId(vocab.getVocabId());
+        response.setCardType(cardType != null ? cardType : (progress != null ? progress.getCardType() : null));
         response.setHanzi(vocab.getHanzi());
         response.setPinyin(vocab.getPinyin());
         response.setMeaningVi(vocab.getMeaningVi());
@@ -61,9 +67,14 @@ public class DueCardResponse {
     }
 
     public static DueCardResponse fromRadical(Radical radical, CardProgress progress) {
+        return fromRadical(radical, progress, progress != null ? progress.getCardType() : null);
+    }
+
+    public static DueCardResponse fromRadical(Radical radical, CardProgress progress, String cardType) {
         DueCardResponse response = new DueCardResponse();
         response.setItemType("RADICAL");
         response.setItemId(radical.getRadicalId() != null ? radical.getRadicalId().longValue() : null);
+        response.setCardType(cardType != null ? cardType : (progress != null ? progress.getCardType() : null));
         response.setHanzi(radical.getCharacter());
         response.setPinyin(radical.getPinyin());
         response.setMeaningVi(radical.getMeaningVi());
@@ -103,6 +114,14 @@ public class DueCardResponse {
 
     public void setItemId(Long itemId) {
         this.itemId = itemId;
+    }
+
+    public String getCardType() {
+        return cardType;
+    }
+
+    public void setCardType(String cardType) {
+        this.cardType = cardType;
     }
 
     public String getHanzi() {

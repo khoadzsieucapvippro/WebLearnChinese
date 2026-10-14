@@ -533,13 +533,19 @@ describe('Browser E2E: SRS Dashboard & Profile Settings Integration', () => {
       assert.strictEqual(await chip10.evaluate(el => el.classList.contains('active')), true);
 
       // Submit Save
-      await page.locator('#btnSaveSrsSettings').click();
+      await Promise.all([
+        page.waitForResponse(res => res.url().includes('/api/v1/srs/settings') && res.request().method() === 'PUT'),
+        page.locator('#btnSaveSrsSettings').click()
+      ]);
 
       // Verify submitted payload
       assert.deepStrictEqual(submittedPayload, { newCardsPerDay: 10 });
 
       // Verify success status
-      await page.locator('#srsSettingsStatus').waitFor({ state: 'visible' });
+      await page.waitForFunction(() => {
+        const text = document.getElementById('srsSettingsStatus')?.textContent || '';
+        return text.includes('thành công');
+      });
       const statusText = await page.locator('#srsSettingsStatus').textContent();
       assert.ok(statusText.includes('thành công'), `Status must indicate success: ${statusText}`);
 

@@ -153,7 +153,21 @@
                 <span class="srs-metric-icon" aria-hidden="true">⏰</span>
               </div>
               <div class="srs-metric-value" id="statCardsDue">-</div>
-              <div class="srs-metric-meta">Thẻ cần ôn tập ngay hôm nay</div>
+              <div class="srs-metric-meta mb-2">Thẻ cần ôn tập ngay hôm nay</div>
+              <div class="srs-skill-due-breakdown d-flex flex-wrap gap-2 pt-2 border-top small" id="statSkillsDueBreakdown" aria-label="Chi tiết thẻ đến hạn theo kỹ năng">
+                <span class="badge bg-light text-dark border d-inline-flex align-items-center gap-1" title="Kỹ năng Đọc">
+                  <span>Đọc:</span>
+                  <strong id="statCardsDueReading" class="text-danger">-</strong>
+                </span>
+                <span class="badge bg-light text-dark border d-inline-flex align-items-center gap-1" title="Kỹ năng Nghe">
+                  <span>Nghe:</span>
+                  <strong id="statCardsDueListening" class="text-primary">-</strong>
+                </span>
+                <span class="badge bg-light text-dark border d-inline-flex align-items-center gap-1" title="Kỹ năng Viết">
+                  <span>Viết:</span>
+                  <strong id="statCardsDueWriting" class="text-success">-</strong>
+                </span>
+              </div>
             </div>
 
             <!-- 2. Reviews Today -->

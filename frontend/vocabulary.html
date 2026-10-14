@@ -88,6 +88,42 @@
         </p>
       </div>
 
+      <!-- Learning Group & Progress Overview (Task FE-VOCAB-01) -->
+      <section class="vocab-group-banner mb-4" id="vocabGroupBanner" aria-label="Tổng quan nhóm học tập và tiến độ">
+        <div class="row g-3 align-items-center">
+          <div class="col-12 col-lg-7">
+            <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+              <span class="badge-status badge-status-approved" id="vocabGroupStatusBadge">HSK 1</span>
+              <span class="text-secondary small" id="vocabGroupLearnerNote">Lộ trình chuẩn hóa theo khung Hán ngữ HSK 3.0</span>
+            </div>
+            <div class="vocab-metrics-grid">
+              <div class="vocab-metric-card">
+                <span class="vocab-metric-label">Tổng số từ</span>
+                <span class="vocab-metric-value" id="vocabGroupTotalCount">--</span>
+              </div>
+              <div class="vocab-metric-card">
+                <span class="vocab-metric-label">Đã học (Hôm nay)</span>
+                <span class="vocab-metric-value text-success" id="vocabGroupLearnedCount">--</span>
+              </div>
+              <div class="vocab-metric-card">
+                <span class="vocab-metric-label">Đến hạn ôn SRS</span>
+                <span class="vocab-metric-value text-danger" id="vocabGroupDueCount">--</span>
+              </div>
+            </div>
+          </div>
+          <div class="col-12 col-lg-5">
+            <div class="vocab-group-actions d-flex flex-column flex-sm-row flex-lg-column gap-2 justify-content-end">
+              <a href="srs-review.html" id="vocabBtnSrsReview" class="btn-chinese-primary py-2 px-3 text-decoration-none text-center">
+                Ôn tập SRS ngay
+              </a>
+              <a href="lessons.html" id="vocabBtnExploreLessons" class="btn-chinese-secondary py-2 px-3 text-decoration-none text-center">
+                Học theo Giáo trình / Bài học &rarr;
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- Catalog Search & Filter Toolbar -->
       <section class="catalog-toolbar mb-4" aria-label="Bộ lọc và tìm kiếm từ vựng">
         <div class="row g-3 align-items-center">
@@ -132,44 +168,52 @@
         </div>
       </section>
 
-      <!-- HSK Level Tabs (Matching Radical Categories pattern) -->
-      <div class="vocab-tabs-wrapper mb-4" role="tablist" aria-label="Phân cấp độ từ vựng HSK">
-        <button 
-          type="button" 
-          role="tab" 
-          id="tabHsk1" 
-          aria-selected="true" 
-          aria-controls="vocabGrid" 
-          tabindex="0"
-          class="vocab-tab-btn active"
-          data-hsk="1"
-        >
-          HSK 1
-        </button>
-        <button 
-          type="button" 
-          role="tab" 
-          id="tabHsk2" 
-          aria-selected="false" 
-          aria-controls="vocabGrid" 
-          tabindex="-1"
-          class="vocab-tab-btn"
-          data-hsk="2"
-        >
-          HSK 2
-        </button>
-        <button 
-          type="button" 
-          role="tab" 
-          id="tabHsk3" 
-          aria-selected="false" 
-          aria-controls="vocabGrid" 
-          tabindex="-1"
-          class="vocab-tab-btn"
-          data-hsk="3"
-        >
-          HSK 3
-        </button>
+      <!-- HSK Level Tabs & Curriculum Switcher -->
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
+        <div class="vocab-tabs-wrapper mb-0" role="tablist" aria-label="Phân cấp độ từ vựng HSK">
+          <button 
+            type="button" 
+            role="tab" 
+            id="tabHsk1" 
+            aria-selected="true" 
+            aria-controls="vocabGrid" 
+            tabindex="0"
+            class="vocab-tab-btn active"
+            data-hsk="1"
+          >
+            HSK 1
+          </button>
+          <button 
+            type="button" 
+            role="tab" 
+            id="tabHsk2" 
+            aria-selected="false" 
+            aria-controls="vocabGrid" 
+            tabindex="-1"
+            class="vocab-tab-btn"
+            data-hsk="2"
+          >
+            HSK 2
+          </button>
+          <button 
+            type="button" 
+            role="tab" 
+            id="tabHsk3" 
+            aria-selected="false" 
+            aria-controls="vocabGrid" 
+            tabindex="-1"
+            class="vocab-tab-btn"
+            data-hsk="3"
+          >
+            HSK 3
+          </button>
+        </div>
+        <div>
+          <a href="lessons.html" class="btn-chinese-outline py-2 px-3 small text-decoration-none d-inline-flex align-items-center gap-1">
+            <span>Xem theo Giáo trình &amp; Bài học</span>
+            <span aria-hidden="true">&rarr;</span>
+          </a>
+        </div>
       </div>
 
       <!-- 3-State UI Container (Loading / Empty / Error + Retry) -->

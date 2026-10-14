@@ -147,11 +147,18 @@ class SrsTimezoneIntegrationTests {
     @AfterEach
     void tearDown() {
         SecurityContextHolder.clearContext();
+        if (testLesson != null) {
+            lessonVocabularyRepository.deleteAll(lessonVocabularyRepository.findByLesson_LessonIdOrderByOrderIndexAsc(testLesson.getLessonId()));
+            lessonRepository.delete(testLesson);
+        }
         if (testLearner != null) {
             userSrsSettingRepository.findByUser(testLearner).ifPresent(userSrsSettingRepository::delete);
             reviewLogRepository.deleteAll(reviewLogRepository.findByUserOrderByReviewedAtDesc(testLearner));
             cardProgressRepository.deleteAll(cardProgressRepository.findByUserAndNextReviewAtLessThanEqualOrderByNextReviewAtAsc(testLearner, LocalDateTime.now().plusYears(10), org.springframework.data.domain.Pageable.unpaged()));
             userProfileRepository.delete(testLearner);
+        }
+        if (userEmail != null) {
+            accountRepository.findByEmailOrPhone(userEmail).ifPresent(accountRepository::delete);
         }
     }
 

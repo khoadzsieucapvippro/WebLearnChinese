@@ -5,7 +5,7 @@
  * =============================================================================
  */
 
-import { test, describe } from 'node:test';
+import { test, it, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -92,6 +92,22 @@ describe('Runtime Environment Configuration (config.js)', () => {
 
     const env = runConfigInContext(mockWin);
     assert.strictEqual(env.API_BASE_URL, '/api/v1');
+  });
+
+  it('routes GitHub Codespaces domain (*.app.github.dev / *.github.dev) to relative /api/v1', () => {
+    const codespaceLocations = [
+      { hostname: 'improved-winner-xxx-3000.app.github.dev', port: '' },
+      { hostname: 'preview-yyy.github.dev', port: '' }
+    ];
+
+    for (const loc of codespaceLocations) {
+      const mockWin = {
+        location: loc
+      };
+      const env = runConfigInContext(mockWin);
+      assert.strictEqual(env.API_BASE_URL, '/api/v1', `Host ${loc.hostname} should route to relative /api/v1`);
+      assert.strictEqual(Object.isFrozen(env), true, `Environment for ${loc.hostname} should be frozen`);
+    }
   });
 
   test('preserves pre-injected window.__ENV__.API_BASE_URL override', () => {

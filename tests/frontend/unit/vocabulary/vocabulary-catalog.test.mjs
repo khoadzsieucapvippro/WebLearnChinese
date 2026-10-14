@@ -21,6 +21,7 @@ import {
   normalizeSearchQuery,
   parsePageResponse,
   calculatePagination,
+  calculateVocabGroupMetrics,
   isSpeechSynthesisAvailable,
   speakHanzi
 } from '../../../../frontend/js/pages/vocabulary-page.js';
@@ -313,6 +314,48 @@ describe('Unit: Chinese Vocabulary Catalog & Logic Engine', () => {
       const sqliVector = "' OR '1'='1; DROP TABLE vocabulary; --";
       const normalized = normalizeSearchQuery(sqliVector);
       assert.strictEqual(normalized, sqliVector);
+    });
+  });
+
+  describe('9. Vocabulary Learning Group Metrics & Status (calculateVocabGroupMetrics)', () => {
+    test('returns null learned and due counts when user is unauthenticated (studyStats is null)', () => {
+      const metrics = calculateVocabGroupMetrics({ totalElements: 150, studyStats: null, selectedHsk: 1 });
+      assert.strictEqual(metrics.totalWords, 150);
+      assert.strictEqual(metrics.learnedWords, null);
+      assert.strictEqual(metrics.dueWords, null);
+      assert.strictEqual(metrics.hskLevel, 1);
+      assert.strictEqual(metrics.statusLabel, 'Sẵn sàng học tập (150 từ)');
+    });
+
+    test('calculates correct metrics when user has active study session and due cards', () => {
+      const studyStats = {
+        cardsDue: 14,
+        reviewsToday: 20,
+        newCardsToday: 10
+      };
+      const metrics = calculateVocabGroupMetrics({ totalElements: 150, studyStats, selectedHsk: 1 });
+      assert.strictEqual(metrics.totalWords, 150);
+      assert.strictEqual(metrics.learnedWords, 30); // 20 reviews + 10 new cards
+      assert.strictEqual(metrics.dueWords, 14);
+      assert.strictEqual(metrics.hskLevel, 1);
+      assert.strictEqual(metrics.statusLabel, 'Có 14 thẻ đến hạn ôn');
+    });
+
+    test('validates and clamps HSK level correctly', () => {
+      const m1 = calculateVocabGroupMetrics({ selectedHsk: 2 });
+      assert.strictEqual(m1.hskLevel, 2);
+
+      const m2 = calculateVocabGroupMetrics({ selectedHsk: 3 });
+      assert.strictEqual(m2.hskLevel, 3);
+
+      const mInvalid = calculateVocabGroupMetrics({ selectedHsk: 99 });
+      assert.strictEqual(mInvalid.hskLevel, 1);
+    });
+
+    test('handles zero elements safely', () => {
+      const metrics = calculateVocabGroupMetrics({ totalElements: 0, studyStats: null, selectedHsk: 2 });
+      assert.strictEqual(metrics.totalWords, 0);
+      assert.strictEqual(metrics.statusLabel, 'Cấp độ HSK 2');
     });
   });
 

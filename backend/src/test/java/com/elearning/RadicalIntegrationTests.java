@@ -83,7 +83,7 @@ class RadicalIntegrationTests {
                     .andExpect(jsonPath("$.data.items[0].character").value("一"))
                     .andExpect(jsonPath("$.data.items[0].pinyin").value("yī"))
                     .andExpect(jsonPath("$.data.items[0].meaningHanViet").value("Nhất"))
-                    .andExpect(jsonPath("$.data.items[0].meaningVi").value(""));
+                    .andExpect(jsonPath("$.data.items[0].meaningVi").value("Số một, sự khởi đầu"));
         }
 
         @Test
@@ -96,7 +96,7 @@ class RadicalIntegrationTests {
                     .andExpect(jsonPath("$.data.character").value("一"))
                     .andExpect(jsonPath("$.data.pinyin").value("yī"))
                     .andExpect(jsonPath("$.data.meaningHanViet").value("Nhất"))
-                    .andExpect(jsonPath("$.data.meaningVi").value(""))
+                    .andExpect(jsonPath("$.data.meaningVi").value("Số một, sự khởi đầu"))
                     .andExpect(jsonPath("$.data.createdAt").isNotEmpty())
                     .andExpect(jsonPath("$.data.updatedAt").isNotEmpty());
         }

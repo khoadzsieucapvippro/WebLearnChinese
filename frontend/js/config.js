@@ -8,8 +8,9 @@
  * 2. Deterministic Dev Routing: When served from standard local static dev servers
  *    (localhost / 127.0.0.1 on ports 3000, 5500, 5173, 8000, 8081), automatically points
  *    API requests to the local Spring Boot backend ('http://localhost:8080/api/v1').
- * 3. Same-Origin Production Default: In same-origin deployments (e.g. Nginx reverse proxy,
- *    production domains, or when served on port 8080 directly), defaults to relative '/api/v1'.
+ * 3. Codespaces & Same-Origin Production Default: In GitHub Codespaces (*.app.github.dev,
+ *    *.github.dev), same-origin deployments (e.g. Nginx reverse proxy, production domains,
+ *    or when served on port 8080 directly), defaults to relative '/api/v1'.
  * 4. Override Preservation: If window.__ENV__ is pre-injected (e.g., by container injection,
  *    server-side templating, or automated test runners), respects existing API_BASE_URL.
  * 5. Immutability: The resulting configuration object is frozen via Object.freeze.
@@ -38,10 +39,13 @@
       const hostname = loc.hostname || '';
       const port = String(loc.port || '');
 
+      const isCodespaces = hostname.endsWith('.app.github.dev') || hostname.endsWith('.github.dev');
       const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '[::1]';
       const isDevStaticPort = ['3000', '5500', '5173', '8000', '8081'].includes(port);
 
-      if (isLocalhost && isDevStaticPort) {
+      if (isCodespaces) {
+        apiBaseUrl = '/api/v1';
+      } else if (isLocalhost && isDevStaticPort) {
         apiBaseUrl = 'http://localhost:8080/api/v1';
       } else {
         apiBaseUrl = '/api/v1';

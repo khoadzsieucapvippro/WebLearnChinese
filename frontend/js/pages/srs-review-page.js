@@ -27,8 +27,9 @@ import { showToast, createSpeakerIcon, createSpeechButton } from '../ui/ui.js';
 import { initNavbarAuth } from '../ui/nav.js';
 import { sanitizeResourceUrl } from '../ui/security.js';
 import { speechController, speakHanzi, playPronunciation, isSpeechSynthesisAvailable, SpeechState } from '../ui/speech.js';
+import { VocabWritingOrchestrator } from '../ui/character-writing/vocab-writing-orchestrator.js';
 
-export { createSpeakerIcon, createSpeechButton, speechController, speakHanzi, playPronunciation, isSpeechSynthesisAvailable, SpeechState };
+export { createSpeakerIcon, createSpeechButton, speechController, speakHanzi, playPronunciation, isSpeechSynthesisAvailable, SpeechState, VocabWritingOrchestrator };
 
 export const MAX_AGAIN_REVIEWS_PER_CARD = 3;
 
@@ -53,6 +54,67 @@ export function mapRatingValue(val) {
     default:
       return null;
   }
+}
+
+/**
+ * Maps a KeyboardEvent (key or code) to a rating number 1..4.
+ * Supports:
+ * - Digit1..Digit4
+ * - Numpad1..Numpad4
+ * - e.key '1'..'4'
+ * 
+ * @param {{ key?: string, code?: string } | null | undefined} event
+ * @returns {number|null} 1..4 or null
+ */
+export function mapKeyToRating(event) {
+  if (!event || typeof event !== 'object') return null;
+  const key = event.key;
+  const code = event.code;
+
+  if (key === '1' || code === 'Digit1' || code === 'Numpad1') return 1;
+  if (key === '2' || code === 'Digit2' || code === 'Numpad2') return 2;
+  if (key === '3' || code === 'Digit3' || code === 'Numpad3') return 3;
+  if (key === '4' || code === 'Digit4' || code === 'Numpad4') return 4;
+  return null;
+}
+
+/**
+ * Checks whether an element is an editable form control or contenteditable.
+ * Keystrokes 1..4 should be ignored when user is interacting with these elements.
+ * 
+ * @param {any} target
+ * @param {any} [activeElement=null]
+ * @returns {boolean}
+ */
+export function isEditableOrFormControl(target, activeElement = null) {
+  const check = (el) => {
+    if (!el || typeof el !== 'object') return false;
+    const tag = (el.tagName || '').toLowerCase();
+    if (tag === 'input' || tag === 'textarea' || tag === 'select') return true;
+    if (el.isContentEditable || el.contentEditable === 'true' || el.getAttribute?.('contenteditable') === 'true') return true;
+    if (typeof el.closest === 'function' && el.closest('input, textarea, select, [contenteditable="true"]')) return true;
+    return false;
+  };
+  return check(target) || check(activeElement);
+}
+
+/**
+ * Formats session progress string: current card / total remaining cards.
+ * 
+ * @param {number} currentIndex 0-based
+ * @param {number} totalCount
+ * @returns {{ currentNum: number, totalCount: number, remainingCount: number, text: string }}
+ */
+export function formatSessionProgress(currentIndex, totalCount) {
+  const total = Math.max(0, Number(totalCount) || 0);
+  const currentNum = total > 0 ? Math.max(1, Math.min(Number(currentIndex || 0) + 1, total)) : 0;
+  const remainingCount = Math.max(0, total - currentNum);
+  return {
+    currentNum,
+    totalCount: total,
+    remainingCount,
+    text: `Thẻ ${currentNum} / ${total} (Còn lại: ${remainingCount})`
+  };
 }
 
 /**
@@ -96,7 +158,7 @@ export function formatElapsedSeconds(seconds) {
  * @param {Object} params 
  * @returns {{ itemType: string, itemId: number, rating: number, reviewTimeSeconds: number }}
  */
-export function buildReviewPayload({ itemType, itemId, rating, reviewTimeSeconds }) {
+export function buildReviewPayload({ itemType, itemId, rating, reviewTimeSeconds, cardType }) {
   if (!itemType || typeof itemType !== 'string') {
     throw new TypeError('itemType must be a non-empty string ("VOCABULARY" or "RADICAL")');
   }
@@ -120,12 +182,18 @@ export function buildReviewPayload({ itemType, itemId, rating, reviewTimeSeconds
     throw new TypeError(`reviewTimeSeconds must be a non-negative integer, received: ${reviewTimeSeconds}`);
   }
 
-  return {
+  const payload = {
     itemType: typeUpper,
     itemId: id,
     rating: r,
     reviewTimeSeconds: timeSec
   };
+
+  if (cardType && typeof cardType === 'string' && cardType.trim()) {
+    payload.cardType = cardType.trim().toUpperCase();
+  }
+
+  return payload;
 }
 
 /**
@@ -167,8 +235,10 @@ export function handleAgainRequeue(queue, queueItem, maxAgain = MAX_AGAIN_REVIEW
 export class SrsReviewController {
   constructor() {
     // Session Configuration & Mode
-    this.mode = 'DUE_CARDS'; // 'DUE_CARDS' or 'LESSON_NEW_CARDS'
+    this.mode = 'DUE_CARDS'; // 'DUE_CARDS', 'LESSON_NEW_CARDS', 'LESSON_PRACTICE'
     this.lessonId = null;
+    this.activeSkill = 'READING'; // 'READING', 'LISTENING', or 'WRITING'
+    this.writingOrchestrator = null;
 
     // Queue & Execution State
     this.sessionQueue = [];
@@ -210,11 +280,15 @@ export class SrsReviewController {
       emptyState: document.getElementById('srsEmptyState'),
       emptyTitle: document.getElementById('srsEmptyTitle'),
       emptyDescription: document.getElementById('srsEmptyDescription'),
+      btnEmptyPractice: document.getElementById('btnEmptyPracticeNow'),
       errorState: document.getElementById('srsErrorState'),
       errorMessage: document.getElementById('srsErrorMessage'),
       btnRetry: document.getElementById('btnSrsRetry'),
       activeSession: document.getElementById('srsActiveSession'),
       completedState: document.getElementById('srsCompletedState'),
+      completedTitle: document.getElementById('srsCompletedTitle'),
+      completedDescription: document.getElementById('srsCompletedDescription'),
+      btnRestartSession: document.getElementById('btnRestartSession'),
 
       // Session Header
       modeBadge: document.getElementById('srsSessionModeBadge'),
@@ -222,13 +296,22 @@ export class SrsReviewController {
       progressBarContainer: document.getElementById('srsProgressBarContainer'),
       progressBarFill: document.getElementById('srsProgressBarFill'),
       timerBadge: document.getElementById('reactionTimerBadge'),
+      tabReading: document.getElementById('srsSkillTabReading'),
+      tabListening: document.getElementById('srsSkillTabListening'),
+      tabWriting: document.getElementById('srsSkillTabWriting'),
 
       // Flashcard
       flashcard: document.getElementById('flashcard'),
       cardFront: document.getElementById('cardFront'),
       cardBack: document.getElementById('cardBack'),
       cardTypeFront: document.getElementById('cardTypeBadgeFront'),
+      cardSkillBadgeFront: document.getElementById('cardSkillBadgeFront'),
       cardStatusFront: document.getElementById('cardStatusBadgeFront'),
+      cardFrontListeningArea: document.getElementById('cardFrontListeningArea'),
+      cardFrontWritingArea: document.getElementById('cardFrontWritingArea'),
+      writingFrontMeaning: document.getElementById('writingFrontMeaning'),
+      writingFrontHanViet: document.getElementById('writingFrontHanViet'),
+      cardFrontWritingMount: document.getElementById('cardFrontWritingMount'),
       cardFrontHanzi: document.getElementById('cardFrontHanzi'),
       cardFrontPinyin: document.getElementById('cardFrontPinyin'),
       btnAudioPronounceFront: document.getElementById('btnAudioPronounceFront'),
@@ -278,6 +361,18 @@ export class SrsReviewController {
       this.dom.btnRetry.addEventListener('click', () => this.loadSession());
     }
 
+    if (this.dom.tabReading) {
+      this.dom.tabReading.addEventListener('click', () => this.switchSkill('READING'));
+    }
+
+    if (this.dom.tabListening) {
+      this.dom.tabListening.addEventListener('click', () => this.switchSkill('LISTENING'));
+    }
+
+    if (this.dom.tabWriting) {
+      this.dom.tabWriting.addEventListener('click', () => this.switchSkill('WRITING'));
+    }
+
     if (this.dom.flashcard) {
       this.dom.flashcard.addEventListener('click', (e) => {
         // Prevent flipping if clicked on an action button inside the card
@@ -307,7 +402,7 @@ export class SrsReviewController {
       });
     }
 
-    // Rating buttons
+    // Rating buttons - unified with keyboard rating handler
     const ratingButtons = [
       { el: this.dom.btnRatingAgain, rating: 1 },
       { el: this.dom.btnRatingHard, rating: 2 },
@@ -317,7 +412,10 @@ export class SrsReviewController {
 
     for (const item of ratingButtons) {
       if (item.el) {
-        item.el.addEventListener('click', () => this.handleRating(item.rating));
+        item.el.addEventListener('click', (e) => {
+          e.preventDefault();
+          this.submitRating(item.rating);
+        });
       }
     }
 
@@ -327,16 +425,63 @@ export class SrsReviewController {
   }
 
   /**
-   * Parses lessonId from URL to determine review mode.
+   * Switches the active SRS skill between READING, LISTENING, and WRITING.
+   *
+   * @param {'READING'|'LISTENING'|'WRITING'} skill
+   */
+  async switchSkill(skill) {
+    if (this.activeSkill === skill) return;
+    this.activeSkill = skill;
+    this.updateSkillTabsUi();
+    await this.loadSession();
+  }
+
+  /**
+   * Synchronizes visual styles of the skill toolbar buttons.
+   */
+  updateSkillTabsUi() {
+    const tabs = [
+      { el: this.dom.tabReading, skill: 'READING' },
+      { el: this.dom.tabListening, skill: 'LISTENING' },
+      { el: this.dom.tabWriting, skill: 'WRITING' }
+    ];
+    for (const { el, skill } of tabs) {
+      if (el) {
+        const isSelected = this.activeSkill === skill;
+        el.className = `btn btn-sm rounded-pill py-2 px-3 px-sm-4 fw-bold srs-skill-tab ${isSelected ? 'btn-chinese-primary' : 'btn-outline-secondary border-0'}`;
+        el.setAttribute('aria-selected', isSelected ? 'true' : 'false');
+      }
+    }
+  }
+
+  /**
+   * Parses lessonId and mode from URL to determine review mode.
+   * - mode=practice & lessonId: LESSON_PRACTICE (Mode B: Free Practice, zero SRS mutation)
+   * - mode=new & lessonId: LESSON_NEW_CARDS (Mode A: New cards in lesson)
+   * - lessonId without mode=practice/new: DUE_CARDS with lessonId (loads /api/v1/srs/due?lessonId=X)
+   * - no lessonId: DUE_CARDS (System-wide due cards)
    */
   parseQueryParams() {
     if (typeof window === 'undefined') return;
     const urlParams = new URLSearchParams(window.location.search);
     const rawLessonId = urlParams.get('lessonId');
+    const rawMode = (urlParams.get('mode') || '').toLowerCase();
+    const rawSkill = (urlParams.get('skill') || urlParams.get('cardType') || '').toUpperCase();
+
+    if (rawSkill === 'READING' || rawSkill === 'LISTENING' || rawSkill === 'WRITING') {
+      this.activeSkill = rawSkill;
+    }
 
     if (rawLessonId && /^\d+$/.test(rawLessonId.trim()) && Number(rawLessonId.trim()) > 0) {
-      this.mode = 'LESSON_NEW_CARDS';
       this.lessonId = Number(rawLessonId.trim());
+      if (rawMode === 'practice') {
+        this.mode = 'LESSON_PRACTICE';
+      } else if (rawMode === 'new') {
+        this.mode = 'LESSON_NEW_CARDS';
+      } else {
+        // Default with lessonId or mode=due: due cards for this lesson
+        this.mode = 'DUE_CARDS';
+      }
     } else {
       this.mode = 'DUE_CARDS';
       this.lessonId = null;
@@ -384,15 +529,24 @@ export class SrsReviewController {
 
     try {
       let cards = [];
-      if (this.mode === 'LESSON_NEW_CARDS') {
-        // Mode B: Retrieve new card candidates for approved lesson
+      if (this.mode === 'LESSON_PRACTICE') {
+        // Mode B: Retrieve all lesson cards for free practice (zero SRS mutation)
+        cards = await apiClient('/srs/practice-cards', {
+          params: { lessonId: this.lessonId, cardType: this.activeSkill }
+        });
+      } else if (this.mode === 'LESSON_NEW_CARDS') {
+        // Mode A: Retrieve new card candidates for approved lesson
         cards = await apiClient('/srs/new-cards', {
-          params: { lessonId: this.lessonId }
+          params: { lessonId: this.lessonId, cardType: this.activeSkill }
         });
       } else {
-        // Mode A: Retrieve cards due for review (VOCABULARY-only invariant)
+        // Mode C: Retrieve cards due for review (VOCABULARY-only invariant, supports optional lessonId)
+        const dueParams = { itemType: 'VOCABULARY', cardType: this.activeSkill };
+        if (this.lessonId) {
+          dueParams.lessonId = this.lessonId;
+        }
         cards = await apiClient('/srs/due', {
-          params: { itemType: 'VOCABULARY' }
+          params: dueParams
         });
       }
 
@@ -400,13 +554,35 @@ export class SrsReviewController {
       cards = (Array.isArray(cards) ? cards : []).filter(c => (c.itemType || '').toUpperCase() === 'VOCABULARY');
 
       if (cards.length === 0) {
-        if (this.mode === 'LESSON_NEW_CARDS') {
-          if (this.dom.emptyTitle) this.dom.emptyTitle.textContent = 'Không có từ mới trong bài học này';
+        if (this.mode === 'LESSON_PRACTICE') {
+          if (this.dom.emptyTitle) this.dom.emptyTitle.textContent = 'Bài học chưa có từ vựng';
           if (this.dom.emptyDescription) {
             this.dom.emptyDescription.textContent = 
-              'Tất cả từ vựng trong bài học này đã được thêm vào tiến trình ôn tập SRS, hoặc bài học chưa có từ vựng.';
+              'Bài học này hiện chưa có từ vựng nào để luyện tập.';
+          }
+          if (this.dom.btnEmptyPractice) this.dom.btnEmptyPractice.classList.add('d-none');
+        } else if (this.mode === 'LESSON_NEW_CARDS') {
+          if (this.dom.emptyTitle) this.dom.emptyTitle.textContent = 'Không còn từ mới trong bài học này';
+          if (this.dom.emptyDescription) {
+            this.dom.emptyDescription.textContent = 
+              'Bạn đã học hết toàn bộ từ vựng mới trong bài này. Bạn có thể chọn luyện lại bài tự do bất kỳ lúc nào mà không làm thay đổi lịch ôn tập SRS.';
+          }
+          if (this.dom.btnEmptyPractice) {
+            this.dom.btnEmptyPractice.href = `srs-review.html?lessonId=${this.lessonId}&mode=practice`;
+            this.dom.btnEmptyPractice.classList.remove('d-none');
+          }
+        } else if (this.lessonId) {
+          if (this.dom.btnEmptyPractice) {
+            this.dom.btnEmptyPractice.href = `srs-review.html?lessonId=${this.lessonId}&mode=practice`;
+            this.dom.btnEmptyPractice.classList.remove('d-none');
+          }
+          if (this.dom.emptyTitle) this.dom.emptyTitle.textContent = `Không có thẻ đến hạn trong bài học #${this.lessonId}`;
+          if (this.dom.emptyDescription) {
+            this.dom.emptyDescription.textContent = 
+              'Toàn bộ thẻ từ vựng trong bài học này hiện chưa đến lịch ôn tập tiếp theo. Hãy học thêm bài mới hoặc quay lại sau!';
           }
         } else {
+          if (this.dom.btnEmptyPractice) this.dom.btnEmptyPractice.classList.add('d-none');
           // Authoritative differentiation for empty state in Due mode (Section XI)
           try {
             const stats = await apiClient('/srs/stats');
@@ -490,8 +666,8 @@ export class SrsReviewController {
     if (this.dom.cardFront) this.dom.cardFront.setAttribute('aria-hidden', 'false');
     if (this.dom.cardBack) this.dom.cardBack.setAttribute('aria-hidden', 'true');
 
-    // Disable rating buttons until card is flipped
-    this.setRatingButtonsEnabled(false);
+    // Rating buttons are active directly on front face (flipping is optional)
+    this.setRatingButtonsEnabled(true);
 
     const queueItem = this.sessionQueue[this.currentIndex];
     if (!queueItem || !queueItem.card) {
@@ -519,6 +695,85 @@ export class SrsReviewController {
     }
     if (this.dom.cardFrontHanzi) this.dom.cardFrontHanzi.textContent = card.hanzi || '';
     if (this.dom.cardFrontPinyin) this.dom.cardFrontPinyin.textContent = card.pinyin || '';
+
+    // Destroy prior writing orchestrator if any
+    if (this.writingOrchestrator) {
+      try {
+        this.writingOrchestrator.destroy();
+      } catch (e) {
+        // Safe dismissal
+      }
+      this.writingOrchestrator = null;
+    }
+
+    if (this.dom.cardSkillBadgeFront) {
+      if (this.activeSkill === 'WRITING') {
+        this.dom.cardSkillBadgeFront.textContent = '✍️ Luyện viết';
+      } else if (this.activeSkill === 'LISTENING') {
+        this.dom.cardSkillBadgeFront.textContent = '🎧 Luyện nghe';
+      } else {
+        this.dom.cardSkillBadgeFront.textContent = '📖 Đọc / Nhận diện';
+      }
+    }
+
+    if (this.activeSkill === 'WRITING') {
+      if (this.dom.cardFrontListeningArea) this.dom.cardFrontListeningArea.classList.add('d-none');
+      if (this.dom.cardFrontWritingArea) this.dom.cardFrontWritingArea.classList.remove('d-none');
+      if (this.dom.cardFrontHanzi) this.dom.cardFrontHanzi.classList.add('d-none');
+      if (this.dom.cardFrontPinyin) this.dom.cardFrontPinyin.classList.add('d-none');
+
+      if (this.dom.writingFrontMeaning) this.dom.writingFrontMeaning.textContent = card.meaningVi || '';
+      if (this.dom.writingFrontHanViet) {
+        if (card.meaningHanViet) {
+          this.dom.writingFrontHanViet.textContent = `[${card.meaningHanViet}]`;
+          this.dom.writingFrontHanViet.classList.remove('d-none');
+        } else {
+          this.dom.writingFrontHanViet.classList.add('d-none');
+        }
+      }
+
+      if (this.dom.cardFrontWritingMount) {
+        this.dom.cardFrontWritingMount.replaceChildren();
+        this.writingOrchestrator = new VocabWritingOrchestrator({
+          mountElement: this.dom.cardFrontWritingMount,
+          initialMode: 'quiz'
+        });
+        this.writingOrchestrator.mount(card);
+      }
+    } else if (this.activeSkill === 'LISTENING') {
+      // LISTENING Mode
+      if (this.dom.cardFrontWritingArea) this.dom.cardFrontWritingArea.classList.add('d-none');
+      if (this.dom.cardFrontListeningArea) this.dom.cardFrontListeningArea.classList.remove('d-none');
+      if (this.dom.cardFrontHanzi) this.dom.cardFrontHanzi.classList.add('d-none');
+      if (this.dom.cardFrontPinyin) this.dom.cardFrontPinyin.classList.add('d-none');
+
+      const promptEl = document.getElementById('listeningFrontPromptText');
+      if (promptEl) {
+        promptEl.textContent = 'Bấm loa để nghe phát âm & tự đoán nghĩa';
+      }
+
+      // Auto-trigger speech pronunciation on card presentation
+      if (this.dom.btnAudioPronounceFront) {
+        this.playPronunciation(this.dom.btnAudioPronounceFront);
+      }
+    } else {
+      // READING Mode (default)
+      if (this.dom.cardFrontWritingArea) this.dom.cardFrontWritingArea.classList.add('d-none');
+      if (this.dom.cardFrontListeningArea) this.dom.cardFrontListeningArea.classList.remove('d-none');
+      if (this.dom.cardFrontHanzi) {
+        this.dom.cardFrontHanzi.textContent = card.hanzi || '';
+        this.dom.cardFrontHanzi.classList.remove('d-none');
+      }
+      if (this.dom.cardFrontPinyin) {
+        this.dom.cardFrontPinyin.textContent = card.pinyin || '';
+        this.dom.cardFrontPinyin.classList.add('d-none');
+      }
+
+      const promptEl = document.getElementById('listeningFrontPromptText');
+      if (promptEl) {
+        promptEl.textContent = 'Nhìn chữ đoán Pinyin & nghĩa • Đánh giá ngay hoặc nhấn Space để lật';
+      }
+    }
 
     // Update speech button accessible names and tooltips
     const speechLabel = `Phát âm từ ${card.hanzi || 'vựng'}`;
@@ -570,20 +825,28 @@ export class SrsReviewController {
       }
     }
 
-    // Progress Bar & Counter
+    // Progress Bar & Counter (Display current card / total remaining cards)
     const totalCount = this.sessionQueue.length;
     const currentNum = this.currentIndex + 1;
+    const remainingCount = totalCount - currentNum;
     if (this.dom.progressText) {
-      this.dom.progressText.textContent = `Thẻ ${currentNum} / ${totalCount}`;
+      this.dom.progressText.textContent = `Thẻ ${currentNum} / ${totalCount} (Còn lại: ${remainingCount})`;
     }
     if (this.dom.modeBadge) {
-      this.dom.modeBadge.textContent = this.mode === 'LESSON_NEW_CARDS'
-        ? `Bài học #${this.lessonId}`
-        : 'Thẻ đến hạn';
+      if (this.mode === 'LESSON_PRACTICE') {
+        this.dom.modeBadge.textContent = `Luyện tự do #${this.lessonId} (Không đổi SRS)`;
+      } else if (this.mode === 'LESSON_NEW_CARDS') {
+        this.dom.modeBadge.textContent = `Bài học #${this.lessonId}`;
+      } else if (this.lessonId) {
+        this.dom.modeBadge.textContent = `Thẻ đến hạn #${this.lessonId}`;
+      } else {
+        this.dom.modeBadge.textContent = 'Thẻ đến hạn';
+      }
     }
     if (this.dom.progressBarContainer && this.dom.progressBarFill) {
       this.dom.progressBarContainer.setAttribute('aria-valuenow', String(currentNum));
       this.dom.progressBarContainer.setAttribute('aria-valuemax', String(totalCount));
+      this.dom.progressBarContainer.setAttribute('aria-label', `Tiến độ: thẻ ${currentNum} trên ${totalCount}, còn lại ${remainingCount} thẻ`);
       const pct = Math.min(100, Math.round((currentNum / totalCount) * 100));
       this.dom.progressBarFill.style.width = `${pct}%`;
     }
@@ -622,8 +885,8 @@ export class SrsReviewController {
     if (this.dom.cardFront) this.dom.cardFront.setAttribute('aria-hidden', this.isFlipped ? 'true' : 'false');
     if (this.dom.cardBack) this.dom.cardBack.setAttribute('aria-hidden', this.isFlipped ? 'false' : 'true');
 
-    // Enable ratings when flipped; disable when on front
-    this.setRatingButtonsEnabled(this.isFlipped);
+    // Rating buttons stay enabled whether card is flipped or unflipped
+    this.setRatingButtonsEnabled(true);
   }
 
   /**
@@ -729,22 +992,30 @@ export class SrsReviewController {
   }
 
   /**
-   * Submits a rating review to the backend.
+   * Unified rating submission handler called by both keyboard shortcuts and click.
+   * Prevents double-submission by locking when a request is in-flight.
+   * Rating is fully active on front face; flipping the card is optional.
    * 
-   * @param {number} rating 1=Again, 2=Hard, 3=Good, 4=Easy
+   * @param {number|string} rating 1=Again, 2=Hard, 3=Good, 4=Easy
    */
-  async handleRating(rating) {
-    if (!this.isFlipped || this.isSubmitting) return;
+  async submitRating(rating) {
+    // Double-submission guard & session boundary guard
+    if (this.isSubmitting) return;
+    if (!this.sessionQueue || this.currentIndex >= this.sessionQueue.length) return;
 
     const queueItem = this.sessionQueue[this.currentIndex];
     if (!queueItem || !queueItem.card) return;
+
+    const numRating = Number(rating);
+    if (!Number.isInteger(numRating) || numRating < 1 || numRating > 4) return;
+
     const card = queueItem.card;
 
     // Freeze reaction timer
     this.cleanupTimer();
     const elapsedSeconds = calculateReviewTime(this.cardStartTime, Date.now());
 
-    // Lock submission controls
+    // Lock submission controls immediately
     this.isSubmitting = true;
     this.setRatingButtonsEnabled(false);
     if (this.dom.ratingFeedback) {
@@ -752,15 +1023,48 @@ export class SrsReviewController {
     }
 
     try {
+      if (this.mode === 'LESSON_PRACTICE') {
+        // Zero SRS Mutation: Do NOT call POST /api/v1/srs/review
+        this.stats.totalReviewed++;
+        this.stats.totalTimeSeconds += elapsedSeconds;
+        if (numRating === 1) {
+          this.stats.againCount++;
+        } else if (numRating >= 3) {
+          this.stats.goodEasyCount++;
+        }
+
+        if (numRating === 1) {
+          const requeueResult = handleAgainRequeue(this.sessionQueue, queueItem, MAX_AGAIN_REVIEWS_PER_CARD);
+          if (requeueResult.requeued) {
+            showToast({
+              type: 'info',
+              title: 'Luyện lại',
+              message: `Thẻ "${card.hanzi}" sẽ xuất hiện lại ở cuối phiên luyện tập.`
+            });
+          }
+        }
+
+        this.currentIndex++;
+        this.isSubmitting = false;
+
+        if (this.currentIndex >= this.sessionQueue.length) {
+          this.showCompletedState();
+        } else {
+          this.renderCurrentCard();
+        }
+        return;
+      }
+
       const payload = buildReviewPayload({
         itemType: card.itemType,
         itemId: card.itemId,
-        rating,
+        cardType: this.activeSkill,
+        rating: numRating,
         reviewTimeSeconds: elapsedSeconds
       });
 
       // Submit authoritative review to backend
-      const response = await apiClient('/srs/review', {
+      await apiClient('/srs/review', {
         method: 'POST',
         body: payload
       });
@@ -768,14 +1072,14 @@ export class SrsReviewController {
       // Update session statistics
       this.stats.totalReviewed++;
       this.stats.totalTimeSeconds += elapsedSeconds;
-      if (rating === 1) {
+      if (numRating === 1) {
         this.stats.againCount++;
-      } else if (rating >= 3) {
+      } else if (numRating >= 3) {
         this.stats.goodEasyCount++;
       }
 
       // Handle Again local session requeue
-      if (rating === 1) {
+      if (numRating === 1) {
         const requeueResult = handleAgainRequeue(this.sessionQueue, queueItem, MAX_AGAIN_REVIEWS_PER_CARD);
         if (requeueResult.requeued) {
           showToast({
@@ -823,29 +1127,67 @@ export class SrsReviewController {
   }
 
   /**
+   * Alias rateCard -> submitRating
+   * @param {number|string} rating
+   */
+  rateCard(rating) {
+    return this.submitRating(rating);
+  }
+
+  /**
+   * Backward-compatible alias handleRating -> submitRating
+   * @param {number|string} rating
+   */
+  handleRating(rating) {
+    return this.submitRating(rating);
+  }
+
+  /**
    * Handles keyboard shortcuts: Space/Enter (flip), 1..4 (ratings).
+   * Supports Digit1..Digit4 and Numpad1..Numpad4 directly on front face.
+   * Ignores keystrokes when focused on input, textarea, select, contenteditable, or modals.
    * 
    * @param {KeyboardEvent} e 
    */
   handleKeydown(e) {
-    // Ignore keystrokes inside form controls (inputs, textareas)
+    // Ignore keystrokes inside form controls (inputs, textareas, select, contenteditable)
     const tag = (e.target?.tagName || '').toLowerCase();
-    if (tag === 'input' || tag === 'textarea' || tag === 'select' || e.target?.isContentEditable) {
+    const activeEl = typeof document !== 'undefined' ? document.activeElement : null;
+    const activeTag = (activeEl?.tagName || '').toLowerCase();
+
+    const isFormControl = (el, tagName) => {
+      if (!el && !tagName) return false;
+      if (tagName === 'input' || tagName === 'textarea' || tagName === 'select') return true;
+      if (el?.isContentEditable || el?.getAttribute?.('contenteditable') === 'true') return true;
+      if (el?.closest && el.closest('input, textarea, select, [contenteditable="true"]')) return true;
+      return false;
+    };
+
+    if (isFormControl(e.target, tag) || isFormControl(activeEl, activeTag)) {
       return;
     }
 
-    // Ignore keystrokes if a modal dialog is open (e.g. notes modal)
-    const modal = document.getElementById('notesModal');
-    if (modal && modal.open) {
-      return;
+    // Ignore keystrokes if a modal dialog is open (e.g. notes modal or native dialog)
+    if (typeof document !== 'undefined') {
+      const modal = document.getElementById('notesModal');
+      if (modal && (modal.open || !modal.classList.contains('d-none'))) {
+        return;
+      }
+      const openDialog = document.querySelector('dialog[open], .modal.show');
+      if (openDialog) {
+        return;
+      }
     }
 
-    // Only operate when active session is visible and not submitting
+    // Only operate when active session is visible and not submitting and cards remain
     if (this.dom.activeSession?.classList.contains('d-none') || this.isSubmitting) {
       return;
     }
+    if (!this.sessionQueue || this.currentIndex >= this.sessionQueue.length) {
+      return;
+    }
 
-    // Space or Enter flips the flashcard
+    // Space or Enter flips the flashcard (optional)
     if (e.code === 'Space' || e.key === ' ' || e.key === 'Enter') {
       // If user focused on a real button, let the native button click fire
       if (tag === 'button' && e.target !== this.dom.flashcard) {
@@ -856,21 +1198,12 @@ export class SrsReviewController {
       return;
     }
 
-    // Rating shortcuts 1..4 only work when card is flipped (answer revealed)
-    if (this.isFlipped) {
-      if (e.key === '1') {
-        e.preventDefault();
-        this.handleRating(1);
-      } else if (e.key === '2') {
-        e.preventDefault();
-        this.handleRating(2);
-      } else if (e.key === '3') {
-        e.preventDefault();
-        this.handleRating(3);
-      } else if (e.key === '4') {
-        e.preventDefault();
-        this.handleRating(4);
-      }
+    // Rating shortcuts 1..4: Digit1-Digit4, Numpad1-Numpad4, e.key '1'-'4'
+    // Work directly when card is on front face (flipping is optional)
+    const rating = mapKeyToRating(e);
+    if (rating !== null) {
+      e.preventDefault();
+      this.submitRating(rating);
     }
   }
 
@@ -880,6 +1213,29 @@ export class SrsReviewController {
   showCompletedState() {
     this.cleanupTimer();
     this.setViewState('completed');
+
+    if (this.dom.completedTitle) {
+      this.dom.completedTitle.textContent = this.mode === 'LESSON_PRACTICE'
+        ? 'Hoàn Thành Phiên Luyện Tập Tự Do!'
+        : 'Hoàn Thành Phiên Ôn Tập!';
+    }
+    if (this.dom.completedDescription) {
+      this.dom.completedDescription.textContent = this.mode === 'LESSON_PRACTICE'
+        ? 'Bạn đã hoàn thành phiên luyện tập tự do. Phiên học này không làm thay đổi lịch ôn tập SRS của bạn.'
+        : 'Các đánh giá của bạn đã được ghi nhận vào tiến trình trí nhớ dài hạn.';
+    }
+    if (this.dom.btnRestartSession) {
+      if (this.mode === 'LESSON_PRACTICE' || this.mode === 'LESSON_NEW_CARDS') {
+        this.dom.btnRestartSession.href = `srs-review.html?lessonId=${this.lessonId}&mode=practice`;
+        this.dom.btnRestartSession.textContent = 'Luyện tập lại bài này';
+      } else if (this.lessonId) {
+        this.dom.btnRestartSession.href = `srs-review.html?lessonId=${this.lessonId}`;
+        this.dom.btnRestartSession.textContent = 'Ôn tập tiếp bài này';
+      } else {
+        this.dom.btnRestartSession.href = 'srs-review.html';
+        this.dom.btnRestartSession.textContent = 'Ôn tập tiếp';
+      }
+    }
 
     if (this.dom.statTotalReviewed) {
       this.dom.statTotalReviewed.textContent = String(this.stats.totalReviewed);
@@ -910,6 +1266,14 @@ export class SrsReviewController {
    */
   destroy() {
     this.cleanupTimer();
+    if (this.writingOrchestrator) {
+      try {
+        this.writingOrchestrator.destroy();
+      } catch (e) {
+        // Safe dismissal
+      }
+      this.writingOrchestrator = null;
+    }
     speechController.cancel();
     window.removeEventListener('keydown', this.onKeydown);
     window.removeEventListener('beforeunload', this.onUnload);

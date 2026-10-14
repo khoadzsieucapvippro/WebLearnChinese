@@ -616,6 +616,7 @@ export class AdminAccountsController {
     // 1. ID Cell
     const tdId = createSafeElement('td', {
       className: 'py-3 px-3 text-center text-muted font-monospace small',
+      attrs: { 'data-label': 'ID' },
       text: `#${account.accountId}`
     });
 
@@ -639,6 +640,7 @@ export class AdminAccountsController {
 
     const tdEmail = createSafeElement('td', {
       className: 'py-3 px-3',
+      attrs: { 'data-label': 'Tài khoản' },
       children: [
         createSafeElement('div', {
           className: 'd-flex align-items-center flex-wrap gap-1',
@@ -650,6 +652,7 @@ export class AdminAccountsController {
     // 3. Full Name Cell
     const tdFullName = createSafeElement('td', {
       className: 'py-3 px-3 text-secondary small',
+      attrs: { 'data-label': 'Họ và tên' },
       text: account.fullName || '—'
     });
 
@@ -663,6 +666,7 @@ export class AdminAccountsController {
 
     const tdRoles = createSafeElement('td', {
       className: 'py-3 px-3',
+      attrs: { 'data-label': 'Vai trò' },
       children: [
         createSafeElement('div', {
           className: 'd-flex flex-wrap gap-1 align-items-center',
@@ -680,6 +684,7 @@ export class AdminAccountsController {
     const statusMeta = getStatusBadgeMeta(account.status);
     const tdStatus = createSafeElement('td', {
       className: 'text-center py-3 px-2',
+      attrs: { 'data-label': 'Trạng thái' },
       children: [
         createSafeElement('span', {
           className: statusMeta.badgeClass,
@@ -692,12 +697,14 @@ export class AdminAccountsController {
     // 6. Created At Cell
     const tdCreatedAt = createSafeElement('td', {
       className: 'py-3 px-3 small text-secondary',
+      attrs: { 'data-label': 'Thời gian tạo' },
       text: formatAccountDateTime(account.createdAt)
     });
 
     // 7. Actions Cell
     const tdAction = createSafeElement('td', {
-      className: 'text-center py-3 px-3'
+      className: 'text-center py-3 px-3',
+      attrs: { 'data-label': 'Hành động' }
     });
 
     if (isCurrentAdmin) {

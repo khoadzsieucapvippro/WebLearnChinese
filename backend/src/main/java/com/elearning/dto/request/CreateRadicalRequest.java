@@ -36,9 +36,6 @@ public class CreateRadicalRequest {
     @Size(max = 1000, message = "Giải thích tiếng Việt không được vượt quá 1000 ký tự")
     private String explanationVi;
 
-    @Size(max = 500, message = "Đường dẫn video bài giảng không được vượt quá 500 ký tự")
-    private String videoLessonUrl;
-
     @Min(value = 1, message = "Thứ hạng thông dụng phải từ 1 đến 50")
     @Max(value = 50, message = "Thứ hạng thông dụng phải từ 1 đến 50")
     private Integer commonRank;
@@ -48,7 +45,7 @@ public class CreateRadicalRequest {
 
     public CreateRadicalRequest(String character, String pinyin, String meaningHanViet,
                                 String meaningVi, String audioUrl, String videoWritingUrl,
-                                String explanationVi, String videoLessonUrl, Integer commonRank) {
+                                String explanationVi, Integer commonRank) {
         this.character = character;
         this.pinyin = pinyin;
         this.meaningHanViet = meaningHanViet;
@@ -56,17 +53,16 @@ public class CreateRadicalRequest {
         this.audioUrl = audioUrl;
         this.videoWritingUrl = videoWritingUrl;
         this.explanationVi = explanationVi;
-        this.videoLessonUrl = videoLessonUrl;
         this.commonRank = commonRank;
     }
 
     public CreateRadicalRequest(String character, String pinyin, String meaningHanViet,
                                 String meaningVi, String audioUrl, String videoWritingUrl) {
-        this(character, pinyin, meaningHanViet, meaningVi, audioUrl, videoWritingUrl, null, null, null);
+        this(character, pinyin, meaningHanViet, meaningVi, audioUrl, videoWritingUrl, null, null);
     }
 
     public CreateRadicalRequest(String character, String pinyin, String meaningHanViet, String meaningVi) {
-        this(character, pinyin, meaningHanViet, meaningVi, null, null, null, null, null);
+        this(character, pinyin, meaningHanViet, meaningVi, null, null, null, null);
     }
 
     public String getCharacter() {
@@ -125,14 +121,6 @@ public class CreateRadicalRequest {
         this.explanationVi = explanationVi;
     }
 
-    public String getVideoLessonUrl() {
-        return videoLessonUrl;
-    }
-
-    public void setVideoLessonUrl(String videoLessonUrl) {
-        this.videoLessonUrl = videoLessonUrl;
-    }
-
     public Integer getCommonRank() {
         return commonRank;
     }
@@ -151,7 +139,6 @@ public class CreateRadicalRequest {
                 ", audioUrl='" + audioUrl + '\'' +
                 ", videoWritingUrl='" + videoWritingUrl + '\'' +
                 ", explanationVi='" + explanationVi + '\'' +
-                ", videoLessonUrl='" + videoLessonUrl + '\'' +
                 ", commonRank=" + commonRank +
                 '}';
     }

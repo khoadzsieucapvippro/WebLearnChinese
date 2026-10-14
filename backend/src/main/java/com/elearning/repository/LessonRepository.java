@@ -83,7 +83,7 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
      */
     @Query(value = "SELECT new com.elearning.dto.response.LessonSummaryResponse(" +
                    "l.lessonId, l.title, l.status, SIZE(l.lessonVocabularies), l.createdAt, l.updatedAt) " +
-                   "FROM Lesson l WHERE l.status = 'Approved'",
+                   "FROM Lesson l WHERE l.status = 'Approved' ORDER BY l.lessonId ASC",
            countQuery = "SELECT COUNT(l) FROM Lesson l WHERE l.status = 'Approved'")
     Page<LessonSummaryResponse> findApprovedLessonSummaries(Pageable pageable);
 

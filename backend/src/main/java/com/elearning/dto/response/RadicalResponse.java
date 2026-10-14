@@ -18,7 +18,6 @@ public class RadicalResponse {
     private String audioUrl;
     private String videoWritingUrl;
     private String explanationVi;
-    private String videoLessonUrl;
     private Integer commonRank;
 
     public RadicalResponse() {
@@ -39,10 +38,9 @@ public class RadicalResponse {
     public RadicalResponse(Integer radicalId, String character, String pinyin,
                            String meaningHanViet, String meaningVi,
                            String audioUrl, String videoWritingUrl,
-                           String explanationVi, String videoLessonUrl, Integer commonRank) {
+                           String explanationVi, Integer commonRank) {
         this(radicalId, character, pinyin, meaningHanViet, meaningVi, audioUrl, videoWritingUrl);
         this.explanationVi = explanationVi;
-        this.videoLessonUrl = videoLessonUrl;
         this.commonRank = commonRank;
     }
 
@@ -60,7 +58,6 @@ public class RadicalResponse {
                 radical.getVideoWritingUrl()
         );
         response.setExplanationVi(radical.getExplanationVi());
-        response.setVideoLessonUrl(radical.getVideoLessonUrl());
         response.setCommonRank(radical.getCommonRank());
         return response;
     }
@@ -127,14 +124,6 @@ public class RadicalResponse {
 
     public void setExplanationVi(String explanationVi) {
         this.explanationVi = explanationVi;
-    }
-
-    public String getVideoLessonUrl() {
-        return videoLessonUrl;
-    }
-
-    public void setVideoLessonUrl(String videoLessonUrl) {
-        this.videoLessonUrl = videoLessonUrl;
     }
 
     public Integer getCommonRank() {

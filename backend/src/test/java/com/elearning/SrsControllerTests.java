@@ -4,6 +4,7 @@ import com.elearning.common.ErrorCode;
 import com.elearning.controller.SrsController;
 import com.elearning.dto.request.ReviewCardRequest;
 import com.elearning.dto.response.DueCardResponse;
+import com.elearning.dto.response.LessonSrsStatsResponse;
 import com.elearning.dto.response.StudyStatsResponse;
 import com.elearning.exception.BusinessException;
 import com.elearning.exception.GlobalExceptionHandler;
@@ -105,6 +106,55 @@ class SrsControllerTests {
                     .andExpect(jsonPath("$.data", hasSize(0)));
 
             verify(srsService).getDueCards(null, null);
+        }
+
+        @Test
+        @DisplayName("GET /api/v1/srs/due with lessonId delegates to 4-arg SrsService method")
+        void testGetDueCards_withLessonId_delegatesToService() throws Exception {
+            DueCardResponse card1 = new DueCardResponse();
+            card1.setItemType("VOCABULARY");
+            card1.setItemId(105L);
+            card1.setHanzi("学");
+
+            when(srsService.getDueCards(eq("VOCABULARY"), eq("READING"), eq(5L), eq(20)))
+                    .thenReturn(List.of(card1));
+
+            mockMvc.perform(get("/api/v1/srs/due")
+                            .param("itemType", "VOCABULARY")
+                            .param("cardType", "READING")
+                            .param("lessonId", "5")
+                            .param("limit", "20")
+                            .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code", is("SUCCESS")))
+                    .andExpect(jsonPath("$.data", hasSize(1)))
+                    .andExpect(jsonPath("$.data[0].itemId", is(105)));
+
+            verify(srsService).getDueCards(eq("VOCABULARY"), eq("READING"), eq(5L), eq(20));
+        }
+
+        @Test
+        @DisplayName("GET /api/v1/srs/lessons/{lessonId}/due path variable delegates to SrsService")
+        void testGetDueCardsForLesson_pathVariable_delegatesToService() throws Exception {
+            DueCardResponse card1 = new DueCardResponse();
+            card1.setItemType("VOCABULARY");
+            card1.setItemId(106L);
+            card1.setCardType("READING");
+
+            when(srsService.getDueCards(eq("VOCABULARY"), eq("READING"), eq(7L), eq(15)))
+                    .thenReturn(List.of(card1));
+
+            mockMvc.perform(get("/api/v1/srs/lessons/7/due")
+                            .param("itemType", "VOCABULARY")
+                            .param("cardType", "READING")
+                            .param("limit", "15")
+                            .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code", is("SUCCESS")))
+                    .andExpect(jsonPath("$.data", hasSize(1)))
+                    .andExpect(jsonPath("$.data[0].itemId", is(106)));
+
+            verify(srsService).getDueCards(eq("VOCABULARY"), eq("READING"), eq(7L), eq(15));
         }
     }
 
@@ -238,6 +288,28 @@ class SrsControllerTests {
                     .andExpect(jsonPath("$.data.maxReviewLimit", is(100)));
 
             verify(srsService).getStudyStats();
+        }
+
+        @Test
+        @DisplayName("GET /api/v1/srs/lessons/{lessonId}/stats delegates to SrsService and returns LessonSrsStatsResponse")
+        void testGetLessonSrsStats_success() throws Exception {
+            LessonSrsStatsResponse stats = new LessonSrsStatsResponse(10L, 25, 5L, 8L, 3L, 2L, 3L);
+
+            when(srsService.getLessonSrsStats(10L)).thenReturn(stats);
+
+            mockMvc.perform(get("/api/v1/srs/lessons/10/stats")
+                            .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code", is("SUCCESS")))
+                    .andExpect(jsonPath("$.data.lessonId", is(10)))
+                    .andExpect(jsonPath("$.data.totalVocabularies", is(25)))
+                    .andExpect(jsonPath("$.data.newWordsCount", is(5)))
+                    .andExpect(jsonPath("$.data.dueCardsCount", is(8)))
+                    .andExpect(jsonPath("$.data.dueCardsListening", is(3)))
+                    .andExpect(jsonPath("$.data.dueCardsWriting", is(2)))
+                    .andExpect(jsonPath("$.data.dueCardsReading", is(3)));
+
+            verify(srsService).getLessonSrsStats(10L);
         }
     }
 

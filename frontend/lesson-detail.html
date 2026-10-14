@@ -106,14 +106,142 @@
               </div>
             </div>
 
-            <!-- Header Action Controls -->
-            <div class="d-flex align-items-center gap-2">
+            <!-- Header Action Controls (4 Main Actions) -->
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+              <a href="srs-review.html" id="btnHeaderNewCards" class="btn-chinese-primary py-2 px-3 text-decoration-none">
+                Học từ mới
+              </a>
+              <a href="srs-review.html" id="btnHeaderLessonSrs" class="btn-chinese-secondary py-2 px-3 text-decoration-none">
+                Ôn SRS bài này
+              </a>
+              <a href="srs-review.html" id="btnHeaderPractice" class="btn-chinese-secondary py-2 px-3 text-decoration-none">
+                Luyện tự do
+              </a>
               <a href="lessons.html" class="btn-chinese-secondary py-2 px-3 text-decoration-none">
                 &larr; Danh sách bài học
               </a>
             </div>
           </div>
         </article>
+
+        <!-- Lesson Study & 4-Action Hub Section (Task FE-LESSON-02) -->
+        <section class="lesson-study-hub mb-5" aria-label="Trung tâm học tập và 4 hành động bài học">
+          <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+            <div>
+              <h2 class="h5 fw-bold text-dark mb-1">Tiến Độ Bài Học &amp; Hành Động Học Tập</h2>
+              <p class="text-secondary small mb-0" id="lessonAuthPrompt">Lựa chọn chế độ học tập phù hợp theo thuật toán lặp lại ngắt quãng SM-2 hoặc luyện tập tự do.</p>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <span id="lessonProgressBadge" class="badge-status badge-status-draft">Chưa bắt đầu</span>
+            </div>
+          </div>
+
+          <!-- Real Metrics Display Row -->
+          <div class="lesson-metrics-bar">
+            <div class="lesson-metric-item">
+              <span class="lesson-metric-label">Tổng số từ trong bài</span>
+              <span class="lesson-metric-val" id="statTotalWords">--</span>
+            </div>
+            <div class="lesson-metric-item">
+              <span class="lesson-metric-label">Số từ đã học</span>
+              <span class="lesson-metric-val text-success" id="statLearnedWords">--</span>
+            </div>
+            <div class="lesson-metric-item">
+              <span class="lesson-metric-label">Thẻ đến hạn ôn</span>
+              <span class="lesson-metric-val text-danger" id="statDueWords">--</span>
+            </div>
+            <div class="lesson-metric-item">
+              <span class="lesson-metric-label">Từ mới sẵn sàng học</span>
+              <span class="lesson-metric-val text-primary" id="statNewWords">--</span>
+            </div>
+          </div>
+
+          <!-- Progress Bar -->
+          <div class="lesson-progress-wrap">
+            <div class="d-flex justify-content-between small text-secondary mb-1">
+              <span>Tỷ lệ hoàn thành bài học</span>
+              <span id="lessonProgressPercent" class="fw-semibold">0%</span>
+            </div>
+            <div class="lesson-progress-bar-bg" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="lessonProgressBar">
+              <div class="lesson-progress-bar-fill" id="lessonProgressBarFill" style="width: 0%;"></div>
+            </div>
+          </div>
+
+          <!-- 4 Explicit Action Cards Grid -->
+          <div class="lesson-action-grid">
+            <!-- 1. Học từ mới -->
+            <div class="lesson-action-card action-card-primary" id="cardActionNew">
+              <div>
+                <div class="lesson-action-header mb-2">
+                  <h3 class="lesson-action-title">1. Học từ mới</h3>
+                  <span class="badge-status badge-status-draft small" id="badgeActionNew">Từ mới</span>
+                </div>
+                <p class="lesson-action-desc">
+                  Bắt đầu phiên học từ vựng mới trong bài theo chu trình ghi nhớ chủ động với phiên âm, giải nghĩa và câu ví dụ.
+                </p>
+              </div>
+              <div>
+                <a href="srs-review.html" id="btnActionNewCards" class="btn-chinese-primary py-2 px-3 text-decoration-none d-block text-center">
+                  Học từ mới
+                </a>
+              </div>
+            </div>
+
+            <!-- 2. Ôn SRS bài này -->
+            <div class="lesson-action-card" id="cardActionLessonSrs">
+              <div>
+                <div class="lesson-action-header mb-2">
+                  <h3 class="lesson-action-title">2. Ôn SRS bài này</h3>
+                  <span class="badge-status badge-status-pending small" id="badgeActionLessonSrs">SRS bài</span>
+                </div>
+                <p class="lesson-action-desc">
+                  Ôn tập các thẻ đến hạn theo chu kỳ lặp lại ngắt quãng SuperMemo-2 tối ưu hóa trí nhớ dài hạn của riêng bài này.
+                </p>
+              </div>
+              <div>
+                <a href="srs-review.html" id="btnActionLessonSrs" class="btn-chinese-secondary py-2 px-3 text-decoration-none d-block text-center">
+                  Ôn SRS bài này
+                </a>
+              </div>
+            </div>
+
+            <!-- 3. Luyện lại bài (Luyện tự do) -->
+            <div class="lesson-action-card" id="cardActionPractice">
+              <div>
+                <div class="lesson-action-header mb-2">
+                  <h3 class="lesson-action-title">3. Luyện tự do</h3>
+                  <span class="badge-status badge-status-active small" id="badgeActionPractice">Không đổi SRS</span>
+                </div>
+                <p class="lesson-action-desc">
+                  Luyện tập tự do toàn bộ từ vựng trong bài bất kỳ lúc nào để củng cố phản xạ mà không làm thay đổi lịch ôn SRS.
+                </p>
+              </div>
+              <div>
+                <a href="srs-review.html" id="btnActionPractice" class="btn-chinese-outline py-2 px-3 text-decoration-none d-block text-center">
+                  Luyện tự do
+                </a>
+              </div>
+            </div>
+
+            <!-- 4. Ôn SRS toàn hệ thống -->
+            <div class="lesson-action-card" id="cardActionSystemSrs">
+              <div>
+                <div class="lesson-action-header mb-2">
+                  <h3 class="lesson-action-title">4. Ôn toàn hệ thống</h3>
+                  <span class="badge-status badge-status-draft small" id="badgeActionSystemSrs">Phòng ôn chung</span>
+                </div>
+                <p class="lesson-action-desc">
+                  Chuyển đến phòng ôn tập toàn diện cho tất cả từ vựng và bộ thủ đến hạn trong toàn bộ tài khoản.
+                </p>
+              </div>
+              <div>
+                <a href="srs-review.html" id="btnActionSystemSrs" class="btn-chinese-secondary py-2 px-3 text-decoration-none d-block text-center">
+                  Phòng ôn chung &rarr;
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
 
         <!-- Ordered Vocabulary Learning Sequence Section -->
         <section aria-labelledby="lessonVocabHeading" class="mb-5">
@@ -128,11 +256,20 @@
 
         <!-- Post-Study Action Banner -->
         <section class="p-4 rounded-3 border bg-surface text-center mb-4">
-          <h3 class="h5 fw-bold text-dark mb-2">Sẵn sàng ghi nhớ dài hạn qua SRS?</h3>
-          <p class="text-secondary small mb-3">Ôn tập các từ vựng này cùng thuật toán lặp lại ngắt quãng SuperMemo-2 tối ưu hóa trí nhớ.</p>
+          <h3 class="h5 fw-bold text-dark mb-2">Sẵn sàng ghi nhớ và làm chủ từ vựng?</h3>
+          <p class="text-secondary small mb-3">Luyện tập tự do không làm đổi lịch SRS, hoặc ôn tập theo thuật toán SuperMemo-2 tối ưu hóa trí nhớ dài hạn.</p>
           <div class="d-flex align-items-center justify-content-center gap-3 flex-wrap">
-            <a href="srs-review.html" id="btnGoToSrsReview" class="btn-chinese-primary py-2 px-4 text-decoration-none">
-              Vào phòng ôn tập SRS &rarr;
+            <a href="srs-review.html" id="btnStartNewCards" class="btn-chinese-primary py-2 px-4 text-decoration-none">
+              Học từ mới trong bài &rarr;
+            </a>
+            <a href="srs-review.html" id="btnStartLessonSrs" class="btn-chinese-secondary py-2 px-3 text-decoration-none">
+              Ôn SRS bài này
+            </a>
+            <a href="srs-review.html" id="btnStartPracticeCards" class="btn-chinese-secondary py-2 px-4 text-decoration-none">
+              Luyện lại bài tự do
+            </a>
+            <a href="srs-review.html" id="btnGoToSrsReview" class="btn-chinese-secondary py-2 px-3 text-decoration-none">
+              Ôn tập SRS toàn hệ thống
             </a>
             <a href="lessons.html" class="btn-chinese-secondary py-2 px-3 text-decoration-none">
               Khám phá bài học khác

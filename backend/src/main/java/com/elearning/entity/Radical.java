@@ -51,9 +51,6 @@ public class Radical {
     @Column(name = "explanation_vi", length = 1000)
     private String explanationVi;
 
-    @Column(name = "video_lesson_url", length = 500)
-    private String videoLessonUrl;
-
     @Column(name = "common_rank", columnDefinition = "TINYINT UNSIGNED")
     private Integer commonRank;
 
@@ -155,14 +152,6 @@ public class Radical {
 
     public void setExplanationVi(String explanationVi) {
         this.explanationVi = explanationVi;
-    }
-
-    public String getVideoLessonUrl() {
-        return videoLessonUrl;
-    }
-
-    public void setVideoLessonUrl(String videoLessonUrl) {
-        this.videoLessonUrl = videoLessonUrl;
     }
 
     public Integer getCommonRank() {

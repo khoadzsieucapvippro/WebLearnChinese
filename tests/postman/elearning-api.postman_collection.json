@@ -1,0 +1,4396 @@
+{
+  "info": {
+    "name": "E-Learning Kangxi & SRS Platform REST API",
+    "_postman_id": "c827b591-6284-482a-9cb8-b11894d8cb19",
+    "description": "Comprehensive, automated REST API test collection for E-Learning Platform: Kangxi Radicals, Chinese Vocabulary, SM-2 Spaced Repetition System (SRS), Multi-role RBAC (Learner, Creator, Moderator, Admin), and Content Governance.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "00. Health & System Probe",
+      "description": "Actuator operational probes",
+      "item": [
+        {
+          "name": "Actuator Health Probe (Public 200 OK)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Health status is UP\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.status).to.eql(\"UP\");",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/actuator/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "actuator",
+                "health"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "01. Authentication & RBAC Baseline",
+      "description": "Registration, login, role authentication, and negative edge cases",
+      "item": [
+        {
+          "name": "Register New Disposable Learner (201 Created)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "var uniqueSuffix = Date.now().toString().slice(-6) + Math.floor(Math.random() * 1000);",
+                  "var email = \"learner_pm_\" + uniqueSuffix + \"@test.com\";",
+                  "pm.environment.set(\"currentTestEmail\", email);",
+                  "pm.environment.set(\"currentTestPassword\", \"Password123!\");",
+                  ""
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 201 Created\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test(\"Registration returns valid envelope and token\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"SUCCESS\");",
+                  "    pm.expect(json.data).to.have.property(\"token\");",
+                  "    pm.expect(json.data).to.have.property(\"accountId\");",
+                  "    pm.expect(json.data.emailOrPhone).to.eql(pm.environment.get(\"currentTestEmail\"));",
+                  "    pm.environment.set(\"learnerToken\", json.data.token);",
+                  "    pm.environment.set(\"learnerAccountId\", String(json.data.accountId));",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "register"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"emailOrPhone\": \"{{currentTestEmail}}\",\n  \"password\": \"{{currentTestPassword}}\",\n  \"fullName\": \"Learner Postman Automated\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Register Negative - Missing Required Fields (400 Bad Request)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 400 Bad Request\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test(\"Response code is VALIDATION_ERROR with errors array\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"VALIDATION_ERROR\");",
+                  "    pm.expect(json.errors).to.be.an(\"array\");",
+                  "    pm.expect(json.errors.length).to.be.at.least(1);",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "register"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"emailOrPhone\": \"\",\n  \"password\": \"\",\n  \"fullName\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Register Negative - Duplicate Email (409 Conflict)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 409 Conflict\", function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});",
+                  "pm.test(\"Response code is CONFLICT\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"CONFLICT\");",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "register"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"emailOrPhone\": \"{{currentTestEmail}}\",\n  \"password\": \"Password123!\",\n  \"fullName\": \"Duplicate User Attempt\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Login Learner (200 OK + JWT)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Returns Bearer JWT with Learner role\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"SUCCESS\");",
+                  "    pm.expect(json.data.type).to.eql(\"Bearer\");",
+                  "    pm.expect(json.data.token).to.be.a(\"string\").and.not.empty;",
+                  "    pm.expect(json.data.roles).to.be.an(\"array\").that.includes(\"Learner\");",
+                  "    pm.environment.set(\"learnerToken\", json.data.token);",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"emailOrPhone\": \"{{currentTestEmail}}\",\n  \"password\": \"{{currentTestPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Login Creator (200 OK + Creator Role)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Returns Creator token with Creator role\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"SUCCESS\");",
+                  "    pm.expect(json.data.roles).to.be.an(\"array\").that.includes(\"Creator\");",
+                  "    pm.environment.set(\"creatorToken\", json.data.token);",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"emailOrPhone\": \"{{creatorEmail}}\",\n  \"password\": \"{{creatorPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Login Moderator (200 OK + Moderator Role)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Returns Moderator token with Moderator role\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"SUCCESS\");",
+                  "    pm.expect(json.data.roles).to.be.an(\"array\").that.includes(\"Moderator\");",
+                  "    pm.environment.set(\"moderatorToken\", json.data.token);",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"emailOrPhone\": \"{{moderatorEmail}}\",\n  \"password\": \"{{moderatorPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Login Admin (200 OK + Admin Role)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Returns Admin token with Admin role\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"SUCCESS\");",
+                  "    pm.expect(json.data.roles).to.be.an(\"array\").that.includes(\"Admin\");",
+                  "    pm.environment.set(\"adminToken\", json.data.token);",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"emailOrPhone\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Login Negative - Bad Credentials (401 Unauthorized)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 401 Unauthorized\", function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "pm.test(\"Response code is UNAUTHORIZED\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"UNAUTHORIZED\");",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"emailOrPhone\": \"{{adminEmail}}\",\n  \"password\": \"WrongPassword999!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Login Negative - Blank Payload Validation (400 Bad Request)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 400 Bad Request\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test(\"Response code is VALIDATION_ERROR\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"VALIDATION_ERROR\");",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"emailOrPhone\": \"\",\n  \"password\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "02. Kangxi Radicals Catalog",
+      "description": "Public lookup for 214 Kangxi radicals",
+      "item": [
+        {
+          "name": "Get All Radicals Paginated (Public 200 OK)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"PageResponse structure contains 214 totalElements\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"SUCCESS\");",
+                  "    pm.expect(json.data.totalElements).to.be.at.least(214);",
+                  "    pm.expect(json.data.items).to.be.an(\"array\").and.have.lengthOf(20);",
+                  "    pm.expect(json.data.items[0]).to.have.property(\"radicalId\");",
+                  "    pm.expect(json.data.items[0]).to.have.property(\"character\");",
+                  "    pm.expect(json.data.items[0]).to.have.property(\"pinyin\");",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/radicals?page=0&size=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "radicals"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0",
+                  "description": ""
+                },
+                {
+                  "key": "size",
+                  "value": "20",
+                  "description": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Radical Detail By ID 1 (Public 200 OK)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Radical #1 has correct glyph, pinyin, and Vietnamese meanings\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"SUCCESS\");",
+                  "    var data = json.data;",
+                  "    pm.expect(data.radicalId).to.eql(1);",
+                  "    pm.expect(data.character).to.eql(\"一\");",
+                  "    pm.expect(data.pinyin).to.eql(\"yī\");",
+                  "    pm.expect(data.meaningHanViet).to.eql(\"Nhất\");",
+                  "    pm.expect(data).to.have.property(\"meaningVi\");",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/radicals/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "radicals",
+                "1"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Radical Negative - Non-Existent ID (404 Not Found)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 404 Not Found\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "pm.test(\"Response code is NOT_FOUND\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"NOT_FOUND\");",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/radicals/999999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "radicals",
+                "999999"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "03. Chinese Vocabulary Catalog",
+      "description": "Public vocabulary catalog, multi-criteria search, HSK filter, and detail",
+      "item": [
+        {
+          "name": "Get Vocabularies Paginated (Public 200 OK)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Vocabulary catalog returns items array with totalElements\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"SUCCESS\");",
+                  "    pm.expect(json.data.totalElements).to.be.at.least(1);",
+                  "    pm.expect(json.data.items).to.be.an(\"array\");",
+                  "    var first = json.data.items[0];",
+                  "    pm.expect(first).to.have.property(\"vocabId\");",
+                  "    pm.expect(first).to.have.property(\"hanzi\");",
+                  "    pm.expect(first).to.have.property(\"pinyin\");",
+                  "    // Invariant: summary must not contain radicals (Zero N+1)",
+                  "    pm.expect(first.radicals).to.be.undefined;",
+                  "",
+                  "    // Dynamically save verified vocabulary IDs for dependent tests",
+                  "    if (json.data.items.length >= 2) {",
+                  "        pm.environment.set(\"existingVocabId\", String(json.data.items[0].vocabId));",
+                  "        pm.environment.set(\"existingVocabId2\", String(json.data.items[1].vocabId));",
+                  "    }",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/vocabulary?page=0&size=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "vocabulary"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0",
+                  "description": ""
+                },
+                {
+                  "key": "size",
+                  "value": "20",
+                  "description": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Search Vocabulary By Keyword \"shu\" (Public 200 OK)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Search returns matching results\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"SUCCESS\");",
+                  "    pm.expect(json.data.totalElements).to.be.at.least(1);",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/vocabulary?search=shu&page=0&size=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "vocabulary"
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "shu",
+                  "description": ""
+                },
+                {
+                  "key": "page",
+                  "value": "0",
+                  "description": ""
+                },
+                {
+                  "key": "size",
+                  "value": "10",
+                  "description": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Filter Vocabulary By HSK Level 1 (Public 200 OK)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"HSK 1 filtered results return items\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"SUCCESS\");",
+                  "    pm.expect(json.data.items).to.be.an(\"array\");",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/vocabulary?hsk=1&page=0&size=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "vocabulary"
+              ],
+              "query": [
+                {
+                  "key": "hsk",
+                  "value": "1",
+                  "description": ""
+                },
+                {
+                  "key": "page",
+                  "value": "0",
+                  "description": ""
+                },
+                {
+                  "key": "size",
+                  "value": "10",
+                  "description": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Vocabulary Detail By Existing ID with Radicals (Public 200 OK)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Detail returns constituent radicals array\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"SUCCESS\");",
+                  "    var data = json.data;",
+                  "    pm.expect(String(data.vocabId)).to.eql(pm.environment.get(\"existingVocabId\"));",
+                  "    pm.expect(data).to.have.property(\"hanzi\");",
+                  "    pm.expect(data.radicals).to.be.an(\"array\");",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/vocabulary/{{existingVocabId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "vocabulary",
+                "{{existingVocabId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Vocabulary Negative - Non-Existent ID (404 Not Found)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 404 Not Found\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "pm.test(\"Response code is NOT_FOUND\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"NOT_FOUND\");",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/vocabulary/999999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "vocabulary",
+                "999999"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "04. Public Lessons Catalog",
+      "description": "Approved public lessons catalog exploration and detailed view",
+      "item": [
+        {
+          "name": "Get Approved Lessons Catalog (Public 200 OK)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Approved-only visibility invariant: all items have status 'Approved'\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"SUCCESS\");",
+                  "    pm.expect(json.data.items).to.be.an(\"array\");",
+                  "    json.data.items.forEach(function (item) {",
+                  "        pm.expect(item.status).to.eql(\"Approved\");",
+                  "    });",
+                  "    if (json.data.items.length > 0) {",
+                  "        pm.environment.set(\"approvedLessonId\", String(json.data.items[0].lessonId));",
+                  "    }",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/lessons?page=0&size=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "lessons"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0",
+                  "description": ""
+                },
+                {
+                  "key": "size",
+                  "value": "20",
+                  "description": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Lesson Detail By ID with Ordered Vocabularies (Public 200 OK)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Lesson detail contains ordered vocabularies array\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"SUCCESS\");",
+                  "    var data = json.data;",
+                  "    pm.expect(String(data.lessonId)).to.eql(pm.environment.get(\"approvedLessonId\"));",
+                  "    pm.expect(data).to.have.property(\"title\");",
+                  "    pm.expect(data.status).to.eql(\"Approved\");",
+                  "    pm.expect(data.vocabularies).to.be.an(\"array\");",
+                  "    if (data.vocabularies.length > 1) {",
+                  "        for (var i = 0; i < data.vocabularies.length - 1; i++) {",
+                  "            pm.expect(data.vocabularies[i].orderIndex).to.be.at.most(data.vocabularies[i + 1].orderIndex);",
+                  "        }",
+                  "    }",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/lessons/{{approvedLessonId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "lessons",
+                "{{approvedLessonId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Lesson Negative - Non-Existent ID (404 Not Found)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 404 Not Found\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "pm.test(\"Response code is NOT_FOUND\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"NOT_FOUND\");",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/lessons/999999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "lessons",
+                "999999"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "05. User Profile & Settings",
+      "description": "Learner profile, auth guardrails, and personal SRS settings",
+      "item": [
+        {
+          "name": "Get My User Profile (Learner Bearer 200 OK)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Profile returns accountId, userId, email, fullName\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"SUCCESS\");",
+                  "    var p = json.data;",
+                  "    pm.expect(p).to.have.property(\"userId\");",
+                  "    pm.expect(p).to.have.property(\"accountId\");",
+                  "    pm.expect(p.emailOrPhone).to.eql(pm.environment.get(\"currentTestEmail\"));",
+                  "    pm.expect(p.roles).to.be.undefined; // Invariant: no phantom roles in UserProfileResponse",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{learnerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/profile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users",
+                "profile"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update My User Profile (Learner Bearer 200 OK)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Profile fullName is updated and persisted\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"SUCCESS\");",
+                  "    pm.expect(json.data.fullName).to.eql(\"Học Viên Đã Cập Nhật\");",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{learnerToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/profile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users",
+                "profile"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Học Viên Đã Cập Nhật\",\n  \"avatarUrl\": \"https://example.com/learner-avatar.png\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Profile Negative - Unauthenticated Missing Token (401 Unauthorized)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 401 Unauthorized\", function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "pm.test(\"Response code is UNAUTHORIZED\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"UNAUTHORIZED\");",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/profile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users",
+                "profile"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Profile Negative - Invalid Malformed Token (401 Unauthorized)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 401 Unauthorized\", function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "pm.test(\"Response code is UNAUTHORIZED\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"UNAUTHORIZED\");",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer invalid.malformed.token.payload"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/profile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users",
+                "profile"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Current User SRS Settings (Learner Bearer 200 OK)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"SRS settings return positive daily limits\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"SUCCESS\");",
+                  "    pm.expect(json.data.newCardsPerDay).to.be.above(0);",
+                  "    pm.expect(json.data.maxReviewPerDay).to.be.above(0);",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{learnerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/srs/settings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "srs",
+                "settings"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Current User SRS Settings (Learner Bearer 200 OK)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"SRS settings successfully updated to 25 / 100\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"SUCCESS\");",
+                  "    pm.expect(json.data.newCardsPerDay).to.eql(25);",
+                  "    pm.expect(json.data.maxReviewPerDay).to.eql(100);",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{learnerToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/srs/settings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "srs",
+                "settings"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"newCardsPerDay\": 25,\n  \"maxReviewPerDay\": 100\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Update SRS Settings Negative - Non-Positive Limit (400 Bad Request)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 400 Bad Request\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test(\"Response code is VALIDATION_ERROR\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"VALIDATION_ERROR\");",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{learnerToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/srs/settings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "srs",
+                "settings"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"newCardsPerDay\": -5,\n  \"maxReviewPerDay\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "06. Personal Vocabulary Notes",
+      "description": "Learner personalized study notes on vocabulary words (CRUD)",
+      "item": [
+        {
+          "name": "List Personal Notes for Existing Vocabulary (Learner Bearer 200 OK)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Returns notes page envelope\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"SUCCESS\");",
+                  "    pm.expect(json.data.items).to.be.an(\"array\");",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{learnerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/vocabularies/{{existingVocabId}}/notes?page=0&size=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "vocabularies",
+                "{{existingVocabId}}",
+                "notes"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0",
+                  "description": ""
+                },
+                {
+                  "key": "size",
+                  "value": "20",
+                  "description": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Personal Note on Existing Vocabulary (Learner Bearer 201 Created)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 201 Created\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test(\"Returns created note with ID and stores in environment\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"SUCCESS\");",
+                  "    pm.expect(json.data).to.have.property(\"noteId\");",
+                  "    pm.expect(json.data.content).to.eql(\"Ghi chú học tập tự động bởi Postman Test Runner\");",
+                  "    pm.environment.set(\"createdNoteId\", String(json.data.noteId));",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{learnerToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/vocabularies/{{existingVocabId}}/notes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "vocabularies",
+                "{{existingVocabId}}",
+                "notes"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Ghi chú học tập tự động bởi Postman Test Runner\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Update Personal Note Content (Learner Bearer 200 OK)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Note content updated properly\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"SUCCESS\");",
+                  "    pm.expect(json.data.content).to.eql(\"Ghi chú học tập đã được cập nhật thành công qua Postman\");",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{learnerToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/notes/{{createdNoteId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "notes",
+                "{{createdNoteId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Ghi chú học tập đã được cập nhật thành công qua Postman\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Delete Personal Note (Learner Bearer 200 OK)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Delete returns success message\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"SUCCESS\");",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{learnerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/notes/{{createdNoteId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "notes",
+                "{{createdNoteId}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "07. Spaced Repetition System (SRS)",
+      "description": "Due cards, new card candidates, review submissions, and statistics",
+      "item": [
+        {
+          "name": "Get Due Review Cards (Learner Bearer 200 OK)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Due cards list returned as array\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"SUCCESS\");",
+                  "    pm.expect(json.data).to.be.an(\"array\");",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{learnerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/srs/due",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "srs",
+                "due"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get New Card Candidates for Approved Lesson (Learner Bearer 200 OK)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Candidates returned as array with isNew flag\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"SUCCESS\");",
+                  "    pm.expect(json.data).to.be.an(\"array\");",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{learnerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/srs/new-cards?lessonId={{approvedLessonId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "srs",
+                "new-cards"
+              ],
+              "query": [
+                {
+                  "key": "lessonId",
+                  "value": "{{approvedLessonId}}",
+                  "description": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Practice Cards for Approved Lesson (Learner Bearer 200 OK)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Practice cards returned in orderIndex sequence\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"SUCCESS\");",
+                  "    pm.expect(json.data).to.be.an(\"array\");",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{learnerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/srs/practice-cards?lessonId={{approvedLessonId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "srs",
+                "practice-cards"
+              ],
+              "query": [
+                {
+                  "key": "lessonId",
+                  "value": "{{approvedLessonId}}",
+                  "description": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Submit Flashcard Review Rating (Learner Bearer 200 OK)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "var vId = Number(pm.environment.get(\"existingVocabId\")) || 18324;",
+                  "pm.environment.set(\"reviewItemId\", vId);",
+                  ""
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Review returns updated DueCardResponse with interval and easeFactor\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"SUCCESS\");",
+                  "    pm.expect(json.data).to.have.property(\"itemId\");",
+                  "    pm.expect(json.data).to.have.property(\"intervalDays\");",
+                  "    pm.expect(json.data).to.have.property(\"easeFactor\");",
+                  "    pm.expect(json.data).to.have.property(\"repetitions\");",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{learnerToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/srs/review",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "srs",
+                "review"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"itemType\": \"VOCABULARY\",\n  \"itemId\": \"{{reviewItemId}}\",\n  \"rating\": 3,\n  \"reviewTimeSeconds\": 4\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Submit Review Negative - Invalid Rating 99 (400 Bad Request)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 400 Bad Request\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test(\"Response code is VALIDATION_ERROR\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"VALIDATION_ERROR\");",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{learnerToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/srs/review",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "srs",
+                "review"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"itemType\": \"VOCABULARY\",\n  \"itemId\": 1,\n  \"rating\": 99,\n  \"reviewTimeSeconds\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Get Current Study Statistics (Learner Bearer 200 OK)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Study stats contain cardsDue, reviewsToday, limits\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"SUCCESS\");",
+                  "    pm.expect(json.data).to.have.property(\"cardsDue\");",
+                  "    pm.expect(json.data).to.have.property(\"reviewsToday\");",
+                  "    pm.expect(json.data).to.have.property(\"newCardsLimit\");",
+                  "    pm.expect(json.data).to.have.property(\"maxReviewLimit\");",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{learnerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/srs/stats",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "srs",
+                "stats"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "08. Creator Studio & Curriculum Authoring",
+      "description": "Creator lesson authoring, vocabulary composition, moderation submission, and RBAC guardrails",
+      "item": [
+        {
+          "name": "Create Draft Lesson (Creator Bearer 201 Created)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "var uniqueSuffix = Date.now().toString().slice(-5);",
+                  "pm.environment.set(\"creatorLessonTitle\", \"Bài học Creator Postman #\" + uniqueSuffix);",
+                  ""
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 201 Created\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test(\"Lesson created in 'Draft' status and saves ID\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"SUCCESS\");",
+                  "    pm.expect(json.data.status).to.eql(\"Draft\");",
+                  "    pm.expect(json.data).to.have.property(\"lessonId\");",
+                  "    pm.environment.set(\"createdLessonId\", String(json.data.lessonId));",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{creatorToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/creator/lessons",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "creator",
+                "lessons"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"{{creatorLessonTitle}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "List My Authored Lessons (Creator Bearer 200 OK)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Creator lessons list returned\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"SUCCESS\");",
+                  "    pm.expect(json.data.items).to.be.an(\"array\");",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{creatorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/creator/lessons?page=0&size=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "creator",
+                "lessons"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0",
+                  "description": ""
+                },
+                {
+                  "key": "size",
+                  "value": "20",
+                  "description": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get My Lesson Detail (Creator Bearer 200 OK)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Detail returns correct lessonId and Draft status\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"SUCCESS\");",
+                  "    pm.expect(String(json.data.lessonId)).to.eql(pm.environment.get(\"createdLessonId\"));",
+                  "    pm.expect(json.data.status).to.eql(\"Draft\");",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{creatorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/creator/lessons/{{createdLessonId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "creator",
+                "lessons",
+                "{{createdLessonId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update My Lesson Metadata (Creator Bearer 200 OK)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Title updated successfully\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"SUCCESS\");",
+                  "    pm.expect(json.data.title).to.include(\"(Đã sửa đổi)\");",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{creatorToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/creator/lessons/{{createdLessonId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "creator",
+                "lessons",
+                "{{createdLessonId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"{{creatorLessonTitle}} (Đã sửa đổi)\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Add Vocabulary 1 to Lesson (Creator Bearer 200 OK)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Vocabulary 1 added into lesson vocabularies list\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"SUCCESS\");",
+                  "    var targetId = Number(pm.environment.get(\"existingVocabId\"));",
+                  "    pm.expect(json.data.vocabularies.some(v => v.vocabId === targetId)).to.be.true;",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{creatorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/creator/lessons/{{createdLessonId}}/vocabularies/{{existingVocabId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "creator",
+                "lessons",
+                "{{createdLessonId}}",
+                "vocabularies",
+                "{{existingVocabId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Add Vocabulary 2 to Lesson (Creator Bearer 200 OK)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Vocabulary 2 added, total count is at least 2\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"SUCCESS\");",
+                  "    pm.expect(json.data.vocabularies.length).to.be.at.least(2);",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{creatorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/creator/lessons/{{createdLessonId}}/vocabularies/{{existingVocabId2}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "creator",
+                "lessons",
+                "{{createdLessonId}}",
+                "vocabularies",
+                "{{existingVocabId2}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Reorder Vocabularies within Lesson (Creator Bearer 200 OK)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "var id1 = Number(pm.environment.get(\"existingVocabId\"));",
+                  "var id2 = Number(pm.environment.get(\"existingVocabId2\"));",
+                  "pm.environment.set(\"reorderPayload\", JSON.stringify({ orderedVocabIds: [id2, id1] }));",
+                  ""
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Reordered items orderIndex updated\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"SUCCESS\");",
+                  "    var vocabs = json.data.vocabularies;",
+                  "    var id1 = Number(pm.environment.get(\"existingVocabId\"));",
+                  "    var id2 = Number(pm.environment.get(\"existingVocabId2\"));",
+                  "    pm.expect(vocabs[0].vocabId).to.eql(id2);",
+                  "    pm.expect(vocabs[1].vocabId).to.eql(id1);",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{creatorToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/creator/lessons/{{createdLessonId}}/reorder",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "creator",
+                "lessons",
+                "{{createdLessonId}}",
+                "reorder"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{{reorderPayload}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Remove Vocabulary 2 from Lesson (Creator Bearer 200 OK)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Vocabulary 2 removed from lesson, Vocab 1 remains (count=1)\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"SUCCESS\");",
+                  "    var id2 = Number(pm.environment.get(\"existingVocabId2\"));",
+                  "    pm.expect(json.data.vocabularies.some(v => v.vocabId === id2)).to.be.false;",
+                  "    pm.expect(json.data.vocabularies.length).to.be.at.least(1);",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{creatorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/creator/lessons/{{createdLessonId}}/vocabularies/{{existingVocabId2}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "creator",
+                "lessons",
+                "{{createdLessonId}}",
+                "vocabularies",
+                "{{existingVocabId2}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Submit Lesson For Moderation (Creator Bearer 200 OK)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Lesson transitions from 'Draft' to 'Pending' status\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"SUCCESS\");",
+                  "    pm.expect(json.data.status).to.eql(\"Pending\");",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{creatorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/creator/lessons/{{createdLessonId}}/submit",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "creator",
+                "lessons",
+                "{{createdLessonId}}",
+                "submit"
+              ]
+            }
+          }
+        },
+        {
+          "name": "RBAC Negative - Learner Forbidden on Creator Endpoint (403 Forbidden)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 403 Forbidden\", function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});",
+                  "pm.test(\"Response code is FORBIDDEN\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"FORBIDDEN\");",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{learnerToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/creator/lessons",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "creator",
+                "lessons"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Learner Illegitimate Creation Attempt\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Excel Import Preview (Creator Bearer 200 OK)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Report validation isValid is true with 5 rows parsed\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"SUCCESS\");",
+                  "    pm.expect(json.data.isValid).to.be.true;",
+                  "    pm.expect(json.data.fileStatus).to.eql(\"VALID\");",
+                  "    pm.expect(json.data.totalRows).to.eql(5);",
+                  "    pm.expect(json.data.rows).to.be.an(\"array\");",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{creatorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/creator/lessons/import",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "creator",
+                "lessons",
+                "import"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "tests/postman/fixtures/sample-curriculum-valid.xlsx"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Excel Import Preview Negative - Bad Headers (Creator Bearer 200 OK with INVALID status)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Report indicates file is invalid with HEADER_ERROR status\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"SUCCESS\");",
+                  "    pm.expect(json.data.isValid).to.be.false;",
+                  "    pm.expect(json.data.fileStatus).to.be.oneOf([\"HEADER_ERROR\", \"INVALID\"]);",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{creatorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/creator/lessons/import",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "creator",
+                "lessons",
+                "import"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "tests/postman/fixtures/sample-curriculum-bad-headers.xlsx"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Excel Import Preview Negative - Unauthenticated (401 Unauthorized)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 401 Unauthorized\", function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "pm.test(\"Response code is UNAUTHORIZED\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"UNAUTHORIZED\");",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/creator/lessons/import",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "creator",
+                "lessons",
+                "import"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "tests/postman/fixtures/sample-curriculum-valid.xlsx"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Confirm Excel Curriculum Import (Creator Bearer 201 Created)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 201 Created\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test(\"Import creates draft lesson with constituent vocabularies\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"SUCCESS\");",
+                  "    pm.expect(json.data.status).to.eql(\"Draft\");",
+                  "    pm.expect(json.data.vocabularies).to.be.an(\"array\");",
+                  "    pm.expect(json.data.vocabularies.length).to.eql(5);",
+                  "    pm.environment.set(\"importedLessonId\", String(json.data.lessonId));",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{creatorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/creator/lessons/import/confirm",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "creator",
+                "lessons",
+                "import",
+                "confirm"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "title",
+                  "type": "text",
+                  "value": "Bài học Tạo từ Excel Tự Động"
+                },
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "tests/postman/fixtures/sample-curriculum-valid.xlsx"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Confirm Import Negative - Blank Title (Creator Bearer 400 Bad Request)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 400 Bad Request\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test(\"Response code is BAD_REQUEST\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"BAD_REQUEST\");",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{creatorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/creator/lessons/import/confirm",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "creator",
+                "lessons",
+                "import",
+                "confirm"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "title",
+                  "type": "text",
+                  "value": "   "
+                },
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "tests/postman/fixtures/sample-curriculum-valid.xlsx"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Confirm Import Negative - Invalid File (Creator Bearer 422 Unprocessable Entity)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 422 Unprocessable Entity\", function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test(\"Response code is UNPROCESSABLE_ENTITY\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"UNPROCESSABLE_ENTITY\");",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{creatorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/creator/lessons/import/confirm",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "creator",
+                "lessons",
+                "import",
+                "confirm"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "title",
+                  "type": "text",
+                  "value": "Bài học Thất Bại"
+                },
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "tests/postman/fixtures/sample-curriculum-bad-headers.xlsx"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Imported Draft Lesson (Creator Bearer 204 No Content)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 204 No Content\", function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{creatorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/creator/lessons/{{importedLessonId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "creator",
+                "lessons",
+                "{{importedLessonId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Draft Lesson For Deletion Test (Creator Bearer 201 Created)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 201 Created\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test(\"Saves lessonToDeleteId\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"SUCCESS\");",
+                  "    pm.environment.set(\"lessonToDeleteId\", String(json.data.lessonId));",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{creatorToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/creator/lessons",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "creator",
+                "lessons"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Bài học Nháp Dành Cho Test Xóa\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Delete Draft Lesson (Creator Bearer 204 No Content)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 204 No Content\", function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{creatorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/creator/lessons/{{lessonToDeleteId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "creator",
+                "lessons",
+                "{{lessonToDeleteId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Verify Deleted Lesson Not Found (Creator Bearer 404 Not Found)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 404 Not Found\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "pm.test(\"Response code is NOT_FOUND\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"NOT_FOUND\");",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{creatorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/creator/lessons/{{lessonToDeleteId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "creator",
+                "lessons",
+                "{{lessonToDeleteId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Lesson Negative - Non-Existent ID (Creator Bearer 404 Not Found)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 404 Not Found\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "pm.test(\"Response code is NOT_FOUND\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"NOT_FOUND\");",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{creatorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/creator/lessons/999999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "creator",
+                "lessons",
+                "999999"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Lesson Negative - Learner Forbidden (403 Forbidden)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 403 Forbidden\", function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});",
+                  "pm.test(\"Response code is FORBIDDEN\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"FORBIDDEN\");",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{learnerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/creator/lessons/{{approvedLessonId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "creator",
+                "lessons",
+                "{{approvedLessonId}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "09. Content Moderation & Quality Review",
+      "description": "Moderator queue review, approval/rejection state machine, and RBAC defense",
+      "item": [
+        {
+          "name": "Get Pending Lessons Queue (Moderator Bearer 200 OK)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Queue returns pending lessons array\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"SUCCESS\");",
+                  "    pm.expect(json.data.items).to.be.an(\"array\");",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{moderatorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/moderator/lessons/pending?page=0&size=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "moderator",
+                "lessons",
+                "pending"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0",
+                  "description": ""
+                },
+                {
+                  "key": "size",
+                  "value": "20",
+                  "description": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Pending Lesson Detail (Moderator Bearer 200 OK)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Moderator views pending lesson detail\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"SUCCESS\");",
+                  "    pm.expect(String(json.data.lessonId)).to.eql(pm.environment.get(\"createdLessonId\"));",
+                  "    pm.expect(json.data.status).to.eql(\"Pending\");",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{moderatorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/moderator/lessons/{{createdLessonId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "moderator",
+                "lessons",
+                "{{createdLessonId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Reject Pending Lesson with Reason & Flags (Moderator Bearer 200 OK)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Lesson transitioned to 'Rejected' status\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"SUCCESS\");",
+                  "    pm.expect(json.data.status).to.eql(\"Rejected\");",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{moderatorToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/moderator/lessons/{{createdLessonId}}/reject",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "moderator",
+                "lessons",
+                "{{createdLessonId}}",
+                "reject"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rejectionReason\": \"Cần bổ sung thêm ví dụ ngữ cảnh cho các từ vựng theo chuẩn sư phạm\",\n  \"flaggedFields\": \"{\\\"vocabularies\\\":\\\"examples needed\\\"}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Creator Re-submits Rejected Lesson (Creator Bearer 200 OK)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Lesson successfully re-submitted to 'Pending'\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"SUCCESS\");",
+                  "    pm.expect(json.data.status).to.eql(\"Pending\");",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{creatorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/creator/lessons/{{createdLessonId}}/submit",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "creator",
+                "lessons",
+                "{{createdLessonId}}",
+                "submit"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Approve Pending Lesson with Note (Moderator Bearer 200 OK)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Lesson transitioned to 'Approved' status\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"SUCCESS\");",
+                  "    pm.expect(json.data.status).to.eql(\"Approved\");",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{moderatorToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/moderator/lessons/{{createdLessonId}}/approve",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "moderator",
+                "lessons",
+                "{{createdLessonId}}",
+                "approve"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"note\": \"Bài học đã được chỉnh sửa đạt chuẩn chất lượng HSK 1\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Delete Lesson Negative - Creator Cannot Delete Approved Lesson (409 Conflict)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 409 Conflict\", function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});",
+                  "pm.test(\"Response code is CONFLICT\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"CONFLICT\");",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{creatorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/creator/lessons/{{createdLessonId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "creator",
+                "lessons",
+                "{{createdLessonId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Moderator Audit History (Moderator Bearer 200 OK)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"History returns moderation log entries with audit details\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"SUCCESS\");",
+                  "    pm.expect(json.data.items).to.be.an(\"array\");",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{moderatorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/moderator/history?page=0&size=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "moderator",
+                "history"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0",
+                  "description": ""
+                },
+                {
+                  "key": "size",
+                  "value": "20",
+                  "description": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "RBAC Negative - Learner Forbidden on Moderator Queue (403 Forbidden)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 403 Forbidden\", function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});",
+                  "pm.test(\"Response code is FORBIDDEN\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"FORBIDDEN\");",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{learnerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/moderator/lessons/pending",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "moderator",
+                "lessons",
+                "pending"
+              ]
+            }
+          }
+        },
+        {
+          "name": "RBAC Negative - Creator Forbidden on Moderator Queue (403 Forbidden)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 403 Forbidden\", function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});",
+                  "pm.test(\"Response code is FORBIDDEN\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"FORBIDDEN\");",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{creatorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/moderator/lessons/pending",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "moderator",
+                "lessons",
+                "pending"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "10. System Administration & Content Governance",
+      "description": "Admin accounts, roles, global lessons, catalog CRUD, and strict RBAC isolation",
+      "item": [
+        {
+          "name": "List Accounts Paginated (Admin Bearer 200 OK)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Accounts list returned with account metadata\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"SUCCESS\");",
+                  "    pm.expect(json.data.items).to.be.an(\"array\");",
+                  "    var first = json.data.items[0];",
+                  "    pm.expect(first).to.have.property(\"accountId\");",
+                  "    pm.expect(first).to.have.property(\"emailOrPhone\");",
+                  "    pm.expect(first).to.have.property(\"status\");",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/accounts?page=0&size=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "accounts"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0",
+                  "description": ""
+                },
+                {
+                  "key": "size",
+                  "value": "20",
+                  "description": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "List System Roles (Admin Bearer 200 OK)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Returns 4 system roles (Learner, Creator, Moderator, Admin)\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"SUCCESS\");",
+                  "    pm.expect(json.data).to.be.an(\"array\").and.have.lengthOf(4);",
+                  "    var roleNames = json.data.map(r => r.roleName);",
+                  "    pm.expect(roleNames).to.include.members([\"Learner\", \"Creator\", \"Moderator\", \"Admin\"]);",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/roles",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "roles"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Account Status (Admin Bearer 200 OK)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Target account status is Active\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"SUCCESS\");",
+                  "    pm.expect(json.data.status).to.eql(\"Active\");",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/accounts/{{learnerAccountId}}/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "accounts",
+                "{{learnerAccountId}}",
+                "status"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"Active\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Update Account Roles (Admin Bearer 200 OK)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Roles updated properly\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"SUCCESS\");",
+                  "    pm.expect(json.data.roles).to.include(\"Learner\");",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/accounts/{{learnerAccountId}}/roles",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "accounts",
+                "{{learnerAccountId}}",
+                "roles"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"roles\": [\n    \"Learner\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Admin Global Lessons Oversight (Admin Bearer 200 OK)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Admin can observe lessons across all lifecycle statuses\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"SUCCESS\");",
+                  "    pm.expect(json.data.items).to.be.an(\"array\");",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/lessons?page=0&size=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "lessons"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0",
+                  "description": ""
+                },
+                {
+                  "key": "size",
+                  "value": "20",
+                  "description": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Kangxi Radical (Admin Bearer 201 Created)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "var chars = [\"欐\", \"麤\", \"龘\", \"靐\", \"齉\", \"鱻\", \"爩\", \"龖\", \"矗\", \"猋\", \"贔\", \"灥\"];",
+                  "var chosenChar = chars[Math.floor(Math.random() * chars.length)] + Date.now().toString().slice(-2);",
+                  "pm.environment.set(\"testRadicalChar\", chosenChar);",
+                  ""
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 201 Created\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test(\"Radical created and saves radicalId\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"SUCCESS\");",
+                  "    pm.expect(json.data).to.have.property(\"radicalId\");",
+                  "    pm.environment.set(\"createdRadicalId\", String(json.data.radicalId));",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/radicals",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "radicals"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"character\": \"{{testRadicalChar}}\",\n  \"pinyin\": \"ce\",\n  \"meaningHanViet\": \"Trac\",\n  \"meaningVi\": \"Bo thu kiem thu tao tu dong\",\n  \"audioUrl\": \"https://example.com/audio/test.mp3\",\n  \"videoWritingUrl\": \"https://example.com/video/test.mp4\",\n  \"explanationVi\": \"Bo thu kiem thu CRUD\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Update Kangxi Radical (Admin Bearer 200 OK)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Radical meaningVi updated\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"SUCCESS\");",
+                  "    pm.expect(json.data.meaningVi).to.include(\"da cap nhat\");",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/radicals/{{createdRadicalId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "radicals",
+                "{{createdRadicalId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"character\": \"{{testRadicalChar}}\",\n  \"pinyin\": \"ce\",\n  \"meaningHanViet\": \"Trac\",\n  \"meaningVi\": \"Bo thu da cap nhat\",\n  \"audioUrl\": \"https://example.com/audio/updated.mp3\",\n  \"videoWritingUrl\": \"https://example.com/video/updated.mp4\",\n  \"explanationVi\": \"Giai thich da cap nhat\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Delete Kangxi Radical (Admin Bearer 204 No Content)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 204 No Content\", function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/radicals/{{createdRadicalId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "radicals",
+                "{{createdRadicalId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Vocabulary Item (Admin Bearer 201 Created)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "var uniqueSuffix = Date.now().toString().slice(-4);",
+                  "pm.environment.set(\"testVocabHanzi\", \"字\" + uniqueSuffix);",
+                  "pm.environment.set(\"testVocabPinyinRaw\", \"zi\" + uniqueSuffix);",
+                  ""
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 201 Created\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test(\"Vocabulary item created and saves vocabId\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"SUCCESS\");",
+                  "    pm.expect(json.data).to.have.property(\"vocabId\");",
+                  "    pm.environment.set(\"createdVocabId\", String(json.data.vocabId));",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/vocabulary",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "vocabulary"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"hanzi\": \"{{testVocabHanzi}}\",\n  \"pinyin\": \"zì\",\n  \"pinyinRaw\": \"{{testVocabPinyinRaw}}\",\n  \"meaningHanViet\": \"Tu\",\n  \"meaningVi\": \"Chu Han kiem thu CRUD\",\n  \"exampleSentence\": \"Day la cau vi du.\",\n  \"exampleTranslation\": \"This is example sentence.\",\n  \"radicalIds\": [\n    1\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Update Vocabulary Item (Admin Bearer 200 OK)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Vocabulary meaningVi updated\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"SUCCESS\");",
+                  "    pm.expect(json.data.meaningVi).to.include(\"da cap nhat\");",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/vocabulary/{{createdVocabId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "vocabulary",
+                "{{createdVocabId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"hanzi\": \"{{testVocabHanzi}}\",\n  \"pinyin\": \"zì\",\n  \"pinyinRaw\": \"{{testVocabPinyinRaw}}\",\n  \"meaningHanViet\": \"Tu\",\n  \"meaningVi\": \"Chu Han kiem thu da cap nhat\",\n  \"exampleSentence\": \"Day la cau vi du.\",\n  \"exampleTranslation\": \"This is example sentence.\",\n  \"radicalIds\": [\n    1\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Delete Vocabulary Item (Admin Bearer 204 No Content)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 204 No Content\", function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/vocabulary/{{createdVocabId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "vocabulary",
+                "{{createdVocabId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "RBAC Negative - Learner Forbidden on Admin Accounts (403 Forbidden)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 403 Forbidden\", function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});",
+                  "pm.test(\"Response code is FORBIDDEN\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"FORBIDDEN\");",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{learnerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/accounts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "accounts"
+              ]
+            }
+          }
+        },
+        {
+          "name": "RBAC Negative - Creator Forbidden on Admin Roles (403 Forbidden)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 403 Forbidden\", function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});",
+                  "pm.test(\"Response code is FORBIDDEN\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"FORBIDDEN\");",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{creatorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/roles",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "roles"
+              ]
+            }
+          }
+        },
+        {
+          "name": "RBAC Negative - Moderator Forbidden on Admin Lessons (403 Forbidden)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "",
+                  "pm.test(\"Status code is 403 Forbidden\", function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});",
+                  "pm.test(\"Response code is FORBIDDEN\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(\"FORBIDDEN\");",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{moderatorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/lessons",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "lessons"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

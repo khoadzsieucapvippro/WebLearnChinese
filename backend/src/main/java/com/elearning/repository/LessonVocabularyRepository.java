@@ -3,6 +3,7 @@ package com.elearning.repository;
 import com.elearning.entity.Lesson;
 import com.elearning.entity.LessonVocabulary;
 import com.elearning.entity.LessonVocabularyId;
+import com.elearning.entity.UserProfile;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -86,6 +87,50 @@ public interface LessonVocabularyRepository extends JpaRepository<LessonVocabula
             @Param("lessonId") Long lessonId,
             @Param("user") com.elearning.entity.UserProfile user,
             org.springframework.data.domain.Pageable pageable);
+
+    /**
+     * Finds new-card candidate vocabulary items for a given lesson and skill card type
+     * (no existing CardProgress for that specific cardType).
+     */
+    @Query("SELECT lv FROM LessonVocabulary lv " +
+           "JOIN FETCH lv.vocabulary v " +
+           "WHERE lv.lesson.lessonId = :lessonId " +
+           "  AND lv.lesson.status = 'Approved' " +
+           "  AND NOT EXISTS (" +
+           "      SELECT 1 FROM CardProgress cp " +
+           "      WHERE cp.user = :user " +
+           "        AND cp.itemType = 'VOCABULARY' " +
+           "        AND cp.itemId = v.vocabId " +
+           "        AND cp.cardType = :cardType" +
+           "  ) " +
+           "ORDER BY lv.orderIndex ASC")
+    List<LessonVocabulary> findNewCardCandidatesBySkill(
+            @Param("lessonId") Long lessonId,
+            @Param("user") com.elearning.entity.UserProfile user,
+            @Param("cardType") String cardType,
+            org.springframework.data.domain.Pageable pageable);
+
+    /**
+     * Counts candidate vocabulary items for a given lesson that have not yet been studied
+     * (no existing CardProgress) by the specified user.
+     * Enforces lesson Approved status directly in the query.
+     *
+     * @param lessonId the parent lesson ID
+     * @param user the current authenticated learner profile
+     * @return count of unstudied vocabulary items in the approved lesson
+     */
+    @Query("SELECT COUNT(lv) FROM LessonVocabulary lv " +
+           "WHERE lv.lesson.lessonId = :lessonId " +
+           "  AND lv.lesson.status = 'Approved' " +
+           "  AND NOT EXISTS (" +
+           "      SELECT 1 FROM CardProgress cp " +
+           "      WHERE cp.user = :user " +
+           "        AND cp.itemType = 'VOCABULARY' " +
+           "        AND cp.itemId = lv.vocabulary.vocabId" +
+           "  )")
+    long countNewCardCandidates(
+            @Param("lessonId") Long lessonId,
+            @Param("user") UserProfile user);
 
     /**
      * Counts vocabulary items grouped by lesson ID for a given collection of lesson IDs.

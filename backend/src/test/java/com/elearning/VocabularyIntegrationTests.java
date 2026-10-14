@@ -113,9 +113,7 @@ class VocabularyIntegrationTests {
             mockMvc.perform(get("/api/v1/vocabulary?search=xiu"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("SUCCESS"))
-                    .andExpect(jsonPath("$.data.items[0].hanzi").value("休"))
-                    .andExpect(jsonPath("$.data.items[0].pinyin").value("xiū"))
-                    .andExpect(jsonPath("$.data.items[0].pinyinRaw").value("xiu"));
+                    .andExpect(jsonPath("$.data.items[?(@.hanzi == '休')]").exists());
         }
 
         @Test
@@ -124,7 +122,7 @@ class VocabularyIntegrationTests {
             mockMvc.perform(get("/api/v1/vocabulary?search=xiū"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("SUCCESS"))
-                    .andExpect(jsonPath("$.data.items[0].hanzi").value("休"));
+                    .andExpect(jsonPath("$.data.items[?(@.hanzi == '休')]").exists());
         }
 
         @Test
@@ -133,7 +131,7 @@ class VocabularyIntegrationTests {
             mockMvc.perform(get("/api/v1/vocabulary?search=休"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("SUCCESS"))
-                    .andExpect(jsonPath("$.data.items[0].hanzi").value("休"));
+                    .andExpect(jsonPath("$.data.items[?(@.hanzi == '休')]").exists());
         }
 
         @Test

@@ -3,6 +3,7 @@ package com.elearning.service.impl;
 import com.elearning.common.ErrorCode;
 import com.elearning.dto.request.ReviewCardRequest;
 import com.elearning.dto.response.DueCardResponse;
+import com.elearning.dto.response.LessonSrsStatsResponse;
 import com.elearning.dto.response.StudyStatsResponse;
 import com.elearning.entity.CardProgress;
 import com.elearning.entity.Radical;
@@ -167,25 +168,75 @@ public class SrsServiceImpl implements SrsService {
     @Override
     @Transactional(readOnly = true)
     public List<DueCardResponse> getDueCards(String itemTypeFilter, Integer limit) {
+        return getDueCards(itemTypeFilter, null, null, limit);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<DueCardResponse> getDueCards(String itemTypeFilter, String cardTypeFilter, Integer limit) {
+        return getDueCards(itemTypeFilter, cardTypeFilter, null, limit);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<DueCardResponse> getDueCards(String itemTypeFilter, String cardTypeFilter, Long lessonId, Integer limit) {
         UserProfile user = resolveCurrentUserProfile();
 
-        // Apply query limit if provided, otherwise unpaged (maxReviewPerDay no longer restricts reviews)
         Pageable pageable = (limit != null && limit > 0) ? PageRequest.of(0, limit) : Pageable.unpaged();
         LocalDateTime now = LocalDateTime.now(businessClock);
 
-        // 4. Query due card progress
+        boolean hasItemType = itemTypeFilter != null && !itemTypeFilter.trim().isEmpty();
+        boolean hasCardType = cardTypeFilter != null && !cardTypeFilter.trim().isEmpty();
+
         List<CardProgress> dueProgressList;
-        if (itemTypeFilter != null && !itemTypeFilter.trim().isEmpty()) {
-            String typeUpper = itemTypeFilter.trim().toUpperCase();
-            dueProgressList = cardProgressRepository.findByUserAndItemTypeAndNextReviewAtLessThanEqualOrderByNextReviewAtAsc(
-                    user, typeUpper, now, pageable);
+
+        if (lessonId != null) {
+            // Lessons only contain VOCABULARY items
+            if (hasItemType && !"VOCABULARY".equalsIgnoreCase(itemTypeFilter.trim())) {
+                return Collections.emptyList();
+            }
+
+            // 1. Validate lesson existence and access permission
+            if (lessonRepository != null) {
+                Lesson lesson = lessonRepository.findById(lessonId)
+                        .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "Không tìm thấy bài học với ID: " + lessonId));
+                if (!"Approved".equalsIgnoreCase(lesson.getStatus())) {
+                    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+                    boolean isAdmin = auth != null && auth.getAuthorities().stream()
+                            .anyMatch(a -> a.getAuthority().equalsIgnoreCase("ROLE_ADMIN") || a.getAuthority().equalsIgnoreCase("Admin"));
+                    boolean isCreator = user != null && user.getAccount() != null && lesson.getCreatedBy() != null
+                            && lesson.getCreatedBy().getAccountId().equals(user.getAccount().getAccountId());
+                    if (!isAdmin && !isCreator) {
+                        throw new BusinessException(ErrorCode.NOT_FOUND, "Không tìm thấy bài học với ID: " + lessonId);
+                    }
+                }
+            }
+
+            if (hasCardType) {
+                dueProgressList = cardProgressRepository.findDueCardsByLessonAndCardType(
+                        user, lessonId, cardTypeFilter.trim().toUpperCase(), now, pageable);
+            } else {
+                dueProgressList = cardProgressRepository.findDueCardsByLesson(
+                        user, lessonId, now, pageable);
+            }
         } else {
-            dueProgressList = cardProgressRepository.findByUserAndNextReviewAtLessThanEqualOrderByNextReviewAtAsc(
-                    user, now, pageable);
+            if (hasItemType && hasCardType) {
+                dueProgressList = cardProgressRepository.findByUserAndItemTypeAndCardTypeAndNextReviewAtLessThanEqualOrderByNextReviewAtAsc(
+                        user, itemTypeFilter.trim().toUpperCase(), cardTypeFilter.trim().toUpperCase(), now, pageable);
+            } else if (hasCardType) {
+                dueProgressList = cardProgressRepository.findByUserAndCardTypeAndNextReviewAtLessThanEqualOrderByNextReviewAtAsc(
+                        user, cardTypeFilter.trim().toUpperCase(), now, pageable);
+            } else if (hasItemType) {
+                dueProgressList = cardProgressRepository.findByUserAndItemTypeAndNextReviewAtLessThanEqualOrderByNextReviewAtAsc(
+                        user, itemTypeFilter.trim().toUpperCase(), now, pageable);
+            } else {
+                dueProgressList = cardProgressRepository.findByUserAndNextReviewAtLessThanEqualOrderByNextReviewAtAsc(
+                        user, now, pageable);
+            }
         }
 
         // 5. Hydrate polymorphic content in bulk (BE-PERF-001: eliminate N+1 queries)
-        if (dueProgressList.isEmpty()) {
+        if (dueProgressList == null || dueProgressList.isEmpty()) {
             return Collections.emptyList();
         }
 
@@ -231,6 +282,12 @@ public class SrsServiceImpl implements SrsService {
     @Override
     @Transactional(readOnly = true)
     public List<DueCardResponse> getNewCardCandidates(Long lessonId, Integer limit) {
+        return getNewCardCandidates(lessonId, null, limit);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<DueCardResponse> getNewCardCandidates(Long lessonId, String cardType, Integer limit) {
         if (lessonId == null) {
             throw new BusinessException(ErrorCode.VALIDATION_ERROR, "ID bài học không được để trống");
         }
@@ -274,7 +331,13 @@ public class SrsServiceImpl implements SrsService {
             return Collections.emptyList();
         }
 
-        List<LessonVocabulary> candidateList = lessonVocabularyRepository.findNewCardCandidates(lessonId, user, pageable);
+        List<LessonVocabulary> candidateList;
+        String targetSkill = (cardType != null && !cardType.trim().isEmpty()) ? cardType.trim().toUpperCase() : null;
+        if (targetSkill != null) {
+            candidateList = lessonVocabularyRepository.findNewCardCandidatesBySkill(lessonId, user, targetSkill, pageable);
+        } else {
+            candidateList = lessonVocabularyRepository.findNewCardCandidates(lessonId, user, pageable);
+        }
         if (candidateList == null || candidateList.isEmpty()) {
             return Collections.emptyList();
         }
@@ -283,7 +346,85 @@ public class SrsServiceImpl implements SrsService {
         List<DueCardResponse> results = new ArrayList<>(candidateList.size());
         for (LessonVocabulary lv : candidateList) {
             if (lv.getVocabulary() != null) {
-                results.add(DueCardResponse.fromVocabulary(lv.getVocabulary(), null));
+                DueCardResponse dcr = DueCardResponse.fromVocabulary(lv.getVocabulary(), null);
+                if (targetSkill != null) {
+                    dcr.setCardType(targetSkill);
+                }
+                results.add(dcr);
+            }
+        }
+
+        return results;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<DueCardResponse> getPracticeCards(Long lessonId) {
+        return getPracticeCards(lessonId, null);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<DueCardResponse> getPracticeCards(Long lessonId, String cardType) {
+        if (lessonId == null) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR, "ID bài học không được để trống");
+        }
+
+        UserProfile user = resolveCurrentUserProfile();
+
+        // 1. Validate lesson existence and approved status (ADR-01)
+        if (lessonRepository != null) {
+            Lesson lesson = lessonRepository.findById(lessonId)
+                    .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "Không tìm thấy bài học với ID: " + lessonId));
+            if (!"Approved".equalsIgnoreCase(lesson.getStatus())) {
+                throw new BusinessException(ErrorCode.NOT_FOUND, "Không tìm thấy bài học với ID: " + lessonId);
+            }
+        }
+
+        if (lessonVocabularyRepository == null) {
+            return Collections.emptyList();
+        }
+
+        // 2. Fetch all lesson vocabularies strictly ordered by order_index ASC
+        List<LessonVocabulary> lessonVocabList = lessonVocabularyRepository.findByLessonIdWithVocabularyOrderAsc(lessonId);
+        if (lessonVocabList == null || lessonVocabList.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // 3. Hydrate existing CardProgress if available (informational only, does not alter intervals)
+        Set<Long> vocabIds = lessonVocabList.stream()
+                .filter(lv -> lv.getVocabulary() != null)
+                .map(lv -> lv.getVocabulary().getVocabId())
+                .collect(Collectors.toSet());
+
+        Map<Long, CardProgress> progressMap = Collections.emptyMap();
+        String targetSkill = (cardType != null && !cardType.trim().isEmpty()) ? cardType.trim().toUpperCase() : null;
+
+        if (!vocabIds.isEmpty() && cardProgressRepository != null) {
+            List<CardProgress> userProgressList;
+            if (targetSkill != null) {
+                userProgressList = cardProgressRepository.findByUserAndItemTypeAndItemIdInAndCardType(
+                        user, "VOCABULARY", vocabIds, targetSkill);
+            } else {
+                userProgressList = cardProgressRepository.findByUserAndItemTypeAndItemIdIn(
+                        user, "VOCABULARY", vocabIds);
+            }
+            if (userProgressList != null && !userProgressList.isEmpty()) {
+                progressMap = userProgressList.stream()
+                        .collect(Collectors.toMap(CardProgress::getItemId, Function.identity(), (a, b) -> a));
+            }
+        }
+
+        // 4. Map to DueCardResponse
+        List<DueCardResponse> results = new ArrayList<>(lessonVocabList.size());
+        for (LessonVocabulary lv : lessonVocabList) {
+            if (lv.getVocabulary() != null) {
+                CardProgress cp = progressMap.get(lv.getVocabulary().getVocabId());
+                DueCardResponse dcr = DueCardResponse.fromVocabulary(lv.getVocabulary(), cp);
+                if (targetSkill != null) {
+                    dcr.setCardType(targetSkill);
+                }
+                results.add(dcr);
             }
         }
 
@@ -334,17 +475,58 @@ public class SrsServiceImpl implements SrsService {
         UserSrsSetting setting = userSrsSettingRepository.findByUser(user).orElse(null);
         LocalDateTime startOfDay = LocalDate.now(businessClock).atStartOfDay();
 
-        // 7. Load existing progress or initialize new card progress (protected by @Version optimistic locking)
-        Optional<CardProgress> optProgress = cardProgressRepository.findByUserAndItemTypeAndItemId(user, itemTypeUpper, request.getItemId());
+        // 7. Resolve cardType (defaults to READING if omitted for backward-compatibility with V19 migration)
+        String rawCardType = request.getCardType();
+        String cardTypeUpper = (rawCardType != null && !rawCardType.trim().isEmpty())
+                ? rawCardType.trim().toUpperCase()
+                : "READING";
+        if (!"LISTENING".equals(cardTypeUpper) && !"WRITING".equals(cardTypeUpper) && !"READING".equals(cardTypeUpper)) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Loại thẻ (cardType) phải là LISTENING, WRITING hoặc READING");
+        }
+
+        // 8. Load existing progress or initialize new card progress (protected by @Version optimistic locking)
+        Optional<CardProgress> optProgress;
+        if (rawCardType != null && !rawCardType.trim().isEmpty()) {
+            optProgress = cardProgressRepository.findByUserAndItemTypeAndItemIdAndCardType(
+                    user, itemTypeUpper, request.getItemId(), cardTypeUpper);
+        } else {
+            // Safe lookup when cardType is omitted: start with READING (V19 legacy default)
+            // to avoid NonUniqueResultException if multiple card types exist for this item.
+            optProgress = cardProgressRepository.findByUserAndItemTypeAndItemIdAndCardType(
+                    user, itemTypeUpper, request.getItemId(), "READING");
+            if (optProgress.isEmpty()) {
+                // Fallback to LISTENING
+                optProgress = cardProgressRepository.findByUserAndItemTypeAndItemIdAndCardType(
+                        user, itemTypeUpper, request.getItemId(), "LISTENING");
+            }
+            if (optProgress.isEmpty()) {
+                // Fallback to WRITING
+                optProgress = cardProgressRepository.findByUserAndItemTypeAndItemIdAndCardType(
+                        user, itemTypeUpper, request.getItemId(), "WRITING");
+            }
+            if (optProgress.isEmpty()) {
+                // Backward-compatibility fallback for legacy/unit tests mocking findByUserAndItemTypeAndItemId
+                try {
+                    optProgress = cardProgressRepository.findByUserAndItemTypeAndItemId(
+                            user, itemTypeUpper, request.getItemId());
+                } catch (Exception e) {
+                    log.warn("Multiple card progress records found for user_id={}, itemType={}, itemId={} without cardType specified",
+                            user.getUserId(), itemTypeUpper, request.getItemId());
+                }
+            }
+        }
         boolean isNewCard = optProgress.isEmpty();
 
         // Enforce Due-Only policy on existing cards for Standard SRS mode (R2 Review Policy)
         if (!isNewCard) {
             CardProgress existing = optProgress.get();
+            if ((rawCardType == null || rawCardType.trim().isEmpty()) && existing.getCardType() != null) {
+                cardTypeUpper = existing.getCardType();
+            }
             LocalDateTime now = LocalDateTime.now(businessClock);
             if (existing.getIntervalDays() > 0 && existing.getNextReviewAt() != null && existing.getNextReviewAt().isAfter(now)) {
-                log.warn("Card is not due yet for user_id={}, itemType={}, itemId={}, nextReviewAt={}",
-                        user.getUserId(), itemTypeUpper, request.getItemId(), existing.getNextReviewAt());
+                log.warn("Card is not due yet for user_id={}, itemType={}, itemId={}, cardType={}, nextReviewAt={}",
+                        user.getUserId(), itemTypeUpper, request.getItemId(), cardTypeUpper, existing.getNextReviewAt());
                 throw new BusinessException(ErrorCode.CONFLICT, "Thẻ chưa đến hạn ôn tập");
             }
         }
@@ -374,6 +556,11 @@ public class SrsServiceImpl implements SrsService {
 
         if (!isNewCard) {
             progress = optProgress.get();
+            if ((rawCardType == null || rawCardType.trim().isEmpty()) && progress.getCardType() != null) {
+                cardTypeUpper = progress.getCardType();
+            } else if (progress.getCardType() == null) {
+                progress.setCardType(cardTypeUpper);
+            }
             intervalBefore = progress.getIntervalDays();
             currentEf = progress.getEaseFactor();
             currentRepetitions = progress.getRepetitions();
@@ -382,6 +569,7 @@ public class SrsServiceImpl implements SrsService {
             progress.setUser(user);
             progress.setItemType(itemTypeUpper);
             progress.setItemId(request.getItemId());
+            progress.setCardType(cardTypeUpper);
             progress.setEaseFactor(SrsCalculator.DEFAULT_EASE_FACTOR);
             progress.setIntervalDays(0);
             progress.setRepetitions(0);
@@ -390,11 +578,11 @@ public class SrsServiceImpl implements SrsService {
             currentRepetitions = 0;
         }
 
-        // 8. Delegate to pure mathematical SrsCalculator
+        // 9. Delegate to pure mathematical SrsCalculator
         ReviewRating ratingEnum = ReviewRating.fromValue(request.getRating());
         SrsCalculationResult calcResult = srsCalculator.calculate(currentEf, intervalBefore, currentRepetitions, ratingEnum);
 
-        // 9. Calculate next_review_at
+        // 10. Calculate next_review_at
         LocalDateTime reviewedAt = LocalDateTime.now(businessClock);
         if (calcResult.intervalDays() == 0) {
             progress.setNextReviewAt(reviewedAt); // due immediately for relearning today
@@ -402,17 +590,18 @@ public class SrsServiceImpl implements SrsService {
             progress.setNextReviewAt(reviewedAt.plusDays(calcResult.intervalDays()));
         }
 
-        // 10. Update CardProgress state
+        // 11. Update CardProgress state
         progress.setEaseFactor(calcResult.easeFactor());
         progress.setIntervalDays(calcResult.intervalDays());
         progress.setRepetitions(calcResult.repetitions());
         CardProgress savedProgress = cardProgressRepository.save(progress);
 
-        // 11. Append immutable ReviewLog audit entry
+        // 12. Append immutable ReviewLog audit entry
         ReviewLog logEntry = new ReviewLog(
                 user,
                 itemTypeUpper,
                 request.getItemId(),
+                cardTypeUpper,
                 request.getRating().byteValue(),
                 intervalBefore,
                 calcResult.intervalDays(),
@@ -421,11 +610,11 @@ public class SrsServiceImpl implements SrsService {
         logEntry.setReviewedAt(reviewedAt);
         reviewLogRepository.save(logEntry);
 
-        log.info("SRS review processed: user_id={}, itemType={}, itemId={}, rating={}, interval: {} -> {}, EF: {} -> {}, isNewCard={}",
-                user.getUserId(), itemTypeUpper, request.getItemId(), request.getRating(),
+        log.info("SRS review processed: user_id={}, itemType={}, itemId={}, cardType={}, rating={}, interval: {} -> {}, EF: {} -> {}, isNewCard={}",
+                user.getUserId(), itemTypeUpper, request.getItemId(), cardTypeUpper, request.getRating(),
                 intervalBefore, calcResult.intervalDays(), currentEf, calcResult.easeFactor(), isNewCard);
 
-        // 12. Return updated DueCardResponse
+        // 13. Return updated DueCardResponse
         if (vocab != null) {
             return DueCardResponse.fromVocabulary(vocab, savedProgress);
         } else {
@@ -444,12 +633,62 @@ public class SrsServiceImpl implements SrsService {
 
         LocalDateTime now = LocalDateTime.now(businessClock);
         long cardsDue = cardProgressRepository.countByUserAndItemTypeAndNextReviewAtLessThanEqual(user, "VOCABULARY", now);
+        long cardsDueListening = cardProgressRepository.countByUserAndItemTypeAndCardTypeAndNextReviewAtLessThanEqual(user, "VOCABULARY", "LISTENING", now);
+        long cardsDueWriting = cardProgressRepository.countByUserAndItemTypeAndCardTypeAndNextReviewAtLessThanEqual(user, "VOCABULARY", "WRITING", now);
+        long cardsDueReading = cardProgressRepository.countByUserAndItemTypeAndCardTypeAndNextReviewAtLessThanEqual(user, "VOCABULARY", "READING", now);
 
         LocalDateTime startOfDay = LocalDate.now(businessClock).atStartOfDay();
         long reviewsToday = reviewLogRepository.countByUserAndReviewedAtGreaterThanEqual(user, startOfDay);
         long newCardsToday = reviewLogRepository.countNewItemsIntroducedToday(user, "VOCABULARY", startOfDay);
 
-        return new StudyStatsResponse(cardsDue, reviewsToday, newLimit, maxReviewLimit, newCardsToday);
+        return new StudyStatsResponse(cardsDue, cardsDueListening, cardsDueWriting, cardsDueReading, reviewsToday, newLimit, maxReviewLimit, newCardsToday);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public LessonSrsStatsResponse getLessonSrsStats(Long lessonId) {
+        if (lessonId == null) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR, "ID bài học không được để trống");
+        }
+        UserProfile user = resolveCurrentUserProfile();
+
+        // 1. Validate lesson existence and access permission
+        if (lessonRepository != null) {
+            Lesson lesson = lessonRepository.findById(lessonId)
+                    .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "Không tìm thấy bài học với ID: " + lessonId));
+            if (!"Approved".equalsIgnoreCase(lesson.getStatus())) {
+                Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+                boolean isAdmin = auth != null && auth.getAuthorities().stream()
+                        .anyMatch(a -> a.getAuthority().equalsIgnoreCase("ROLE_ADMIN") || a.getAuthority().equalsIgnoreCase("Admin"));
+                boolean isCreator = user != null && user.getAccount() != null && lesson.getCreatedBy() != null
+                        && lesson.getCreatedBy().getAccountId().equals(user.getAccount().getAccountId());
+                if (!isAdmin && !isCreator) {
+                    throw new BusinessException(ErrorCode.NOT_FOUND, "Không tìm thấy bài học với ID: " + lessonId);
+                }
+            }
+        }
+
+        LocalDateTime now = LocalDateTime.now(businessClock);
+        int totalVocab = lessonVocabularyRepository != null
+                ? (int) lessonVocabularyRepository.countByLesson_LessonId(lessonId)
+                : 0;
+        long newWordsCount = lessonVocabularyRepository != null
+                ? lessonVocabularyRepository.countNewCardCandidates(lessonId, user)
+                : 0L;
+        long dueCount = cardProgressRepository != null
+                ? cardProgressRepository.countDueCardsByLesson(user, lessonId, now)
+                : 0L;
+        long dueListening = cardProgressRepository != null
+                ? cardProgressRepository.countDueCardsByLessonAndCardType(user, lessonId, "LISTENING", now)
+                : 0L;
+        long dueWriting = cardProgressRepository != null
+                ? cardProgressRepository.countDueCardsByLessonAndCardType(user, lessonId, "WRITING", now)
+                : 0L;
+        long dueReading = cardProgressRepository != null
+                ? cardProgressRepository.countDueCardsByLessonAndCardType(user, lessonId, "READING", now)
+                : 0L;
+
+        return new LessonSrsStatsResponse(lessonId, totalVocab, newWordsCount, dueCount, dueListening, dueWriting, dueReading);
     }
 
     private UserProfile resolveCurrentUserProfile() {

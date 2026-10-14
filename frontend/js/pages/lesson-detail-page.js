@@ -22,8 +22,10 @@ import { createSafeElement, clearContainer } from '../ui/security.js';
 import { initNavbarAuth } from '../ui/nav.js';
 import { formatLessonDate, sanitizeLessonTitle } from './lessons-page.js';
 import { openNotesModal } from '../ui/notes-modal.js';
+import { openVocabWritingModal } from '../ui/character-writing/vocab-writing-modal.js';
+import { authManager } from '../auth/auth-state.js';
 
-export { createSpeakerIcon };
+export { createSpeakerIcon, openVocabWritingModal };
 
 /**
  * Validates the raw lesson ID string from URL parameter.
@@ -52,6 +54,83 @@ export function validateLessonId(idParam) {
 export function formatSrsReviewUrl(lessonId) {
   const validId = validateLessonId(lessonId);
   return validId ? `srs-review.html?lessonId=${validId}` : 'srs-review.html';
+}
+
+/**
+ * Formats the direct SRS review URL with lessonId for lesson-new-cards mode.
+ * 
+ * @param {number|string|null|undefined} lessonId 
+ * @returns {string} Formatted URL (e.g. "srs-review.html?lessonId=10&mode=new")
+ */
+export function formatSrsNewCardsUrl(lessonId) {
+  const validId = validateLessonId(lessonId);
+  return validId ? `srs-review.html?lessonId=${validId}&mode=new` : 'srs-review.html';
+}
+
+/**
+ * Formats the free practice URL with lessonId for lesson-practice-cards mode (zero SRS mutation).
+ * 
+ * @param {number|string|null|undefined} lessonId 
+ * @returns {string} Formatted URL (e.g. "srs-review.html?lessonId=10&mode=practice")
+ */
+export function formatSrsPracticeUrl(lessonId) {
+  const validId = validateLessonId(lessonId);
+  return validId ? `srs-review.html?lessonId=${validId}&mode=practice` : 'srs-review.html';
+}
+
+/**
+ * Calculates real lesson metrics from vocabularies and practice cards.
+ * 
+ * @param {Array<any>} vocabularies 
+ * @param {Array<any>|null} practiceCards 
+ * @param {Date} [now=new Date()]
+ * @returns {{
+ *   totalWords: number,
+ *   learnedWords: number|null,
+ *   dueWords: number|null,
+ *   newWords: number,
+ *   progressPercentage: number,
+ *   hasDueCards: boolean
+ * }}
+ */
+export function calculateLessonMetrics(vocabularies, practiceCards = null, now = new Date()) {
+  const totalWords = Array.isArray(vocabularies) ? vocabularies.length : 0;
+
+  if (!Array.isArray(practiceCards)) {
+    return {
+      totalWords,
+      learnedWords: null,
+      dueWords: null,
+      newWords: totalWords,
+      progressPercentage: 0,
+      hasDueCards: false
+    };
+  }
+
+  const nowDate = now instanceof Date ? now : new Date(now);
+
+  const learnedCount = practiceCards.filter(c => {
+    if (!c) return false;
+    return c.isNew === false || (typeof c.repetitions === 'number' && c.repetitions > 0) || Boolean(c.nextReviewAt);
+  }).length;
+
+  const dueCount = practiceCards.filter(c => {
+    if (!c || !c.nextReviewAt) return false;
+    const dueTime = new Date(c.nextReviewAt);
+    return !isNaN(dueTime.getTime()) && dueTime <= nowDate;
+  }).length;
+
+  const newCount = Math.max(0, totalWords - learnedCount);
+  const progressPercentage = totalWords > 0 ? Math.round((learnedCount / totalWords) * 100) : 0;
+
+  return {
+    totalWords,
+    learnedWords: learnedCount,
+    dueWords: dueCount,
+    newWords: newCount,
+    progressPercentage: Math.min(100, Math.max(0, progressPercentage)),
+    hasDueCards: dueCount > 0
+  };
 }
 
 /**
@@ -143,7 +222,40 @@ export class LessonDetailPageController {
       vocabCountBadge: null,
       lessonDate: null,
       vocabList: null,
-      btnGoToSrsReview: null
+
+      // Metrics & Progress
+      statTotalWords: null,
+      statLearnedWords: null,
+      statDueWords: null,
+      statNewWords: null,
+      lessonProgressBar: null,
+      lessonProgressBarFill: null,
+      lessonProgressPercent: null,
+      lessonProgressBadge: null,
+      lessonAuthPrompt: null,
+
+      // 4 Main Action Cards
+      btnActionNewCards: null,
+      btnActionLessonSrs: null,
+      btnActionPractice: null,
+      btnActionSystemSrs: null,
+      badgeActionNew: null,
+      badgeActionLessonSrs: null,
+      badgeActionPractice: null,
+      badgeActionSystemSrs: null,
+      cardActionNew: null,
+      cardActionLessonSrs: null,
+
+      // Header Actions
+      btnHeaderPractice: null,
+      btnHeaderNewCards: null,
+      btnHeaderLessonSrs: null,
+
+      // Post-Study Actions
+      btnGoToSrsReview: null,
+      btnStartPracticeCards: null,
+      btnStartNewCards: null,
+      btnStartLessonSrs: null
     };
   }
 
@@ -158,7 +270,40 @@ export class LessonDetailPageController {
     this.dom.vocabCountBadge = document.getElementById('detailVocabCount');
     this.dom.lessonDate = document.getElementById('detailLessonDate');
     this.dom.vocabList = document.getElementById('lessonVocabList');
+
+    // Metrics & Progress Elements
+    this.dom.statTotalWords = document.getElementById('statTotalWords');
+    this.dom.statLearnedWords = document.getElementById('statLearnedWords');
+    this.dom.statDueWords = document.getElementById('statDueWords');
+    this.dom.statNewWords = document.getElementById('statNewWords');
+    this.dom.lessonProgressBar = document.getElementById('lessonProgressBar');
+    this.dom.lessonProgressBarFill = document.getElementById('lessonProgressBarFill');
+    this.dom.lessonProgressPercent = document.getElementById('lessonProgressPercent');
+    this.dom.lessonProgressBadge = document.getElementById('lessonProgressBadge');
+    this.dom.lessonAuthPrompt = document.getElementById('lessonAuthPrompt');
+
+    // 4 Main Action Cards Elements
+    this.dom.btnActionNewCards = document.getElementById('btnActionNewCards');
+    this.dom.btnActionLessonSrs = document.getElementById('btnActionLessonSrs');
+    this.dom.btnActionPractice = document.getElementById('btnActionPractice');
+    this.dom.btnActionSystemSrs = document.getElementById('btnActionSystemSrs');
+    this.dom.badgeActionNew = document.getElementById('badgeActionNew');
+    this.dom.badgeActionLessonSrs = document.getElementById('badgeActionLessonSrs');
+    this.dom.badgeActionPractice = document.getElementById('badgeActionPractice');
+    this.dom.badgeActionSystemSrs = document.getElementById('badgeActionSystemSrs');
+    this.dom.cardActionNew = document.getElementById('cardActionNew');
+    this.dom.cardActionLessonSrs = document.getElementById('cardActionLessonSrs');
+
+    // Header Actions
+    this.dom.btnHeaderPractice = document.getElementById('btnHeaderPractice');
+    this.dom.btnHeaderNewCards = document.getElementById('btnHeaderNewCards');
+    this.dom.btnHeaderLessonSrs = document.getElementById('btnHeaderLessonSrs');
+
+    // Post-Study Actions
     this.dom.btnGoToSrsReview = document.getElementById('btnGoToSrsReview');
+    this.dom.btnStartPracticeCards = document.getElementById('btnStartPracticeCards');
+    this.dom.btnStartNewCards = document.getElementById('btnStartNewCards');
+    this.dom.btnStartLessonSrs = document.getElementById('btnStartLessonSrs');
 
     if (!this.dom.stateContainer || !this.dom.contentWrapper) {
       return;
@@ -169,8 +314,25 @@ export class LessonDetailPageController {
     const rawId = params.get('id');
     this.lessonId = validateLessonId(rawId);
 
-    if (this.dom.btnGoToSrsReview && this.lessonId) {
-      this.dom.btnGoToSrsReview.href = `srs-review.html?lessonId=${encodeURIComponent(this.lessonId)}`;
+    if (this.lessonId) {
+      const reviewUrl = formatSrsReviewUrl(this.lessonId);
+      const practiceUrl = formatSrsPracticeUrl(this.lessonId);
+      const newCardsUrl = formatSrsNewCardsUrl(this.lessonId);
+
+      if (this.dom.btnGoToSrsReview) this.dom.btnGoToSrsReview.href = 'srs-review.html';
+      if (this.dom.btnActionSystemSrs) this.dom.btnActionSystemSrs.href = 'srs-review.html';
+
+      if (this.dom.btnStartPracticeCards) this.dom.btnStartPracticeCards.href = practiceUrl;
+      if (this.dom.btnHeaderPractice) this.dom.btnHeaderPractice.href = practiceUrl;
+      if (this.dom.btnActionPractice) this.dom.btnActionPractice.href = practiceUrl;
+
+      if (this.dom.btnStartNewCards) this.dom.btnStartNewCards.href = newCardsUrl;
+      if (this.dom.btnHeaderNewCards) this.dom.btnHeaderNewCards.href = newCardsUrl;
+      if (this.dom.btnActionNewCards) this.dom.btnActionNewCards.href = newCardsUrl;
+
+      if (this.dom.btnStartLessonSrs) this.dom.btnStartLessonSrs.href = reviewUrl;
+      if (this.dom.btnHeaderLessonSrs) this.dom.btnHeaderLessonSrs.href = reviewUrl;
+      if (this.dom.btnActionLessonSrs) this.dom.btnActionLessonSrs.href = reviewUrl;
     }
 
     if (!this.lessonId) {
@@ -271,9 +433,26 @@ export class LessonDetailPageController {
       }
     }
 
-    // Update SRS Review Link with authoritative lessonId
-    if (this.dom.btnGoToSrsReview && lesson.lessonId) {
-      this.dom.btnGoToSrsReview.href = formatSrsReviewUrl(lesson.lessonId);
+    // Update SRS Review and Practice Links with authoritative lessonId
+    if (lesson.lessonId) {
+      if (this.dom.btnGoToSrsReview) {
+        this.dom.btnGoToSrsReview.href = 'srs-review.html';
+      }
+      if (this.dom.btnStartPracticeCards) {
+        this.dom.btnStartPracticeCards.href = formatSrsPracticeUrl(lesson.lessonId);
+      }
+      if (this.dom.btnStartNewCards) {
+        this.dom.btnStartNewCards.href = formatSrsNewCardsUrl(lesson.lessonId);
+      }
+      if (this.dom.btnHeaderPractice) {
+        this.dom.btnHeaderPractice.href = formatSrsPracticeUrl(lesson.lessonId);
+      }
+      if (this.dom.btnHeaderNewCards) {
+        this.dom.btnHeaderNewCards.href = formatSrsNewCardsUrl(lesson.lessonId);
+      }
+      if (this.dom.btnActionNewCards) {
+        this.dom.btnActionNewCards.href = formatSrsNewCardsUrl(lesson.lessonId);
+      }
     }
 
     // 3. Render Ordered Vocabulary List
@@ -294,6 +473,166 @@ export class LessonDetailPageController {
 
     // 4. Reveal Content
     this.dom.contentWrapper.classList.remove('d-none');
+
+    // 5. Load Real Learner Metrics & Dynamic Action States
+    this.loadLessonProgress();
+  }
+
+  /**
+   * Loads user study stats & card progress to populate lesson metrics and configure 4 actions.
+   */
+  async loadLessonProgress() {
+    let practiceCards = null;
+    let systemDueCount = null;
+
+    if (authManager.isAuthenticated()) {
+      try {
+        const [practiceRes, statsRes] = await Promise.allSettled([
+          apiClient('/srs/practice-cards', { params: { lessonId: this.lessonId } }),
+          apiClient('/srs/stats')
+        ]);
+
+        if (practiceRes.status === 'fulfilled') {
+          practiceCards = (practiceRes.value && practiceRes.value.data) ? practiceRes.value.data : practiceRes.value;
+        }
+        if (statsRes.status === 'fulfilled') {
+          const stats = (statsRes.value && statsRes.value.data) ? statsRes.value.data : statsRes.value;
+          if (stats && typeof stats.cardsDue === 'number') {
+            systemDueCount = stats.cardsDue;
+          }
+        }
+      } catch {
+        practiceCards = null;
+      }
+    }
+
+    const metrics = calculateLessonMetrics(this.lessonData?.vocabularies, practiceCards);
+    this.renderMetricsAndActions(metrics, systemDueCount);
+  }
+
+  /**
+   * Updates metric displays, progress bar, and 4 primary action buttons.
+   * 
+   * @param {Object} metrics 
+   * @param {number|null} [systemDueCount=null] 
+   */
+  renderMetricsAndActions(metrics, systemDueCount = null) {
+    if (this.dom.statTotalWords) {
+      this.dom.statTotalWords.textContent = `${metrics.totalWords} từ`;
+    }
+    if (this.dom.statLearnedWords) {
+      this.dom.statLearnedWords.textContent = metrics.learnedWords !== null ? `${metrics.learnedWords} từ` : '—';
+    }
+    if (this.dom.statDueWords) {
+      this.dom.statDueWords.textContent = metrics.dueWords !== null ? `${metrics.dueWords} thẻ` : '—';
+    }
+    if (this.dom.statNewWords) {
+      this.dom.statNewWords.textContent = `${metrics.newWords} từ`;
+    }
+    if (this.dom.lessonProgressPercent) {
+      this.dom.lessonProgressPercent.textContent = `${metrics.progressPercentage}%`;
+    }
+    if (this.dom.lessonProgressBarFill) {
+      this.dom.lessonProgressBarFill.style.width = `${metrics.progressPercentage}%`;
+    }
+    if (this.dom.lessonProgressBar) {
+      this.dom.lessonProgressBar.setAttribute('aria-valuenow', String(metrics.progressPercentage));
+    }
+
+    const isAuthed = authManager.isAuthenticated();
+    if (this.dom.lessonProgressBadge) {
+      if (!isAuthed) {
+        this.dom.lessonProgressBadge.textContent = 'Chưa đăng nhập';
+        this.dom.lessonProgressBadge.className = 'badge-status badge-status-draft';
+      } else if (metrics.progressPercentage === 100) {
+        this.dom.lessonProgressBadge.textContent = 'Đã thuộc 100%';
+        this.dom.lessonProgressBadge.className = 'badge-status badge-status-approved';
+      } else if (metrics.learnedWords > 0) {
+        this.dom.lessonProgressBadge.textContent = `Đang học (${metrics.progressPercentage}%)`;
+        this.dom.lessonProgressBadge.className = 'badge-status badge-status-active';
+      } else {
+        this.dom.lessonProgressBadge.textContent = 'Sẵn sàng học';
+        this.dom.lessonProgressBadge.className = 'badge-status badge-status-draft';
+      }
+    }
+
+    if (this.dom.lessonAuthPrompt && !isAuthed) {
+      this.dom.lessonAuthPrompt.textContent = 'Đăng nhập để theo dõi số từ đã học và lịch ôn SuperMemo-2 cá nhân.';
+    }
+
+    const lessonId = this.lessonId;
+    const reviewUrl = formatSrsReviewUrl(lessonId);
+    const practiceUrl = formatSrsPracticeUrl(lessonId);
+    const newCardsUrl = formatSrsNewCardsUrl(lessonId);
+
+    // 1. Action A: Học từ mới (chuyển đến /new-cards mode)
+    const newBtnText = (metrics.learnedWords !== null && metrics.newWords === 0)
+      ? 'Đã học hết từ mới'
+      : (metrics.newWords > 0 && isAuthed ? `Học từ mới (${metrics.newWords})` : 'Học từ mới');
+
+    [this.dom.btnActionNewCards, this.dom.btnHeaderNewCards, this.dom.btnStartNewCards].forEach(el => {
+      if (el) {
+        el.href = newCardsUrl;
+        el.textContent = newBtnText;
+      }
+    });
+    if (this.dom.badgeActionNew) {
+      this.dom.badgeActionNew.textContent = (metrics.learnedWords !== null && metrics.newWords === 0)
+        ? 'Đã xong từ mới'
+        : `${metrics.newWords} từ mới`;
+      this.dom.badgeActionNew.className = (metrics.learnedWords !== null && metrics.newWords === 0)
+        ? 'badge-status badge-status-approved small'
+        : 'badge-status badge-status-draft small';
+    }
+
+    // 2. Action B: Ôn SRS bài này (khi có thẻ đến hạn trong bài)
+    const srsBtnText = (metrics.dueWords !== null && metrics.dueWords > 0)
+      ? `Ôn SRS bài này (${metrics.dueWords})`
+      : 'Ôn SRS bài này';
+
+    [this.dom.btnActionLessonSrs, this.dom.btnHeaderLessonSrs, this.dom.btnStartLessonSrs].forEach(el => {
+      if (el) {
+        el.href = reviewUrl;
+        el.textContent = srsBtnText;
+      }
+    });
+    if (this.dom.badgeActionLessonSrs) {
+      if (metrics.dueWords !== null && metrics.dueWords > 0) {
+        this.dom.badgeActionLessonSrs.textContent = `${metrics.dueWords} thẻ đến hạn`;
+        this.dom.badgeActionLessonSrs.className = 'badge-status badge-status-rejected small';
+        if (this.dom.cardActionLessonSrs) {
+          this.dom.cardActionLessonSrs.classList.add('action-card-primary');
+        }
+      } else if (metrics.dueWords === 0 && isAuthed) {
+        this.dom.badgeActionLessonSrs.textContent = 'Chưa đến hạn';
+        this.dom.badgeActionLessonSrs.className = 'badge-status badge-status-approved small';
+        if (this.dom.cardActionLessonSrs) {
+          this.dom.cardActionLessonSrs.classList.remove('action-card-primary');
+        }
+      } else {
+        this.dom.badgeActionLessonSrs.textContent = 'SRS bài';
+        this.dom.badgeActionLessonSrs.className = 'badge-status badge-status-pending small';
+      }
+    }
+
+    // 3. Action C: Luyện tự do (free practice, zero SRS mutation)
+    [this.dom.btnActionPractice, this.dom.btnHeaderPractice, this.dom.btnStartPracticeCards].forEach(el => {
+      if (el) {
+        el.href = practiceUrl;
+        el.textContent = 'Luyện tự do';
+      }
+    });
+
+    // 4. Action D: Ôn SRS toàn hệ thống (phòng ôn chung)
+    [this.dom.btnActionSystemSrs, this.dom.btnGoToSrsReview].forEach(el => {
+      if (el) {
+        el.href = 'srs-review.html';
+        el.textContent = 'Ôn toàn hệ thống';
+      }
+    });
+    if (this.dom.badgeActionSystemSrs && systemDueCount !== null) {
+      this.dom.badgeActionSystemSrs.textContent = `${systemDueCount} thẻ hệ thống`;
+    }
   }
 
   /**
@@ -397,6 +736,25 @@ export class LessonDetailPageController {
         }
       });
       actionsDiv.appendChild(dictLink);
+
+      // Character Writing Practice Button
+      const writeBtn = createSafeElement('button', {
+        className: 'btn-chinese-secondary py-1 px-2 small lesson-vocab-write-btn',
+        text: '✍️ Luyện viết',
+        attrs: {
+          type: 'button',
+          'aria-label': `Luyện viết chữ Hán cho từ ${item.hanzi || ''}`,
+          title: 'Luyện viết chữ Hán (Cách viết / Luyện nét / Luyện viết)'
+        }
+      });
+      writeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openVocabWritingModal({
+          vocabItem: item,
+          triggerElement: writeBtn
+        });
+      });
+      actionsDiv.appendChild(writeBtn);
     }
 
     // Personal Note Button

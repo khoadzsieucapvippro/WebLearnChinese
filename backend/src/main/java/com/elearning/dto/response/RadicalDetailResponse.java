@@ -21,7 +21,6 @@ public class RadicalDetailResponse {
     private String audioUrl;
     private String videoWritingUrl;
     private String explanationVi;
-    private String videoLessonUrl;
     private Integer commonRank;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -47,11 +46,10 @@ public class RadicalDetailResponse {
     public RadicalDetailResponse(Integer radicalId, String character, String pinyin,
                                  String meaningHanViet, String meaningVi,
                                  String audioUrl, String videoWritingUrl,
-                                 String explanationVi, String videoLessonUrl, Integer commonRank,
+                                 String explanationVi, Integer commonRank,
                                  LocalDateTime createdAt, LocalDateTime updatedAt) {
         this(radicalId, character, pinyin, meaningHanViet, meaningVi, audioUrl, videoWritingUrl, createdAt, updatedAt);
         this.explanationVi = explanationVi;
-        this.videoLessonUrl = videoLessonUrl;
         this.commonRank = commonRank;
     }
 
@@ -71,7 +69,6 @@ public class RadicalDetailResponse {
                 radical.getUpdatedAt()
         );
         response.setExplanationVi(radical.getExplanationVi());
-        response.setVideoLessonUrl(radical.getVideoLessonUrl());
         response.setCommonRank(radical.getCommonRank());
         return response;
     }
@@ -138,14 +135,6 @@ public class RadicalDetailResponse {
 
     public void setExplanationVi(String explanationVi) {
         this.explanationVi = explanationVi;
-    }
-
-    public String getVideoLessonUrl() {
-        return videoLessonUrl;
-    }
-
-    public void setVideoLessonUrl(String videoLessonUrl) {
-        this.videoLessonUrl = videoLessonUrl;
     }
 
     public Integer getCommonRank() {
