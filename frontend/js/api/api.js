@@ -19,6 +19,7 @@
  */
 
 import { authManager } from '../auth/auth-state.js';
+import { demoFallbackEngine } from './demo-fallback-engine.js';
 
 const DEFAULT_BASE_URL = '/api/v1';
 const DEFAULT_TIMEOUT_MS = 15000;
@@ -57,6 +58,44 @@ export function getBaseUrl() {
     return String(window.__ENV__.API_BASE_URL).replace(/\/$/, '');
   }
   return DEFAULT_BASE_URL;
+}
+
+/**
+ * Detects whether execution is occurring on GitHub Pages (*.github.io).
+ * @returns {boolean}
+ */
+export function isGitHubPagesEnvironment() {
+  if (typeof window !== 'undefined' && window.location) {
+    const hostname = window.location.hostname;
+    return typeof hostname === 'string' && hostname.endsWith('.github.io');
+  }
+  return false;
+}
+
+/**
+ * Detects whether Smart Cloud Fallback / Demo mode is active.
+ * @returns {boolean}
+ */
+export function isDemoFallbackActive() {
+  if (isGitHubPagesEnvironment()) {
+    return true;
+  }
+  if (typeof window !== 'undefined') {
+    if (window.__ENV__?.DEMO_FALLBACK === true || window.__ENV__?.DEMO_MODE === true) {
+      return true;
+    }
+    try {
+      if (window.location?.search && window.location.search.includes('demo=true')) {
+        return true;
+      }
+    } catch (_) {}
+    try {
+      if (typeof localStorage !== 'undefined' && localStorage.getItem('ELEARNING_DEMO_MODE') === 'true') {
+        return true;
+      }
+    } catch (_) {}
+  }
+  return false;
 }
 
 /**
@@ -365,6 +404,16 @@ export async function apiClient(endpoint, options = {}) {
     const contentType = response.headers.get('content-type') || '';
     const isJson = contentType.includes('application/json');
 
+    // Smart Cloud Fallback on 404: If on GitHub Pages or demo relative /api/v1
+    if (response.status === 404 && (isGitHubPagesEnvironment() || (isDemoFallbackActive() && getBaseUrl() === '/api/v1'))) {
+      try {
+        return await demoFallbackEngine.handleRequest(endpoint, options);
+      } catch (fallbackErr) {
+        if (fallbackErr instanceof ApiError) throw fallbackErr;
+        throw new ApiError(fallbackErr.message || 'Lỗi xử lý yêu cầu demo', fallbackErr.status || 404, fallbackErr.code || 'NOT_FOUND', fallbackErr.errors || [], fallbackErr);
+      }
+    }
+
     if (!isJson) {
       if (!response.ok) {
         const code = response.status === 404 ? 'NOT_FOUND' : (response.status >= 500 ? 'SERVER_ERROR' : 'UNKNOWN_ERROR');
@@ -404,6 +453,14 @@ export async function apiClient(endpoint, options = {}) {
     }
 
     if (err instanceof TypeError || err.name === 'TypeError') {
+      if (isDemoFallbackActive()) {
+        try {
+          return await demoFallbackEngine.handleRequest(endpoint, options);
+        } catch (fallbackErr) {
+          if (fallbackErr instanceof ApiError) throw fallbackErr;
+          throw new ApiError(fallbackErr.message || 'Lỗi xử lý yêu cầu demo', fallbackErr.status || 0, fallbackErr.code || 'NETWORK_ERROR', fallbackErr.errors || [], fallbackErr);
+        }
+      }
       throw new ApiError('Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng.', 0, 'NETWORK_ERROR', [], err);
     }
 

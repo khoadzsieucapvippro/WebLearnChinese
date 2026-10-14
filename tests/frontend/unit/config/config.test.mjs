@@ -24,7 +24,8 @@ function runConfigInContext(mockWindow) {
   const context = vm.createContext({
     window: mockWindow,
     globalThis: mockWindow,
-    Object
+    Object,
+    URLSearchParams
   });
   vm.runInContext(configScriptCode, context);
   return mockWindow.__ENV__;
@@ -133,5 +134,103 @@ describe('Runtime Environment Configuration (config.js)', () => {
     const env = runConfigInContext(mockWin);
     assert.strictEqual(env.API_BASE_URL, '/api/v1');
     assert.ok(Object.isFrozen(env));
+  });
+
+  describe('GitHub Pages (*.github.io) Dynamic Cloud API Resolution', () => {
+    function createMockStorage() {
+      const store = new Map();
+      return {
+        getItem: (k) => store.has(k) ? store.get(k) : null,
+        setItem: (k, v) => store.set(k, String(v)),
+        removeItem: (k) => store.delete(k),
+        clear: () => store.clear()
+      };
+    }
+
+    test('a. uses and persists ?apiUrl= URL query param', () => {
+      const storage = createMockStorage();
+      const mockWin = {
+        location: {
+          hostname: 'myuser.github.io',
+          search: '?apiUrl=https://elearning-backend.up.railway.app/api/v1/'
+        },
+        localStorage: storage
+      };
+
+      const env = runConfigInContext(mockWin);
+      assert.strictEqual(env.API_BASE_URL, 'https://elearning-backend.up.railway.app/api/v1');
+      assert.strictEqual(storage.getItem('ELEARNING_CLOUD_API_URL'), 'https://elearning-backend.up.railway.app/api/v1/');
+    });
+
+    test('b. uses valid URL from localStorage when no query param exists', () => {
+      const storage = createMockStorage();
+      storage.setItem('ELEARNING_CLOUD_API_URL', 'https://api.onrender.com/api/v1/');
+      const mockWin = {
+        location: {
+          hostname: 'myuser.github.io',
+          search: ''
+        },
+        localStorage: storage
+      };
+
+      const env = runConfigInContext(mockWin);
+      assert.strictEqual(env.API_BASE_URL, 'https://api.onrender.com/api/v1');
+    });
+
+    test('c. uses currentEnv.API_BASE_URL when no param or localStorage exists', () => {
+      const storage = createMockStorage();
+      const mockWin = {
+        location: {
+          hostname: 'myuser.github.io',
+          search: ''
+        },
+        localStorage: storage,
+        __ENV__: {
+          API_BASE_URL: 'https://staging.koyeb.app/api/v1'
+        }
+      };
+
+      const env = runConfigInContext(mockWin);
+      assert.strictEqual(env.API_BASE_URL, 'https://staging.koyeb.app/api/v1');
+    });
+
+    test('d. uses CI-injected CLOUD_PRODUCTION_API_URL when not default placeholder', () => {
+      const storage = createMockStorage();
+      const mockWin = {
+        location: {
+          hostname: 'myuser.github.io',
+          search: ''
+        },
+        localStorage: storage
+      };
+
+      const injectedCode = configScriptCode.replace(
+        '__CLOUD_BACKEND_API_URL__',
+        'https://injected-railway.up.railway.app/api/v1/'
+      );
+      const context = vm.createContext({
+        window: mockWin,
+        globalThis: mockWin,
+        Object,
+        URLSearchParams
+      });
+      vm.runInContext(injectedCode, context);
+      assert.strictEqual(mockWin.__ENV__.API_BASE_URL, 'https://injected-railway.up.railway.app/api/v1');
+    });
+
+    test('e. defaults to /api/v1 on GitHub Pages when nothing else is configured', () => {
+      const storage = createMockStorage();
+      const mockWin = {
+        location: {
+          hostname: 'myuser.github.io',
+          search: ''
+        },
+        localStorage: storage
+      };
+
+      const env = runConfigInContext(mockWin);
+      assert.strictEqual(env.API_BASE_URL, '/api/v1');
+      assert.ok(Object.isFrozen(env));
+    });
   });
 });

@@ -1,0 +1,62 @@
+name: Deploy GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/deploy-pages.yml'
+  workflow_dispatch:
+    inputs:
+      backend_api_url:
+        description: 'Backend API URL (e.g. https://elearning-backend.up.railway.app/api/v1)'
+        required: false
+        type: string
+        default: ''
+
+permissions:
+  pages: write
+  id-token: write
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Build site directory
+        run: |
+          mkdir -p _site
+          cp -r frontend/* _site/
+          touch _site/.nojekyll
+
+          API_URL="${{ inputs.backend_api_url || vars.BACKEND_API_URL || '' }}"
+          if [ -n "$API_URL" ]; then
+            echo "Injecting cloud production API URL: $API_URL"
+            sed -i "s|__CLOUD_BACKEND_API_URL__|$API_URL|g" _site/js/config.js
+          else
+            echo "No custom API URL provided, leaving placeholder for fallback or relative routing"
+          fi
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

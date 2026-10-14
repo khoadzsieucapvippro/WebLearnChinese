@@ -534,4 +534,134 @@ describe('Centralized HTTP API Client Contract', () => {
     assert.strictEqual(callCount, 1, '401 must never be retried');
   });
 
+  describe('Smart Cloud Fallback Engine (GitHub Pages *.github.io & Demo Mode)', () => {
+    beforeEach(() => {
+      mockWin.location.hostname = 'demo-user.github.io';
+    });
+
+    afterEach(() => {
+      mockWin.location.hostname = undefined;
+    });
+
+    test('Falls back to demo engine when fetch returns 404 on GitHub Pages', async () => {
+      globalThis.fetch = async () => {
+        return createMockResponse({ status: 404, body: 'Not Found', isJson: false });
+      };
+
+      const result = await apiClient('/radicals', { params: { page: 0, size: 10 } });
+      assert.ok(result, 'Must return fallback data on 404');
+      assert.strictEqual(result.items.length, 10);
+      assert.strictEqual(result.totalElements, 214);
+    });
+
+    test('Falls back to demo engine when fetch throws TypeError on GitHub Pages', async () => {
+      globalThis.fetch = async () => {
+        throw new TypeError('Failed to fetch from cloud backend');
+      };
+
+      const result = await apiClient('/lessons');
+      assert.ok(Array.isArray(result.items), 'Must return lessons list');
+      assert.ok(result.totalElements >= 5);
+      assert.strictEqual(result.items[0].status, 'Approved');
+    });
+
+    test('Authenticates 4 standard accounts (Learner, Creator, Moderator, Admin) on demo', async () => {
+      globalThis.fetch = async () => {
+        throw new TypeError('Cloud backend offline');
+      };
+
+      const accounts = [
+        { email: 'learner@gmail.com', role: 'Learner' },
+        { email: 'creator@gmail.com', role: 'Creator' },
+        { email: 'moderator@gmail.com', role: 'Moderator' },
+        { email: 'admin@gmail.com', role: 'Admin' }
+      ];
+
+      for (const acc of accounts) {
+        const authData = await apiClient('/auth/login', {
+          method: 'POST',
+          body: { emailOrPhone: acc.email, password: 'Password@123' }
+        });
+        assert.ok(authData.token.startsWith('demo-jwt-token-'));
+        assert.ok(authData.roles.includes(acc.role), `Expected role ${acc.role}`);
+      }
+    });
+
+    test('Rejects invalid credentials with 401 ApiError', async () => {
+      globalThis.fetch = async () => {
+        throw new TypeError('Cloud backend offline');
+      };
+
+      await assert.rejects(
+        async () => {
+          await apiClient('/auth/login', {
+            method: 'POST',
+            body: { emailOrPhone: 'unknown@gmail.com', password: 'wrong' }
+          });
+        },
+        (err) => {
+          assert.ok(err instanceof ApiError);
+          assert.strictEqual(err.status, 401);
+          return true;
+        }
+      );
+    });
+
+    test('Performs SRS reviews and saves progress in localStorage', async () => {
+      globalThis.fetch = async () => {
+        throw new TypeError('Cloud backend offline');
+      };
+
+      const statsBefore = await apiClient('/srs/stats');
+      assert.ok(statsBefore.cardsDue >= 0);
+
+      const reviewOutcome = await apiClient('/srs/review', {
+        method: 'POST',
+        body: {
+          itemType: 'VOCABULARY',
+          itemId: 1,
+          rating: 3,
+          cardType: 'READING'
+        }
+      });
+
+      assert.strictEqual(reviewOutcome.itemId, 1);
+      assert.ok(reviewOutcome.intervalDays >= 1);
+      assert.ok(mockStorage.getItem('ELEARNING_DEMO_DATA'), 'Must save state to localStorage');
+    });
+
+    test('Personal notes CRUD persists across operations', async () => {
+      globalThis.fetch = async () => {
+        throw new TypeError('Cloud backend offline');
+      };
+
+      // 1. Create note
+      const newNote = await apiClient('/vocabularies/2/notes', {
+        method: 'POST',
+        body: { content: 'Ghi chú bài học từ vựng số 2' }
+      });
+      assert.strictEqual(newNote.vocabId, 2);
+      assert.strictEqual(newNote.content, 'Ghi chú bài học từ vựng số 2');
+
+      // 2. Read notes
+      const notesList = await apiClient('/vocabularies/2/notes');
+      assert.ok(notesList.items.some(n => n.content === 'Ghi chú bài học từ vựng số 2'));
+
+      // 3. Update note
+      const updatedNote = await apiClient(`/notes/${newNote.noteId}`, {
+        method: 'PUT',
+        body: { content: 'Nội dung cập nhật mới' }
+      });
+      assert.strictEqual(updatedNote.content, 'Nội dung cập nhật mới');
+
+      // 4. Delete note
+      await apiClient(`/notes/${newNote.noteId}`, {
+        method: 'DELETE'
+      });
+
+      const listAfterDelete = await apiClient('/vocabularies/2/notes');
+      assert.ok(!listAfterDelete.items.some(n => n.noteId === newNote.noteId));
+    });
+  });
+
 });
