@@ -1,5 +1,36 @@
 # E-Learning Platform: Kangxi Radicals & Chinese Vocabulary with SRS
 
+## 🌐 Link Trải Nghiệm Trực Tuyến (Dành Cho Nhóm Trưởng / Giảng Viên)
+
+[![Live Demo on GitHub Pages](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-2ea44f?style=for-the-badge&logo=github)](https://khoadzsieucapvippro.github.io/WebLearnChinese/)
+
+- **Đường link truy cập trực tiếp**: [https://khoadzsieucapvippro.github.io/WebLearnChinese/](https://khoadzsieucapvippro.github.io/WebLearnChinese/)
+- Trực quan, chạy 24/7 trực tiếp trên GitHub Pages với cơ chế Smart Zero-Backend Fallback tự vận hành, 0 giây chờ đợi, không bao giờ lỗi kết nối!
+
+### Bảng 4 Tài Khoản Kiểm Thử Mẫu (Mật khẩu chung: `Password@123`)
+
+| Vai trò (Role) | Email đăng nhập | Mật khẩu chung | Các chức năng chính cần kiểm tra |
+| :--- | :--- | :--- | :--- |
+| **Học viên (Learner)** | `learner@gmail.com`<br>`learner@elearning.local` | `Password@123` | Tra cứu 214 Bộ thủ, Từ vựng HSK, Luyện viết chữ Hán, Ôn tập Flashcard SRS (SM-2), Ghi chú cá nhân, Cài đặt |
+| **Biên soạn (Creator)** | `creator@gmail.com`<br>`creator@elearning.local` | `Password@123` | Tạo bài học mới, Import từ vựng bằng file Excel 2 bước, Sắp xếp từ vựng, Gửi bài duyệt |
+| **Kiểm duyệt (Moderator)** | `moderator@gmail.com`<br>`moderator@elearning.local` | `Password@123` | Xem hàng đợi duyệt bài, Xem chi tiết bài soạn, Phê duyệt / Từ chối bài học kèm lý do, Xem lịch sử kiểm duyệt |
+| **Quản trị (Admin)** | `admin@gmail.com`<br>`admin@elearning.local` | `Password@123` | Quản lý tài khoản, Phân quyền RBAC 4 vai trò, Quản trị 214 Bộ thủ, Từ vựng & Bài học toàn hệ thống |
+
+---
+
+## ☁️ Hướng Dẫn Chủ Dự Án Kết Nối Railway / Render Trong 3 Phút
+
+- **Bước 1**: Đăng nhập [Railway.app](https://railway.app/) -> Bấm **New Project** -> Chọn **Deploy from GitHub repo** -> Chọn repo `khoadzsieucapvippro/WebLearnChinese`.
+- **Bước 2**: Bấm **+ New** -> Chọn **Database** -> **Add MySQL**. Railway tự động cấp các biến `MYSQLHOST`, `MYSQLPORT`, `MYSQLUSER`, `MYSQLPASSWORD`, `MYSQLDATABASE`.
+- **Bước 3**: Vào Service Backend vừa tạo -> Tab **Variables** -> Đảm bảo service đọc đúng các biến từ MySQL (hoặc gắn reference `${{MySQL.MYSQLHOST}}...`). Vào tab **Settings** -> **Generate Domain** để lấy domain công khai (ví dụ `https://elearning-backend.up.railway.app`).
+- **Bước 4**: Kết nối với GitHub Pages:
+  - Vào GitHub repo `khoadzsieucapvippro/WebLearnChinese` -> **Settings** -> **Secrets and variables** -> **Actions** -> Tab **Variables** -> Bấm **New repository variable**.
+  - Tên: `BACKEND_API_URL`
+  - Giá trị: `https://<DOMAIN_RAILWAY>/api/v1` (ví dụ `https://elearning-backend.up.railway.app/api/v1`).
+  - Hoặc trên thanh địa chỉ trang GitHub Pages, chỉ cần thêm `?apiUrl=https://<DOMAIN_RAILWAY>/api/v1` một lần duy nhất, trang web sẽ tự lưu vào `localStorage`!
+
+---
+
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/codespaces/new?hide_repo_select=true&ref=main&repo=khoadzsieucapvippro%2FWebLearnChinese)
 
 *(Nhóm trưởng/Reviewer có thể bấm trực tiếp nút trên, hoặc trên giao diện repo GitHub: Bấm nút xanh **Code** -> Chọn tab **Codespaces** -> Bấm **Create codespace on main**)*
