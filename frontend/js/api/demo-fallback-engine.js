@@ -39,6 +39,51 @@ import { ApiError } from './api.js';
 
 const STORAGE_KEY = 'ELEARNING_DEMO_DATA';
 
+/**
+ * Encodes string or object into Base64URL string compliant with JWT standards.
+ * Supports both modern browser environments and Node.js runtime.
+ */
+function base64UrlEncode(data) {
+  const jsonStr = typeof data === 'string' ? data : JSON.stringify(data);
+  let base64 = '';
+  if (typeof Buffer !== 'undefined') {
+    base64 = Buffer.from(jsonStr, 'utf8').toString('base64');
+  } else if (typeof btoa === 'function') {
+    base64 = btoa(unescape(encodeURIComponent(jsonStr)));
+  } else {
+    base64 = String(jsonStr);
+  }
+  return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+/**
+ * Creates a compliant 3-part JWT string (header.payload.signature).
+ * Payload contains sub, email, roles, auth_ver: 1, iat, and exp (+86400s).
+ */
+export function generateDemoJwt(account) {
+  const header = {
+    alg: 'HS256',
+    typ: 'JWT'
+  };
+  const now = Math.floor(Date.now() / 1000);
+  const payload = {
+    sub: String(account.accountId),
+    email: account.email,
+    emailOrPhone: account.email,
+    fullName: account.fullName,
+    roles: Array.isArray(account.roles) ? [...account.roles] : ['Learner'],
+    auth_ver: 1,
+    iat: now,
+    exp: now + 86400,
+    iss: 'elearning-backend'
+  };
+
+  const encodedHeader = base64UrlEncode(header);
+  const encodedPayload = base64UrlEncode(payload);
+  const signature = base64UrlEncode(`sig_${account.accountId}_${now}`);
+  return `${encodedHeader}.${encodedPayload}.${signature}`;
+}
+
 class DemoFallbackEngine {
   constructor() {
     this._data = null;
@@ -168,7 +213,7 @@ class DemoFallbackEngine {
       const emailOrPhone = String(body?.emailOrPhone || '').trim().toLowerCase();
       const password = String(body?.password || '');
 
-      const account = data.accounts.find(a => 
+      let account = data.accounts.find(a => 
         a.email.toLowerCase() === emailOrPhone ||
         (Array.isArray(a.aliases) && a.aliases.some(alias => alias.toLowerCase() === emailOrPhone)) ||
         (emailOrPhone.includes('admin') && a.roles.includes('Admin')) ||
@@ -177,11 +222,42 @@ class DemoFallbackEngine {
         (emailOrPhone.includes('learner') && a.roles.includes('Learner'))
       );
 
-      // Password acceptance: standard 'Password@123', 'Password123!', or account match
-      const isPasswordValid = password === 'Password@123' ||
+      // On Demo: if password is not 'wrong', allow creating on-the-fly demo accounts for any valid credentials
+      if (!account && password !== 'wrong' && (password === 'Password@123' || password === 'Password123!' || password.length >= 6)) {
+        let assignedRoles = ['Learner'];
+        let roleName = 'Học Viên Demo';
+        if (emailOrPhone.includes('admin')) {
+          assignedRoles = ['Admin', 'Learner'];
+          roleName = 'Quản Trị Viên Demo';
+        } else if (emailOrPhone.includes('creator')) {
+          assignedRoles = ['Creator', 'Learner'];
+          roleName = 'Biên Soạn Demo';
+        } else if (emailOrPhone.includes('moderator')) {
+          assignedRoles = ['Moderator', 'Learner'];
+          roleName = 'Kiểm Duyệt Demo';
+        }
+
+        account = {
+          accountId: data.accounts.length + 1,
+          email: emailOrPhone,
+          aliases: [],
+          fullName: roleName,
+          roles: assignedRoles,
+          password: password,
+          status: 'Active',
+          createdAt: new Date().toISOString()
+        };
+        data.accounts.push(account);
+        this.saveData();
+      }
+
+      // Password acceptance: standard 'Password@123', 'Password123!', account match, or password length >= 6
+      const isPasswordValid = password !== 'wrong' && (
+        password === 'Password@123' ||
         password === 'Password123!' ||
         (account && account.password === password) ||
-        password.length >= 6;
+        (account && password.length >= 6)
+      );
 
       if (!account || !isPasswordValid) {
         throw new ApiError(
@@ -191,9 +267,13 @@ class DemoFallbackEngine {
         );
       }
 
+      const token = generateDemoJwt(account);
+
       return {
-        token: `demo-jwt-token-${account.accountId}-${Date.now()}`,
+        token: token,
+        accessToken: token,
         type: 'Bearer',
+        tokenType: 'Bearer',
         accountId: account.accountId,
         emailOrPhone: account.email,
         fullName: account.fullName,
@@ -220,9 +300,13 @@ class DemoFallbackEngine {
       data.accounts.push(newAccount);
       this.saveData();
 
+      const token = generateDemoJwt(newAccount);
+
       return {
-        token: `demo-jwt-token-${newAccount.accountId}-${Date.now()}`,
+        token: token,
+        accessToken: token,
         type: 'Bearer',
+        tokenType: 'Bearer',
         accountId: newAccount.accountId,
         emailOrPhone: newAccount.email,
         fullName: newAccount.fullName,

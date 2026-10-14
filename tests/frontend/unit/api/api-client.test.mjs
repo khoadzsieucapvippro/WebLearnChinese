@@ -582,8 +582,11 @@ describe('Centralized HTTP API Client Contract', () => {
           method: 'POST',
           body: { emailOrPhone: acc.email, password: 'Password@123' }
         });
-        assert.ok(authData.token.startsWith('demo-jwt-token-'));
+        assert.ok(authData.token && authData.token.split('.').length === 3, 'Must return a valid 3-part JWT');
         assert.ok(authData.roles.includes(acc.role), `Expected role ${acc.role}`);
+        const payload = JSON.parse(Buffer.from(authData.token.split('.')[1], 'base64').toString('utf8'));
+        assert.strictEqual(payload.email, acc.email);
+        assert.ok(payload.roles.includes(acc.role));
       }
     });
 

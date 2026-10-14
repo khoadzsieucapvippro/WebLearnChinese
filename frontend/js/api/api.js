@@ -347,6 +347,14 @@ export async function apiClient(endpoint, options = {}) {
 
     // 5. HTTP 401 Unauthorized Handling (Single Owner transition via authManager)
     if (response.status === 401) {
+      if (endpoint.includes('/auth/login') && (isGitHubPagesEnvironment() || isDemoFallbackActive())) {
+        try {
+          return await demoFallbackEngine.handleRequest(endpoint, options);
+        } catch (fallbackErr) {
+          if (fallbackErr instanceof ApiError) throw fallbackErr;
+        }
+      }
+
       let errMessage = 'Phiên đăng nhập đã hết hạn hoặc không hợp lệ. Vui lòng đăng nhập lại.';
       let code = 'UNAUTHORIZED';
       let errors = [];
@@ -404,13 +412,13 @@ export async function apiClient(endpoint, options = {}) {
     const contentType = response.headers.get('content-type') || '';
     const isJson = contentType.includes('application/json');
 
-    // Smart Cloud Fallback on 404: If on GitHub Pages or demo relative /api/v1
-    if (response.status === 404 && (isGitHubPagesEnvironment() || (isDemoFallbackActive() && getBaseUrl() === '/api/v1'))) {
+    // Smart Cloud Fallback on not OK (404, 405 Method Not Allowed on static pages, 502, 503, etc.)
+    if (!response.ok && (isGitHubPagesEnvironment() || isDemoFallbackActive())) {
       try {
         return await demoFallbackEngine.handleRequest(endpoint, options);
       } catch (fallbackErr) {
         if (fallbackErr instanceof ApiError) throw fallbackErr;
-        throw new ApiError(fallbackErr.message || 'Lỗi xử lý yêu cầu demo', fallbackErr.status || 404, fallbackErr.code || 'NOT_FOUND', fallbackErr.errors || [], fallbackErr);
+        throw new ApiError(fallbackErr.message || 'Lỗi xử lý yêu cầu demo', fallbackErr.status || response.status, fallbackErr.code || 'DEMO_ERROR', fallbackErr.errors || [], fallbackErr);
       }
     }
 

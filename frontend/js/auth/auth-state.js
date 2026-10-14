@@ -35,7 +35,7 @@ function defaultRedirectHandler() {
   if (typeof window !== 'undefined' && window.location) {
     const pathname = window.location.pathname || '';
     if (!pathname.endsWith('login.html')) {
-      window.location.href = '/login.html?expired=true';
+      window.location.href = 'login.html?expired=true';
     }
   }
 }
