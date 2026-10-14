@@ -1,0 +1,13 @@
+.git
+node_modules
+frontend
+tests
+docs
+.github
+.devcontainer
+artifacts
+*.md
+target
+backend/target
+.idea
+.vscode
