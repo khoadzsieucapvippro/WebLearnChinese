@@ -3323,3 +3323,11 @@ FROM (
 ) m
 JOIN `VOCABULARY` v ON v.`hanzi` = m.`hanzi` AND v.`pinyin_raw` = m.`pinyin_raw`
 ON DUPLICATE KEY UPDATE `hanzi_char` = VALUES(`hanzi_char`);
+
+-- -----------------------------------------------------------------------------
+-- Step 4: Standardize meaning_vi semicolons to commas for all vocabulary
+-- -----------------------------------------------------------------------------
+UPDATE `VOCABULARY`
+SET `meaning_vi` = REPLACE(REPLACE(`meaning_vi`, '; ', ', '), ';', ', ')
+WHERE `meaning_vi` LIKE '%;%';
+
