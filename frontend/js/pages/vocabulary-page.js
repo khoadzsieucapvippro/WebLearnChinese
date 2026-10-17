@@ -46,6 +46,21 @@ export function normalizeSearchQuery(query) {
 }
 
 /**
+ * Formats vocabulary meaning text by converting semicolons into commas.
+ * Example: "Yêu; thích; tình cảm" -> "Yêu, thích, tình cảm"
+ * 
+ * @param {string} meaning 
+ * @returns {string}
+ */
+export function formatVocabMeaning(meaning) {
+  if (!meaning || typeof meaning !== 'string') return '';
+  return meaning
+    .replace(/;\s*/g, ', ')
+    .replace(/,\s*$/, '')
+    .trim();
+}
+
+/**
  * Validates and safely parses backend PageResponse payload.
  * 
  * @param {Object} pageResponse 
@@ -841,10 +856,11 @@ export class VocabularyPageController {
         text: vocab.meaningHanViet ? `Hán-Việt: ${vocab.meaningHanViet}` : '—'
       });
 
+      const formattedMeaning = formatVocabMeaning(vocab.meaningVi);
       const meaningEl = createSafeElement('div', {
         className: 'vocab-card-meaning',
-        attrs: { title: vocab.meaningVi || '' },
-        text: vocab.meaningVi || 'Chưa có giải nghĩa.'
+        attrs: { title: formattedMeaning || '' },
+        text: formattedMeaning || 'Chưa có giải nghĩa.'
       });
 
       metaContainer.appendChild(pinyinEl);
@@ -1031,7 +1047,7 @@ export class VocabularyPageController {
       this.elements.modalVocabHanViet.textContent = vocabSummary.meaningHanViet || '—';
     }
     if (this.elements.modalVocabMeaning) {
-      this.elements.modalVocabMeaning.textContent = vocabSummary.meaningVi || 'Chưa có giải nghĩa chi tiết.';
+      this.elements.modalVocabMeaning.textContent = formatVocabMeaning(vocabSummary.meaningVi) || 'Chưa có giải nghĩa chi tiết.';
     }
 
     // Reset radical preview box
@@ -1073,7 +1089,7 @@ export class VocabularyPageController {
         vocabId: vocabSummary.vocabId,
         hanzi: vocabSummary.hanzi,
         pinyin: vocabSummary.pinyin,
-        meaningVi: vocabSummary.meaningVi,
+        meaningVi: formatVocabMeaning(vocabSummary.meaningVi),
         hskLevel: vocabSummary.hskLevel || selectedHsk
       }).catch(err => {
         console.warn('[VocabularyPage] Error mounting vocab writing orchestrator:', err);
@@ -1281,7 +1297,7 @@ export class VocabularyPageController {
             }),
             createSafeElement('div', {
               className: 'small text-secondary',
-              text: radical.meaningVi || 'Chưa có giải nghĩa chi tiết cho bộ thủ này.'
+              text: formatVocabMeaning(radical.meaningVi) || 'Chưa có giải nghĩa chi tiết cho bộ thủ này.'
             })
           ]
         }),

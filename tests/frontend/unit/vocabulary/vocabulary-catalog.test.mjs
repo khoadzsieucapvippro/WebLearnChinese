@@ -23,7 +23,8 @@ import {
   calculatePagination,
   calculateVocabGroupMetrics,
   isSpeechSynthesisAvailable,
-  speakHanzi
+  speakHanzi,
+  formatVocabMeaning
 } from '../../../../frontend/js/pages/vocabulary-page.js';
 import { sanitizeResourceUrl } from '../../../../frontend/js/ui/security.js';
 
@@ -423,4 +424,31 @@ describe('Unit: Chinese Vocabulary Catalog & Logic Engine', () => {
     });
   });
 
+  describe('12. Meaning Formatting Contract (; to ,)', () => {
+    test('converts semicolons into commas with clean spacing', () => {
+      assert.strictEqual(formatVocabMeaning('Yêu; thích; tình cảm'), 'Yêu, thích, tình cảm');
+      assert.strictEqual(formatVocabMeaning('Thích; đam mê; lấy làm thú vui; say mê; sở thích'), 'Thích, đam mê, lấy làm thú vui, say mê, sở thích');
+      assert.strictEqual(formatVocabMeaning('Tám; 8'), 'Tám, 8');
+      assert.strictEqual(formatVocabMeaning('Cha; ba'), 'Cha, ba');
+    });
+
+    test('handles semicolons without space or with irregular spacing', () => {
+      assert.strictEqual(formatVocabMeaning('Yêu;thích;tình cảm'), 'Yêu, thích, tình cảm');
+      assert.strictEqual(formatVocabMeaning('Yêu;   thích; tình cảm'), 'Yêu, thích, tình cảm');
+    });
+
+    test('trims trailing semicolons or commas', () => {
+      assert.strictEqual(formatVocabMeaning('Yêu; thích;'), 'Yêu, thích');
+      assert.strictEqual(formatVocabMeaning('Yêu; thích, '), 'Yêu, thích');
+    });
+
+    test('handles null, undefined, or empty strings gracefully', () => {
+      assert.strictEqual(formatVocabMeaning(null), '');
+      assert.strictEqual(formatVocabMeaning(undefined), '');
+      assert.strictEqual(formatVocabMeaning(''), '');
+      assert.strictEqual(formatVocabMeaning('   '), '');
+    });
+  });
+
 });
+

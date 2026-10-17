@@ -117,11 +117,14 @@ describe('Browser E2E: Vocabulary Detail Modal Refactor & Verification', () => {
       const titleEl = modal.locator('#modalVocabTitle');
       assert.strictEqual(await titleEl.isVisible(), false, 'modalVocabTitle must be visually hidden to avoid duplicate title');
 
-      // 2. Metadata Grid verification: exactly 2 items (Âm Hán-Việt & Giải nghĩa tiếng Việt)
+      // 2. Metadata Grid verification: exactly 2 items (Âm Hán-Việt & Nghĩa tiếng Việt)
       const metaGrid = modal.locator('.radical-modal-meta-grid');
       assert.ok(await metaGrid.isVisible(), 'Meta grid must be visible');
       const metaItems = metaGrid.locator('.radical-meta-item');
       assert.strictEqual(await metaItems.count(), 2, 'Metadata grid must contain exactly 2 items');
+
+      const meaningLabel = metaItems.nth(1).locator('.radical-meta-label');
+      assert.strictEqual((await meaningLabel.innerText()).trim().toUpperCase(), 'NGHĨA TIẾNG VIỆT');
 
       const hanVietVal = metaGrid.locator('#modalVocabHanViet');
       assert.strictEqual(await hanVietVal.innerText(), 'Ái hảo');
@@ -524,6 +527,69 @@ describe('Browser E2E: Vocabulary Detail Modal Refactor & Verification', () => {
 
       const errors = getRuntimeErrors().filter(e => !e.includes('favicon'));
       assert.strictEqual(errors.length, 0, 'Zero runtime errors on modal dismiss tests');
+    } finally {
+      await context.close();
+    }
+  });
+
+  test('VMR-08: Semicolons in vocabulary meaning are formatted as commas and label is Nghĩa tiếng Việt', async () => {
+    const item = {
+      vocabId: 1,
+      hanzi: '爱',
+      pinyin: 'ài',
+      meaningHanViet: 'Ái',
+      meaningVi: 'Yêu; thích; tình cảm'
+    };
+    const detail = {
+      vocabId: 1,
+      hanzi: '爱',
+      pinyin: 'ài',
+      meaningHanViet: 'Ái',
+      meaningVi: 'Yêu; thích; tình cảm',
+      exampleSentence: '我爱我的家人。',
+      exampleTranslation: 'Tôi yêu gia đình của tôi.',
+      radicals: []
+    };
+
+    const { page, context, getRuntimeErrors } = await createMonitoredPage(browser, {
+      viewportWidth: 1024,
+      viewportHeight: 768
+    });
+
+    try {
+      await page.route('**/api/v1/vocabulary**', async (route) => {
+        const url = route.request().url();
+        if (url.includes('/api/v1/vocabulary/1')) {
+          await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ code: 'SUCCESS', data: detail }) });
+          return;
+        }
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(createMockResponse([item])) });
+      });
+
+      await page.goto(`${baseUrl}/vocabulary.html`, { waitUntil: 'domcontentloaded' });
+      await page.waitForSelector('.vocab-card');
+
+      // Verify card displays commas instead of semicolons
+      const cardMeaning = page.locator('.vocab-card-meaning').first();
+      assert.strictEqual(await cardMeaning.innerText(), 'Yêu, thích, tình cảm');
+
+      // Click card to open modal
+      const card = page.locator('.vocab-card').first();
+      await card.click();
+      const modal = page.locator('#vocabDetailModal');
+      await modal.waitFor({ state: 'visible' });
+
+      // Verify label is Nghĩa tiếng Việt
+      const metaItems = modal.locator('.radical-meta-item');
+      const label = metaItems.nth(1).locator('.radical-meta-label');
+      assert.strictEqual((await label.innerText()).trim().toUpperCase(), 'NGHĨA TIẾNG VIỆT');
+
+      // Verify modal displays commas instead of semicolons
+      const modalMeaning = modal.locator('#modalVocabMeaning');
+      assert.strictEqual(await modalMeaning.innerText(), 'Yêu, thích, tình cảm');
+
+      const errors = getRuntimeErrors().filter(e => !e.includes('favicon'));
+      assert.strictEqual(errors.length, 0, 'Zero runtime errors on meaning formatting test');
     } finally {
       await context.close();
     }
