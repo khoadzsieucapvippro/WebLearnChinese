@@ -32,14 +32,15 @@ import {
   SEED_ACCOUNTS,
   SEED_SRS_SETTINGS,
   SEED_SRS_CARDS,
-  CHAR_TO_RADICAL_MAP
+  CHAR_TO_RADICAL_MAP,
+  CHAR_TO_RADICALS_MAP
 } from './demo-seed-data.js';
 
 import { authManager } from '../auth/auth-state.js';
 import { ApiError } from './api.js';
 
 const STORAGE_KEY = 'ELEARNING_DEMO_DATA';
-const CURRENT_DATASET_VERSION = 3;
+const CURRENT_DATASET_VERSION = 4;
 
 /**
  * Encodes string or object into Base64URL string compliant with JWT standards.
@@ -500,7 +501,7 @@ class DemoFallbackEngine {
       const seenRadicalIds = new Set();
 
       if (Array.isArray(v.radicalIds) && v.radicalIds.length > 0) {
-        // If explicitly assigned (e.g. via Admin API)
+        // If explicitly assigned (e.g. via Admin API or audited seed dataset)
         for (const rid of v.radicalIds) {
           const numId = Number(rid);
           if (numId > 0 && !seenRadicalIds.has(numId)) {
@@ -510,7 +511,8 @@ class DemoFallbackEngine {
               let matchedChar = '';
               if (v.hanzi) {
                 for (const ch of v.hanzi) {
-                  if (CHAR_TO_RADICAL_MAP[ch] === numId) {
+                  const chRads = (typeof CHAR_TO_RADICALS_MAP !== 'undefined' && CHAR_TO_RADICALS_MAP[ch]) || (CHAR_TO_RADICAL_MAP && CHAR_TO_RADICAL_MAP[ch] ? [CHAR_TO_RADICAL_MAP[ch]] : []);
+                  if (chRads.includes(numId)) {
                     matchedChar = ch;
                     break;
                   }
@@ -525,17 +527,19 @@ class DemoFallbackEngine {
           }
         }
       } else if (v.hanzi && typeof v.hanzi === 'string') {
-        // Derive strictly from Chinese characters in word via authoritative CHAR_TO_RADICAL_MAP
+        // Derive strictly from Chinese characters in word via authoritative CHAR_TO_RADICALS_MAP
         for (const char of v.hanzi) {
-          const radId = CHAR_TO_RADICAL_MAP[char];
-          if (radId && !seenRadicalIds.has(radId)) {
-            seenRadicalIds.add(radId);
-            const rad = data.radicals.find(r => r.radicalId === radId);
-            if (rad) {
-              constituentRadicals.push({
-                ...rad,
-                hanziChar: char
-              });
+          const radIds = (typeof CHAR_TO_RADICALS_MAP !== 'undefined' && CHAR_TO_RADICALS_MAP[char]) || (CHAR_TO_RADICAL_MAP && CHAR_TO_RADICAL_MAP[char] ? [CHAR_TO_RADICAL_MAP[char]] : []);
+          for (const radId of radIds) {
+            if (radId && !seenRadicalIds.has(radId)) {
+              seenRadicalIds.add(radId);
+              const rad = data.radicals.find(r => r.radicalId === radId);
+              if (rad) {
+                constituentRadicals.push({
+                  ...rad,
+                  hanziChar: char
+                });
+              }
             }
           }
         }

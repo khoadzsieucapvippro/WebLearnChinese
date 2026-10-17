@@ -3,8 +3,9 @@
  * SEED DATA FOR SMART CLOUD FALLBACK ENGINE
  * Module: frontend/js/api/demo-seed-data.js
  * 
- * Auto-generated authoritative Kangxi Radicals (214), HSK Vocabulary (499),
+ * Auto-generated authoritative Kangxi Radicals (214), HSK Vocabulary (500),
  * 4 RBAC Test Accounts, Structured Lessons, and SRS Cards for Offline/GitHub Pages Demo.
+ * Fully audited ground-truth constituent radicals via Make Me a Hanzi dictionary.
  * =============================================================================
  */
 
@@ -540,7 +541,7 @@ export const SEED_RADICALS = [
   {
     "radicalId": 49,
     "character": "己",
-    "pinyin": "",
+    "pinyin": "jǐ",
     "meaningHanViet": "Kỷ",
     "meaningVi": "Bản thân mình",
     "commonRank": null,
@@ -1893,7 +1894,7 @@ export const SEED_RADICALS = [
   {
     "radicalId": 172,
     "character": "隹",
-    "pinyin": "",
+    "pinyin": "zhuī",
     "meaningHanViet": "Chuy",
     "meaningVi": "Chim đuôi ngắn",
     "commonRank": null,
@@ -2372,7 +2373,12 @@ export const SEED_VOCABULARY = [
     "pinyin": "ài",
     "pinyinRaw": "ai",
     "meaningHanViet": "Ái",
-    "meaningVi": "Yêu; thích; tình cảm",
+    "meaningVi": "Yêu, thích, tình cảm",
+    "radicalIds": [
+      87,
+      14,
+      29
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我爱我的家人。",
@@ -2386,7 +2392,14 @@ export const SEED_VOCABULARY = [
     "pinyin": "àihào",
     "pinyinRaw": "aihao",
     "meaningHanViet": "Ái Hảo",
-    "meaningVi": "Thích; đam mê; lấy làm thú vui; say mê; sở thích",
+    "meaningVi": "Thích, đam mê, lấy làm thú vui, say mê, sở thích",
+    "radicalIds": [
+      87,
+      14,
+      29,
+      38,
+      39
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我的爱好是听音乐。",
@@ -2400,7 +2413,10 @@ export const SEED_VOCABULARY = [
     "pinyin": "bā",
     "pinyinRaw": "ba",
     "meaningHanViet": "Bát",
-    "meaningVi": "Tám; 8",
+    "meaningVi": "Tám, 8",
+    "radicalIds": [
+      12
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "一个星期有七天，不是八天。",
@@ -2414,7 +2430,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "bàba",
     "pinyinRaw": "baba",
     "meaningHanViet": "Ba Ba",
-    "meaningVi": "Cha; ba",
+    "meaningVi": "Cha, ba",
+    "radicalIds": [
+      88,
+      49
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我爸爸是一名医生。",
@@ -2429,6 +2449,10 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "ba",
     "meaningHanViet": "Ba",
     "meaningVi": "Trợ từ ngữ khí: nhé, thôi, đi, chứ",
+    "radicalIds": [
+      30,
+      49
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我们一起走吧。",
@@ -2442,7 +2466,10 @@ export const SEED_VOCABULARY = [
     "pinyin": "bái",
     "pinyinRaw": "bai",
     "meaningHanViet": "Bạch",
-    "meaningVi": "Màu trắng; trắng",
+    "meaningVi": "Màu trắng, trắng",
+    "radicalIds": [
+      106
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "这件白色的衣服很好看。",
@@ -2456,7 +2483,12 @@ export const SEED_VOCABULARY = [
     "pinyin": "báitiān",
     "pinyinRaw": "baitian",
     "meaningHanViet": "Bạch Thiên",
-    "meaningVi": "Ban ngày; trong ngày",
+    "meaningVi": "Ban ngày, trong ngày",
+    "radicalIds": [
+      106,
+      37,
+      1
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "白天他在学校学习。",
@@ -2470,7 +2502,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "bǎi",
     "pinyinRaw": "bai",
     "meaningHanViet": "Bách",
-    "meaningVi": "Một trăm; trăm",
+    "meaningVi": "Một trăm, trăm",
+    "radicalIds": [
+      106,
+      1
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "这本书有一百页。",
@@ -2484,7 +2520,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "bān",
     "pinyinRaw": "ban",
     "meaningHanViet": "Ban",
-    "meaningVi": "Lớp học; ca làm việc",
+    "meaningVi": "Lớp học, ca làm việc",
+    "radicalIds": [
+      96,
+      18
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我们班有二十个学生。",
@@ -2498,7 +2538,12 @@ export const SEED_VOCABULARY = [
     "pinyin": "bàn",
     "pinyinRaw": "ban",
     "meaningHanViet": "Bán",
-    "meaningVi": "Một nửa; bán-",
+    "meaningVi": "Một nửa, bán-",
+    "radicalIds": [
+      24,
+      12,
+      93
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "现在是三点半。",
@@ -2513,6 +2558,12 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "ban nian",
     "meaningHanViet": "Bán Niên",
     "meaningVi": "Nửa năm",
+    "radicalIds": [
+      24,
+      12,
+      93,
+      51
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "他在中国住了半年。",
@@ -2526,7 +2577,14 @@ export const SEED_VOCABULARY = [
     "pinyin": "bàntiān",
     "pinyinRaw": "bantian",
     "meaningHanViet": "Bán Thiên",
-    "meaningVi": "Nửa ngày; một thời gian dài",
+    "meaningVi": "Nửa ngày, một thời gian dài",
+    "radicalIds": [
+      24,
+      12,
+      93,
+      37,
+      1
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我等了你半天。",
@@ -2540,7 +2598,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "bāng",
     "pinyinRaw": "bang",
     "meaningHanViet": "Bang",
-    "meaningVi": "Giúp; giúp đỡ",
+    "meaningVi": "Giúp, giúp đỡ",
+    "radicalIds": [
+      50,
+      163
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "请帮我一下。",
@@ -2554,7 +2616,13 @@ export const SEED_VOCABULARY = [
     "pinyin": "bāngmáng",
     "pinyinRaw": "bangmang",
     "meaningHanViet": "Bang Mang",
-    "meaningVi": "Giúp; giúp đỡ",
+    "meaningVi": "Giúp, giúp đỡ",
+    "radicalIds": [
+      50,
+      163,
+      61,
+      8
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "谢谢你帮我的忙。",
@@ -2568,7 +2636,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "bāo",
     "pinyinRaw": "bao",
     "meaningHanViet": "Bao",
-    "meaningVi": "Túi; bao; gói",
+    "meaningVi": "Túi, bao, gói",
+    "radicalIds": [
+      20,
+      49
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "这个包里有很多东西。",
@@ -2583,6 +2655,11 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "baozi",
     "meaningHanViet": "Bao Tử",
     "meaningVi": "Bánh bao",
+    "radicalIds": [
+      20,
+      49,
+      39
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "中国人喜欢吃包子。",
@@ -2596,7 +2673,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "bēi",
     "pinyinRaw": "bei",
     "meaningHanViet": "Bôi",
-    "meaningVi": "Cốc; ly; chén",
+    "meaningVi": "Cốc, ly, chén",
+    "radicalIds": [
+      75,
+      1
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我喝了一杯水。",
@@ -2610,7 +2691,12 @@ export const SEED_VOCABULARY = [
     "pinyin": "bēizi",
     "pinyinRaw": "beizi",
     "meaningHanViet": "Bôi Tử",
-    "meaningVi": "Cốc; ly",
+    "meaningVi": "Cốc, ly",
+    "radicalIds": [
+      75,
+      1,
+      39
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "桌子上有一个杯子。",
@@ -2624,7 +2710,10 @@ export const SEED_VOCABULARY = [
     "pinyin": "běi",
     "pinyinRaw": "bei",
     "meaningHanViet": "Bắc",
-    "meaningVi": "Phía bắc; bị đánh bại",
+    "meaningVi": "Phía bắc, bị đánh bại",
+    "radicalIds": [
+      21
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我家在学校的北边。",
@@ -2638,7 +2727,12 @@ export const SEED_VOCABULARY = [
     "pinyin": "běibian",
     "pinyinRaw": "beibian",
     "meaningHanViet": "Bắc Biên",
-    "meaningVi": "Phía bắc; mặt bắc",
+    "meaningVi": "Phía bắc, mặt bắc",
+    "radicalIds": [
+      21,
+      162,
+      19
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "公园在北边。",
@@ -2653,6 +2747,12 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "beijing",
     "meaningHanViet": "Bắc Kinh",
     "meaningVi": "Bắc Kinh, thủ đô nước Cộng hòa Nhân dân Trung Hoa",
+    "radicalIds": [
+      21,
+      8,
+      30,
+      42
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我想去北京旅游。",
@@ -2666,7 +2766,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "běn",
     "pinyinRaw": "ben",
     "meaningHanViet": "Bản",
-    "meaningVi": "Quyển; cuốn (sách); gốc",
+    "meaningVi": "Quyển, cuốn (sách), gốc",
+    "radicalIds": [
+      75,
+      1
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我买了两本书。",
@@ -2680,7 +2784,12 @@ export const SEED_VOCABULARY = [
     "pinyin": "běnzi",
     "pinyinRaw": "benzi",
     "meaningHanViet": "Bản Tử",
-    "meaningVi": "Sách; quyển tập",
+    "meaningVi": "Sách, quyển tập",
+    "radicalIds": [
+      75,
+      1,
+      39
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "这是一个新本子。",
@@ -2694,7 +2803,10 @@ export const SEED_VOCABULARY = [
     "pinyin": "bǐ",
     "pinyinRaw": "bi",
     "meaningHanViet": "Tỷ",
-    "meaningVi": "So sánh; so với; hơn",
+    "meaningVi": "So sánh, so với, hơn",
+    "radicalIds": [
+      81
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "今天比昨天冷。",
@@ -2708,7 +2820,12 @@ export const SEED_VOCABULARY = [
     "pinyin": "bié",
     "pinyinRaw": "bie",
     "meaningHanViet": "Biệt",
-    "meaningVi": "Đừng; chớ; khác",
+    "meaningVi": "Đừng, chớ, khác",
+    "radicalIds": [
+      18,
+      30,
+      19
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "别说话，请听老师讲。",
@@ -2723,6 +2840,14 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "biede",
     "meaningHanViet": "Biệt Đích",
     "meaningVi": "Khác",
+    "radicalIds": [
+      18,
+      30,
+      19,
+      106,
+      20,
+      3
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "你还需要别的吗？",
@@ -2736,7 +2861,13 @@ export const SEED_VOCABULARY = [
     "pinyin": "biérén",
     "pinyinRaw": "bieren",
     "meaningHanViet": "Biệt Nhân",
-    "meaningVi": "Người khác; những người khác",
+    "meaningVi": "Người khác, những người khác",
+    "radicalIds": [
+      18,
+      30,
+      19,
+      9
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我们要学会尊重别人。",
@@ -2750,7 +2881,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "bìng",
     "pinyinRaw": "bing",
     "meaningHanViet": "Bệnh",
-    "meaningVi": "Bệnh; ốm đau",
+    "meaningVi": "Bệnh, ốm đau",
+    "radicalIds": [
+      104,
+      1
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "他生病了，在医院看病。",
@@ -2764,7 +2899,12 @@ export const SEED_VOCABULARY = [
     "pinyin": "bìngrén",
     "pinyinRaw": "bingren",
     "meaningHanViet": "Bệnh Nhân",
-    "meaningVi": "Người bệnh; bệnh nhân",
+    "meaningVi": "Người bệnh, bệnh nhân",
+    "radicalIds": [
+      104,
+      1,
+      9
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "医生正在照顾病人。",
@@ -2778,7 +2918,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "bù dà",
     "pinyinRaw": "bu da",
     "meaningHanViet": "Bất Đại",
-    "meaningVi": "Không quá; không nhiều",
+    "meaningVi": "Không quá, không nhiều",
+    "radicalIds": [
+      1,
+      37
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "这个房间不大。",
@@ -2792,7 +2936,12 @@ export const SEED_VOCABULARY = [
     "pinyin": "bùduì",
     "pinyinRaw": "budui",
     "meaningHanViet": "Bất Đối",
-    "meaningVi": "Không chính xác; sai",
+    "meaningVi": "Không chính xác, sai",
+    "radicalIds": [
+      1,
+      41,
+      29
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "这个答案不对。",
@@ -2806,7 +2955,14 @@ export const SEED_VOCABULARY = [
     "pinyin": "bù kèqì",
     "pinyinRaw": "bu keqi",
     "meaningHanViet": "Bất Khách Khí",
-    "meaningVi": "Không có chi; đừng nhắc đến",
+    "meaningVi": "Không có chi, đừng nhắc đến",
+    "radicalIds": [
+      1,
+      40,
+      30,
+      34,
+      84
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "不客气，这是我应该做的。",
@@ -2821,6 +2977,10 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "buyong",
     "meaningHanViet": "Bất Dụng",
     "meaningVi": "Không cần",
+    "radicalIds": [
+      1,
+      101
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "不用客气，这是我应该做的。",
@@ -2834,7 +2994,10 @@ export const SEED_VOCABULARY = [
     "pinyin": "bù",
     "pinyinRaw": "bu",
     "meaningHanViet": "Bất",
-    "meaningVi": "Không; không phải; không; bất-",
+    "meaningVi": "Không, không phải, không, bất-",
+    "radicalIds": [
+      1
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我不喝茶，我喝水。",
@@ -2848,7 +3011,13 @@ export const SEED_VOCABULARY = [
     "pinyin": "cài",
     "pinyinRaw": "cai",
     "meaningHanViet": "Thái",
-    "meaningVi": "Rau; món ăn",
+    "meaningVi": "Rau, món ăn",
+    "radicalIds": [
+      140,
+      165,
+      87,
+      75
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "中国菜很好吃。",
@@ -2862,7 +3031,12 @@ export const SEED_VOCABULARY = [
     "pinyin": "chá",
     "pinyinRaw": "cha",
     "meaningHanViet": "Trà",
-    "meaningVi": "Trà; cây trà",
+    "meaningVi": "Trà, cây trà",
+    "radicalIds": [
+      140,
+      9,
+      75
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "中国人喜欢喝茶。",
@@ -2876,7 +3050,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "chà",
     "pinyinRaw": "cha",
     "meaningHanViet": "Sai",
-    "meaningVi": "Sự khác biệt; không nhất quán; hiệu số",
+    "meaningVi": "Sự khác biệt, không nhất quán, hiệu số",
+    "radicalIds": [
+      48,
+      123
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "现在差五分八点。",
@@ -2890,7 +3068,13 @@ export const SEED_VOCABULARY = [
     "pinyin": "cháng",
     "pinyinRaw": "chang",
     "meaningHanViet": "Thường",
-    "meaningVi": "Thường; thường xuyên",
+    "meaningVi": "Thường, thường xuyên",
+    "radicalIds": [
+      50,
+      42,
+      13,
+      30
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我常去图书馆看书。",
@@ -2904,7 +3088,13 @@ export const SEED_VOCABULARY = [
     "pinyin": "chángcháng",
     "pinyinRaw": "changchang",
     "meaningHanViet": "Thường Thường",
-    "meaningVi": "Thường xuyên; thường",
+    "meaningVi": "Thường xuyên, thường",
+    "radicalIds": [
+      50,
+      42,
+      13,
+      30
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "周末我常常和朋友聚会。",
@@ -2918,7 +3108,12 @@ export const SEED_VOCABULARY = [
     "pinyin": "chàng",
     "pinyinRaw": "chang",
     "meaningHanViet": "Xướng",
-    "meaningVi": "Hát; gọi to",
+    "meaningVi": "Hát, gọi to",
+    "radicalIds": [
+      30,
+      72,
+      73
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "大家一起唱歌吧。",
@@ -2933,6 +3128,12 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "changge",
     "meaningHanViet": "Xướng Ca",
     "meaningVi": "Hát một bài hát",
+    "radicalIds": [
+      30,
+      72,
+      73,
+      76
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我妹妹很喜欢唱歌。",
@@ -2947,6 +3148,12 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "che",
     "meaningHanViet": "Xa",
     "meaningVi": "Họ",
+    "radicalIds": [
+      159,
+      1,
+      5,
+      24
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "路上有很多车。",
@@ -2961,6 +3168,14 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "chepiao",
     "meaningHanViet": "Xa Phiếu",
     "meaningVi": "Vé",
+    "radicalIds": [
+      159,
+      1,
+      5,
+      24,
+      113,
+      146
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我买了去北京的车票。",
@@ -2975,6 +3190,13 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "che shang",
     "meaningHanViet": "Xa Thướng",
     "meaningVi": "Trên xe",
+    "radicalIds": [
+      159,
+      1,
+      5,
+      24,
+      25
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "车上有很多乘客。",
@@ -2988,7 +3210,16 @@ export const SEED_VOCABULARY = [
     "pinyin": "chēzhàn",
     "pinyinRaw": "chezhan",
     "meaningHanViet": "Xa Trạm",
-    "meaningVi": "Ga tàu; dừng xe buýt",
+    "meaningVi": "Ga tàu, dừng xe buýt",
+    "radicalIds": [
+      159,
+      1,
+      5,
+      24,
+      117,
+      25,
+      30
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我们在火车站见。",
@@ -3002,7 +3233,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "chī",
     "pinyinRaw": "chi",
     "meaningHanViet": "Cật",
-    "meaningVi": "Ăn; tiêu thụ; ăn ở",
+    "meaningVi": "Ăn, tiêu thụ, ăn ở",
+    "radicalIds": [
+      30,
+      5
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "你想吃什么？",
@@ -3016,7 +3251,14 @@ export const SEED_VOCABULARY = [
     "pinyin": "chīfàn",
     "pinyinRaw": "chifan",
     "meaningHanViet": "Cật Phạn",
-    "meaningVi": "Dùng bữa; ăn",
+    "meaningVi": "Dùng bữa, ăn",
+    "radicalIds": [
+      30,
+      5,
+      184,
+      29,
+      27
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我们十二点去吃饭。",
@@ -3030,7 +3272,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "chū",
     "pinyinRaw": "chu",
     "meaningHanViet": "Xuất",
-    "meaningVi": "Ra; xuất; đi ra",
+    "meaningVi": "Ra, xuất, đi ra",
+    "radicalIds": [
+      17,
+      45
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "他从房间里走出来了。",
@@ -3044,7 +3290,14 @@ export const SEED_VOCABULARY = [
     "pinyin": "chūlái",
     "pinyinRaw": "chulai",
     "meaningHanViet": "Xuất Lai",
-    "meaningVi": "Đi ra; xuất hiện",
+    "meaningVi": "Đi ra, xuất hiện",
+    "radicalIds": [
+      17,
+      45,
+      75,
+      1,
+      12
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "快出来看雪！",
@@ -3059,6 +3312,12 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "chuqu",
     "meaningHanViet": "Xuất Khứ",
     "meaningVi": "Đi ra ngoài",
+    "radicalIds": [
+      17,
+      45,
+      28,
+      32
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "外面下雨了，不要出去。",
@@ -3072,7 +3331,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "chuān",
     "pinyinRaw": "chuan",
     "meaningHanViet": "Xuyên",
-    "meaningVi": "Mặc (áo); đi (giày)",
+    "meaningVi": "Mặc (áo), đi (giày)",
+    "radicalIds": [
+      116,
+      92
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "今天很冷，多穿点衣服。",
@@ -3086,7 +3349,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "chuáng",
     "pinyinRaw": "chuang",
     "meaningHanViet": "Sàng",
-    "meaningVi": "Giường; ghế dài",
+    "meaningVi": "Giường, ghế dài",
+    "radicalIds": [
+      53,
+      75
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "房间里有一张大床。",
@@ -3100,7 +3367,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "cì",
     "pinyinRaw": "ci",
     "meaningHanViet": "Thứ",
-    "meaningVi": "Tiếp theo; thứ hai",
+    "meaningVi": "Tiếp theo, thứ hai",
+    "radicalIds": [
+      76,
+      15
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "这是我第一次来这里。",
@@ -3115,6 +3386,9 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "cong",
     "meaningHanViet": "Tòng",
     "meaningVi": "Biến thể của 從|从",
+    "radicalIds": [
+      9
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我从越南来到中国。",
@@ -3128,7 +3402,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "cuò",
     "pinyinRaw": "cuo",
     "meaningHanViet": "Thác",
-    "meaningVi": "Sai; nhầm lẫn",
+    "meaningVi": "Sai, nhầm lẫn",
+    "radicalIds": [
+      167,
+      72
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "你说得没错。",
@@ -3142,7 +3420,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "dǎ",
     "pinyinRaw": "da",
     "meaningHanViet": "Tá",
-    "meaningVi": "Đánh; gọi (điện thoại); chơi (bóng)",
+    "meaningVi": "Đánh, gọi (điện thoại), chơi (bóng)",
+    "radicalIds": [
+      64,
+      1
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我们下午去打篮球吧。",
@@ -3156,7 +3438,14 @@ export const SEED_VOCABULARY = [
     "pinyin": "dǎchē",
     "pinyinRaw": "dache",
     "meaningHanViet": "Tá Xa",
-    "meaningVi": "Bắt taxi; đón xe",
+    "meaningVi": "Bắt taxi, đón xe",
+    "radicalIds": [
+      64,
+      1,
+      159,
+      5,
+      24
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "外面下雨了，我们打车走吧。",
@@ -3171,6 +3460,14 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "da dianhua",
     "meaningHanViet": "Tá Điện Thoại",
     "meaningVi": "Gọi điện thoại",
+    "radicalIds": [
+      64,
+      1,
+      73,
+      5,
+      149,
+      135
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "他正在给妈妈打电话。",
@@ -3184,7 +3481,12 @@ export const SEED_VOCABULARY = [
     "pinyin": "dǎkāi",
     "pinyinRaw": "dakai",
     "meaningHanViet": "Tá Khai",
-    "meaningVi": "Mở; cho xem",
+    "meaningVi": "Mở, cho xem",
+    "radicalIds": [
+      64,
+      1,
+      55
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "请打开书本。",
@@ -3198,7 +3500,13 @@ export const SEED_VOCABULARY = [
     "pinyin": "dǎ qiú",
     "pinyinRaw": "da qiu",
     "meaningHanViet": "Tá Cầu",
-    "meaningVi": "Chơi bóng; chơi với bóng",
+    "meaningVi": "Chơi bóng, chơi với bóng",
+    "radicalIds": [
+      64,
+      1,
+      96,
+      85
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "周末我喜欢和朋友打球。",
@@ -3212,7 +3520,10 @@ export const SEED_VOCABULARY = [
     "pinyin": "dà",
     "pinyinRaw": "da",
     "meaningHanViet": "Đại",
-    "meaningVi": "Lớn; to",
+    "meaningVi": "Lớn, to",
+    "radicalIds": [
+      37
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "这个西瓜很大。",
@@ -3227,6 +3538,12 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "daxue",
     "meaningHanViet": "Đại Học",
     "meaningVi": "Đại học, một trong Tứ thư 四書|四书 của Nho giáo",
+    "radicalIds": [
+      37,
+      39,
+      42,
+      14
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "他是北京大学的学生。",
@@ -3240,7 +3557,14 @@ export const SEED_VOCABULARY = [
     "pinyin": "dàxuéshēng",
     "pinyinRaw": "daxuesheng",
     "meaningHanViet": "Đại Học Sinh",
-    "meaningVi": "Sinh viên đại học; sinh viên cao đẳng",
+    "meaningVi": "Sinh viên đại học, sinh viên cao đẳng",
+    "radicalIds": [
+      37,
+      39,
+      42,
+      14,
+      100
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我的哥哥是一名大学生。",
@@ -3254,7 +3578,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "dào",
     "pinyinRaw": "dao",
     "meaningHanViet": "Đáo",
-    "meaningVi": "Đến; tới",
+    "meaningVi": "Đến, tới",
+    "radicalIds": [
+      18,
+      133
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我们到了火车站。",
@@ -3268,7 +3596,15 @@ export const SEED_VOCABULARY = [
     "pinyin": "dédào",
     "pinyinRaw": "dedao",
     "meaningHanViet": "Đắc Đáo",
-    "meaningVi": "Được; đạt được; nhận được",
+    "meaningVi": "Được, đạt được, nhận được",
+    "radicalIds": [
+      60,
+      72,
+      1,
+      41,
+      18,
+      133
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "他得到了一份好工作。",
@@ -3282,7 +3618,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "de",
     "pinyinRaw": "de",
     "meaningHanViet": "Địa",
-    "meaningVi": "Đất; mặt đất; trợ từ trạng ngữ",
+    "meaningVi": "Đất, mặt đất, trợ từ trạng ngữ",
+    "radicalIds": [
+      32,
+      5
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "地上有一本书。",
@@ -3296,7 +3636,12 @@ export const SEED_VOCABULARY = [
     "pinyin": "de",
     "pinyinRaw": "de",
     "meaningHanViet": "Đích",
-    "meaningVi": "Của; trợ từ sở hữu hoặc bổ nghĩa",
+    "meaningVi": "Của, trợ từ sở hữu hoặc bổ nghĩa",
+    "radicalIds": [
+      106,
+      20,
+      3
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "这是我的汉语书。",
@@ -3310,7 +3655,12 @@ export const SEED_VOCABULARY = [
     "pinyin": "děng",
     "pinyinRaw": "deng",
     "meaningHanViet": "Đẳng",
-    "meaningVi": "Đợi; chờ đợi; vân vân",
+    "meaningVi": "Đợi, chờ đợi, vân vân",
+    "radicalIds": [
+      118,
+      41,
+      32
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "请等我五分钟。",
@@ -3324,7 +3674,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "dì",
     "pinyinRaw": "di",
     "meaningHanViet": "Địa",
-    "meaningVi": "Đất; mặt đất; trợ từ trạng ngữ",
+    "meaningVi": "Đất, mặt đất, trợ từ trạng ngữ",
+    "radicalIds": [
+      32,
+      5
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "地上有一本书。",
@@ -3338,7 +3692,14 @@ export const SEED_VOCABULARY = [
     "pinyin": "dìdiǎn",
     "pinyinRaw": "didian",
     "meaningHanViet": "Địa Điểm",
-    "meaningVi": "Nơi; chỗ",
+    "meaningVi": "Nơi, chỗ",
+    "radicalIds": [
+      32,
+      5,
+      86,
+      25,
+      30
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "开会的地点在二楼。",
@@ -3352,7 +3713,12 @@ export const SEED_VOCABULARY = [
     "pinyin": "dìfang",
     "pinyinRaw": "difang",
     "meaningHanViet": "Địa Phương",
-    "meaningVi": "Khu vực; mang tính khu vực",
+    "meaningVi": "Khu vực, mang tính khu vực",
+    "radicalIds": [
+      32,
+      5,
+      70
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "这是一个美丽的地方。",
@@ -3366,7 +3732,13 @@ export const SEED_VOCABULARY = [
     "pinyin": "dìshang",
     "pinyinRaw": "dishang",
     "meaningHanViet": "Địa Thướng",
-    "meaningVi": "Trên mặt đất; trên sàn nhà",
+    "meaningVi": "Trên mặt đất, trên sàn nhà",
+    "radicalIds": [
+      32,
+      5,
+      1,
+      25
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "地上有很多落叶。",
@@ -3381,6 +3753,13 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "ditu",
     "meaningHanViet": "Địa Đồ",
     "meaningVi": "Bản đồ",
+    "radicalIds": [
+      32,
+      5,
+      31,
+      15,
+      34
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "请在地图上找一下这个城市。",
@@ -3395,6 +3774,10 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "didi",
     "meaningHanViet": "Đệ Đệ",
     "meaningVi": "Em trai",
+    "radicalIds": [
+      57,
+      12
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我弟弟今年十岁。",
@@ -3408,7 +3791,12 @@ export const SEED_VOCABULARY = [
     "pinyin": "dì (dì-èr)",
     "pinyinRaw": "di (di-er)",
     "meaningHanViet": "Đệ",
-    "meaningVi": "Thứ hạng mà thí sinh đỗ đạt trong kỳ thi đình được xếp vào; nơi ở của quan chức cao cấp",
+    "meaningVi": "Thứ hạng mà thí sinh đỗ đạt trong kỳ thi đình được xếp vào, nơi ở của quan chức cao cấp",
+    "radicalIds": [
+      118,
+      57,
+      12
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "他是第一个到教室的人。",
@@ -3422,7 +3810,12 @@ export const SEED_VOCABULARY = [
     "pinyin": "diǎn",
     "pinyinRaw": "dian",
     "meaningHanViet": "Điểm",
-    "meaningVi": "Giờ; điểm; chấm; chút ít",
+    "meaningVi": "Giờ, điểm, chấm, chút ít",
+    "radicalIds": [
+      86,
+      25,
+      30
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "现在是早上八点。",
@@ -3436,7 +3829,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "diàn",
     "pinyinRaw": "dian",
     "meaningHanViet": "Điện",
-    "meaningVi": "Điện; pin",
+    "meaningVi": "Điện, pin",
+    "radicalIds": [
+      73,
+      5
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "手机没有电了。",
@@ -3450,7 +3847,13 @@ export const SEED_VOCABULARY = [
     "pinyin": "diànhuà",
     "pinyinRaw": "dianhua",
     "meaningHanViet": "Điện Thoại",
-    "meaningVi": "Điện thoại; cuộc gọi điện thoại",
+    "meaningVi": "Điện thoại, cuộc gọi điện thoại",
+    "radicalIds": [
+      73,
+      5,
+      149,
+      135
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "请告诉我你的电话号码。",
@@ -3465,6 +3868,13 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "diannao",
     "meaningHanViet": "Điện Não",
     "meaningVi": "Máy tính",
+    "radicalIds": [
+      73,
+      5,
+      130,
+      8,
+      17
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我买了一台新电脑。",
@@ -3478,7 +3888,13 @@ export const SEED_VOCABULARY = [
     "pinyin": "diànshì",
     "pinyinRaw": "dianshi",
     "meaningHanViet": "Điện Thị",
-    "meaningVi": "Truyền hình; TV",
+    "meaningVi": "Truyền hình, TV",
+    "radicalIds": [
+      73,
+      5,
+      147,
+      113
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "晚上我们一家人看电视。",
@@ -3493,6 +3909,14 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "dianshiji",
     "meaningHanViet": "Điện Thị Cơ",
     "meaningVi": "Máy thu hình",
+    "radicalIds": [
+      73,
+      5,
+      147,
+      113,
+      75,
+      16
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "客厅里有一台大电视机。",
@@ -3506,7 +3930,13 @@ export const SEED_VOCABULARY = [
     "pinyin": "diànyǐng",
     "pinyinRaw": "dianying",
     "meaningHanViet": "Điện Ảnh",
-    "meaningVi": "Phim; điện ảnh",
+    "meaningVi": "Phim, điện ảnh",
+    "radicalIds": [
+      73,
+      5,
+      59,
+      72
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "明天我们去看电影吧。",
@@ -3520,7 +3950,15 @@ export const SEED_VOCABULARY = [
     "pinyin": "diànyǐngyuàn",
     "pinyinRaw": "dianyingyuan",
     "meaningHanViet": "Điện Ảnh Viện",
-    "meaningVi": "Rạp chiếu phim; rạp phim",
+    "meaningVi": "Rạp chiếu phim, rạp phim",
+    "radicalIds": [
+      73,
+      5,
+      59,
+      72,
+      170,
+      40
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "电影院在商场三楼。",
@@ -3535,6 +3973,11 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "dong",
     "meaningHanViet": "Đông",
     "meaningVi": "Họ",
+    "radicalIds": [
+      1,
+      5,
+      42
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "太阳从东方升起。",
@@ -3548,7 +3991,14 @@ export const SEED_VOCABULARY = [
     "pinyin": "dōngbian",
     "pinyinRaw": "dongbian",
     "meaningHanViet": "Đông Biên",
-    "meaningVi": "Hướng đông; phía đông",
+    "meaningVi": "Hướng đông, phía đông",
+    "radicalIds": [
+      1,
+      5,
+      42,
+      162,
+      19
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "学校东边有一家书店。",
@@ -3563,6 +4013,14 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "dongxi",
     "meaningHanViet": "Đông Tây",
     "meaningVi": "Đông và tây",
+    "radicalIds": [
+      1,
+      5,
+      42,
+      146,
+      10,
+      31
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "桌子上放着很多东西。",
@@ -3576,7 +4034,12 @@ export const SEED_VOCABULARY = [
     "pinyin": "dòng",
     "pinyinRaw": "dong",
     "meaningHanViet": "Động",
-    "meaningVi": "Động; cử động; chuyển động",
+    "meaningVi": "Động, cử động, chuyển động",
+    "radicalIds": [
+      19,
+      7,
+      28
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "别动，让我看看。",
@@ -3590,7 +4053,15 @@ export const SEED_VOCABULARY = [
     "pinyin": "dòngzuò",
     "pinyinRaw": "dongzuo",
     "meaningHanViet": "Động Tác",
-    "meaningVi": "Chuyển động; cử động; hành động; diễn; di chuyển",
+    "meaningVi": "Chuyển động, cử động, hành động, diễn, di chuyển",
+    "radicalIds": [
+      19,
+      7,
+      28,
+      9,
+      4,
+      1
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "他的动作很快。",
@@ -3604,7 +4075,12 @@ export const SEED_VOCABULARY = [
     "pinyin": "dōu",
     "pinyinRaw": "dou",
     "meaningHanViet": "Đô",
-    "meaningVi": "Đều; tất cả",
+    "meaningVi": "Đều, tất cả",
+    "radicalIds": [
+      163,
+      125,
+      72
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我们都是学习汉语的学生。",
@@ -3618,7 +4094,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "dú",
     "pinyinRaw": "du",
     "meaningHanViet": "Đậu",
-    "meaningVi": "Đọc; học tập",
+    "meaningVi": "Đọc, học tập",
+    "radicalIds": [
+      149,
+      24
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "请大声读这段课文。",
@@ -3632,7 +4112,12 @@ export const SEED_VOCABULARY = [
     "pinyin": "dúshū",
     "pinyinRaw": "dushu",
     "meaningHanViet": "Đậu Thư",
-    "meaningVi": "Đọc sách; học",
+    "meaningVi": "Đọc sách, học",
+    "radicalIds": [
+      149,
+      24,
+      2
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "他每天晚上都认真读书。",
@@ -3646,7 +4131,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "duì",
     "pinyinRaw": "dui",
     "meaningHanViet": "Đối",
-    "meaningVi": "Đúng; chính xác; đối với",
+    "meaningVi": "Đúng, chính xác, đối với",
+    "radicalIds": [
+      41,
+      29
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "你回答得非常对。",
@@ -3660,7 +4149,14 @@ export const SEED_VOCABULARY = [
     "pinyin": "duìbuqǐ",
     "pinyinRaw": "duibuqi",
     "meaningHanViet": "Đối Bất Khởi",
-    "meaningVi": "Tôi xin lỗi; xin thứ lỗi; tôi xin tha thứ; làm  thất vọng; không đạt kỳ vọng",
+    "meaningVi": "Tôi xin lỗi, xin thứ lỗi, tôi xin tha thứ, làm  thất vọng, không đạt kỳ vọng",
+    "radicalIds": [
+      41,
+      29,
+      1,
+      156,
+      49
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "对不起，我来晚了。",
@@ -3675,6 +4171,9 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "duo",
     "meaningHanViet": "Đa",
     "meaningVi": "Nhiều",
+    "radicalIds": [
+      36
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "学校里有很多学生。",
@@ -3688,7 +4187,12 @@ export const SEED_VOCABULARY = [
     "pinyin": "duōshao",
     "pinyinRaw": "duoshao",
     "meaningHanViet": "Đa Thiểu",
-    "meaningVi": "Số lượng; mức độ; phần nào",
+    "meaningVi": "Số lượng, mức độ, phần nào",
+    "radicalIds": [
+      36,
+      42,
+      4
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "请问这个西瓜多少钱？",
@@ -3702,7 +4206,12 @@ export const SEED_VOCABULARY = [
     "pinyin": "è",
     "pinyinRaw": "e",
     "meaningHanViet": "Ngạ",
-    "meaningVi": "Đói; làm cho đói",
+    "meaningVi": "Đói, làm cho đói",
+    "radicalIds": [
+      184,
+      62,
+      64
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我肚子饿了，想吃东西。",
@@ -3717,6 +4226,10 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "erzi",
     "meaningHanViet": "Nhân Tử",
     "meaningVi": "Con trai",
+    "radicalIds": [
+      10,
+      39
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "他的儿子很聪明。",
@@ -3730,7 +4243,10 @@ export const SEED_VOCABULARY = [
     "pinyin": "èr",
     "pinyinRaw": "er",
     "meaningHanViet": "Nhị",
-    "meaningVi": "Hai; 2",
+    "meaningVi": "Hai, 2",
+    "radicalIds": [
+      7
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "一加一等于二。",
@@ -3744,7 +4260,12 @@ export const SEED_VOCABULARY = [
     "pinyin": "fàn",
     "pinyinRaw": "fan",
     "meaningHanViet": "Phạn",
-    "meaningVi": "Cơm đã nấu; bữa ăn",
+    "meaningVi": "Cơm đã nấu, bữa ăn",
+    "radicalIds": [
+      184,
+      29,
+      27
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "今天的米饭很香。",
@@ -3758,7 +4279,15 @@ export const SEED_VOCABULARY = [
     "pinyin": "fàndiàn",
     "pinyinRaw": "fandian",
     "meaningHanViet": "Phạn Điếm",
-    "meaningVi": "Nhà hàng; khách sạn",
+    "meaningVi": "Nhà hàng, khách sạn",
+    "radicalIds": [
+      184,
+      29,
+      27,
+      53,
+      25,
+      30
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我们在饭店吃晚饭。",
@@ -3773,6 +4302,12 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "fangjian",
     "meaningHanViet": "Phòng Gian",
     "meaningVi": "Phòng",
+    "radicalIds": [
+      63,
+      70,
+      169,
+      72
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我的房间很干净。",
@@ -3786,7 +4321,12 @@ export const SEED_VOCABULARY = [
     "pinyin": "fángzi",
     "pinyinRaw": "fangzi",
     "meaningHanViet": "Phòng Tử",
-    "meaningVi": "Nhà; tòa nhà",
+    "meaningVi": "Nhà, tòa nhà",
+    "radicalIds": [
+      63,
+      70,
+      39
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "他们买了一套新房子。",
@@ -3800,7 +4340,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "fàng",
     "pinyinRaw": "fang",
     "meaningHanViet": "Phóng",
-    "meaningVi": "Đặt; để; buông; thả",
+    "meaningVi": "Đặt, để, buông, thả",
+    "radicalIds": [
+      66,
+      70
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "请把书放在桌子上。",
@@ -3815,6 +4359,12 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "fangjia",
     "meaningHanViet": "Phóng Giả",
     "meaningVi": "Nghỉ lễ hoặc kỳ nghỉ",
+    "radicalIds": [
+      66,
+      70,
+      9,
+      29
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "下周我们放假三天。",
@@ -3829,6 +4379,13 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "fangxue",
     "meaningHanViet": "Phóng Học",
     "meaningVi": "Tan học",
+    "radicalIds": [
+      66,
+      70,
+      39,
+      42,
+      14
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "下午五点学生们放学。",
@@ -3843,6 +4400,9 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "fei",
     "meaningHanViet": "Phi",
     "meaningVi": "Bay",
+    "radicalIds": [
+      183
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "小鸟在天空中飞。",
@@ -3857,6 +4417,11 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "feiji",
     "meaningHanViet": "Phi Cơ",
     "meaningVi": "Máy bay",
+    "radicalIds": [
+      183,
+      75,
+      16
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我坐飞机去北京。",
@@ -3870,7 +4435,14 @@ export const SEED_VOCABULARY = [
     "pinyin": "fēicháng",
     "pinyinRaw": "feichang",
     "meaningHanViet": "Phi Thường",
-    "meaningVi": "Rất; thực sự; khác thường; phi thường",
+    "meaningVi": "Rất, thực sự, khác thường, phi thường",
+    "radicalIds": [
+      175,
+      50,
+      42,
+      13,
+      30
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "这本书非常有意思。",
@@ -3884,7 +4456,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "fēn",
     "pinyinRaw": "fen",
     "meaningHanViet": "Phân",
-    "meaningVi": "Phút; điểm; phân chia",
+    "meaningVi": "Phút, điểm, phân chia",
+    "radicalIds": [
+      18,
+      12
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "现在是八点十分。",
@@ -3898,7 +4474,12 @@ export const SEED_VOCABULARY = [
     "pinyin": "fēng",
     "pinyinRaw": "feng",
     "meaningHanViet": "Phong",
-    "meaningVi": "Gió; tin tức",
+    "meaningVi": "Gió, tin tức",
+    "radicalIds": [
+      182,
+      16,
+      4
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "今天外面的风很大。",
@@ -3912,7 +4493,10 @@ export const SEED_VOCABULARY = [
     "pinyin": "gān",
     "pinyinRaw": "gan",
     "meaningHanViet": "Can",
-    "meaningVi": "Làm; khô ráo",
+    "meaningVi": "Làm, khô ráo",
+    "radicalIds": [
+      24
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "衣服已经晾干了。",
@@ -3926,7 +4510,14 @@ export const SEED_VOCABULARY = [
     "pinyin": "gānjìng",
     "pinyinRaw": "ganjing",
     "meaningHanViet": "Can Tịnh",
-    "meaningVi": "Sạch; gọn gàng",
+    "meaningVi": "Sạch, gọn gàng",
+    "radicalIds": [
+      24,
+      15,
+      6,
+      18,
+      58
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "这个教室真干净。",
@@ -3940,7 +4531,10 @@ export const SEED_VOCABULARY = [
     "pinyin": "gàn",
     "pinyinRaw": "gan4",
     "meaningHanViet": "Can",
-    "meaningVi": "Làm; khô ráo",
+    "meaningVi": "Làm, khô ráo",
+    "radicalIds": [
+      24
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "衣服已经晾干了。",
@@ -3954,7 +4548,13 @@ export const SEED_VOCABULARY = [
     "pinyin": "gàn shénme",
     "pinyinRaw": "gan shenme",
     "meaningHanViet": "Can Thậm Yêu",
-    "meaningVi": "Bạn đang làm gì?; anh ấy đang định làm gì?",
+    "meaningVi": "Bạn đang làm gì?, anh ấy đang định làm gì?",
+    "radicalIds": [
+      24,
+      9,
+      4,
+      28
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "你在房间里干什么呢？",
@@ -3969,6 +4569,9 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "gao",
     "meaningHanViet": "Cao",
     "meaningVi": "Cao",
+    "radicalIds": [
+      189
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "他长得很高。",
@@ -3982,7 +4585,13 @@ export const SEED_VOCABULARY = [
     "pinyin": "gāoxìng",
     "pinyinRaw": "gaoxing",
     "meaningHanViet": "Cao Hưng",
-    "meaningVi": "Vui; vui vẻ",
+    "meaningVi": "Vui, vui vẻ",
+    "radicalIds": [
+      189,
+      12,
+      42,
+      1
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "见到你我很高兴。",
@@ -3996,7 +4605,14 @@ export const SEED_VOCABULARY = [
     "pinyin": "gàosu",
     "pinyinRaw": "gaosu",
     "meaningHanViet": "Cáo Tố",
-    "meaningVi": "Khởi kiện; nộp đơn khiếu nại",
+    "meaningVi": "Khởi kiện, nộp đơn khiếu nại",
+    "radicalIds": [
+      30,
+      93,
+      149,
+      69,
+      3
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "请告诉我发生什么事了。",
@@ -4011,6 +4627,9 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "gege",
     "meaningHanViet": "Ca Ca",
     "meaningVi": "Anh trai",
+    "radicalIds": [
+      30
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我哥哥在大学读书。",
@@ -4024,7 +4643,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "gē",
     "pinyinRaw": "ge",
     "meaningHanViet": "Ca",
-    "meaningVi": "Bài hát; hát",
+    "meaningVi": "Bài hát, hát",
+    "radicalIds": [
+      76,
+      30
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "这首歌真好听。",
@@ -4038,7 +4661,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "gè",
     "pinyinRaw": "ge",
     "meaningHanViet": "Cá",
-    "meaningVi": "Cái; quả; con; lượng từ chung",
+    "meaningVi": "Cái, quả, con, lượng từ chung",
+    "radicalIds": [
+      2,
+      9
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我买了一个苹果。",
@@ -4052,7 +4679,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "gěi",
     "pinyinRaw": "gei",
     "meaningHanViet": "Cấp",
-    "meaningVi": "Cho; đưa cho",
+    "meaningVi": "Cho, đưa cho",
+    "radicalIds": [
+      120,
+      30
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "请给我一杯水。",
@@ -4066,7 +4697,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "gēn",
     "pinyinRaw": "gen",
     "meaningHanViet": "Cân",
-    "meaningVi": "Cùng; với; theo",
+    "meaningVi": "Cùng, với, theo",
+    "radicalIds": [
+      157,
+      138
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我想跟你一起去。",
@@ -4080,7 +4715,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "gōngrén",
     "pinyinRaw": "gongren",
     "meaningHanViet": "Công Nhân",
-    "meaningVi": "Công nhân; Lượng từ: 個|个, 名",
+    "meaningVi": "Công nhân, Lượng từ: 個|个, 名",
+    "radicalIds": [
+      48,
+      9
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "工厂里有很多工人。",
@@ -4094,7 +4733,13 @@ export const SEED_VOCABULARY = [
     "pinyin": "gōngzuò",
     "pinyinRaw": "gongzuo",
     "meaningHanViet": "Công Tác",
-    "meaningVi": "Làm việc; vận hành",
+    "meaningVi": "Làm việc, vận hành",
+    "radicalIds": [
+      48,
+      9,
+      4,
+      1
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "他在医院工作。",
@@ -4108,7 +4753,12 @@ export const SEED_VOCABULARY = [
     "pinyin": "guān",
     "pinyinRaw": "guan",
     "meaningHanViet": "Quan",
-    "meaningVi": "Đóng; tắt; quan hệ",
+    "meaningVi": "Đóng, tắt, quan hệ",
+    "radicalIds": [
+      12,
+      37,
+      1
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "请关上门。",
@@ -4122,7 +4772,13 @@ export const SEED_VOCABULARY = [
     "pinyin": "guānshang",
     "pinyinRaw": "guanshang",
     "meaningHanViet": "Quan Thướng",
-    "meaningVi": "Đóng; tắt",
+    "meaningVi": "Đóng, tắt",
+    "radicalIds": [
+      12,
+      37,
+      1,
+      25
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "离开前请关上灯。",
@@ -4136,7 +4792,13 @@ export const SEED_VOCABULARY = [
     "pinyin": "guì",
     "pinyinRaw": "gui",
     "meaningHanViet": "Quý",
-    "meaningVi": "Đắt; được coi trọng; quý giá",
+    "meaningVi": "Đắt, được coi trọng, quý giá",
+    "radicalIds": [
+      154,
+      2,
+      30,
+      1
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "这件衣服有点贵。",
@@ -4151,6 +4813,10 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "guo",
     "meaningHanViet": "Quốc",
     "meaningVi": "Họ",
+    "radicalIds": [
+      31,
+      96
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "中国是一个历史悠久的国度。",
@@ -4164,7 +4830,13 @@ export const SEED_VOCABULARY = [
     "pinyin": "guójiā",
     "pinyinRaw": "guojia",
     "meaningHanViet": "Quốc Gia",
-    "meaningVi": "Quốc gia; dân tộc; nhà nước",
+    "meaningVi": "Quốc gia, dân tộc, nhà nước",
+    "radicalIds": [
+      31,
+      96,
+      40,
+      152
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "世界上有很多国家。",
@@ -4178,7 +4850,13 @@ export const SEED_VOCABULARY = [
     "pinyin": "guó wài",
     "pinyinRaw": "guo wai",
     "meaningHanViet": "Quốc Ngoại",
-    "meaningVi": "Ở nước ngoài; ngoại",
+    "meaningVi": "Ở nước ngoài, ngoại",
+    "radicalIds": [
+      31,
+      96,
+      36,
+      25
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "他打算去国外留学。",
@@ -4192,7 +4870,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "guò",
     "pinyinRaw": "guo",
     "meaningHanViet": "Quá",
-    "meaningVi": "Qua; qua đi; từng (kinh nghiệm)",
+    "meaningVi": "Qua, qua đi, từng (kinh nghiệm)",
+    "radicalIds": [
+      162,
+      41
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "你去过中国吗？",
@@ -4206,7 +4888,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "hái",
     "pinyinRaw": "hai",
     "meaningHanViet": "Hoàn",
-    "meaningVi": "Vẫn; còn; trả lại",
+    "meaningVi": "Vẫn, còn, trả lại",
+    "radicalIds": [
+      162,
+      1
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我吃饱了，还想喝点水。",
@@ -4220,7 +4906,13 @@ export const SEED_VOCABULARY = [
     "pinyin": "háishi",
     "pinyinRaw": "haishi",
     "meaningHanViet": "Hoàn Thị",
-    "meaningVi": "Vẫn; nên",
+    "meaningVi": "Vẫn, nên",
+    "radicalIds": [
+      162,
+      1,
+      72,
+      103
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "你喝茶还是喝咖啡？",
@@ -4234,7 +4926,12 @@ export const SEED_VOCABULARY = [
     "pinyin": "hái yǒu",
     "pinyinRaw": "hai you",
     "meaningHanViet": "Hoàn Hữu",
-    "meaningVi": "Vẫn còn; còn có; thêm vào đó",
+    "meaningVi": "Vẫn còn, còn có, thêm vào đó",
+    "radicalIds": [
+      162,
+      1,
+      74
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "桌上有书，还有笔。",
@@ -4249,6 +4946,10 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "haizi",
     "meaningHanViet": "Hài Tử",
     "meaningVi": "Trẻ em",
+    "radicalIds": [
+      39,
+      8
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "孩子们在操场上玩。",
@@ -4263,6 +4964,12 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "hanyu",
     "meaningHanViet": "Hán Ngữ",
     "meaningVi": "Ngôn ngữ tiếng Trung",
+    "radicalIds": [
+      85,
+      29,
+      149,
+      30
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "学汉语很有趣。",
@@ -4276,7 +4983,13 @@ export const SEED_VOCABULARY = [
     "pinyin": "Hànzì",
     "pinyinRaw": "hanzi",
     "meaningHanViet": "Hán Tự",
-    "meaningVi": "Chữ Hán; Nhật: kanji",
+    "meaningVi": "Chữ Hán, Nhật: kanji",
+    "radicalIds": [
+      85,
+      29,
+      39,
+      40
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "这个汉字很好写。",
@@ -4290,7 +5003,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "hǎo",
     "pinyinRaw": "hao",
     "meaningHanViet": "Hảo",
-    "meaningVi": "Tốt; đẹp; xong",
+    "meaningVi": "Tốt, đẹp, xong",
+    "radicalIds": [
+      38,
+      39
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "今天天气真好。",
@@ -4304,7 +5021,13 @@ export const SEED_VOCABULARY = [
     "pinyin": "hǎochī",
     "pinyinRaw": "haochi",
     "meaningHanViet": "Hảo Cật",
-    "meaningVi": "Ngon; ngon miệng",
+    "meaningVi": "Ngon, ngon miệng",
+    "radicalIds": [
+      38,
+      39,
+      30,
+      5
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "妈妈做的菜真好吃。",
@@ -4318,7 +5041,13 @@ export const SEED_VOCABULARY = [
     "pinyin": "hǎokàn",
     "pinyinRaw": "haokan",
     "meaningHanViet": "Hảo Khán",
-    "meaningVi": "Ưa nhìn; xinh đẹp",
+    "meaningVi": "Ưa nhìn, xinh đẹp",
+    "radicalIds": [
+      38,
+      39,
+      109,
+      64
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "这部电影很好看。",
@@ -4333,6 +5062,12 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "haoting",
     "meaningHanViet": "Hảo Dẫn",
     "meaningVi": "Nghe hay",
+    "radicalIds": [
+      38,
+      39,
+      30,
+      69
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "这首音乐真好听。",
@@ -4347,6 +5082,13 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "haowanr",
     "meaningHanViet": "Hảo Ngoạn Nhân",
     "meaningVi": "Biến thể er hoá của 好玩",
+    "radicalIds": [
+      38,
+      39,
+      96,
+      10,
+      7
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "这个公园真好玩儿。",
@@ -4360,7 +5102,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "hào",
     "pinyinRaw": "hao",
     "meaningHanViet": "Hiệu",
-    "meaningVi": "Số; ngày (trong tháng)",
+    "meaningVi": "Số, ngày (trong tháng)",
+    "radicalIds": [
+      30,
+      1
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "今天是十月一号。",
@@ -4375,6 +5121,11 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "he",
     "meaningHanViet": "Húp",
     "meaningVi": "Uống",
+    "radicalIds": [
+      30,
+      73,
+      72
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "请喝热茶。",
@@ -4388,7 +5139,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "hé",
     "pinyinRaw": "he",
     "meaningHanViet": "Hoà",
-    "meaningVi": "Và; cùng với; hòa thuận",
+    "meaningVi": "Và, cùng với, hòa thuận",
+    "radicalIds": [
+      30,
+      115
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我和他是好朋友。",
@@ -4402,7 +5157,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "hěn",
     "pinyinRaw": "hen",
     "meaningHanViet": "Ngận",
-    "meaningVi": "Rất; lắm",
+    "meaningVi": "Rất, lắm",
+    "radicalIds": [
+      60,
+      138
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我今天很高兴。",
@@ -4416,7 +5175,10 @@ export const SEED_VOCABULARY = [
     "pinyin": "hòu",
     "pinyinRaw": "hou",
     "meaningHanViet": "Hậu",
-    "meaningVi": "Sau; phía sau",
+    "meaningVi": "Sau, phía sau",
+    "radicalIds": [
+      30
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "三天后我们再见面。",
@@ -4430,7 +5192,12 @@ export const SEED_VOCABULARY = [
     "pinyin": "hòubian",
     "pinyinRaw": "houbian",
     "meaningHanViet": "Hậu Biên",
-    "meaningVi": "Phía sau; đằng sau; phần cuối; đằng sau; gần cuối; ở phía sau",
+    "meaningVi": "Phía sau, đằng sau, phần cuối, đằng sau, gần cuối, ở phía sau",
+    "radicalIds": [
+      30,
+      162,
+      19
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "学校后边有一条小河。",
@@ -4444,7 +5211,12 @@ export const SEED_VOCABULARY = [
     "pinyin": "hòutiān",
     "pinyinRaw": "houtian",
     "meaningHanViet": "Hậu Thiên",
-    "meaningVi": "Ngày mốt; cuộc sống sau khi sinh",
+    "meaningVi": "Ngày mốt, cuộc sống sau khi sinh",
+    "radicalIds": [
+      30,
+      37,
+      1
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "后天是星期天。",
@@ -4458,7 +5230,12 @@ export const SEED_VOCABULARY = [
     "pinyin": "huā",
     "pinyinRaw": "hua",
     "meaningHanViet": "Hoa",
-    "meaningVi": "Hoa; tiêu (tiền, thời gian)",
+    "meaningVi": "Hoa, tiêu (tiền, thời gian)",
+    "radicalIds": [
+      140,
+      21,
+      9
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "花园里开满了花。",
@@ -4472,7 +5249,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "huà",
     "pinyinRaw": "hua",
     "meaningHanViet": "Thoại",
-    "meaningVi": "Phương ngữ; ngôn ngữ",
+    "meaningVi": "Phương ngữ, ngôn ngữ",
+    "radicalIds": [
+      149,
+      135
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "他的话很有道理。",
@@ -4486,7 +5267,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "huài",
     "pinyinRaw": "huai",
     "meaningHanViet": "Hoại",
-    "meaningVi": "Xấu; bị hỏng",
+    "meaningVi": "Xấu, bị hỏng",
+    "radicalIds": [
+      32,
+      1
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我的手表坏了。",
@@ -4500,7 +5285,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "huán",
     "pinyinRaw": "huan",
     "meaningHanViet": "Hoàn",
-    "meaningVi": "Vẫn; còn; trả lại",
+    "meaningVi": "Vẫn, còn, trả lại",
+    "radicalIds": [
+      162,
+      1
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我吃饱了，还想喝点水。",
@@ -4514,7 +5303,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "huí",
     "pinyinRaw": "hui",
     "meaningHanViet": "Hồi",
-    "meaningVi": "Xoay vòng; quay lại",
+    "meaningVi": "Xoay vòng, quay lại",
+    "radicalIds": [
+      31,
+      30
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "下课后我回家。",
@@ -4528,7 +5321,12 @@ export const SEED_VOCABULARY = [
     "pinyin": "huídá",
     "pinyinRaw": "huida",
     "meaningHanViet": "Hồi Đáp",
-    "meaningVi": "Trả lời; đáp; trả lời; đáp án",
+    "meaningVi": "Trả lời, đáp, trả lời, đáp án",
+    "radicalIds": [
+      31,
+      30,
+      118
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "请回答老师的问题。",
@@ -4543,6 +5341,12 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "huidao",
     "meaningHanViet": "Hồi Đáo",
     "meaningVi": "Trở về",
+    "radicalIds": [
+      31,
+      30,
+      18,
+      133
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我们晚上回到了家。",
@@ -4557,6 +5361,12 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "hui jia",
     "meaningHanViet": "Hồi Gia",
     "meaningVi": "Trở về nhà",
+    "radicalIds": [
+      31,
+      30,
+      40,
+      152
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我要回家吃晚饭。",
@@ -4570,7 +5380,14 @@ export const SEED_VOCABULARY = [
     "pinyin": "huílái",
     "pinyinRaw": "huilai",
     "meaningHanViet": "Hồi Lai",
-    "meaningVi": "Trở về; quay lại",
+    "meaningVi": "Trở về, quay lại",
+    "radicalIds": [
+      31,
+      30,
+      75,
+      1,
+      12
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "爸爸什么时候回来？",
@@ -4584,7 +5401,13 @@ export const SEED_VOCABULARY = [
     "pinyin": "huíqù",
     "pinyinRaw": "huiqu",
     "meaningHanViet": "Hồi Khứ",
-    "meaningVi": "Trở về; quay lại",
+    "meaningVi": "Trở về, quay lại",
+    "radicalIds": [
+      31,
+      30,
+      28,
+      32
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "天黑了，我们回去吧。",
@@ -4598,7 +5421,12 @@ export const SEED_VOCABULARY = [
     "pinyin": "huì",
     "pinyinRaw": "hui",
     "meaningHanViet": "Hội",
-    "meaningVi": "Biết; sẽ; hội họp",
+    "meaningVi": "Biết, sẽ, hội họp",
+    "radicalIds": [
+      9,
+      7,
+      28
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我会说汉语。",
@@ -4613,6 +5441,13 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "huoche",
     "meaningHanViet": "Hoả Xa",
     "meaningVi": "Tàu hỏa",
+    "radicalIds": [
+      86,
+      159,
+      1,
+      5,
+      24
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "坐火车去旅行很舒服。",
@@ -4626,7 +5461,14 @@ export const SEED_VOCABULARY = [
     "pinyin": "jīchǎng",
     "pinyinRaw": "jichang",
     "meaningHanViet": "Cơ Tràng",
-    "meaningVi": "Sân bay; phi trường; nhà cung cấp dịch vụ cho Shadowsocks hoặc phần mềm tương tự để vượt kiểm duyệt Internet",
+    "meaningVi": "Sân bay, phi trường, nhà cung cấp dịch vụ cho Shadowsocks hoặc phần mềm tương tự để vượt kiểm duyệt Internet",
+    "radicalIds": [
+      75,
+      16,
+      32,
+      20,
+      4
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我们去机场接朋友。",
@@ -4640,7 +5482,13 @@ export const SEED_VOCABULARY = [
     "pinyin": "jīpiào",
     "pinyinRaw": "jipiao",
     "meaningHanViet": "Cơ Phiếu",
-    "meaningVi": "Vé máy bay; vé hành khách",
+    "meaningVi": "Vé máy bay, vé hành khách",
+    "radicalIds": [
+      75,
+      16,
+      113,
+      146
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我已经买好了飞机票。",
@@ -4654,7 +5502,13 @@ export const SEED_VOCABULARY = [
     "pinyin": "jīdàn",
     "pinyinRaw": "jidan",
     "meaningHanViet": "Kê Đản",
-    "meaningVi": "Trứng; trứng gà",
+    "meaningVi": "Trứng, trứng gà",
+    "radicalIds": [
+      196,
+      29,
+      142,
+      103
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "早上我吃了一个鸡蛋。",
@@ -4668,7 +5522,10 @@ export const SEED_VOCABULARY = [
     "pinyin": "jǐ",
     "pinyinRaw": "ji",
     "meaningHanViet": "Cơ",
-    "meaningVi": "Mấy; vài",
+    "meaningVi": "Mấy, vài",
+    "radicalIds": [
+      16
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "你家里有几口人？",
@@ -4682,7 +5539,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "jì",
     "pinyinRaw": "ji",
     "meaningHanViet": "Ký",
-    "meaningVi": "Ghi chép; ghi lại",
+    "meaningVi": "Ghi chép, ghi lại",
+    "radicalIds": [
+      149,
+      49
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "请把这个生词记下来。",
@@ -4697,6 +5558,14 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "jide",
     "meaningHanViet": "Ký Đắc",
     "meaningVi": "Nhớ",
+    "radicalIds": [
+      149,
+      49,
+      60,
+      72,
+      1,
+      41
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我记得他的名字。",
@@ -4710,7 +5579,14 @@ export const SEED_VOCABULARY = [
     "pinyin": "jìzhù",
     "pinyinRaw": "jizhu",
     "meaningHanViet": "Ký Trú",
-    "meaningVi": "Nhớ; ghi nhớ",
+    "meaningVi": "Nhớ, ghi nhớ",
+    "radicalIds": [
+      149,
+      49,
+      9,
+      3,
+      96
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "请大家一定要记住这些生词。",
@@ -4725,6 +5601,10 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "jia",
     "meaningHanViet": "Gia",
     "meaningVi": "Dùng trong 傢伙|家伙 và 傢俱|家俱",
+    "radicalIds": [
+      40,
+      152
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我家在河内。",
@@ -4739,6 +5619,11 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "jia li",
     "meaningHanViet": "Gia Lý",
     "meaningVi": "Nhà",
+    "radicalIds": [
+      40,
+      152,
+      166
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "家里只有我和妈妈。",
@@ -4752,7 +5637,12 @@ export const SEED_VOCABULARY = [
     "pinyin": "jiārén",
     "pinyinRaw": "jiaren",
     "meaningHanViet": "Gia Nhân",
-    "meaningVi": "Thành viên gia đình; người hầu",
+    "meaningVi": "Thành viên gia đình, người hầu",
+    "radicalIds": [
+      40,
+      152,
+      9
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我和家人一起生活。",
@@ -4766,7 +5656,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "jiān",
     "pinyinRaw": "jian",
     "meaningHanViet": "Gian",
-    "meaningVi": "Giữa; trong số",
+    "meaningVi": "Giữa, trong số",
+    "radicalIds": [
+      169,
+      72
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "这是一间新教室。",
@@ -4780,7 +5674,12 @@ export const SEED_VOCABULARY = [
     "pinyin": "jiàn",
     "pinyinRaw": "jian",
     "meaningHanViet": "Kiến",
-    "meaningVi": "Gặp; thấy",
+    "meaningVi": "Gặp, thấy",
+    "radicalIds": [
+      147,
+      13,
+      10
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "明天见！",
@@ -4794,7 +5693,13 @@ export const SEED_VOCABULARY = [
     "pinyin": "jiànmiàn",
     "pinyinRaw": "jianmian",
     "meaningHanViet": "Kiến Diện",
-    "meaningVi": "Gặp mặt; gặp nhau",
+    "meaningVi": "Gặp mặt, gặp nhau",
+    "radicalIds": [
+      147,
+      13,
+      10,
+      176
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "很高兴跟你见面。",
@@ -4808,7 +5713,12 @@ export const SEED_VOCABULARY = [
     "pinyin": "jiāo",
     "pinyinRaw": "jiao",
     "meaningHanViet": "Giáo",
-    "meaningVi": "Dạy; giảng dạy",
+    "meaningVi": "Dạy, giảng dạy",
+    "radicalIds": [
+      66,
+      39,
+      125
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "王老师教我们汉语。",
@@ -4822,7 +5732,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "jiào",
     "pinyinRaw": "jiao",
     "meaningHanViet": "Khiếu",
-    "meaningVi": "Kêu; gọi; tên là",
+    "meaningVi": "Kêu, gọi, tên là",
+    "radicalIds": [
+      30,
+      2
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我叫王明。",
@@ -4836,7 +5750,17 @@ export const SEED_VOCABULARY = [
     "pinyin": "jiàoxuélóu",
     "pinyinRaw": "jiaoxuelou",
     "meaningHanViet": "Giáo Học Lâu",
-    "meaningVi": "Tòa nhà trường học; tòa nhà học thuật",
+    "meaningVi": "Tòa nhà trường học, tòa nhà học thuật",
+    "radicalIds": [
+      66,
+      39,
+      125,
+      42,
+      14,
+      75,
+      38,
+      119
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "这是我们学校的教学楼。",
@@ -4851,6 +5775,11 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "jiejie",
     "meaningHanViet": "Tỷ Tỷ",
     "meaningVi": "Chị gái",
+    "radicalIds": [
+      38,
+      1,
+      74
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我姐姐在医院当护士。",
@@ -4864,7 +5793,13 @@ export const SEED_VOCABULARY = [
     "pinyin": "jièshào",
     "pinyinRaw": "jieshao",
     "meaningHanViet": "Giới Thiệu",
-    "meaningVi": "Giới thiệu; thuyết trình",
+    "meaningVi": "Giới thiệu, thuyết trình",
+    "radicalIds": [
+      9,
+      120,
+      30,
+      18
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "让我介绍一下我的朋友。",
@@ -4879,6 +5814,10 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "jinnian",
     "meaningHanViet": "Kim Niên",
     "meaningVi": "Năm nay",
+    "radicalIds": [
+      9,
+      51
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我今年十八岁。",
@@ -4892,7 +5831,12 @@ export const SEED_VOCABULARY = [
     "pinyin": "jīntiān",
     "pinyinRaw": "jintian",
     "meaningHanViet": "Kim Thiên",
-    "meaningVi": "Hôm nay; thời điểm hiện tại; bây giờ",
+    "meaningVi": "Hôm nay, thời điểm hiện tại, bây giờ",
+    "radicalIds": [
+      9,
+      37,
+      1
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "今天星期一。",
@@ -4906,7 +5850,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "jìn",
     "pinyinRaw": "jin",
     "meaningHanViet": "Tiến",
-    "meaningVi": "Vào; tiến vào",
+    "meaningVi": "Vào, tiến vào",
+    "radicalIds": [
+      162,
+      7
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "请进，请坐。",
@@ -4920,7 +5868,14 @@ export const SEED_VOCABULARY = [
     "pinyin": "jìnlái",
     "pinyinRaw": "jinlai",
     "meaningHanViet": "Tiến Lai",
-    "meaningVi": "Đến; vào",
+    "meaningVi": "Đến, vào",
+    "radicalIds": [
+      162,
+      7,
+      75,
+      1,
+      12
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "请快点进来吧。",
@@ -4935,6 +5890,12 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "jinqu",
     "meaningHanViet": "Tiến Khứ",
     "meaningVi": "Đi vào",
+    "radicalIds": [
+      162,
+      7,
+      28,
+      32
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我们可以进去参观吗？",
@@ -4948,7 +5909,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "jiǔ",
     "pinyinRaw": "jiu",
     "meaningHanViet": "Cửu",
-    "meaningVi": "Chín; 9",
+    "meaningVi": "Chín, 9",
+    "radicalIds": [
+      5,
+      4
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "教室里有九张桌子。",
@@ -4962,7 +5927,14 @@ export const SEED_VOCABULARY = [
     "pinyin": "jiù",
     "pinyinRaw": "jiu",
     "meaningHanViet": "Tựu",
-    "meaningVi": "Thì; liền; ngay",
+    "meaningVi": "Thì, liền, ngay",
+    "radicalIds": [
+      43,
+      8,
+      30,
+      42,
+      3
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我就是你要找的人。",
@@ -4976,7 +5948,16 @@ export const SEED_VOCABULARY = [
     "pinyin": "juéde",
     "pinyinRaw": "juede",
     "meaningHanViet": "Giáo Đắc",
-    "meaningVi": "Nghĩ rằng ...; cảm thấy rằng ...; cảm thấy",
+    "meaningVi": "Nghĩ rằng ..., cảm thấy rằng ..., cảm thấy",
+    "radicalIds": [
+      147,
+      42,
+      14,
+      60,
+      72,
+      1,
+      41
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我觉得汉语很有趣。",
@@ -4990,7 +5971,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "kāi",
     "pinyinRaw": "kai",
     "meaningHanViet": "Khai",
-    "meaningVi": "Mở; lái (xe); bật",
+    "meaningVi": "Mở, lái (xe), bật",
+    "radicalIds": [
+      55,
+      1
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "请开一下窗户。",
@@ -5005,6 +5990,13 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "kaiche",
     "meaningHanViet": "Khai Xa",
     "meaningVi": "Lái xe",
+    "radicalIds": [
+      55,
+      1,
+      159,
+      5,
+      24
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "爸爸开车送我去学校。",
@@ -5018,7 +6010,14 @@ export const SEED_VOCABULARY = [
     "pinyin": "kāihuì",
     "pinyinRaw": "kaihui",
     "meaningHanViet": "Khai Hội",
-    "meaningVi": "Tổ chức cuộc họp; tham gia cuộc họp",
+    "meaningVi": "Tổ chức cuộc họp, tham gia cuộc họp",
+    "radicalIds": [
+      55,
+      1,
+      9,
+      7,
+      28
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "经理正在开会。",
@@ -5032,7 +6031,17 @@ export const SEED_VOCABULARY = [
     "pinyin": "kāi wánxiào",
     "pinyinRaw": "kai wanxiao",
     "meaningHanViet": "Khai Ngoạn Tiếu",
-    "meaningVi": "Đùa giỡn; chế nhạo; nói đùa",
+    "meaningVi": "Đùa giỡn, chế nhạo, nói đùa",
+    "radicalIds": [
+      55,
+      1,
+      96,
+      10,
+      7,
+      118,
+      37,
+      4
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "别生气，他只是开玩笑。",
@@ -5046,7 +6055,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "kàn",
     "pinyinRaw": "kan",
     "meaningHanViet": "Khán",
-    "meaningVi": "Nhìn; xem; thăm",
+    "meaningVi": "Nhìn, xem, thăm",
+    "radicalIds": [
+      109,
+      64
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "你在看什么书？",
@@ -5060,7 +6073,13 @@ export const SEED_VOCABULARY = [
     "pinyin": "kànbìng",
     "pinyinRaw": "kanbing",
     "meaningHanViet": "Khán Bệnh",
-    "meaningVi": "Đi khám bệnh; khám bệnh nhân",
+    "meaningVi": "Đi khám bệnh, khám bệnh nhân",
+    "radicalIds": [
+      109,
+      64,
+      104,
+      1
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "他觉得不舒服，去医院看病。",
@@ -5075,6 +6094,12 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "kandao",
     "meaningHanViet": "Khán Đáo",
     "meaningVi": "Nhìn thấy",
+    "radicalIds": [
+      109,
+      64,
+      18,
+      133
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我看到他在操场上跑步。",
@@ -5088,7 +6113,14 @@ export const SEED_VOCABULARY = [
     "pinyin": "kànjiàn",
     "pinyinRaw": "kanjian",
     "meaningHanViet": "Khán Kiến",
-    "meaningVi": "Nhìn thấy; bắt gặp",
+    "meaningVi": "Nhìn thấy, bắt gặp",
+    "radicalIds": [
+      109,
+      64,
+      147,
+      13,
+      10
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我看见了一只可爱的小猫。",
@@ -5102,7 +6134,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "kǎo",
     "pinyinRaw": "kao",
     "meaningHanViet": "Khảo",
-    "meaningVi": "Đánh; đập",
+    "meaningVi": "Đánh, đập",
+    "radicalIds": [
+      125,
+      1
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "明天我们要考汉语。",
@@ -5116,7 +6152,14 @@ export const SEED_VOCABULARY = [
     "pinyin": "kǎoshì",
     "pinyinRaw": "kaoshi",
     "meaningHanViet": "Khảo Thí",
-    "meaningVi": "Dự thi; kỳ thi",
+    "meaningVi": "Dự thi, kỳ thi",
+    "radicalIds": [
+      125,
+      1,
+      149,
+      56,
+      48
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "祝你在考试中取得好成绩。",
@@ -5131,6 +6174,11 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "ke",
     "meaningHanViet": "Khát",
     "meaningVi": "Khát",
+    "radicalIds": [
+      85,
+      73,
+      72
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我渴了，想喝水。",
@@ -5144,7 +6192,12 @@ export const SEED_VOCABULARY = [
     "pinyin": "kè",
     "pinyinRaw": "ke",
     "meaningHanViet": "Khoá",
-    "meaningVi": "Môn học; khoá học",
+    "meaningVi": "Môn học, khoá học",
+    "radicalIds": [
+      149,
+      75,
+      102
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "今天下午我们有两节课。",
@@ -5159,6 +6212,12 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "keben",
     "meaningHanViet": "Khoá Bản",
     "meaningVi": "Sách giáo khoa",
+    "radicalIds": [
+      149,
+      75,
+      102,
+      1
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "请大家翻开课本第二十页。",
@@ -5173,6 +6232,12 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "kewen",
     "meaningHanViet": "Khoá Văn",
     "meaningVi": "Bài đọc",
+    "radicalIds": [
+      149,
+      75,
+      102,
+      67
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "请跟我一起读课文。",
@@ -5186,7 +6251,10 @@ export const SEED_VOCABULARY = [
     "pinyin": "kǒu",
     "pinyinRaw": "kou",
     "meaningHanViet": "Khẩu",
-    "meaningVi": "Miệng; lượng từ cho những thứ có miệng",
+    "meaningVi": "Miệng, lượng từ cho những thứ có miệng",
+    "radicalIds": [
+      30
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我家有四口人。",
@@ -5200,7 +6268,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "kuài",
     "pinyinRaw": "kuai",
     "meaningHanViet": "Khối",
-    "meaningVi": "Cục; tảng; miếng; lượng từ cho miếng vải, bánh, xà phòng, v.v.",
+    "meaningVi": "Cục, tảng, miếng, lượng từ cho miếng vải, bánh, xà phòng, v.v.",
+    "radicalIds": [
+      32,
+      37
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "这块手表很漂亮。",
@@ -5214,7 +6286,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "kuài",
     "pinyinRaw": "kuai",
     "meaningHanViet": "Khoái",
-    "meaningVi": "Nhanh; sắp sửa",
+    "meaningVi": "Nhanh, sắp sửa",
+    "radicalIds": [
+      61,
+      37
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "时间过得真快。",
@@ -5228,7 +6304,12 @@ export const SEED_VOCABULARY = [
     "pinyin": "lái",
     "pinyinRaw": "lai",
     "meaningHanViet": "Lai",
-    "meaningVi": "Đến; tới",
+    "meaningVi": "Đến, tới",
+    "radicalIds": [
+      75,
+      1,
+      12
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "欢迎你来到我们学校。",
@@ -5242,7 +6323,14 @@ export const SEED_VOCABULARY = [
     "pinyin": "láidào",
     "pinyinRaw": "laidao",
     "meaningHanViet": "Lai Đáo",
-    "meaningVi": "Đến; tới",
+    "meaningVi": "Đến, tới",
+    "radicalIds": [
+      75,
+      1,
+      12,
+      18,
+      133
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "春天来到了大地。",
@@ -5256,7 +6344,10 @@ export const SEED_VOCABULARY = [
     "pinyin": "lǎo",
     "pinyinRaw": "lao",
     "meaningHanViet": "Lão",
-    "meaningVi": "Già; cũ; lâu năm",
+    "meaningVi": "Già, cũ, lâu năm",
+    "radicalIds": [
+      125
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "王老师是一位老教师。",
@@ -5270,7 +6361,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "lǎorén",
     "pinyinRaw": "laoren",
     "meaningHanViet": "Lão Nhân",
-    "meaningVi": "Ông già hoặc bà già; người cao tuổi",
+    "meaningVi": "Ông già hoặc bà già, người cao tuổi",
+    "radicalIds": [
+      125,
+      9
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我们要关爱老人。",
@@ -5285,6 +6380,12 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "laoshi",
     "meaningHanViet": "Lão Sư",
     "meaningVi": "Giáo viên",
+    "radicalIds": [
+      125,
+      50,
+      18,
+      1
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "张老师教我们中国历史。",
@@ -5298,7 +6399,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "le",
     "pinyinRaw": "le",
     "meaningHanViet": "Liễu",
-    "meaningVi": "Rồi; đã (trợ từ ngữ khí/thời thái)",
+    "meaningVi": "Rồi, đã (trợ từ ngữ khí/thời thái)",
+    "radicalIds": [
+      6,
+      5
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "下雨了，带上伞吧。",
@@ -5312,7 +6417,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "lèi",
     "pinyinRaw": "lei",
     "meaningHanViet": "Luỵ",
-    "meaningVi": "Tích lũy; liên lụy hoặc dính líu",
+    "meaningVi": "Tích lũy, liên lụy hoặc dính líu",
+    "radicalIds": [
+      120,
+      102
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "今天工作很忙，我有点累。",
@@ -5327,6 +6436,10 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "leng",
     "meaningHanViet": "Lạnh",
     "meaningVi": "Lạnh",
+    "radicalIds": [
+      15,
+      9
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "冬天的北京很冷。",
@@ -5340,7 +6453,10 @@ export const SEED_VOCABULARY = [
     "pinyin": "lǐ",
     "pinyinRaw": "li",
     "meaningHanViet": "Lý",
-    "meaningVi": "Trong; bên trong",
+    "meaningVi": "Trong, bên trong",
+    "radicalIds": [
+      166
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "书包里有课本和笔。",
@@ -5355,6 +6471,11 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "libian",
     "meaningHanViet": "Lý Biên",
     "meaningVi": "Bên trong",
+    "radicalIds": [
+      166,
+      162,
+      19
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "屋子里边很暖和。",
@@ -5368,7 +6489,12 @@ export const SEED_VOCABULARY = [
     "pinyin": "liǎng",
     "pinyinRaw": "liang",
     "meaningHanViet": "Lưỡng",
-    "meaningVi": "Hai; cả hai",
+    "meaningVi": "Hai, cả hai",
+    "radicalIds": [
+      1,
+      13,
+      9
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我有两个好朋友。",
@@ -5382,7 +6508,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "líng",
     "pinyinRaw": "ling",
     "meaningHanViet": "Linh",
-    "meaningVi": "Không; số không",
+    "meaningVi": "Không, số không",
+    "radicalIds": [
+      173,
+      9
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "今天的气温是零度。",
@@ -5396,7 +6526,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "liù",
     "pinyinRaw": "liu",
     "meaningHanViet": "Lục",
-    "meaningVi": "Sáu; 6",
+    "meaningVi": "Sáu, 6",
+    "radicalIds": [
+      12,
+      8
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "一星期有六天需要上学。",
@@ -5411,6 +6545,11 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "lou",
     "meaningHanViet": "Lâu",
     "meaningVi": "Họ",
+    "radicalIds": [
+      75,
+      38,
+      119
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我住在五楼。",
@@ -5424,7 +6563,14 @@ export const SEED_VOCABULARY = [
     "pinyin": "lóu shàng",
     "pinyinRaw": "lou shang",
     "meaningHanViet": "Lâu Thướng",
-    "meaningVi": "Tầng trên; người đăng trước trong một chủ đề diễn đàn",
+    "meaningVi": "Tầng trên, người đăng trước trong một chủ đề diễn đàn",
+    "radicalIds": [
+      75,
+      38,
+      119,
+      1,
+      25
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "他在楼上看书。",
@@ -5439,6 +6585,13 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "lou xia",
     "meaningHanViet": "Lâu Hạ",
     "meaningVi": "Tầng dưới",
+    "radicalIds": [
+      75,
+      38,
+      119,
+      1,
+      25
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我们在楼下等你。",
@@ -5453,6 +6606,11 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "lu",
     "meaningHanViet": "Lộ",
     "meaningVi": "Họ",
+    "radicalIds": [
+      157,
+      30,
+      34
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "这条路非常宽。",
@@ -5466,7 +6624,12 @@ export const SEED_VOCABULARY = [
     "pinyin": "lùkǒu",
     "pinyinRaw": "lukou",
     "meaningHanViet": "Lộ Khẩu",
-    "meaningVi": "Giao lộ; ngã tư",
+    "meaningVi": "Giao lộ, ngã tư",
+    "radicalIds": [
+      157,
+      30,
+      34
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我们在十字路口见。",
@@ -5480,7 +6643,14 @@ export const SEED_VOCABULARY = [
     "pinyin": "lùshang",
     "pinyinRaw": "lushang",
     "meaningHanViet": "Lộ Thướng",
-    "meaningVi": "Trên đường; trên đường; đang đi",
+    "meaningVi": "Trên đường, trên đường, đang đi",
+    "radicalIds": [
+      157,
+      30,
+      34,
+      1,
+      25
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "路上车很多，注意安全。",
@@ -5494,7 +6664,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "māma",
     "pinyinRaw": "mama",
     "meaningHanViet": "Má Má",
-    "meaningVi": "Mẹ; má",
+    "meaningVi": "Mẹ, má",
+    "radicalIds": [
+      38,
+      187
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "妈妈每天都为我们做饭。",
@@ -5508,7 +6682,14 @@ export const SEED_VOCABULARY = [
     "pinyin": "mǎlù",
     "pinyinRaw": "malu",
     "meaningHanViet": "Mã Lộ",
-    "meaningVi": "Đường phố; đường",
+    "meaningVi": "Đường phố, đường",
+    "radicalIds": [
+      187,
+      1,
+      157,
+      30,
+      34
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "过马路要走斑马线。",
@@ -5522,7 +6703,12 @@ export const SEED_VOCABULARY = [
     "pinyin": "mǎshàng",
     "pinyinRaw": "mashang",
     "meaningHanViet": "Mã Thướng",
-    "meaningVi": "Ngay lập tức; ngay tức khắc",
+    "meaningVi": "Ngay lập tức, ngay tức khắc",
+    "radicalIds": [
+      187,
+      1,
+      25
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "请稍等，我马上就来。",
@@ -5536,7 +6722,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "ma",
     "pinyinRaw": "ma",
     "meaningHanViet": "Ma",
-    "meaningVi": "Phải không; không (trợ từ nghi vấn)",
+    "meaningVi": "Phải không, không (trợ từ nghi vấn)",
+    "radicalIds": [
+      30,
+      187
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "你是中国人吗？",
@@ -5551,6 +6741,11 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "mai",
     "meaningHanViet": "Mãi",
     "meaningVi": "Mua",
+    "radicalIds": [
+      37,
+      5,
+      15
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我想去超市买点水果。",
@@ -5565,6 +6760,12 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "man",
     "meaningHanViet": "Mạn",
     "meaningVi": "Chậm",
+    "radicalIds": [
+      61,
+      72,
+      122,
+      29
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "他走得很慢。",
@@ -5578,7 +6779,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "máng",
     "pinyinRaw": "mang",
     "meaningHanViet": "Mang",
-    "meaningVi": "Bận rộn; bận",
+    "meaningVi": "Bận rộn, bận",
+    "radicalIds": [
+      61,
+      8
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "最近你工作忙吗？",
@@ -5593,6 +6798,9 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "mao",
     "meaningHanViet": "Mao",
     "meaningVi": "Họ",
+    "radicalIds": [
+      82
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "这个苹果五毛钱。",
@@ -5606,7 +6814,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "méi",
     "pinyinRaw": "mei",
     "meaningHanViet": "Một",
-    "meaningVi": "Không; chưa có",
+    "meaningVi": "Không, chưa có",
+    "radicalIds": [
+      85,
+      79
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我没去过北京。",
@@ -5621,6 +6833,15 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "mei guanxi",
     "meaningHanViet": "Một Quan Hệ",
     "meaningVi": "Không sao đâu",
+    "radicalIds": [
+      85,
+      79,
+      12,
+      37,
+      1,
+      120,
+      4
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "没关系，别放在心上。",
@@ -5634,7 +6855,15 @@ export const SEED_VOCABULARY = [
     "pinyin": "méi shénme",
     "pinyinRaw": "mei shenme",
     "meaningHanViet": "Một Thậm Yêu",
-    "meaningVi": "Không sao; không có gì; đừng bận tâm; nghĩ không có gì; rất hân hạnh; không có chi; không có gì",
+    "meaningVi": "Không sao, không có gì, đừng bận tâm, nghĩ không có gì, rất hân hạnh, không có chi, không có gì",
+    "radicalIds": [
+      85,
+      79,
+      9,
+      24,
+      4,
+      28
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "没什么大不了的事。",
@@ -5648,7 +6877,16 @@ export const SEED_VOCABULARY = [
     "pinyin": "méishìr",
     "pinyinRaw": "meishir",
     "meaningHanViet": "Một Sự Nhân",
-    "meaningVi": "Có thời gian rảnh; rảnh rỗi",
+    "meaningVi": "Có thời gian rảnh, rảnh rỗi",
+    "radicalIds": [
+      85,
+      79,
+      6,
+      1,
+      30,
+      58,
+      10
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "别担心，我没事儿。",
@@ -5662,7 +6900,12 @@ export const SEED_VOCABULARY = [
     "pinyin": "méiyǒu",
     "pinyinRaw": "meiyou",
     "meaningHanViet": "Một Hữu",
-    "meaningVi": "Không có; không tồn tại",
+    "meaningVi": "Không có, không tồn tại",
+    "radicalIds": [
+      85,
+      79,
+      74
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "书架上没有这本书。",
@@ -5676,7 +6919,12 @@ export const SEED_VOCABULARY = [
     "pinyin": "mèimei",
     "pinyinRaw": "meimei",
     "meaningHanViet": "Muội Muội",
-    "meaningVi": "Em gái; phụ nữ trẻ",
+    "meaningVi": "Em gái, phụ nữ trẻ",
+    "radicalIds": [
+      38,
+      75,
+      1
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我妹妹最喜欢画画。",
@@ -5690,7 +6938,12 @@ export const SEED_VOCABULARY = [
     "pinyin": "mén",
     "pinyinRaw": "men",
     "meaningHanViet": "Môn",
-    "meaningVi": "Cửa; cổng",
+    "meaningVi": "Cửa, cổng",
+    "radicalIds": [
+      169,
+      3,
+      2
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "请帮我把门关上。",
@@ -5704,7 +6957,13 @@ export const SEED_VOCABULARY = [
     "pinyin": "ménkǒu",
     "pinyinRaw": "menkou",
     "meaningHanViet": "Môn Khẩu",
-    "meaningVi": "Cửa ra vào; cổng",
+    "meaningVi": "Cửa ra vào, cổng",
+    "radicalIds": [
+      169,
+      3,
+      2,
+      30
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我们在学校门口等老师。",
@@ -5719,6 +6978,13 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "menpiao",
     "meaningHanViet": "Môn Phiếu",
     "meaningVi": "Vé",
+    "radicalIds": [
+      169,
+      3,
+      2,
+      113,
+      146
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "故宫的门票多少钱一张？",
@@ -5733,6 +6999,10 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "men (pengyoumen)",
     "meaningHanViet": "Môn",
     "meaningVi": "Dùng để chỉ số nhiều cho đại từ và danh từ chỉ người",
+    "radicalIds": [
+      9,
+      169
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "同学们好，请坐下。",
@@ -5747,6 +7017,12 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "mifan",
     "meaningHanViet": "Mễ Phạn",
     "meaningVi": "Đã nấu",
+    "radicalIds": [
+      119,
+      184,
+      29,
+      27
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "中国人常常吃米饭。",
@@ -5761,6 +7037,11 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "mianbao",
     "meaningHanViet": "Diện Bao",
     "meaningVi": "Bánh mì",
+    "radicalIds": [
+      176,
+      20,
+      49
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "早餐我吃面包喝牛奶。",
@@ -5775,6 +7056,12 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "miantiaor",
     "meaningHanViet": "Diện Điều Nhân",
     "meaningVi": "Biến thể er hoá của 麵條|面条",
+    "radicalIds": [
+      176,
+      75,
+      34,
+      10
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "中午我想吃一碗热面条儿。",
@@ -5789,6 +7076,12 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "mingzi",
     "meaningHanViet": "Danh Tự",
     "meaningVi": "Tên",
+    "radicalIds": [
+      30,
+      36,
+      39,
+      40
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "你叫什么名字？",
@@ -5802,7 +7095,12 @@ export const SEED_VOCABULARY = [
     "pinyin": "míngbai",
     "pinyinRaw": "mingbai",
     "meaningHanViet": "Minh Bạch",
-    "meaningVi": "Rõ ràng; hiển nhiên",
+    "meaningVi": "Rõ ràng, hiển nhiên",
+    "radicalIds": [
+      72,
+      74,
+      106
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "老师讲的话我都明白了。",
@@ -5817,6 +7115,11 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "mingnian",
     "meaningHanViet": "Minh Niên",
     "meaningVi": "Năm sau",
+    "radicalIds": [
+      72,
+      74,
+      51
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "明年我打算去上海旅游。",
@@ -5831,6 +7134,12 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "mingtian",
     "meaningHanViet": "Minh Thiên",
     "meaningVi": "Ngày mai",
+    "radicalIds": [
+      72,
+      74,
+      37,
+      1
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "明天是星期六，不用上课。",
@@ -5844,7 +7153,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "ná",
     "pinyinRaw": "na",
     "meaningHanViet": "Nã",
-    "meaningVi": "Cầm; lấy",
+    "meaningVi": "Cầm, lấy",
+    "radicalIds": [
+      64,
+      30
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "请帮我拿一下包。",
@@ -5858,7 +7171,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "nǎ",
     "pinyinRaw": "na",
     "meaningHanViet": "Nả",
-    "meaningVi": "Như thế nào; cái nào",
+    "meaningVi": "Như thế nào, cái nào",
+    "radicalIds": [
+      30,
+      163
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "你想去哪儿旅游？",
@@ -5872,7 +7189,12 @@ export const SEED_VOCABULARY = [
     "pinyin": "nǎlǐ",
     "pinyinRaw": "nali",
     "meaningHanViet": "Nả Lý",
-    "meaningVi": "Ở đâu?; một nơi nào đó",
+    "meaningVi": "Ở đâu?, một nơi nào đó",
+    "radicalIds": [
+      30,
+      163,
+      166
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "请问洗手间在哪里？",
@@ -5886,7 +7208,12 @@ export const SEED_VOCABULARY = [
     "pinyin": "nǎr",
     "pinyinRaw": "nar",
     "meaningHanViet": "Nả Nhân",
-    "meaningVi": "Ở đâu?; bất cứ đâu; nơi nào đó",
+    "meaningVi": "Ở đâu?, bất cứ đâu, nơi nào đó",
+    "radicalIds": [
+      30,
+      163,
+      10
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "你要去哪儿？",
@@ -5900,7 +7227,14 @@ export const SEED_VOCABULARY = [
     "pinyin": "nǎxiē",
     "pinyinRaw": "naxie",
     "meaningHanViet": "Nả Ta",
-    "meaningVi": "Những cái nào?; ai?",
+    "meaningVi": "Những cái nào?, ai?",
+    "radicalIds": [
+      30,
+      163,
+      7,
+      77,
+      21
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "这些书中哪些是你喜欢的？",
@@ -5915,6 +7249,9 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "na",
     "meaningHanViet": "Na",
     "meaningVi": "Họ",
+    "radicalIds": [
+      163
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "那是谁的书？",
@@ -5928,7 +7265,12 @@ export const SEED_VOCABULARY = [
     "pinyin": "nàbiān",
     "pinyinRaw": "nabian",
     "meaningHanViet": "Na Biên",
-    "meaningVi": "Đằng kia; ở đằng đó",
+    "meaningVi": "Đằng kia, ở đằng đó",
+    "radicalIds": [
+      163,
+      162,
+      19
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "书店在那边。",
@@ -5942,7 +7284,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "nàlǐ",
     "pinyinRaw": "nali",
     "meaningHanViet": "Na Lý",
-    "meaningVi": "Ở đó; nơi đó",
+    "meaningVi": "Ở đó, nơi đó",
+    "radicalIds": [
+      163,
+      166
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我常常去那里喝茶。",
@@ -5957,6 +7303,10 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "nar",
     "meaningHanViet": "Na Nhân",
     "meaningVi": "Ở đó",
+    "radicalIds": [
+      163,
+      10
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "他在那儿等你。",
@@ -5971,6 +7321,12 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "naxie",
     "meaningHanViet": "Na Ta",
     "meaningVi": "Những cái đó",
+    "radicalIds": [
+      163,
+      7,
+      77,
+      21
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "那些花开得很漂亮。",
@@ -5984,7 +7340,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "nǎi",
     "pinyinRaw": "nai",
     "meaningHanViet": "Nãi",
-    "meaningVi": "Vú; sữa",
+    "meaningVi": "Vú, sữa",
+    "radicalIds": [
+      38,
+      4
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "小猫喜欢喝牛奶。",
@@ -5998,7 +7358,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "nǎinai",
     "pinyinRaw": "nainai",
     "meaningHanViet": "Nãi Nãi",
-    "meaningVi": "Bà; bà chủ nhà",
+    "meaningVi": "Bà, bà chủ nhà",
+    "radicalIds": [
+      38,
+      4
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我奶奶今年七十五岁。",
@@ -6012,7 +7376,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "nán",
     "pinyinRaw": "nan",
     "meaningHanViet": "Nam",
-    "meaningVi": "Nam; Nam tước, cấp thấp nhất trong năm cấp bậc quý tộc 五等爵位",
+    "meaningVi": "Nam, Nam tước, cấp thấp nhất trong năm cấp bậc quý tộc 五等爵位",
+    "radicalIds": [
+      102,
+      19
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "他是我们的男班长。",
@@ -6027,6 +7395,13 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "nanhair",
     "meaningHanViet": "Nam Hài Nhân",
     "meaningVi": "Biến thể er hoá của 男孩",
+    "radicalIds": [
+      102,
+      19,
+      39,
+      8,
+      10
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "那个男孩儿非常聪明。",
@@ -6041,6 +7416,12 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "nanpengyou",
     "meaningHanViet": "Nam Bằng Hữu",
     "meaningVi": "Bạn trai",
+    "radicalIds": [
+      102,
+      19,
+      74,
+      29
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "他是我的男朋友。",
@@ -6054,7 +7435,12 @@ export const SEED_VOCABULARY = [
     "pinyin": "nánrén",
     "pinyinRaw": "nanren",
     "meaningHanViet": "Nam Nhân",
-    "meaningVi": "Một người đàn ông; một nam giới",
+    "meaningVi": "Một người đàn ông, một nam giới",
+    "radicalIds": [
+      102,
+      19,
+      9
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "那位男人是一位医生。",
@@ -6068,7 +7454,12 @@ export const SEED_VOCABULARY = [
     "pinyin": "nánshēng",
     "pinyinRaw": "nansheng",
     "meaningHanViet": "Nam Sinh",
-    "meaningVi": "Nam sinh; học sinh nam",
+    "meaningVi": "Nam sinh, học sinh nam",
+    "radicalIds": [
+      102,
+      19,
+      100
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我们班有十五个男生。",
@@ -6083,6 +7474,12 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "nan",
     "meaningHanViet": "Nam",
     "meaningVi": "Họ",
+    "radicalIds": [
+      24,
+      13,
+      12,
+      51
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "学校的南边是一个大公园。",
@@ -6096,7 +7493,15 @@ export const SEED_VOCABULARY = [
     "pinyin": "nánbian",
     "pinyinRaw": "nanbian",
     "meaningHanViet": "Nam Biên",
-    "meaningVi": "Phía nam; mặt nam",
+    "meaningVi": "Phía nam, mặt nam",
+    "radicalIds": [
+      24,
+      13,
+      12,
+      51,
+      162,
+      19
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "他在南边工作。",
@@ -6110,7 +7515,11 @@ export const SEED_VOCABULARY = [
     "pinyin": "nán",
     "pinyinRaw": "nan",
     "meaningHanViet": "Nan",
-    "meaningVi": "Khó; nan giải",
+    "meaningVi": "Khó, nan giải",
+    "radicalIds": [
+      29,
+      172
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "汉语的发音有点难。",
@@ -6124,7 +7533,12 @@ export const SEED_VOCABULARY = [
     "pinyin": "ne",
     "pinyinRaw": "ne",
     "meaningHanViet": "Ni",
-    "meaningVi": "Thế; nhỉ; còn... thì sao (trợ từ ngữ khí)",
+    "meaningVi": "Thế, nhỉ, còn... thì sao (trợ từ ngữ khí)",
+    "radicalIds": [
+      30,
+      44,
+      21
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我是越南人，你呢？",
@@ -6139,6 +7553,11 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "neng",
     "meaningHanViet": "Năng",
     "meaningVi": "Họ",
+    "radicalIds": [
+      130,
+      28,
+      21
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "你能帮我翻译这个句子吗？",
@@ -6153,6 +7572,11 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "ni",
     "meaningHanViet": "Nễ",
     "meaningVi": "Bạn",
+    "radicalIds": [
+      9,
+      42,
+      18
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "很高兴认识你。",
@@ -6167,6 +7591,12 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "nimen",
     "meaningHanViet": "Nễ Môn",
     "meaningVi": "Các bạn",
+    "radicalIds": [
+      9,
+      42,
+      18,
+      169
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "你们都是大学生吗？",
@@ -6181,6 +7611,9 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "nian",
     "meaningHanViet": "Niên",
     "meaningVi": "Họ",
+    "radicalIds": [
+      51
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "一年有十二个月。",
@@ -6195,6 +7628,10 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "nin",
     "meaningHanViet": "Nâm",
     "meaningVi": "Bạn",
+    "radicalIds": [
+      61,
+      9
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "老师，您好！",
@@ -6209,6 +7646,11 @@ export const SEED_VOCABULARY = [
     "pinyinRaw": "niunai",
     "meaningHanViet": "Ngưu Nãi",
     "meaningVi": "Sữa bò",
+    "radicalIds": [
+      93,
+      38,
+      4
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "喝牛奶对身体很好。",
@@ -6222,7 +7664,10 @@ export const SEED_VOCABULARY = [
     "pinyin": "nǚ",
     "pinyinRaw": "nu",
     "meaningHanViet": "Nữ",
-    "meaningVi": "Nữ; phụ nữ",
+    "meaningVi": "Nữ, phụ nữ",
+    "radicalIds": [
+      38
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "她是我们的女老师。",
@@ -6232,11 +7677,35 @@ export const SEED_VOCABULARY = [
   },
   {
     "vocabId": 277,
+    "hanzi": "女儿",
+    "pinyin": "nǚ'ér",
+    "pinyinRaw": "nu'er",
+    "meaningHanViet": "Nữ Nhân",
+    "meaningVi": "Con gái",
+    "radicalIds": [
+      38,
+      10
+    ],
+    "hskLevel": 1,
+    "hskStandard": "HSK 3.0",
+    "exampleSentence": "他的女儿正在上小学。",
+    "exampleTranslation": "Con gái anh ấy đang học tiểu học.",
+    "audioUrl": null,
+    "videoWritingUrl": null
+  },
+  {
+    "vocabId": 278,
     "hanzi": "女孩儿",
     "pinyin": "nǚháir",
     "pinyinRaw": "nuhair",
     "meaningHanViet": "Nữ Hài Nhân",
     "meaningVi": "Biến thể er hoá của 女孩",
+    "radicalIds": [
+      38,
+      39,
+      8,
+      10
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "那个小女孩儿真漂亮。",
@@ -6245,12 +7714,17 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 278,
+    "vocabId": 279,
     "hanzi": "女朋友",
     "pinyin": "nǚpéngyou",
     "pinyinRaw": "nupengyou",
     "meaningHanViet": "Nữ Bằng Hữu",
     "meaningVi": "Bạn gái",
+    "radicalIds": [
+      38,
+      74,
+      29
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "她是我的女朋友。",
@@ -6259,12 +7733,16 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 279,
+    "vocabId": 280,
     "hanzi": "女人",
     "pinyin": "nǚrén",
     "pinyinRaw": "nuren",
     "meaningHanViet": "Nữ Nhân",
     "meaningVi": "Phụ nữ",
+    "radicalIds": [
+      38,
+      9
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "那位女人很有才华。",
@@ -6273,12 +7751,16 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 280,
+    "vocabId": 281,
     "hanzi": "女生",
     "pinyin": "nǚshēng",
     "pinyinRaw": "nusheng",
     "meaningHanViet": "Nữ Sinh",
-    "meaningVi": "Nữ sinh; học sinh nữ",
+    "meaningVi": "Nữ sinh, học sinh nữ",
+    "radicalIds": [
+      38,
+      100
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我们班女生比男生多。",
@@ -6287,12 +7769,18 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 281,
+    "vocabId": 282,
     "hanzi": "旁边",
     "pinyin": "pángbiān",
     "pinyinRaw": "pangbian",
     "meaningHanViet": "Bàng Biên",
-    "meaningVi": "Bên; nơi liền kề",
+    "meaningVi": "Bên, nơi liền kề",
+    "radicalIds": [
+      70,
+      117,
+      162,
+      19
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我家旁边有一家便利店。",
@@ -6301,12 +7789,17 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 282,
+    "vocabId": 283,
     "hanzi": "跑",
     "pinyin": "pǎo",
     "pinyinRaw": "pao",
     "meaningHanViet": "Bào",
     "meaningVi": "Chạy",
+    "radicalIds": [
+      157,
+      20,
+      49
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "小狗在草地上飞快地跑。",
@@ -6315,12 +7808,16 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 283,
+    "vocabId": 284,
     "hanzi": "朋友",
     "pinyin": "péngyou",
     "pinyinRaw": "pengyou",
     "meaningHanViet": "Bằng Hữu",
     "meaningVi": "Bạn",
+    "radicalIds": [
+      74,
+      29
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "好朋友会互相帮助。",
@@ -6329,12 +7826,16 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 284,
+    "vocabId": 285,
     "hanzi": "票",
     "pinyin": "piào",
     "pinyinRaw": "piao",
     "meaningHanViet": "Phiếu",
-    "meaningVi": "Vé; phiếu",
+    "meaningVi": "Vé, phiếu",
+    "radicalIds": [
+      113,
+      146
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我们买了两张电影票。",
@@ -6343,12 +7844,16 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 285,
+    "vocabId": 286,
     "hanzi": "七",
     "pinyin": "qī",
     "pinyinRaw": "qi",
     "meaningHanViet": "Thất",
-    "meaningVi": "Bảy; 7",
+    "meaningVi": "Bảy, 7",
+    "radicalIds": [
+      1,
+      5
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "一个星期有七天。",
@@ -6357,12 +7862,16 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 286,
+    "vocabId": 287,
     "hanzi": "起",
     "pinyin": "qǐ",
     "pinyinRaw": "qi",
     "meaningHanViet": "Khởi",
-    "meaningVi": "Dậy; khởi đầu; bắt đầu",
+    "meaningVi": "Dậy, khởi đầu, bắt đầu",
+    "radicalIds": [
+      156,
+      49
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "早上六点我就起来了。",
@@ -6371,12 +7880,18 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 287,
+    "vocabId": 288,
     "hanzi": "起床",
     "pinyin": "qǐchuáng",
     "pinyinRaw": "qichuang",
     "meaningHanViet": "Khởi Sàng",
-    "meaningVi": "Thức dậy; ngủ dậy",
+    "meaningVi": "Thức dậy, ngủ dậy",
+    "radicalIds": [
+      156,
+      49,
+      53,
+      75
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "明天早上七点我要起床。",
@@ -6385,12 +7900,19 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 288,
+    "vocabId": 289,
     "hanzi": "起来",
     "pinyin": "qǐlái",
     "pinyinRaw": "qilai",
     "meaningHanViet": "Khởi Lai",
-    "meaningVi": "Đứng lên; thức dậy; cũng đọc là",
+    "meaningVi": "Đứng lên, thức dậy, cũng đọc là",
+    "radicalIds": [
+      156,
+      49,
+      75,
+      1,
+      12
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "快起来，太阳晒屁股了。",
@@ -6399,12 +7921,20 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 289,
+    "vocabId": 290,
     "hanzi": "汽车",
     "pinyin": "qìchē",
     "pinyinRaw": "qiche",
     "meaningHanViet": "Khí Xa",
-    "meaningVi": "Xe hơi; xe ô tô",
+    "meaningVi": "Xe hơi, xe ô tô",
+    "radicalIds": [
+      85,
+      84,
+      159,
+      1,
+      5,
+      24
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "路上来来往往很多汽车。",
@@ -6413,12 +7943,18 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 290,
+    "vocabId": 291,
     "hanzi": "前",
     "pinyin": "qián",
     "pinyinRaw": "qian",
     "meaningHanViet": "Tiền",
-    "meaningVi": "Trước; phía trước",
+    "meaningVi": "Trước, phía trước",
+    "radicalIds": [
+      18,
+      12,
+      1,
+      74
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "吃饭前要洗手。",
@@ -6427,12 +7963,20 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 291,
+    "vocabId": 292,
     "hanzi": "前边",
     "pinyin": "qiánbian",
     "pinyinRaw": "qianbian",
     "meaningHanViet": "Tiền Biên",
-    "meaningVi": "Phía trước; mặt trước",
+    "meaningVi": "Phía trước, mặt trước",
+    "radicalIds": [
+      18,
+      12,
+      1,
+      74,
+      162,
+      19
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "他在我们前边走。",
@@ -6441,12 +7985,19 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 292,
+    "vocabId": 293,
     "hanzi": "前天",
     "pinyin": "qiántiān",
     "pinyinRaw": "qiantian",
     "meaningHanViet": "Tiền Thiên",
     "meaningVi": "Ngày hôm kia",
+    "radicalIds": [
+      18,
+      12,
+      1,
+      74,
+      37
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "前天我们参加了考试。",
@@ -6455,12 +8006,17 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 293,
+    "vocabId": 294,
     "hanzi": "钱",
     "pinyin": "qián",
     "pinyinRaw": "qian",
     "meaningHanViet": "Tiền",
     "meaningVi": "Họ",
+    "radicalIds": [
+      167,
+      62,
+      1
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "买这件衣服花了不少钱。",
@@ -6469,12 +8025,19 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 294,
+    "vocabId": 295,
     "hanzi": "钱包",
     "pinyin": "qiánbāo",
     "pinyinRaw": "qianbao",
     "meaningHanViet": "Tiền Bao",
-    "meaningVi": "Ví; bóp tiền",
+    "meaningVi": "Ví, bóp tiền",
+    "radicalIds": [
+      167,
+      62,
+      1,
+      20,
+      49
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我的钱包掉在车上了。",
@@ -6483,12 +8046,16 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 295,
+    "vocabId": 296,
     "hanzi": "请",
     "pinyin": "qǐng",
     "pinyinRaw": "qing",
     "meaningHanViet": "Thỉnh",
-    "meaningVi": "Mời; mời mọc",
+    "meaningVi": "Mời, mời mọc",
+    "radicalIds": [
+      149,
+      174
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "请进，请坐，请喝茶。",
@@ -6497,12 +8064,18 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 296,
+    "vocabId": 297,
     "hanzi": "请假",
     "pinyin": "qǐngjià",
     "pinyinRaw": "qingjia",
     "meaningHanViet": "Thỉnh Giả",
     "meaningVi": "Xin nghỉ phép",
+    "radicalIds": [
+      149,
+      174,
+      9,
+      29
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "他今天生病，向老师请假。",
@@ -6511,12 +8084,18 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 297,
+    "vocabId": 298,
     "hanzi": "请进",
     "pinyin": "qǐng jìn",
     "pinyinRaw": "qing jin",
     "meaningHanViet": "Thỉnh Tiến",
     "meaningVi": "\"mời vào\"",
+    "radicalIds": [
+      149,
+      174,
+      162,
+      7
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "外面冷，请进屋坐。",
@@ -6525,12 +8104,18 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 298,
+    "vocabId": 299,
     "hanzi": "请问",
     "pinyin": "qǐngwèn",
     "pinyinRaw": "qingwen",
     "meaningHanViet": "Thỉnh Vấn",
     "meaningVi": "Xin lỗi, cho tôi hỏi...?",
+    "radicalIds": [
+      149,
+      174,
+      169,
+      30
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "请问去图书馆怎么走？",
@@ -6539,12 +8124,18 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 299,
+    "vocabId": 300,
     "hanzi": "请坐",
     "pinyin": "qǐng zuò",
     "pinyinRaw": "qing zuo",
     "meaningHanViet": "Thỉnh Toạ",
     "meaningVi": "Xin mời ngồi",
+    "radicalIds": [
+      149,
+      174,
+      32,
+      9
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "客人来了，请坐。",
@@ -6553,12 +8144,17 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 300,
+    "vocabId": 301,
     "hanzi": "球",
     "pinyin": "qiú",
     "pinyinRaw": "qiu",
     "meaningHanViet": "Cầu",
-    "meaningVi": "Quả bóng; hình cầu",
+    "meaningVi": "Quả bóng, hình cầu",
+    "radicalIds": [
+      96,
+      85,
+      1
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "孩子们在操场上踢球。",
@@ -6567,12 +8163,16 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 301,
+    "vocabId": 302,
     "hanzi": "去",
     "pinyin": "qù",
     "pinyinRaw": "qu",
     "meaningHanViet": "Khứ",
-    "meaningVi": "Đi; đi đến",
+    "meaningVi": "Đi, đi đến",
+    "radicalIds": [
+      28,
+      32
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "明天我想去书店买书。",
@@ -6581,12 +8181,17 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 302,
+    "vocabId": 303,
     "hanzi": "去年",
     "pinyin": "qùnián",
     "pinyinRaw": "qunian",
     "meaningHanViet": "Khứ Niên",
     "meaningVi": "Năm ngoái",
+    "radicalIds": [
+      28,
+      32,
+      51
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "去年我在北京学汉语。",
@@ -6595,12 +8200,16 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 303,
+    "vocabId": 304,
     "hanzi": "热",
     "pinyin": "rè",
     "pinyinRaw": "re",
     "meaningHanViet": "Nhiệt",
-    "meaningVi": "Nóng; nhiệt tình",
+    "meaningVi": "Nóng, nhiệt tình",
+    "radicalIds": [
+      86,
+      64
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "夏天天气很热。",
@@ -6609,12 +8218,15 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 304,
+    "vocabId": 305,
     "hanzi": "人",
     "pinyin": "rén",
     "pinyinRaw": "ren",
     "meaningHanViet": "Nhân",
-    "meaningVi": "Người; mọi người",
+    "meaningVi": "Người, mọi người",
+    "radicalIds": [
+      9
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "这里的人非常热情。",
@@ -6623,12 +8235,18 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 305,
+    "vocabId": 306,
     "hanzi": "认识",
     "pinyin": "rènshi",
     "pinyinRaw": "renshi",
     "meaningHanViet": "Nhận Thức",
-    "meaningVi": "Biết; nhận ra",
+    "meaningVi": "Biết, nhận ra",
+    "radicalIds": [
+      149,
+      9,
+      30,
+      12
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "认识你很高兴。",
@@ -6637,12 +8255,20 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 306,
+    "vocabId": 307,
     "hanzi": "认真",
     "pinyin": "rènzhēn",
     "pinyinRaw": "renzhen",
     "meaningHanViet": "Nhận Chân",
-    "meaningVi": "Tận tâm; nghiêm túc",
+    "meaningVi": "Tận tâm, nghiêm túc",
+    "radicalIds": [
+      149,
+      9,
+      109,
+      24,
+      1,
+      16
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "大家都在认真地学习汉语。",
@@ -6651,12 +8277,15 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 307,
+    "vocabId": 308,
     "hanzi": "日",
     "pinyin": "rì",
     "pinyinRaw": "ri",
     "meaningHanViet": "Nhật",
-    "meaningVi": "Ngày; mặt trời",
+    "meaningVi": "Ngày, mặt trời",
+    "radicalIds": [
+      72
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "十月一日是国庆节。",
@@ -6665,12 +8294,19 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 308,
+    "vocabId": 309,
     "hanzi": "日期",
     "pinyin": "rìqī",
     "pinyinRaw": "riqi",
     "meaningHanViet": "Nhật Kỳ",
     "meaningVi": "Ngày tháng",
+    "radicalIds": [
+      72,
+      74,
+      12,
+      99,
+      1
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "请在表格上写下今天的日期。",
@@ -6679,12 +8315,15 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 309,
+    "vocabId": 310,
     "hanzi": "肉",
     "pinyin": "ròu",
     "pinyinRaw": "rou",
     "meaningHanViet": "Nhục",
-    "meaningVi": "Thịt; thịt quả",
+    "meaningVi": "Thịt, thịt quả",
+    "radicalIds": [
+      130
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我不喜欢吃肥肉。",
@@ -6693,12 +8332,16 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 310,
+    "vocabId": 311,
     "hanzi": "三",
     "pinyin": "sān",
     "pinyinRaw": "san",
     "meaningHanViet": "Tam",
     "meaningVi": "Họ",
+    "radicalIds": [
+      1,
+      7
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我们班有三个外国留学生。",
@@ -6707,12 +8350,15 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 311,
+    "vocabId": 312,
     "hanzi": "山",
     "pinyin": "shān",
     "pinyinRaw": "shan",
     "meaningHanViet": "Sơn",
     "meaningVi": "Họ",
+    "radicalIds": [
+      46
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "这座山真高。",
@@ -6721,12 +8367,21 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 312,
+    "vocabId": 313,
     "hanzi": "商场",
     "pinyin": "shāngchǎng",
     "pinyinRaw": "shangchang",
     "meaningHanViet": "Thương Tràng",
-    "meaningVi": "Trung tâm mua sắm; trung tâm thương mại",
+    "meaningVi": "Trung tâm mua sắm, trung tâm thương mại",
+    "radicalIds": [
+      30,
+      8,
+      12,
+      13,
+      32,
+      20,
+      4
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "周末我们去商场购物。",
@@ -6735,12 +8390,20 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 313,
+    "vocabId": 314,
     "hanzi": "商店",
     "pinyin": "shāngdiàn",
     "pinyinRaw": "shangdian",
     "meaningHanViet": "Thương Điếm",
-    "meaningVi": "Cửa hàng; tiệm",
+    "meaningVi": "Cửa hàng, tiệm",
+    "radicalIds": [
+      30,
+      8,
+      12,
+      13,
+      53,
+      25
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "他在商店买了一支笔。",
@@ -6749,12 +8412,16 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 314,
+    "vocabId": 315,
     "hanzi": "上",
     "pinyin": "shàng",
     "pinyinRaw": "shang",
     "meaningHanViet": "Thướng",
-    "meaningVi": "Lên; trên; đi làm; vào học",
+    "meaningVi": "Lên, trên, đi làm, vào học",
+    "radicalIds": [
+      1,
+      25
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "桌子上有一本汉语词典。",
@@ -6763,12 +8430,18 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 315,
+    "vocabId": 316,
     "hanzi": "上班",
     "pinyin": "shàngbān",
     "pinyinRaw": "shangban",
     "meaningHanViet": "Thướng Ban",
-    "meaningVi": "Đi làm; đi trực",
+    "meaningVi": "Đi làm, đi trực",
+    "radicalIds": [
+      1,
+      25,
+      96,
+      18
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "爸爸每天早上八点去上班。",
@@ -6777,12 +8450,18 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 316,
+    "vocabId": 317,
     "hanzi": "上边",
     "pinyin": "shàngbian",
     "pinyinRaw": "shangbian",
     "meaningHanViet": "Thướng Biên",
-    "meaningVi": "Phía trên; bên trên",
+    "meaningVi": "Phía trên, bên trên",
+    "radicalIds": [
+      1,
+      25,
+      162,
+      19
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "书架上边摆放着奖状。",
@@ -6791,12 +8470,19 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 317,
+    "vocabId": 318,
     "hanzi": "上车",
     "pinyin": "shàng chē",
     "pinyinRaw": "shang che",
     "meaningHanViet": "Thướng Xa",
     "meaningVi": "Lên",
+    "radicalIds": [
+      1,
+      25,
+      159,
+      5,
+      24
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "请大家排队有序上车。",
@@ -6805,12 +8491,18 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 318,
+    "vocabId": 319,
     "hanzi": "上次",
     "pinyin": "shàng cì",
     "pinyinRaw": "shang ci",
     "meaningHanViet": "Thướng Thứ",
     "meaningVi": "Lần trước",
+    "radicalIds": [
+      1,
+      25,
+      76,
+      15
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "上次见面还是一年前。",
@@ -6819,12 +8511,19 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 319,
+    "vocabId": 320,
     "hanzi": "上课",
     "pinyin": "shàngkè",
     "pinyinRaw": "shangke",
     "meaningHanViet": "Thướng Khoá",
-    "meaningVi": "Đi học; tham dự lớp",
+    "meaningVi": "Đi học, tham dự lớp",
+    "radicalIds": [
+      1,
+      25,
+      149,
+      75,
+      102
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我们八点开始上课。",
@@ -6833,12 +8532,17 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 320,
+    "vocabId": 321,
     "hanzi": "上网",
     "pinyin": "shàngwǎng",
     "pinyinRaw": "shangwang",
     "meaningHanViet": "Thướng Võng",
-    "meaningVi": "Lên mạng; kết nối Internet",
+    "meaningVi": "Lên mạng, kết nối Internet",
+    "radicalIds": [
+      1,
+      25,
+      122
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "他喜欢在网上看新闻。",
@@ -6847,12 +8551,19 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 321,
+    "vocabId": 322,
     "hanzi": "上午",
     "pinyin": "shàngwǔ",
     "pinyinRaw": "shangwu",
     "meaningHanViet": "Thướng Ngọ",
     "meaningVi": "Buổi sáng",
+    "radicalIds": [
+      1,
+      25,
+      24,
+      4,
+      51
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "今天上午我有三节汉语课。",
@@ -6861,12 +8572,19 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 322,
+    "vocabId": 323,
     "hanzi": "上学",
     "pinyin": "shàngxué",
     "pinyinRaw": "shangxue",
     "meaningHanViet": "Thướng Học",
-    "meaningVi": "Đi học; theo học",
+    "meaningVi": "Đi học, theo học",
+    "radicalIds": [
+      1,
+      25,
+      39,
+      42,
+      14
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "孩子们背着书包去上学。",
@@ -6875,12 +8593,16 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 323,
+    "vocabId": 324,
     "hanzi": "少",
     "pinyin": "shǎo",
     "pinyinRaw": "shao",
     "meaningHanViet": "Thiểu",
-    "meaningVi": "Ít; thiếu",
+    "meaningVi": "Ít, thiếu",
+    "radicalIds": [
+      42,
+      4
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "今天来上课的人很少。",
@@ -6889,12 +8611,16 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 324,
+    "vocabId": 325,
     "hanzi": "谁",
     "pinyin": "shéi/shuí",
     "pinyinRaw": "shei/shui",
     "meaningHanViet": "Thuỳ",
-    "meaningVi": "Ai; cũng đọc là",
+    "meaningVi": "Ai, cũng đọc là",
+    "radicalIds": [
+      149,
+      172
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "请问那位老师是谁？",
@@ -6903,12 +8629,17 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 325,
+    "vocabId": 326,
     "hanzi": "身上",
     "pinyin": "shēnshang",
     "pinyinRaw": "shenshang",
     "meaningHanViet": "Thân Thướng",
-    "meaningVi": "Trên cơ thể; trong tay",
+    "meaningVi": "Trên cơ thể, trong tay",
+    "radicalIds": [
+      158,
+      1,
+      25
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "他身上穿了一件黑外套。",
@@ -6917,12 +8648,18 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 326,
+    "vocabId": 327,
     "hanzi": "身体",
     "pinyin": "shēntǐ",
     "pinyinRaw": "shenti",
     "meaningHanViet": "Thân Thể",
-    "meaningVi": "Cơ thể; sức khỏe",
+    "meaningVi": "Cơ thể, sức khỏe",
+    "radicalIds": [
+      158,
+      9,
+      75,
+      1
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "祝你身体健康，万事如意。",
@@ -6931,12 +8668,18 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 327,
+    "vocabId": 328,
     "hanzi": "什么",
     "pinyin": "shénme",
     "pinyinRaw": "shenme",
     "meaningHanViet": "Thậm Yêu",
-    "meaningVi": "Gì?; điều gì đó; bất kỳ điều gì",
+    "meaningVi": "Gì?, điều gì đó, bất kỳ điều gì",
+    "radicalIds": [
+      9,
+      24,
+      4,
+      28
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "你想买什么东西？",
@@ -6945,12 +8688,17 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 328,
+    "vocabId": 329,
     "hanzi": "生病",
     "pinyin": "shēngbìng",
     "pinyinRaw": "shengbing",
     "meaningHanViet": "Sinh Bệnh",
     "meaningVi": "Bị ốm",
+    "radicalIds": [
+      100,
+      104,
+      1
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "天气变冷了，小心生病。",
@@ -6959,12 +8707,16 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 329,
+    "vocabId": 330,
     "hanzi": "生气",
     "pinyin": "shēngqì",
     "pinyinRaw": "shengqi",
     "meaningHanViet": "Sinh Khí",
-    "meaningVi": "Nổi giận; tức giận; sinh khí; sức sống",
+    "meaningVi": "Nổi giận, tức giận, sinh khí, sức sống",
+    "radicalIds": [
+      100,
+      84
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "不要为这点小事生气。",
@@ -6973,12 +8725,16 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 330,
+    "vocabId": 331,
     "hanzi": "生日",
     "pinyin": "shēngrì",
     "pinyinRaw": "shengri",
     "meaningHanViet": "Sinh Nhật",
     "meaningVi": "Sinh nhật",
+    "radicalIds": [
+      100,
+      72
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "今天是我的生日。",
@@ -6987,12 +8743,15 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 331,
+    "vocabId": 332,
     "hanzi": "十",
     "pinyin": "shí",
     "pinyinRaw": "shi",
     "meaningHanViet": "Thập",
-    "meaningVi": "Mười; 10",
+    "meaningVi": "Mười, 10",
+    "radicalIds": [
+      24
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "十个学生在操场上打球。",
@@ -7001,12 +8760,18 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 332,
+    "vocabId": 333,
     "hanzi": "时候",
     "pinyin": "shíhou",
     "pinyinRaw": "shihou",
     "meaningHanViet": "Thời Hậu",
-    "meaningVi": "Thời gian; khoảng thời gian",
+    "meaningVi": "Thời gian, khoảng thời gian",
+    "radicalIds": [
+      72,
+      41,
+      9,
+      111
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "你什么时候去北京？",
@@ -7015,12 +8780,17 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 333,
+    "vocabId": 334,
     "hanzi": "时间",
     "pinyin": "shíjiān",
     "pinyinRaw": "shijian",
     "meaningHanViet": "Thời Gian",
     "meaningVi": "Thời gian",
+    "radicalIds": [
+      72,
+      41,
+      169
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我们没有太多时间了。",
@@ -7029,12 +8799,18 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 334,
+    "vocabId": 335,
     "hanzi": "事",
     "pinyin": "shì",
     "pinyinRaw": "shi",
     "meaningHanViet": "Sự",
-    "meaningVi": "Sự việc; điều",
+    "meaningVi": "Sự việc, điều",
+    "radicalIds": [
+      6,
+      1,
+      30,
+      58
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "今天你有什么事吗？",
@@ -7043,12 +8819,17 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 335,
+    "vocabId": 336,
     "hanzi": "试",
     "pinyin": "shì",
     "pinyinRaw": "shi",
     "meaningHanViet": "Thí",
-    "meaningVi": "Thử; thí nghiệm",
+    "meaningVi": "Thử, thí nghiệm",
+    "radicalIds": [
+      149,
+      56,
+      48
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "这件衣服你可以试一下。",
@@ -7057,12 +8838,16 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 336,
+    "vocabId": 337,
     "hanzi": "是",
     "pinyin": "shì",
     "pinyinRaw": "shi",
     "meaningHanViet": "Thị",
-    "meaningVi": "Là; đúng; phải; thật",
+    "meaningVi": "Là, đúng, phải, thật",
+    "radicalIds": [
+      72,
+      103
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我是河内大学的学生。",
@@ -7071,12 +8856,17 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 337,
+    "vocabId": 338,
     "hanzi": "是不是",
     "pinyin": "shì bu shì",
     "pinyinRaw": "shi bu shi",
     "meaningHanViet": "Thị Bất Thị",
-    "meaningVi": "Có phải hay không; phải hoặc không",
+    "meaningVi": "Có phải hay không, phải hoặc không",
+    "radicalIds": [
+      72,
+      103,
+      1
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "你是不是今天下午要去图书馆？",
@@ -7085,12 +8875,15 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 338,
+    "vocabId": 339,
     "hanzi": "手",
     "pinyin": "shǒu",
     "pinyinRaw": "shou",
     "meaningHanViet": "Thủ",
-    "meaningVi": "Tay; cầm",
+    "meaningVi": "Tay, cầm",
+    "radicalIds": [
+      64
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "饭前洗手是个好习惯。",
@@ -7099,12 +8892,17 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 339,
+    "vocabId": 340,
     "hanzi": "手机",
     "pinyin": "shǒujī",
     "pinyinRaw": "shouji",
     "meaningHanViet": "Thủ Cơ",
     "meaningVi": "Điện thoại di động",
+    "radicalIds": [
+      64,
+      75,
+      16
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我的手机放在桌子上了。",
@@ -7113,12 +8911,15 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 340,
+    "vocabId": 341,
     "hanzi": "书",
     "pinyin": "shū",
     "pinyinRaw": "shu",
     "meaningHanViet": "Thư",
     "meaningVi": "Viết tắt của 書經|书经",
+    "radicalIds": [
+      2
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "看书。",
@@ -7127,12 +8928,17 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 341,
+    "vocabId": 342,
     "hanzi": "书包",
     "pinyin": "shūbāo",
     "pinyinRaw": "shubao",
     "meaningHanViet": "Thư Bao",
-    "meaningVi": "Cặp sách; cặp đeo lưng",
+    "meaningVi": "Cặp sách, cặp đeo lưng",
+    "radicalIds": [
+      2,
+      20,
+      49
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "新书包里装满了课本和笔。",
@@ -7141,12 +8947,18 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 342,
+    "vocabId": 343,
     "hanzi": "书店",
     "pinyin": "shūdiàn",
     "pinyinRaw": "shudian",
     "meaningHanViet": "Thư Điếm",
     "meaningVi": "Nhà sách",
+    "radicalIds": [
+      2,
+      53,
+      25,
+      30
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我们在学校门口的新华书店见面。",
@@ -7155,12 +8967,17 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 343,
+    "vocabId": 344,
     "hanzi": "树",
     "pinyin": "shù",
     "pinyinRaw": "shu",
     "meaningHanViet": "Thụ",
-    "meaningVi": "Cây; trồng",
+    "meaningVi": "Cây, trồng",
+    "radicalIds": [
+      75,
+      41,
+      29
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "校园里种着许多高大的绿树。",
@@ -7169,12 +8986,15 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 344,
+    "vocabId": 345,
     "hanzi": "水",
     "pinyin": "shuǐ",
     "pinyinRaw": "shui",
     "meaningHanViet": "Thuỷ",
     "meaningVi": "Họ",
+    "radicalIds": [
+      85
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "多喝温水对身体好。",
@@ -7183,12 +9003,17 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 345,
+    "vocabId": 346,
     "hanzi": "水果",
     "pinyin": "shuǐguǒ",
     "pinyinRaw": "shuiguo",
     "meaningHanViet": "Thuỷ Quả",
     "meaningVi": "Trái cây",
+    "radicalIds": [
+      85,
+      75,
+      102
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "多吃新鲜水果有益健康。",
@@ -7197,12 +9022,17 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 346,
+    "vocabId": 347,
     "hanzi": "睡",
     "pinyin": "shuì",
     "pinyinRaw": "shui",
     "meaningHanViet": "Thuỵ",
-    "meaningVi": "Ngủ; nằm xuống",
+    "meaningVi": "Ngủ, nằm xuống",
+    "radicalIds": [
+      109,
+      32,
+      33
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "昨天晚上我睡得非常香甜。",
@@ -7211,12 +9041,20 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 347,
+    "vocabId": 348,
     "hanzi": "睡觉",
     "pinyin": "shuìjiào",
     "pinyinRaw": "shuijiao",
     "meaningHanViet": "Thuỵ Giáo",
-    "meaningVi": "Đi ngủ; ngủ",
+    "meaningVi": "Đi ngủ, ngủ",
+    "radicalIds": [
+      109,
+      32,
+      33,
+      147,
+      42,
+      14
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "早点睡觉，明天还要早起。",
@@ -7225,12 +9063,17 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 348,
+    "vocabId": 349,
     "hanzi": "说",
     "pinyin": "shuō",
     "pinyinRaw": "shuo",
     "meaningHanViet": "Thuyết",
     "meaningVi": "Nói",
+    "radicalIds": [
+      149,
+      10,
+      12
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "老师说汉语说得很清楚。",
@@ -7239,12 +9082,18 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 349,
+    "vocabId": 350,
     "hanzi": "说话",
     "pinyin": "shuōhuà",
     "pinyinRaw": "shuohua",
     "meaningHanViet": "Thuyết Thoại",
-    "meaningVi": "Nói; trò chuyện",
+    "meaningVi": "Nói, trò chuyện",
+    "radicalIds": [
+      149,
+      10,
+      12,
+      135
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "请大家安静，不要说话。",
@@ -7253,12 +9102,16 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 350,
+    "vocabId": 351,
     "hanzi": "四",
     "pinyin": "sì",
     "pinyinRaw": "si",
     "meaningHanViet": "Tứ",
-    "meaningVi": "Bốn; 4",
+    "meaningVi": "Bốn, 4",
+    "radicalIds": [
+      31,
+      10
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "一年有四个季节。",
@@ -7267,12 +9120,16 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 351,
+    "vocabId": 352,
     "hanzi": "送",
     "pinyin": "sòng",
     "pinyinRaw": "song",
     "meaningHanViet": "Tống",
-    "meaningVi": "Gửi; giao; truyền; tặng",
+    "meaningVi": "Gửi, giao, truyền, tặng",
+    "radicalIds": [
+      162,
+      12
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "朋友送了我一本很有趣的书。",
@@ -7281,12 +9138,16 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 352,
+    "vocabId": 353,
     "hanzi": "岁",
     "pinyin": "suì",
     "pinyinRaw": "sui",
     "meaningHanViet": "Tuế",
     "meaningVi": "Tuổi",
+    "radicalIds": [
+      46,
+      36
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "小妹妹今年六岁了。",
@@ -7295,12 +9156,16 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 353,
+    "vocabId": 354,
     "hanzi": "他",
     "pinyin": "tā",
     "pinyinRaw": "ta",
     "meaningHanViet": "Tha",
-    "meaningVi": "Anh ấy; ông ấy; khác",
+    "meaningVi": "Anh ấy, ông ấy, khác",
+    "radicalIds": [
+      9,
+      5
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "他是我的大学同学。",
@@ -7309,12 +9174,17 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 354,
+    "vocabId": 355,
     "hanzi": "他们",
     "pinyin": "tāmen",
     "pinyinRaw": "tamen",
     "meaningHanViet": "Tha Môn",
-    "meaningVi": "Họ; bọn họ",
+    "meaningVi": "Họ, bọn họ",
+    "radicalIds": [
+      9,
+      5,
+      169
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "他们正在操场上打篮球。",
@@ -7323,12 +9193,16 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 355,
+    "vocabId": 356,
     "hanzi": "她",
     "pinyin": "tā",
     "pinyinRaw": "ta",
     "meaningHanViet": "Tha",
     "meaningVi": "Cô ấy",
+    "radicalIds": [
+      38,
+      5
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "她是我们的汉语口语老师。",
@@ -7337,12 +9211,18 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 356,
+    "vocabId": 357,
     "hanzi": "她们",
     "pinyin": "tāmen",
     "pinyinRaw": "tamen",
     "meaningHanViet": "Tha Môn",
-    "meaningVi": "Họ; các cô ấy",
+    "meaningVi": "Họ, các cô ấy",
+    "radicalIds": [
+      38,
+      5,
+      9,
+      169
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "她们都是来自越南的留学生。",
@@ -7351,12 +9231,16 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 357,
+    "vocabId": 358,
     "hanzi": "太",
     "pinyin": "tài",
     "pinyinRaw": "tai",
     "meaningHanViet": "Thái",
-    "meaningVi": "Quá; lắm",
+    "meaningVi": "Quá, lắm",
+    "radicalIds": [
+      37,
+      3
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "这件衣服太漂亮了。",
@@ -7365,12 +9249,16 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 358,
+    "vocabId": 359,
     "hanzi": "天",
     "pinyin": "tiān",
     "pinyinRaw": "tian",
     "meaningHanViet": "Thiên",
-    "meaningVi": "Ngày; trời",
+    "meaningVi": "Ngày, trời",
+    "radicalIds": [
+      37,
+      1
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "今天天气晴朗，阳光明媚。",
@@ -7379,12 +9267,17 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 359,
+    "vocabId": 360,
     "hanzi": "天气",
     "pinyin": "tiānqì",
     "pinyinRaw": "tianqi",
     "meaningHanViet": "Thiên Khí",
     "meaningVi": "Thời tiết",
+    "radicalIds": [
+      37,
+      1,
+      84
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "今天天气非常好。",
@@ -7393,12 +9286,16 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 360,
+    "vocabId": 361,
     "hanzi": "听",
     "pinyin": "tīng",
     "pinyinRaw": "ting",
     "meaningHanViet": "Dẫn",
     "meaningVi": "Nghe",
+    "radicalIds": [
+      30,
+      69
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "你喜欢听什么音乐？",
@@ -7407,12 +9304,18 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 361,
+    "vocabId": 362,
     "hanzi": "听到",
     "pinyin": "tīngdào",
     "pinyinRaw": "tingdao",
     "meaningHanViet": "Dẫn Đáo",
     "meaningVi": "Nghe thấy",
+    "radicalIds": [
+      30,
+      69,
+      18,
+      133
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我听到了小鸟在歌唱。",
@@ -7421,12 +9324,19 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 362,
+    "vocabId": 363,
     "hanzi": "听见",
     "pinyin": "tīngjiàn",
     "pinyinRaw": "tingjian",
     "meaningHanViet": "Dẫn Kiến",
     "meaningVi": "Nghe thấy",
+    "radicalIds": [
+      30,
+      69,
+      147,
+      13,
+      10
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "你听见老师说的话了吗？",
@@ -7435,12 +9345,18 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 363,
+    "vocabId": 364,
     "hanzi": "听写",
     "pinyin": "tīngxiě",
     "pinyinRaw": "tingxie",
     "meaningHanViet": "Dẫn Tả",
-    "meaningVi": "Viết chính tả; bài chính tả; chép lại bằng tai",
+    "meaningVi": "Viết chính tả, bài chính tả, chép lại bằng tai",
+    "radicalIds": [
+      30,
+      69,
+      14,
+      1
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "明天上课有生词听写。",
@@ -7449,12 +9365,20 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 364,
+    "vocabId": 365,
     "hanzi": "同学",
     "pinyin": "tóngxué",
     "pinyinRaw": "tongxue",
     "meaningHanViet": "Đồng Học",
-    "meaningVi": "Học cùng trường; bạn học",
+    "meaningVi": "Học cùng trường, bạn học",
+    "radicalIds": [
+      30,
+      16,
+      3,
+      39,
+      42,
+      14
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "张明是我的同班同学。",
@@ -7463,12 +9387,20 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 365,
+    "vocabId": 366,
     "hanzi": "图书馆",
     "pinyin": "túshūguǎn",
     "pinyinRaw": "tushuguan",
     "meaningHanViet": "Đồ Thư Quán",
     "meaningVi": "Thư viện",
+    "radicalIds": [
+      31,
+      15,
+      34,
+      2,
+      184,
+      40
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "图书馆里非常安静。",
@@ -7477,12 +9409,16 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 366,
+    "vocabId": 367,
     "hanzi": "外",
     "pinyin": "wài",
     "pinyinRaw": "wai",
     "meaningHanViet": "Ngoại",
-    "meaningVi": "Bên ngoài; thêm vào",
+    "meaningVi": "Bên ngoài, thêm vào",
+    "radicalIds": [
+      36,
+      25
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "外面的世界真大。",
@@ -7491,12 +9427,18 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 367,
+    "vocabId": 368,
     "hanzi": "外边",
     "pinyin": "wàibian",
     "pinyinRaw": "waibian",
     "meaningHanViet": "Ngoại Biên",
-    "meaningVi": "Bên ngoài; bề mặt ngoài",
+    "meaningVi": "Bên ngoài, bề mặt ngoài",
+    "radicalIds": [
+      36,
+      25,
+      162,
+      19
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "外面正在下大雨。",
@@ -7505,12 +9447,18 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 368,
+    "vocabId": 369,
     "hanzi": "外国",
     "pinyin": "wàiguó",
     "pinyinRaw": "waiguo",
     "meaningHanViet": "Ngoại Quốc",
     "meaningVi": "Nước ngoài",
+    "radicalIds": [
+      36,
+      25,
+      31,
+      96
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "他很喜欢去外国旅游。",
@@ -7519,12 +9467,18 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 369,
+    "vocabId": 370,
     "hanzi": "外语",
     "pinyin": "wàiyǔ",
     "pinyinRaw": "waiyu",
     "meaningHanViet": "Ngoại Ngữ",
-    "meaningVi": "Ngôn ngữ nước ngoài; Lượng từ: 門|门",
+    "meaningVi": "Ngôn ngữ nước ngoài, Lượng từ: 門|门",
+    "radicalIds": [
+      36,
+      25,
+      149,
+      30
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "学好一门外语很有用。",
@@ -7533,12 +9487,17 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 370,
+    "vocabId": 371,
     "hanzi": "玩儿",
     "pinyin": "wánr",
     "pinyinRaw": "wanr",
     "meaningHanViet": "Ngoạn Nhân",
-    "meaningVi": "Chơi; vui chơi",
+    "meaningVi": "Chơi, vui chơi",
+    "radicalIds": [
+      96,
+      10,
+      7
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "周末孩子们在公园玩儿。",
@@ -7547,12 +9506,18 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 371,
+    "vocabId": 372,
     "hanzi": "晚",
     "pinyin": "wǎn",
     "pinyinRaw": "wan",
     "meaningHanViet": "Vãn",
-    "meaningVi": "Buổi tối; đêm",
+    "meaningVi": "Buổi tối, đêm",
+    "radicalIds": [
+      72,
+      10,
+      18,
+      30
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "时间不早了，我该睡了。",
@@ -7561,12 +9526,21 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 372,
+    "vocabId": 373,
     "hanzi": "晚饭",
     "pinyin": "wǎnfàn",
     "pinyinRaw": "wanfan",
     "meaningHanViet": "Vãn Phạn",
-    "meaningVi": "Bữa tối; cơm tối",
+    "meaningVi": "Bữa tối, cơm tối",
+    "radicalIds": [
+      72,
+      10,
+      18,
+      30,
+      184,
+      29,
+      27
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "全家人一起吃丰盛的晚饭。",
@@ -7575,12 +9549,20 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 373,
+    "vocabId": 374,
     "hanzi": "晚上",
     "pinyin": "wǎnshang",
     "pinyinRaw": "wanshang",
     "meaningHanViet": "Vãn Thướng",
-    "meaningVi": "Buổi tối; đêm",
+    "meaningVi": "Buổi tối, đêm",
+    "radicalIds": [
+      72,
+      10,
+      18,
+      30,
+      1,
+      25
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "晚上我常常在房间复习功课。",
@@ -7589,12 +9571,17 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 374,
+    "vocabId": 375,
     "hanzi": "网上",
     "pinyin": "wǎng shang",
     "pinyinRaw": "wang shang",
     "meaningHanViet": "Võng Thướng",
     "meaningVi": "Trực tuyến",
+    "radicalIds": [
+      122,
+      1,
+      25
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我喜欢在网上查阅中文学习资料。",
@@ -7603,12 +9590,16 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 375,
+    "vocabId": 376,
     "hanzi": "网友",
     "pinyin": "wǎngyǒu",
     "pinyinRaw": "wangyou",
     "meaningHanViet": "Võng Hữu",
-    "meaningVi": "Bạn online; người dùng Internet",
+    "meaningVi": "Bạn online, người dùng Internet",
+    "radicalIds": [
+      122,
+      29
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "他在互联网上结识了许多中国网友。",
@@ -7617,12 +9608,16 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 376,
+    "vocabId": 377,
     "hanzi": "忘",
     "pinyin": "wàng",
     "pinyinRaw": "wang",
     "meaningHanViet": "Vong",
-    "meaningVi": "Quên; bỏ qua",
+    "meaningVi": "Quên, bỏ qua",
+    "radicalIds": [
+      61,
+      8
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "不要忘了带你的雨伞。",
@@ -7631,12 +9626,18 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 377,
+    "vocabId": 378,
     "hanzi": "忘记",
     "pinyin": "wàngjì",
     "pinyinRaw": "wangji",
     "meaningHanViet": "Vong Ký",
     "meaningVi": "Quên",
+    "radicalIds": [
+      61,
+      8,
+      149,
+      49
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我忘记了他的电话号码。",
@@ -7645,12 +9646,16 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 378,
+    "vocabId": 379,
     "hanzi": "问",
     "pinyin": "wèn",
     "pinyinRaw": "wen",
     "meaningHanViet": "Vấn",
     "meaningVi": "Hỏi",
+    "radicalIds": [
+      169,
+      30
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "遇到不懂的问题要问老师。",
@@ -7659,12 +9664,16 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 379,
+    "vocabId": 380,
     "hanzi": "我",
     "pinyin": "wǒ",
     "pinyinRaw": "wo",
     "meaningHanViet": "Ngã",
-    "meaningVi": "Tôi; mình; của tôi",
+    "meaningVi": "Tôi, mình, của tôi",
+    "radicalIds": [
+      62,
+      64
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我是越南留学生。",
@@ -7673,12 +9682,18 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 380,
+    "vocabId": 381,
     "hanzi": "我们",
     "pinyin": "wǒmen",
     "pinyinRaw": "women",
     "meaningHanViet": "Ngã Môn",
-    "meaningVi": "Chúng tôi; chúng ta; bản thân chúng ta; của chúng tôi",
+    "meaningVi": "Chúng tôi, chúng ta, bản thân chúng ta, của chúng tôi",
+    "radicalIds": [
+      62,
+      64,
+      9,
+      169
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我们一起努力学好汉语。",
@@ -7687,12 +9702,15 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 381,
+    "vocabId": 382,
     "hanzi": "五",
     "pinyin": "wǔ",
     "pinyinRaw": "wu",
     "meaningHanViet": "Ngũ",
-    "meaningVi": "Năm; 5",
+    "meaningVi": "Năm, 5",
+    "radicalIds": [
+      7
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "一个星期工作五天。",
@@ -7701,12 +9719,20 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 382,
+    "vocabId": 383,
     "hanzi": "午饭",
     "pinyin": "wǔfàn",
     "pinyinRaw": "wufan",
     "meaningHanViet": "Ngọ Phạn",
     "meaningVi": "Bữa trưa",
+    "radicalIds": [
+      24,
+      4,
+      51,
+      184,
+      29,
+      27
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "中午我们去食堂吃午饭。",
@@ -7715,12 +9741,17 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 383,
+    "vocabId": 384,
     "hanzi": "西",
     "pinyin": "xī",
     "pinyinRaw": "xi",
     "meaningHanViet": "Tây",
-    "meaningVi": "Phương Tây; tiếng Tây Ban Nha",
+    "meaningVi": "Phương Tây, tiếng Tây Ban Nha",
+    "radicalIds": [
+      146,
+      10,
+      31
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "太阳从西方落下。",
@@ -7729,12 +9760,19 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 384,
+    "vocabId": 385,
     "hanzi": "西边",
     "pinyin": "xībian",
     "pinyinRaw": "xibian",
     "meaningHanViet": "Tây Biên",
-    "meaningVi": "Phía tây; bên phía tây",
+    "meaningVi": "Phía tây, bên phía tây",
+    "radicalIds": [
+      146,
+      10,
+      31,
+      162,
+      19
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "学校西边有一家大医院。",
@@ -7743,12 +9781,17 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 385,
+    "vocabId": 386,
     "hanzi": "洗",
     "pinyin": "xǐ",
     "pinyinRaw": "xi",
     "meaningHanViet": "Tẩy",
-    "meaningVi": "Rửa; tắm; rửa ảnh",
+    "meaningVi": "Rửa, tắm, rửa ảnh",
+    "radicalIds": [
+      85,
+      10,
+      32
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "饭前要洗手。",
@@ -7757,12 +9800,20 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 386,
+    "vocabId": 387,
     "hanzi": "洗手间",
     "pinyin": "xǐshǒujiān",
     "pinyinRaw": "xishoujian",
     "meaningHanViet": "Tẩy Thủ Gian",
-    "meaningVi": "Nhà vệ sinh; phòng vệ sinh",
+    "meaningVi": "Nhà vệ sinh, phòng vệ sinh",
+    "radicalIds": [
+      85,
+      10,
+      32,
+      64,
+      169,
+      72
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "请问洗手间在几楼？",
@@ -7771,12 +9822,19 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 387,
+    "vocabId": 388,
     "hanzi": "喜欢",
     "pinyin": "xǐhuan",
     "pinyinRaw": "xihuan",
     "meaningHanViet": "Hỷ Hoan",
-    "meaningVi": "Thích; ưa thích",
+    "meaningVi": "Thích, ưa thích",
+    "radicalIds": [
+      30,
+      33,
+      32,
+      76,
+      29
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我很喜欢中国书法。",
@@ -7785,12 +9843,16 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 388,
+    "vocabId": 389,
     "hanzi": "下",
     "pinyin": "xià",
     "pinyinRaw": "xia",
     "meaningHanViet": "Hạ",
-    "meaningVi": "Dưới; xuống; tan làm; tan học",
+    "meaningVi": "Dưới, xuống, tan làm, tan học",
+    "radicalIds": [
+      1,
+      25
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "下星期我们有期中考试。",
@@ -7799,12 +9861,18 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 389,
+    "vocabId": 390,
     "hanzi": "下班",
     "pinyin": "xiàbān",
     "pinyinRaw": "xiaban",
     "meaningHanViet": "Hạ Ban",
-    "meaningVi": "Tan làm; tan ca",
+    "meaningVi": "Tan làm, tan ca",
+    "radicalIds": [
+      1,
+      25,
+      96,
+      18
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "爸爸下午五点半下班。",
@@ -7813,12 +9881,18 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 390,
+    "vocabId": 391,
     "hanzi": "下边",
     "pinyin": "xiàbian",
     "pinyinRaw": "xiabian",
     "meaningHanViet": "Hạ Biên",
-    "meaningVi": "Ở dưới; mặt dưới",
+    "meaningVi": "Ở dưới, mặt dưới",
+    "radicalIds": [
+      1,
+      25,
+      162,
+      19
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "桌子下边趴着一只小猫。",
@@ -7827,12 +9901,19 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 391,
+    "vocabId": 392,
     "hanzi": "下车",
     "pinyin": "xià chē",
     "pinyinRaw": "xia che",
     "meaningHanViet": "Hạ Xa",
     "meaningVi": "Xuống",
+    "radicalIds": [
+      1,
+      25,
+      159,
+      5,
+      24
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "到站了，请乘客们下车。",
@@ -7841,12 +9922,18 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 392,
+    "vocabId": 393,
     "hanzi": "下次",
     "pinyin": "xià cì",
     "pinyinRaw": "xia ci",
     "meaningHanViet": "Hạ Thứ",
     "meaningVi": "Lần tới",
+    "radicalIds": [
+      1,
+      25,
+      76,
+      15
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "下次有机会我们再聚。",
@@ -7855,12 +9942,19 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 393,
+    "vocabId": 394,
     "hanzi": "下课",
     "pinyin": "xiàkè",
     "pinyinRaw": "xiake",
     "meaningHanViet": "Hạ Khoá",
-    "meaningVi": "Tan học; ra khỏi lớp",
+    "meaningVi": "Tan học, ra khỏi lớp",
+    "radicalIds": [
+      1,
+      25,
+      149,
+      75,
+      102
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "老师说下课了，大家休息吧。",
@@ -7869,12 +9963,19 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 394,
+    "vocabId": 395,
     "hanzi": "下午",
     "pinyin": "xiàwǔ",
     "pinyinRaw": "xiawu",
     "meaningHanViet": "Hạ Ngọ",
-    "meaningVi": "Buổi chiều; p.m.",
+    "meaningVi": "Buổi chiều, p.m.",
+    "radicalIds": [
+      1,
+      25,
+      24,
+      4,
+      51
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "今天下午天气很凉快。",
@@ -7883,12 +9984,17 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 395,
+    "vocabId": 396,
     "hanzi": "下雨",
     "pinyin": "xià yǔ",
     "pinyinRaw": "xia yu",
     "meaningHanViet": "Hạ Vũ",
     "meaningVi": "Trời mưa",
+    "radicalIds": [
+      1,
+      25,
+      173
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "外边下雨了，出门要带伞。",
@@ -7897,12 +10003,16 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 396,
+    "vocabId": 397,
     "hanzi": "先",
     "pinyin": "xiān",
     "pinyinRaw": "xian",
     "meaningHanViet": "Tiên",
-    "meaningVi": "Trước; tiên quyết",
+    "meaningVi": "Trước, tiên quyết",
+    "radicalIds": [
+      10,
+      32
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "你先请坐，我马上倒茶。",
@@ -7911,12 +10021,17 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 397,
+    "vocabId": 398,
     "hanzi": "先生",
     "pinyin": "xiānsheng",
     "pinyinRaw": "xiansheng",
     "meaningHanViet": "Tiên Sinh",
-    "meaningVi": "Giáo viên; quý ông; ngài; ông",
+    "meaningVi": "Giáo viên, quý ông, ngài, ông",
+    "radicalIds": [
+      10,
+      32,
+      100
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "王先生是一位优秀的工程师。",
@@ -7925,12 +10040,18 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 398,
+    "vocabId": 399,
     "hanzi": "现在",
     "pinyin": "xiànzài",
     "pinyinRaw": "xianzai",
     "meaningHanViet": "Hiện Tại",
-    "meaningVi": "Bây giờ; hiện tại",
+    "meaningVi": "Bây giờ, hiện tại",
+    "radicalIds": [
+      96,
+      147,
+      32,
+      64
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "现在是北京时间上午九点。",
@@ -7939,12 +10060,17 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 399,
+    "vocabId": 400,
     "hanzi": "想",
     "pinyin": "xiǎng",
     "pinyinRaw": "xiang",
     "meaningHanViet": "Tưởng",
-    "meaningVi": "Nghĩ; muốn; nhớ",
+    "meaningVi": "Nghĩ, muốn, nhớ",
+    "radicalIds": [
+      61,
+      109,
+      75
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我想学习汉语口语。",
@@ -7953,12 +10079,15 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 400,
+    "vocabId": 401,
     "hanzi": "小",
     "pinyin": "xiǎo",
     "pinyinRaw": "xiao",
     "meaningHanViet": "Tiểu",
-    "meaningVi": "Nhỏ; bé",
+    "meaningVi": "Nhỏ, bé",
+    "radicalIds": [
+      42
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "这是一只可爱的小花猫。",
@@ -7967,12 +10096,18 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 401,
+    "vocabId": 402,
     "hanzi": "小孩儿",
     "pinyin": "xiǎoháir",
     "pinyinRaw": "xiaohair",
     "meaningHanViet": "Tiểu Hài Nhân",
     "meaningVi": "Biến thể er hoá của 小孩",
+    "radicalIds": [
+      42,
+      39,
+      8,
+      10
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "公园里有很多快乐的小孩儿。",
@@ -7981,12 +10116,18 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 402,
+    "vocabId": 403,
     "hanzi": "小姐",
     "pinyin": "xiǎojiě",
     "pinyinRaw": "xiaojie",
     "meaningHanViet": "Tiểu Tỷ",
-    "meaningVi": "Cô gái; cô",
+    "meaningVi": "Cô gái, cô",
+    "radicalIds": [
+      42,
+      38,
+      1,
+      74
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "服务小姐态度非常热情。",
@@ -7995,12 +10136,17 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 403,
+    "vocabId": 404,
     "hanzi": "小朋友",
     "pinyin": "xiǎopéngyǒu",
     "pinyinRaw": "xiaopengyou",
     "meaningHanViet": "Tiểu Bằng Hữu",
     "meaningVi": "Trẻ em",
+    "radicalIds": [
+      42,
+      74,
+      29
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "小朋友们在操场上做游戏。",
@@ -8009,12 +10155,17 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 404,
+    "vocabId": 405,
     "hanzi": "小时",
     "pinyin": "xiǎoshí",
     "pinyinRaw": "xiaoshi",
     "meaningHanViet": "Tiểu Thời",
-    "meaningVi": "Giờ; lượng từ: 個|个",
+    "meaningVi": "Giờ, lượng từ: 個|个",
+    "radicalIds": [
+      42,
+      72,
+      41
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "从河内飞北京大约四个小时。",
@@ -8023,12 +10174,17 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 405,
+    "vocabId": 406,
     "hanzi": "小学",
     "pinyin": "xiǎoxué",
     "pinyinRaw": "xiaoxue",
     "meaningHanViet": "Tiểu Học",
-    "meaningVi": "Trường tiểu học; trường cấp một",
+    "meaningVi": "Trường tiểu học, trường cấp một",
+    "radicalIds": [
+      42,
+      39,
+      14
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我妹妹在离家不远的小学上学。",
@@ -8037,12 +10193,18 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 406,
+    "vocabId": 407,
     "hanzi": "小学生",
     "pinyin": "xiǎoxuéshēng",
     "pinyinRaw": "xiaoxuesheng",
     "meaningHanViet": "Tiểu Học Sinh",
-    "meaningVi": "Học sinh tiểu học; trẻ em đi học",
+    "meaningVi": "Học sinh tiểu học, trẻ em đi học",
+    "radicalIds": [
+      42,
+      39,
+      14,
+      100
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "小学生每天早起去学校。",
@@ -8051,12 +10213,17 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 407,
+    "vocabId": 408,
     "hanzi": "笑",
     "pinyin": "xiào",
     "pinyinRaw": "xiao",
     "meaningHanViet": "Tiếu",
     "meaningVi": "Biến thể cũ của 笑",
+    "radicalIds": [
+      118,
+      37,
+      4
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "她笑起来非常好看。",
@@ -8065,12 +10232,16 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 408,
+    "vocabId": 409,
     "hanzi": "写",
     "pinyin": "xiě",
     "pinyinRaw": "xie",
     "meaningHanViet": "Tả",
     "meaningVi": "Viết",
+    "radicalIds": [
+      14,
+      1
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "老师在黑板上写生词。",
@@ -8079,12 +10250,17 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 409,
+    "vocabId": 410,
     "hanzi": "谢谢",
     "pinyin": "xièxie",
     "pinyinRaw": "xiexie",
     "meaningHanViet": "Tạ Tạ",
-    "meaningVi": "Cảm ơn; cảm ơn bạn",
+    "meaningVi": "Cảm ơn, cảm ơn bạn",
+    "radicalIds": [
+      149,
+      41,
+      158
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "谢谢大家对我的关心。",
@@ -8093,12 +10269,18 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 410,
+    "vocabId": 411,
     "hanzi": "新",
     "pinyin": "xīn",
     "pinyinRaw": "xin",
     "meaningHanViet": "Tân",
     "meaningVi": "Mới",
+    "radicalIds": [
+      69,
+      117,
+      1,
+      42
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "新年新气象。",
@@ -8107,12 +10289,19 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 411,
+    "vocabId": 412,
     "hanzi": "新年",
     "pinyin": "xīnnián",
     "pinyinRaw": "xinnian",
     "meaningHanViet": "Tân Niên",
-    "meaningVi": "Năm mới; Lượng từ: 個|个",
+    "meaningVi": "Năm mới, Lượng từ: 個|个",
+    "radicalIds": [
+      69,
+      117,
+      1,
+      42,
+      51
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "祝大家新年快乐，万事如意！",
@@ -8121,12 +10310,20 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 412,
+    "vocabId": 413,
     "hanzi": "星期",
     "pinyin": "xīngqī",
     "pinyinRaw": "xingqi",
     "meaningHanViet": "Tinh Kỳ",
-    "meaningVi": "Tuần; ngày trong tuần",
+    "meaningVi": "Tuần, ngày trong tuần",
+    "radicalIds": [
+      72,
+      100,
+      74,
+      12,
+      99,
+      1
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "这个星期六我们去看电影。",
@@ -8135,12 +10332,20 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 413,
+    "vocabId": 414,
     "hanzi": "星期日",
     "pinyin": "xīngqīrì",
     "pinyinRaw": "xingqiri",
     "meaningHanViet": "Tinh Kỳ Nhật",
     "meaningVi": "Chủ nhật",
+    "radicalIds": [
+      72,
+      100,
+      74,
+      12,
+      99,
+      1
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "星期日我常常在家休息。",
@@ -8149,12 +10354,21 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 414,
+    "vocabId": 415,
     "hanzi": "星期天",
     "pinyin": "xīngqītiān",
     "pinyinRaw": "xingqitian",
     "meaningHanViet": "Tinh Kỳ Thiên",
     "meaningVi": "Chủ Nhật",
+    "radicalIds": [
+      72,
+      100,
+      74,
+      12,
+      99,
+      1,
+      37
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "星期天公园里游人很多。",
@@ -8163,12 +10377,15 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 415,
+    "vocabId": 416,
     "hanzi": "行",
     "pinyin": "xíng",
     "pinyinRaw": "xing",
     "meaningHanViet": "Hàng",
-    "meaningVi": "Được; đi; thực hiện",
+    "meaningVi": "Được, đi, thực hiện",
+    "radicalIds": [
+      144
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "如果你时间方便，这样就行。",
@@ -8177,12 +10394,18 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 416,
+    "vocabId": 417,
     "hanzi": "休息",
     "pinyin": "xiūxi",
     "pinyinRaw": "xiuxi",
     "meaningHanViet": "Hưu Tức",
-    "meaningVi": "Nghỉ; nghỉ ngơi",
+    "meaningVi": "Nghỉ, nghỉ ngơi",
+    "radicalIds": [
+      9,
+      75,
+      61,
+      132
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "工作累了就休息一会儿吧。",
@@ -8191,12 +10414,17 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 417,
+    "vocabId": 418,
     "hanzi": "学",
     "pinyin": "xué",
     "pinyinRaw": "xue",
     "meaningHanViet": "Học",
-    "meaningVi": "Học; bắt chước",
+    "meaningVi": "Học, bắt chước",
+    "radicalIds": [
+      39,
+      42,
+      14
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "学好汉语需要每天坚持。",
@@ -8205,12 +10433,18 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 418,
+    "vocabId": 419,
     "hanzi": "学生",
     "pinyin": "xuéshēng",
     "pinyinRaw": "xuesheng",
     "meaningHanViet": "Học Sinh",
-    "meaningVi": "Học sinh; trẻ đi học",
+    "meaningVi": "Học sinh, trẻ đi học",
+    "radicalIds": [
+      39,
+      42,
+      14,
+      100
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "教室里坐满了用功的学生。",
@@ -8219,12 +10453,18 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 419,
+    "vocabId": 420,
     "hanzi": "学习",
     "pinyin": "xuéxí",
     "pinyinRaw": "xuexi",
     "meaningHanViet": "Học Tập",
-    "meaningVi": "Học; tìm hiểu",
+    "meaningVi": "Học, tìm hiểu",
+    "radicalIds": [
+      39,
+      42,
+      14,
+      15
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我们要努力学习科学文化知识。",
@@ -8233,12 +10473,19 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 420,
+    "vocabId": 421,
     "hanzi": "学校",
     "pinyin": "xuéxiào",
     "pinyinRaw": "xuexiao",
     "meaningHanViet": "Học Hiệu",
-    "meaningVi": "Trường học; Lượng từ: 所",
+    "meaningVi": "Trường học, Lượng từ: 所",
+    "radicalIds": [
+      39,
+      42,
+      14,
+      75,
+      8
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我们的学校非常美丽。",
@@ -8247,12 +10494,19 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 421,
+    "vocabId": 422,
     "hanzi": "学院",
     "pinyin": "xuéyuàn",
     "pinyinRaw": "xueyuan",
     "meaningHanViet": "Học Viện",
-    "meaningVi": "Trường cao đẳng; học viện",
+    "meaningVi": "Trường cao đẳng, học viện",
+    "radicalIds": [
+      39,
+      42,
+      14,
+      170,
+      40
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "他在北京语言文化学院学习。",
@@ -8261,12 +10515,16 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 422,
+    "vocabId": 423,
     "hanzi": "要",
     "pinyin": "yào",
     "pinyinRaw": "yao",
     "meaningHanViet": "Yêu",
-    "meaningVi": "Muốn; cần; phải",
+    "meaningVi": "Muốn, cần, phải",
+    "radicalIds": [
+      146,
+      38
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "明天我要去参加汉语考试。",
@@ -8275,12 +10533,16 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 423,
+    "vocabId": 424,
     "hanzi": "爷爷",
     "pinyin": "yéye",
     "pinyinRaw": "yeye",
     "meaningHanViet": "Gia Gia",
-    "meaningVi": "Ông nội; ông bên nội",
+    "meaningVi": "Ông nội, ông bên nội",
+    "radicalIds": [
+      88,
+      26
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我爷爷每天早上打太极拳。",
@@ -8289,12 +10551,15 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 424,
+    "vocabId": 425,
     "hanzi": "也",
     "pinyin": "yě",
     "pinyinRaw": "ye",
     "meaningHanViet": "Dã",
     "meaningVi": "Họ",
+    "radicalIds": [
+      5
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "他是大学生，我也是大学生。",
@@ -8303,12 +10568,16 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 425,
+    "vocabId": 426,
     "hanzi": "页",
     "pinyin": "yè",
     "pinyinRaw": "ye",
     "meaningHanViet": "Hiệt",
     "meaningVi": "Đầu",
+    "radicalIds": [
+      181,
+      154
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "请大家翻到课本第四十五页。",
@@ -8317,12 +10586,15 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 426,
+    "vocabId": 427,
     "hanzi": "一",
     "pinyin": "yī",
     "pinyinRaw": "yi",
     "meaningHanViet": "Nhất",
-    "meaningVi": "Một; đơn",
+    "meaningVi": "Một, đơn",
+    "radicalIds": [
+      1
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "一人成木，二人成林。",
@@ -8331,12 +10603,18 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 427,
+    "vocabId": 428,
     "hanzi": "衣服",
     "pinyin": "yīfu",
     "pinyinRaw": "yifu",
     "meaningHanViet": "Y Phục",
     "meaningVi": "Quần áo",
+    "radicalIds": [
+      145,
+      74,
+      26,
+      29
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "这件衣服款式很大方。",
@@ -8345,12 +10623,17 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 428,
+    "vocabId": 429,
     "hanzi": "医生",
     "pinyin": "yīshēng",
     "pinyinRaw": "yisheng",
     "meaningHanViet": "Y Sinh",
     "meaningVi": "Bác sĩ",
+    "radicalIds": [
+      23,
+      111,
+      100
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "医生认真地给病人检查身体。",
@@ -8359,12 +10642,18 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 429,
+    "vocabId": 430,
     "hanzi": "医院",
     "pinyin": "yīyuàn",
     "pinyinRaw": "yiyuan",
     "meaningHanViet": "Y Viện",
     "meaningVi": "Bệnh viện",
+    "radicalIds": [
+      23,
+      111,
+      170,
+      40
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "市中心有一家现代化的大医院。",
@@ -8373,12 +10662,18 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 430,
+    "vocabId": 431,
     "hanzi": "一半",
     "pinyin": "yībàn",
     "pinyinRaw": "yiban",
     "meaningHanViet": "Nhất Bán",
     "meaningVi": "Một nửa",
+    "radicalIds": [
+      1,
+      24,
+      12,
+      93
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "这个西瓜我们一人吃一半。",
@@ -8387,12 +10682,19 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 431,
+    "vocabId": 432,
     "hanzi": "一会儿",
     "pinyin": "yīhuìr",
     "pinyinRaw": "yihuir",
     "meaningHanViet": "Nhất Hội Nhân",
-    "meaningVi": "Một lúc; một thời gian",
+    "meaningVi": "Một lúc, một thời gian",
+    "radicalIds": [
+      1,
+      9,
+      7,
+      28,
+      10
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "请大家稍等一会儿。",
@@ -8401,12 +10703,18 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 432,
+    "vocabId": 433,
     "hanzi": "一块儿",
     "pinyin": "yīkuàir",
     "pinyinRaw": "yikuair",
     "meaningHanViet": "Nhất Khối Nhân",
     "meaningVi": "Biến thể er hoá của 一塊|一块",
+    "radicalIds": [
+      1,
+      32,
+      37,
+      10
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "周末我们一块儿去爬山吧。",
@@ -8415,12 +10723,17 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 433,
+    "vocabId": 434,
     "hanzi": "一下儿",
     "pinyin": "yīxiàr",
     "pinyinRaw": "yixiar",
     "meaningHanViet": "Nhất Hạ Nhân",
     "meaningVi": "Biến thể er hoá của 一下",
+    "radicalIds": [
+      1,
+      25,
+      10
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "请大家稍等我一下儿。",
@@ -8429,12 +10742,17 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 434,
+    "vocabId": 435,
     "hanzi": "一样",
     "pinyin": "yīyàng",
     "pinyinRaw": "yiyang",
     "meaningHanViet": "Nhất Dạng",
-    "meaningVi": "Giống; như",
+    "meaningVi": "Giống, như",
+    "radicalIds": [
+      1,
+      75,
+      123
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "他的性格跟他爸爸一样。",
@@ -8443,12 +10761,17 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 435,
+    "vocabId": 436,
     "hanzi": "一边",
     "pinyin": "yībiān",
     "pinyinRaw": "yibian",
     "meaningHanViet": "Nhất Biên",
-    "meaningVi": "Một bên; mỗi bên",
+    "meaningVi": "Một bên, mỗi bên",
+    "radicalIds": [
+      1,
+      162,
+      19
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "他一边听音乐，一边写作业。",
@@ -8457,12 +10780,19 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 436,
+    "vocabId": 437,
     "hanzi": "一点儿",
     "pinyin": "yīdiǎnr",
     "pinyinRaw": "yidianr",
     "meaningHanViet": "Nhất Điểm Nhân",
     "meaningVi": "Biến thể er hoá của 一點|一点",
+    "radicalIds": [
+      1,
+      86,
+      25,
+      30,
+      10
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "今天天气比昨天冷一点儿。",
@@ -8471,12 +10801,17 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 437,
+    "vocabId": 438,
     "hanzi": "一起",
     "pinyin": "yīqǐ",
     "pinyinRaw": "yiqi",
     "meaningHanViet": "Nhất Khởi",
-    "meaningVi": "Ở cùng một nơi; cùng nhau",
+    "meaningVi": "Ở cùng một nơi, cùng nhau",
+    "radicalIds": [
+      1,
+      156,
+      49
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我们一起努力提高汉语水平。",
@@ -8485,12 +10820,18 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 438,
+    "vocabId": 439,
     "hanzi": "一些",
     "pinyin": "yīxiē",
     "pinyinRaw": "yixie",
     "meaningHanViet": "Nhất Ta",
-    "meaningVi": "Một số; một vài",
+    "meaningVi": "Một số, một vài",
+    "radicalIds": [
+      1,
+      7,
+      77,
+      21
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "桌子上放着一些新鲜的水果。",
@@ -8499,12 +10840,15 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 439,
+    "vocabId": 440,
     "hanzi": "用",
     "pinyin": "yòng",
     "pinyinRaw": "yong",
     "meaningHanViet": "Dụng",
-    "meaningVi": "Dùng; sử dụng",
+    "meaningVi": "Dùng, sử dụng",
+    "radicalIds": [
+      101
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "请大家用汉语回答老师的问题。",
@@ -8513,12 +10857,15 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 440,
+    "vocabId": 441,
     "hanzi": "有",
     "pinyin": "yǒu",
     "pinyinRaw": "you",
     "meaningHanViet": "Hữu",
     "meaningVi": "Có",
+    "radicalIds": [
+      74
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "图书馆里有许多中文书籍。",
@@ -8527,12 +10874,18 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 441,
+    "vocabId": 442,
     "hanzi": "有的",
     "pinyin": "yǒude",
     "pinyinRaw": "youde",
     "meaningHanViet": "Hữu Đích",
     "meaningVi": "Một số",
+    "radicalIds": [
+      74,
+      106,
+      20,
+      3
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "有的同学在看书，有的在听音乐。",
@@ -8541,12 +10894,17 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 442,
+    "vocabId": 443,
     "hanzi": "有名",
     "pinyin": "yǒumíng",
     "pinyinRaw": "youming",
     "meaningHanViet": "Hữu Danh",
-    "meaningVi": "Nổi tiếng; được biết đến",
+    "meaningVi": "Nổi tiếng, được biết đến",
+    "radicalIds": [
+      74,
+      30,
+      36
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "北京烤鸭是闻名世界的中国名菜。",
@@ -8555,12 +10913,19 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 443,
+    "vocabId": 444,
     "hanzi": "有时候",
     "pinyin": "yǒushíhou",
     "pinyinRaw": "youshihou",
     "meaningHanViet": "Hữu Thời Hậu",
     "meaningVi": "Đôi khi",
+    "radicalIds": [
+      74,
+      72,
+      41,
+      9,
+      111
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "周末有时候我喜欢一个人去散步。",
@@ -8569,12 +10934,18 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 444,
+    "vocabId": 445,
     "hanzi": "有些",
     "pinyin": "yǒu(yī)xiē",
     "pinyinRaw": "you(yi)xie",
     "meaningHanViet": "Hữu Ta",
-    "meaningVi": "Một số; hơi",
+    "meaningVi": "Một số, hơi",
+    "radicalIds": [
+      74,
+      7,
+      77,
+      21
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "这些问题有些难，需要仔细分析。",
@@ -8583,12 +10954,16 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 445,
+    "vocabId": 446,
     "hanzi": "有用",
     "pinyin": "yǒuyòng",
     "pinyinRaw": "youyong",
     "meaningHanViet": "Hữu Dụng",
     "meaningVi": "Hữu ích",
+    "radicalIds": [
+      74,
+      101
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "掌握这门技术非常有用。",
@@ -8597,12 +10972,15 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 446,
+    "vocabId": 447,
     "hanzi": "右",
     "pinyin": "yòu",
     "pinyinRaw": "you",
     "meaningHanViet": "Hữu",
-    "meaningVi": "Phải; bên phải",
+    "meaningVi": "Phải, bên phải",
+    "radicalIds": [
+      30
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "请向右看齐。",
@@ -8611,12 +10989,17 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 447,
+    "vocabId": 448,
     "hanzi": "右边",
     "pinyin": "yòubian",
     "pinyinRaw": "youbian",
     "meaningHanViet": "Hữu Biên",
-    "meaningVi": "Bên phải; phải, về bên phải",
+    "meaningVi": "Bên phải, phải, về bên phải",
+    "radicalIds": [
+      30,
+      162,
+      19
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "学校的右边是一家大超市。",
@@ -8625,12 +11008,15 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 448,
+    "vocabId": 449,
     "hanzi": "雨",
     "pinyin": "yǔ",
     "pinyinRaw": "yu",
     "meaningHanViet": "Vũ",
-    "meaningVi": "Mưa; Lượng từ: 陣|阵, 場|场",
+    "meaningVi": "Mưa, Lượng từ: 陣|阵, 場|场",
+    "radicalIds": [
+      173
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "外面的雨渐渐停了。",
@@ -8639,12 +11025,16 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 449,
+    "vocabId": 450,
     "hanzi": "元",
     "pinyin": "yuán",
     "pinyinRaw": "yuan",
     "meaningHanViet": "Nguyên",
-    "meaningVi": "Họ; triều Nguyên",
+    "meaningVi": "Họ, triều Nguyên",
+    "radicalIds": [
+      10,
+      7
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "这本词典售价五十元。",
@@ -8653,12 +11043,17 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 450,
+    "vocabId": 451,
     "hanzi": "远",
     "pinyin": "yuǎn",
     "pinyinRaw": "yuan",
     "meaningHanViet": "Viễn",
-    "meaningVi": "Xa; xa xôi",
+    "meaningVi": "Xa, xa xôi",
+    "radicalIds": [
+      162,
+      10,
+      7
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "从我家到学校并不远。",
@@ -8667,12 +11062,15 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 451,
+    "vocabId": 452,
     "hanzi": "月",
     "pinyin": "yuè",
     "pinyinRaw": "yue",
     "meaningHanViet": "Nguyệt",
-    "meaningVi": "Mặt trăng; tháng",
+    "meaningVi": "Mặt trăng, tháng",
+    "radicalIds": [
+      74
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "九月是学生们开学的月份。",
@@ -8681,12 +11079,17 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 452,
+    "vocabId": 453,
     "hanzi": "再",
     "pinyin": "zài",
     "pinyinRaw": "zai",
     "meaningHanViet": "Tái",
-    "meaningVi": "Lại; một lần nữa; tái-; lần thứ hai; cái khác",
+    "meaningVi": "Lại, một lần nữa, tái-, lần thứ hai, cái khác",
+    "radicalIds": [
+      13,
+      1,
+      32
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "欢迎大家下次再来。",
@@ -8695,12 +11098,19 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 453,
+    "vocabId": 454,
     "hanzi": "再见",
     "pinyin": "zàijiàn",
     "pinyinRaw": "zaijian",
     "meaningHanViet": "Tái Kiến",
-    "meaningVi": "Tạm biệt; gặp lại sau",
+    "meaningVi": "Tạm biệt, gặp lại sau",
+    "radicalIds": [
+      13,
+      1,
+      32,
+      147,
+      10
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "老师再见，明天见！",
@@ -8709,12 +11119,16 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 454,
+    "vocabId": 455,
     "hanzi": "在",
     "pinyin": "zài",
     "pinyinRaw": "zai",
     "meaningHanViet": "Tại",
-    "meaningVi": "Ở; tại; đang",
+    "meaningVi": "Ở, tại, đang",
+    "radicalIds": [
+      32,
+      64
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我现在在图书馆查资料。",
@@ -8723,12 +11137,18 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 455,
+    "vocabId": 456,
     "hanzi": "在家",
     "pinyin": "zàijiā",
     "pinyinRaw": "zaijia",
     "meaningHanViet": "Tại Gia",
-    "meaningVi": "Ở nhà; có mặt",
+    "meaningVi": "Ở nhà, có mặt",
+    "radicalIds": [
+      32,
+      64,
+      40,
+      152
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "星期天我整天都在家看书。",
@@ -8737,12 +11157,16 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 456,
+    "vocabId": 457,
     "hanzi": "早",
     "pinyin": "zǎo",
     "pinyinRaw": "zao",
     "meaningHanViet": "Tảo",
-    "meaningVi": "Sớm; buổi sáng",
+    "meaningVi": "Sớm, buổi sáng",
+    "radicalIds": [
+      72,
+      24
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "早起的鸟儿有虫吃。",
@@ -8751,12 +11175,19 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 457,
+    "vocabId": 458,
     "hanzi": "早饭",
     "pinyin": "zǎofàn",
     "pinyinRaw": "zaofan",
     "meaningHanViet": "Tảo Phạn",
     "meaningVi": "Bữa sáng",
+    "radicalIds": [
+      72,
+      24,
+      184,
+      29,
+      27
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "妈妈已经为我们做好了早饭。",
@@ -8765,12 +11196,18 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 458,
+    "vocabId": 459,
     "hanzi": "早上",
     "pinyin": "zǎoshang",
     "pinyinRaw": "zaoshang",
     "meaningHanViet": "Tảo Thướng",
     "meaningVi": "Buổi sáng sớm",
+    "radicalIds": [
+      72,
+      24,
+      1,
+      25
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "早上空气格外清新。",
@@ -8779,12 +11216,18 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 459,
+    "vocabId": 460,
     "hanzi": "怎么",
     "pinyin": "zěnme",
     "pinyinRaw": "zenme",
     "meaningHanViet": "Chẩm Yêu",
-    "meaningVi": "Như thế nào?; cái gì?",
+    "meaningVi": "Như thế nào?, cái gì?",
+    "radicalIds": [
+      61,
+      4,
+      1,
+      28
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "这个生词怎么读？",
@@ -8793,12 +11236,17 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 460,
+    "vocabId": 461,
     "hanzi": "站",
     "pinyin": "zhàn",
     "pinyinRaw": "zhan",
     "meaningHanViet": "Trạm",
-    "meaningVi": "Trạm; đứng",
+    "meaningVi": "Trạm, đứng",
+    "radicalIds": [
+      117,
+      25,
+      30
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "下一站就是天安门广场。",
@@ -8807,12 +11255,16 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 461,
+    "vocabId": 462,
     "hanzi": "找",
     "pinyin": "zhǎo",
     "pinyinRaw": "zhao",
     "meaningHanViet": "Trảo",
-    "meaningVi": "Tìm; kiếm; thối lại tiền",
+    "meaningVi": "Tìm, kiếm, thối lại tiền",
+    "radicalIds": [
+      64,
+      62
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "你在找什么重要的东西？",
@@ -8821,12 +11273,18 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 462,
+    "vocabId": 463,
     "hanzi": "找到",
     "pinyin": "zhǎodào",
     "pinyinRaw": "zhaodao",
     "meaningHanViet": "Trảo Đáo",
     "meaningVi": "Tìm thấy",
+    "radicalIds": [
+      64,
+      62,
+      18,
+      133
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我终于找到了丢失的钱包。",
@@ -8835,12 +11293,16 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 463,
+    "vocabId": 464,
     "hanzi": "这",
     "pinyin": "zhè",
     "pinyinRaw": "zhe",
     "meaningHanViet": "Giá",
-    "meaningVi": "Này; những...này; này",
+    "meaningVi": "Này, những...này, này",
+    "radicalIds": [
+      162,
+      67
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "这是我最喜欢的一本书。",
@@ -8849,12 +11311,17 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 464,
+    "vocabId": 465,
     "hanzi": "这边",
     "pinyin": "zhèbiān",
     "pinyinRaw": "zhebian",
     "meaningHanViet": "Giá Biên",
-    "meaningVi": "Bên này; ở đây",
+    "meaningVi": "Bên này, ở đây",
+    "radicalIds": [
+      162,
+      67,
+      19
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "请大家往这边走。",
@@ -8863,12 +11330,17 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 465,
+    "vocabId": 466,
     "hanzi": "这里",
     "pinyin": "zhèlǐ",
     "pinyinRaw": "zheli",
     "meaningHanViet": "Giá Lý",
     "meaningVi": "Biến thể của 這裡|这里",
+    "radicalIds": [
+      162,
+      67,
+      166
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "这里的风景非常迷人。",
@@ -8877,12 +11349,17 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 466,
+    "vocabId": 467,
     "hanzi": "这儿",
     "pinyin": "zhèr",
     "pinyinRaw": "zher",
     "meaningHanViet": "Giá Nhân",
     "meaningVi": "Ở đây",
+    "radicalIds": [
+      162,
+      67,
+      10
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "这儿有很多来自各地的朋友。",
@@ -8891,12 +11368,19 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 467,
+    "vocabId": 468,
     "hanzi": "这些",
     "pinyin": "zhèxiē",
     "pinyinRaw": "zhexie",
     "meaningHanViet": "Giá Ta",
     "meaningVi": "Những... này",
+    "radicalIds": [
+      162,
+      67,
+      7,
+      77,
+      21
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "这些生词大家都要熟记。",
@@ -8905,12 +11389,16 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 468,
+    "vocabId": 469,
     "hanzi": "着",
     "pinyin": "zhe",
     "pinyinRaw": "zhe",
     "meaningHanViet": "Trước",
     "meaningVi": "Đang (trợ từ biểu thị trạng thái tiếp diễn)",
+    "radicalIds": [
+      109,
+      123
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "门开着，请直接进来。",
@@ -8919,12 +11407,18 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 469,
+    "vocabId": 470,
     "hanzi": "真",
     "pinyin": "zhēn",
     "pinyinRaw": "zhen",
     "meaningHanViet": "Chân",
-    "meaningVi": "Thật; sự thật",
+    "meaningVi": "Thật, sự thật",
+    "radicalIds": [
+      109,
+      24,
+      1,
+      16
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "今天大家聚在一起真开心。",
@@ -8933,12 +11427,21 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 470,
+    "vocabId": 471,
     "hanzi": "真的",
     "pinyin": "zhēn de",
     "pinyinRaw": "zhen de",
     "meaningHanViet": "Chân Đích",
-    "meaningVi": "Thực sự; thật sự; quả thật; thật; đúng; chính xác",
+    "meaningVi": "Thực sự, thật sự, quả thật, thật, đúng, chính xác",
+    "radicalIds": [
+      109,
+      24,
+      1,
+      16,
+      106,
+      20,
+      3
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "这件传统中国旗袍真的很漂亮。",
@@ -8947,12 +11450,16 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 471,
+    "vocabId": 472,
     "hanzi": "正",
     "pinyin": "zhèng",
     "pinyinRaw": "zheng",
     "meaningHanViet": "Chinh",
-    "meaningVi": "Đúng; chính; đang",
+    "meaningVi": "Đúng, chính, đang",
+    "radicalIds": [
+      77,
+      1
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "太阳正当空照着大地。",
@@ -8961,12 +11468,18 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 472,
+    "vocabId": 473,
     "hanzi": "正在",
     "pinyin": "zhèngzài",
     "pinyinRaw": "zhengzai",
     "meaningHanViet": "Chinh Tại",
-    "meaningVi": "Đang ở; ngay tại",
+    "meaningVi": "Đang ở, ngay tại",
+    "radicalIds": [
+      77,
+      1,
+      32,
+      64
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "爸爸正在书房里认真阅读报纸。",
@@ -8975,12 +11488,18 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 473,
+    "vocabId": 474,
     "hanzi": "知道",
     "pinyin": "zhīdào",
     "pinyinRaw": "zhidao",
     "meaningHanViet": "Tri Đạo",
-    "meaningVi": "Biết; nhận thức được; cũng đọc là",
+    "meaningVi": "Biết, nhận thức được, cũng đọc là",
+    "radicalIds": [
+      111,
+      30,
+      162,
+      185
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "你知道去火车站的路怎么走吗？",
@@ -8989,12 +11508,18 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 474,
+    "vocabId": 475,
     "hanzi": "知识",
     "pinyin": "zhīshi",
     "pinyinRaw": "zhishi",
     "meaningHanViet": "Tri Thức",
-    "meaningVi": "Kiến thức; trí thức",
+    "meaningVi": "Kiến thức, trí thức",
+    "radicalIds": [
+      111,
+      30,
+      149,
+      12
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "书籍是人类进步的阶梯和知识的源泉。",
@@ -9003,12 +11528,16 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 475,
+    "vocabId": 476,
     "hanzi": "中",
     "pinyin": "zhōng",
     "pinyinRaw": "zhong",
     "meaningHanViet": "Trung",
-    "meaningVi": "Trong; giữa; trúng",
+    "meaningVi": "Trong, giữa, trúng",
+    "radicalIds": [
+      2,
+      30
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "汉语在国际交流中越来越重要。",
@@ -9017,12 +11546,18 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 476,
+    "vocabId": 477,
     "hanzi": "中国",
     "pinyin": "Zhōngguó",
     "pinyinRaw": "zhongguo",
     "meaningHanViet": "Trung Quốc",
     "meaningVi": "Trung Quốc",
+    "radicalIds": [
+      2,
+      30,
+      31,
+      96
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我想去中国北京留学。",
@@ -9031,12 +11566,18 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 477,
+    "vocabId": 478,
     "hanzi": "中间",
     "pinyin": "zhōngjiān",
     "pinyinRaw": "zhongjian",
     "meaningHanViet": "Trung Gian",
-    "meaningVi": "Ở giữa; bên trong; ở giữa; trong; giữa; trong số",
+    "meaningVi": "Ở giữa, bên trong, ở giữa, trong, giữa, trong số",
+    "radicalIds": [
+      2,
+      30,
+      169,
+      72
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "他在人群中间向我们招手。",
@@ -9045,12 +11586,17 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 478,
+    "vocabId": 479,
     "hanzi": "中文",
     "pinyin": "Zhōngwén",
     "pinyinRaw": "zhongwen",
     "meaningHanViet": "Trung Văn",
     "meaningVi": "Ngôn ngữ Trung Quốc",
+    "radicalIds": [
+      2,
+      30,
+      67
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "学好中文可以了解博大精深的中国文化。",
@@ -9059,12 +11605,19 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 479,
+    "vocabId": 480,
     "hanzi": "中午",
     "pinyin": "zhōngwǔ",
     "pinyinRaw": "zhongwu",
     "meaningHanViet": "Trung Ngọ",
-    "meaningVi": "Buổi trưa; trưa",
+    "meaningVi": "Buổi trưa, trưa",
+    "radicalIds": [
+      2,
+      30,
+      24,
+      4,
+      51
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "中午我们在学校食堂吃午饭。",
@@ -9073,12 +11626,19 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 480,
+    "vocabId": 481,
     "hanzi": "中学",
     "pinyin": "zhōngxué",
     "pinyinRaw": "zhongxue",
     "meaningHanViet": "Trung Học",
     "meaningVi": "Trường trung học",
+    "radicalIds": [
+      2,
+      30,
+      39,
+      42,
+      14
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我弟弟正在一所重点中学读书。",
@@ -9087,12 +11647,20 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 481,
+    "vocabId": 482,
     "hanzi": "中学生",
     "pinyin": "zhōngxuéshēng",
     "pinyinRaw": "zhongxuesheng",
     "meaningHanViet": "Trung Học Sinh",
-    "meaningVi": "Học sinh trung học; học sinh cấp ba",
+    "meaningVi": "Học sinh trung học, học sinh cấp ba",
+    "radicalIds": [
+      2,
+      30,
+      39,
+      42,
+      14,
+      100
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "中学生要认真学好各门课程。",
@@ -9101,12 +11669,17 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 482,
+    "vocabId": 483,
     "hanzi": "重",
     "pinyin": "zhòng",
     "pinyinRaw": "zhong",
     "meaningHanViet": "Trùng",
-    "meaningVi": "Lặp lại; sự lặp lại",
+    "meaningVi": "Lặp lại, sự lặp lại",
+    "radicalIds": [
+      166,
+      24,
+      4
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "这个箱子非常重，我搬不动。",
@@ -9115,12 +11688,19 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 483,
+    "vocabId": 484,
     "hanzi": "重要",
     "pinyin": "zhòngyào",
     "pinyinRaw": "zhongyao",
     "meaningHanViet": "Trùng Yêu",
-    "meaningVi": "Quan trọng; đáng kể; chính yếu",
+    "meaningVi": "Quan trọng, đáng kể, chính yếu",
+    "radicalIds": [
+      166,
+      24,
+      4,
+      146,
+      38
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "身体健康比什么都重要。",
@@ -9129,12 +11709,17 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 484,
+    "vocabId": 485,
     "hanzi": "住",
     "pinyin": "zhù",
     "pinyinRaw": "zhu",
     "meaningHanViet": "Trú",
-    "meaningVi": "Ở; cư trú",
+    "meaningVi": "Ở, cư trú",
+    "radicalIds": [
+      9,
+      3,
+      96
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "他住在留学生宿舍三号楼。",
@@ -9143,12 +11728,18 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 485,
+    "vocabId": 486,
     "hanzi": "准备",
     "pinyin": "zhǔnbèi",
     "pinyinRaw": "zhunbei",
     "meaningHanViet": "Chuẩn Bị",
-    "meaningVi": "Sự chuẩn bị; chuẩn bị",
+    "meaningVi": "Sự chuẩn bị, chuẩn bị",
+    "radicalIds": [
+      15,
+      172,
+      34,
+      102
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "我们正在认真准备期末考试。",
@@ -9157,12 +11748,18 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 486,
+    "vocabId": 487,
     "hanzi": "桌子",
     "pinyin": "zhuōzi",
     "pinyinRaw": "zhuozi",
     "meaningHanViet": "Trác Tử",
-    "meaningVi": "Bàn; bàn làm việc",
+    "meaningVi": "Bàn, bàn làm việc",
+    "radicalIds": [
+      75,
+      24,
+      25,
+      39
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "教室里摆放着整齐的桌子和椅子。",
@@ -9171,12 +11768,16 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 487,
+    "vocabId": 488,
     "hanzi": "字",
     "pinyin": "zì",
     "pinyinRaw": "zi",
     "meaningHanViet": "Tự",
-    "meaningVi": "Chữ; ký hiệu",
+    "meaningVi": "Chữ, ký hiệu",
+    "radicalIds": [
+      39,
+      40
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "这个中国汉字写得非常漂亮。",
@@ -9185,12 +11786,15 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 488,
+    "vocabId": 489,
     "hanzi": "子",
     "pinyin": "zi (zhuōzi)",
     "pinyinRaw": "zi (zhuozi)",
     "meaningHanViet": "Tử",
-    "meaningVi": "Con trai; trẻ em",
+    "meaningVi": "Con trai, trẻ em",
+    "radicalIds": [
+      39
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "桌子上摆放着几个精致的杯子。",
@@ -9199,12 +11803,15 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 489,
+    "vocabId": 490,
     "hanzi": "走",
     "pinyin": "zǒu",
     "pinyinRaw": "zou",
     "meaningHanViet": "Tẩu",
-    "meaningVi": "Đi; rời đi",
+    "meaningVi": "Đi, rời đi",
+    "radicalIds": [
+      156
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "天色已晚，我们该走了。",
@@ -9213,12 +11820,18 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 490,
+    "vocabId": 491,
     "hanzi": "走路",
     "pinyin": "zǒulù",
     "pinyinRaw": "zoulu",
     "meaningHanViet": "Tẩu Lộ",
-    "meaningVi": "Đi bộ; đi bằng chân",
+    "meaningVi": "Đi bộ, đi bằng chân",
+    "radicalIds": [
+      156,
+      157,
+      30,
+      34
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "每天走路半小时对心脏很有益。",
@@ -9227,12 +11840,18 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 491,
+    "vocabId": 492,
     "hanzi": "最",
     "pinyin": "zuì",
     "pinyinRaw": "zui",
     "meaningHanViet": "Tối",
     "meaningVi": "Nhất",
+    "radicalIds": [
+      73,
+      72,
+      29,
+      128
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "汉语是我最喜欢的外国语言。",
@@ -9241,12 +11860,20 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 492,
+    "vocabId": 493,
     "hanzi": "最好",
     "pinyin": "zuìhǎo",
     "pinyinRaw": "zuihao",
     "meaningHanViet": "Tối Hảo",
-    "meaningVi": "Tốt nhất; nên ...; tốt hơn hết nên ...",
+    "meaningVi": "Tốt nhất, nên ..., tốt hơn hết nên ...",
+    "radicalIds": [
+      73,
+      72,
+      29,
+      128,
+      38,
+      39
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "身体不舒服时最好去医院看医生。",
@@ -9255,12 +11882,19 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 493,
+    "vocabId": 494,
     "hanzi": "最后",
     "pinyin": "zuìhòu",
     "pinyinRaw": "zuihou",
     "meaningHanViet": "Tối Hậu",
-    "meaningVi": "Cuối cùng; sau cùng",
+    "meaningVi": "Cuối cùng, sau cùng",
+    "radicalIds": [
+      73,
+      72,
+      29,
+      128,
+      30
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "经过大家努力，我们最后取得了胜利。",
@@ -9269,12 +11903,18 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 494,
+    "vocabId": 495,
     "hanzi": "昨天",
     "pinyin": "zuótiān",
     "pinyinRaw": "zuotian",
     "meaningHanViet": "Tạc Thiên",
     "meaningVi": "Hôm qua",
+    "radicalIds": [
+      72,
+      4,
+      1,
+      37
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "昨天我和好朋友一起去了博物馆。",
@@ -9283,12 +11923,15 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 495,
+    "vocabId": 496,
     "hanzi": "左",
     "pinyin": "zuǒ",
     "pinyinRaw": "zuo",
     "meaningHanViet": "Tả",
-    "meaningVi": "Trái; bên trái",
+    "meaningVi": "Trái, bên trái",
+    "radicalIds": [
+      48
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "请各位同学向左转。",
@@ -9297,12 +11940,17 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 496,
+    "vocabId": 497,
     "hanzi": "左边",
     "pinyin": "zuǒbian",
     "pinyinRaw": "zuobian",
     "meaningHanViet": "Tả Biên",
-    "meaningVi": "Bên trái; phía trái",
+    "meaningVi": "Bên trái, phía trái",
+    "radicalIds": [
+      48,
+      162,
+      19
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "学校图书馆在办公楼的左边。",
@@ -9311,12 +11959,16 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 497,
+    "vocabId": 498,
     "hanzi": "坐",
     "pinyin": "zuò",
     "pinyinRaw": "zuo",
     "meaningHanViet": "Toạ",
-    "meaningVi": "Ngồi; đi (xe, tàu)",
+    "meaningVi": "Ngồi, đi (xe, tàu)",
+    "radicalIds": [
+      32,
+      9
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "请大家按座位号坐下。",
@@ -9325,12 +11977,18 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 498,
+    "vocabId": 499,
     "hanzi": "坐下",
     "pinyin": "zuò xia",
     "pinyinRaw": "zuo xia",
     "meaningHanViet": "Toạ Hạ",
     "meaningVi": "Ngồi xuống",
+    "radicalIds": [
+      32,
+      9,
+      1,
+      25
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "老师走进教室，请大家安静坐下。",
@@ -9339,12 +11997,16 @@ export const SEED_VOCABULARY = [
     "videoWritingUrl": null
   },
   {
-    "vocabId": 499,
+    "vocabId": 500,
     "hanzi": "做",
     "pinyin": "zuò",
     "pinyinRaw": "zuo",
     "meaningHanViet": "Tố",
-    "meaningVi": "Làm; chế tạo",
+    "meaningVi": "Làm, chế tạo",
+    "radicalIds": [
+      9,
+      66
+    ],
     "hskLevel": 1,
     "hskStandard": "HSK 3.0",
     "exampleSentence": "周末你通常在家做什么？",
@@ -9374,7 +12036,7 @@ export const SEED_LESSONS = [
         "pinyin": "ài",
         "pinyinRaw": "ai",
         "meaningHanViet": "Ái",
-        "meaningVi": "Yêu; thích; tình cảm",
+        "meaningVi": "Yêu, thích, tình cảm",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "我爱我的家人。",
@@ -9389,7 +12051,7 @@ export const SEED_LESSONS = [
         "pinyin": "àihào",
         "pinyinRaw": "aihao",
         "meaningHanViet": "Ái Hảo",
-        "meaningVi": "Thích; đam mê; lấy làm thú vui; say mê; sở thích",
+        "meaningVi": "Thích, đam mê, lấy làm thú vui, say mê, sở thích",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "我的爱好是听音乐。",
@@ -9404,7 +12066,7 @@ export const SEED_LESSONS = [
         "pinyin": "bā",
         "pinyinRaw": "ba",
         "meaningHanViet": "Bát",
-        "meaningVi": "Tám; 8",
+        "meaningVi": "Tám, 8",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "一个星期有七天，不是八天。",
@@ -9419,7 +12081,7 @@ export const SEED_LESSONS = [
         "pinyin": "bàba",
         "pinyinRaw": "baba",
         "meaningHanViet": "Ba Ba",
-        "meaningVi": "Cha; ba",
+        "meaningVi": "Cha, ba",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "我爸爸是一名医生。",
@@ -9449,7 +12111,7 @@ export const SEED_LESSONS = [
         "pinyin": "bái",
         "pinyinRaw": "bai",
         "meaningHanViet": "Bạch",
-        "meaningVi": "Màu trắng; trắng",
+        "meaningVi": "Màu trắng, trắng",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "这件白色的衣服很好看。",
@@ -9464,7 +12126,7 @@ export const SEED_LESSONS = [
         "pinyin": "báitiān",
         "pinyinRaw": "baitian",
         "meaningHanViet": "Bạch Thiên",
-        "meaningVi": "Ban ngày; trong ngày",
+        "meaningVi": "Ban ngày, trong ngày",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "白天他在学校学习。",
@@ -9479,7 +12141,7 @@ export const SEED_LESSONS = [
         "pinyin": "bǎi",
         "pinyinRaw": "bai",
         "meaningHanViet": "Bách",
-        "meaningVi": "Một trăm; trăm",
+        "meaningVi": "Một trăm, trăm",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "这本书有一百页。",
@@ -9494,7 +12156,7 @@ export const SEED_LESSONS = [
         "pinyin": "bān",
         "pinyinRaw": "ban",
         "meaningHanViet": "Ban",
-        "meaningVi": "Lớp học; ca làm việc",
+        "meaningVi": "Lớp học, ca làm việc",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "我们班有二十个学生。",
@@ -9509,7 +12171,7 @@ export const SEED_LESSONS = [
         "pinyin": "bàn",
         "pinyinRaw": "ban",
         "meaningHanViet": "Bán",
-        "meaningVi": "Một nửa; bán-",
+        "meaningVi": "Một nửa, bán-",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "现在是三点半。",
@@ -9539,7 +12201,7 @@ export const SEED_LESSONS = [
         "pinyin": "bàntiān",
         "pinyinRaw": "bantian",
         "meaningHanViet": "Bán Thiên",
-        "meaningVi": "Nửa ngày; một thời gian dài",
+        "meaningVi": "Nửa ngày, một thời gian dài",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "我等了你半天。",
@@ -9554,7 +12216,7 @@ export const SEED_LESSONS = [
         "pinyin": "bāng",
         "pinyinRaw": "bang",
         "meaningHanViet": "Bang",
-        "meaningVi": "Giúp; giúp đỡ",
+        "meaningVi": "Giúp, giúp đỡ",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "请帮我一下。",
@@ -9569,7 +12231,7 @@ export const SEED_LESSONS = [
         "pinyin": "bāngmáng",
         "pinyinRaw": "bangmang",
         "meaningHanViet": "Bang Mang",
-        "meaningVi": "Giúp; giúp đỡ",
+        "meaningVi": "Giúp, giúp đỡ",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "谢谢你帮我的忙。",
@@ -9584,7 +12246,7 @@ export const SEED_LESSONS = [
         "pinyin": "bāo",
         "pinyinRaw": "bao",
         "meaningHanViet": "Bao",
-        "meaningVi": "Túi; bao; gói",
+        "meaningVi": "Túi, bao, gói",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "这个包里有很多东西。",
@@ -9629,7 +12291,7 @@ export const SEED_LESSONS = [
         "pinyin": "bēi",
         "pinyinRaw": "bei",
         "meaningHanViet": "Bôi",
-        "meaningVi": "Cốc; ly; chén",
+        "meaningVi": "Cốc, ly, chén",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "我喝了一杯水。",
@@ -9644,7 +12306,7 @@ export const SEED_LESSONS = [
         "pinyin": "bēizi",
         "pinyinRaw": "beizi",
         "meaningHanViet": "Bôi Tử",
-        "meaningVi": "Cốc; ly",
+        "meaningVi": "Cốc, ly",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "桌子上有一个杯子。",
@@ -9659,7 +12321,7 @@ export const SEED_LESSONS = [
         "pinyin": "běi",
         "pinyinRaw": "bei",
         "meaningHanViet": "Bắc",
-        "meaningVi": "Phía bắc; bị đánh bại",
+        "meaningVi": "Phía bắc, bị đánh bại",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "我家在学校的北边。",
@@ -9674,7 +12336,7 @@ export const SEED_LESSONS = [
         "pinyin": "běibian",
         "pinyinRaw": "beibian",
         "meaningHanViet": "Bắc Biên",
-        "meaningVi": "Phía bắc; mặt bắc",
+        "meaningVi": "Phía bắc, mặt bắc",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "公园在北边。",
@@ -9704,7 +12366,7 @@ export const SEED_LESSONS = [
         "pinyin": "běn",
         "pinyinRaw": "ben",
         "meaningHanViet": "Bản",
-        "meaningVi": "Quyển; cuốn (sách); gốc",
+        "meaningVi": "Quyển, cuốn (sách), gốc",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "我买了两本书。",
@@ -9719,7 +12381,7 @@ export const SEED_LESSONS = [
         "pinyin": "běnzi",
         "pinyinRaw": "benzi",
         "meaningHanViet": "Bản Tử",
-        "meaningVi": "Sách; quyển tập",
+        "meaningVi": "Sách, quyển tập",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "这是一个新本子。",
@@ -9734,7 +12396,7 @@ export const SEED_LESSONS = [
         "pinyin": "bǐ",
         "pinyinRaw": "bi",
         "meaningHanViet": "Tỷ",
-        "meaningVi": "So sánh; so với; hơn",
+        "meaningVi": "So sánh, so với, hơn",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "今天比昨天冷。",
@@ -9749,7 +12411,7 @@ export const SEED_LESSONS = [
         "pinyin": "bié",
         "pinyinRaw": "bie",
         "meaningHanViet": "Biệt",
-        "meaningVi": "Đừng; chớ; khác",
+        "meaningVi": "Đừng, chớ, khác",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "别说话，请听老师讲。",
@@ -9779,7 +12441,7 @@ export const SEED_LESSONS = [
         "pinyin": "biérén",
         "pinyinRaw": "bieren",
         "meaningHanViet": "Biệt Nhân",
-        "meaningVi": "Người khác; những người khác",
+        "meaningVi": "Người khác, những người khác",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "我们要学会尊重别人。",
@@ -9794,7 +12456,7 @@ export const SEED_LESSONS = [
         "pinyin": "bìng",
         "pinyinRaw": "bing",
         "meaningHanViet": "Bệnh",
-        "meaningVi": "Bệnh; ốm đau",
+        "meaningVi": "Bệnh, ốm đau",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "他生病了，在医院看病。",
@@ -9809,7 +12471,7 @@ export const SEED_LESSONS = [
         "pinyin": "bìngrén",
         "pinyinRaw": "bingren",
         "meaningHanViet": "Bệnh Nhân",
-        "meaningVi": "Người bệnh; bệnh nhân",
+        "meaningVi": "Người bệnh, bệnh nhân",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "医生正在照顾病人。",
@@ -9824,7 +12486,7 @@ export const SEED_LESSONS = [
         "pinyin": "bù dà",
         "pinyinRaw": "bu da",
         "meaningHanViet": "Bất Đại",
-        "meaningVi": "Không quá; không nhiều",
+        "meaningVi": "Không quá, không nhiều",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "这个房间不大。",
@@ -9854,7 +12516,7 @@ export const SEED_LESSONS = [
         "pinyin": "bùduì",
         "pinyinRaw": "budui",
         "meaningHanViet": "Bất Đối",
-        "meaningVi": "Không chính xác; sai",
+        "meaningVi": "Không chính xác, sai",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "这个答案不对。",
@@ -9869,7 +12531,7 @@ export const SEED_LESSONS = [
         "pinyin": "bù kèqì",
         "pinyinRaw": "bu keqi",
         "meaningHanViet": "Bất Khách Khí",
-        "meaningVi": "Không có chi; đừng nhắc đến",
+        "meaningVi": "Không có chi, đừng nhắc đến",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "不客气，这是我应该做的。",
@@ -9899,7 +12561,7 @@ export const SEED_LESSONS = [
         "pinyin": "bù",
         "pinyinRaw": "bu",
         "meaningHanViet": "Bất",
-        "meaningVi": "Không; không phải; không; bất-",
+        "meaningVi": "Không, không phải, không, bất-",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "我不喝茶，我喝水。",
@@ -9914,7 +12576,7 @@ export const SEED_LESSONS = [
         "pinyin": "cài",
         "pinyinRaw": "cai",
         "meaningHanViet": "Thái",
-        "meaningVi": "Rau; món ăn",
+        "meaningVi": "Rau, món ăn",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "中国菜很好吃。",
@@ -9929,7 +12591,7 @@ export const SEED_LESSONS = [
         "pinyin": "chá",
         "pinyinRaw": "cha",
         "meaningHanViet": "Trà",
-        "meaningVi": "Trà; cây trà",
+        "meaningVi": "Trà, cây trà",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "中国人喜欢喝茶。",
@@ -9944,7 +12606,7 @@ export const SEED_LESSONS = [
         "pinyin": "chà",
         "pinyinRaw": "cha",
         "meaningHanViet": "Sai",
-        "meaningVi": "Sự khác biệt; không nhất quán; hiệu số",
+        "meaningVi": "Sự khác biệt, không nhất quán, hiệu số",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "现在差五分八点。",
@@ -9959,7 +12621,7 @@ export const SEED_LESSONS = [
         "pinyin": "cháng",
         "pinyinRaw": "chang",
         "meaningHanViet": "Thường",
-        "meaningVi": "Thường; thường xuyên",
+        "meaningVi": "Thường, thường xuyên",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "我常去图书馆看书。",
@@ -9974,7 +12636,7 @@ export const SEED_LESSONS = [
         "pinyin": "chángcháng",
         "pinyinRaw": "changchang",
         "meaningHanViet": "Thường Thường",
-        "meaningVi": "Thường xuyên; thường",
+        "meaningVi": "Thường xuyên, thường",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "周末我常常和朋友聚会。",
@@ -9989,7 +12651,7 @@ export const SEED_LESSONS = [
         "pinyin": "chàng",
         "pinyinRaw": "chang",
         "meaningHanViet": "Xướng",
-        "meaningVi": "Hát; gọi to",
+        "meaningVi": "Hát, gọi to",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "大家一起唱歌吧。",
@@ -10064,7 +12726,7 @@ export const SEED_LESSONS = [
         "pinyin": "chēzhàn",
         "pinyinRaw": "chezhan",
         "meaningHanViet": "Xa Trạm",
-        "meaningVi": "Ga tàu; dừng xe buýt",
+        "meaningVi": "Ga tàu, dừng xe buýt",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "我们在火车站见。",
@@ -10094,7 +12756,7 @@ export const SEED_LESSONS = [
         "pinyin": "chī",
         "pinyinRaw": "chi",
         "meaningHanViet": "Cật",
-        "meaningVi": "Ăn; tiêu thụ; ăn ở",
+        "meaningVi": "Ăn, tiêu thụ, ăn ở",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "你想吃什么？",
@@ -10109,7 +12771,7 @@ export const SEED_LESSONS = [
         "pinyin": "chīfàn",
         "pinyinRaw": "chifan",
         "meaningHanViet": "Cật Phạn",
-        "meaningVi": "Dùng bữa; ăn",
+        "meaningVi": "Dùng bữa, ăn",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "我们十二点去吃饭。",
@@ -10124,7 +12786,7 @@ export const SEED_LESSONS = [
         "pinyin": "chū",
         "pinyinRaw": "chu",
         "meaningHanViet": "Xuất",
-        "meaningVi": "Ra; xuất; đi ra",
+        "meaningVi": "Ra, xuất, đi ra",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "他从房间里走出来了。",
@@ -10139,7 +12801,7 @@ export const SEED_LESSONS = [
         "pinyin": "chūlái",
         "pinyinRaw": "chulai",
         "meaningHanViet": "Xuất Lai",
-        "meaningVi": "Đi ra; xuất hiện",
+        "meaningVi": "Đi ra, xuất hiện",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "快出来看雪！",
@@ -10169,7 +12831,7 @@ export const SEED_LESSONS = [
         "pinyin": "chuān",
         "pinyinRaw": "chuan",
         "meaningHanViet": "Xuyên",
-        "meaningVi": "Mặc (áo); đi (giày)",
+        "meaningVi": "Mặc (áo), đi (giày)",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "今天很冷，多穿点衣服。",
@@ -10184,7 +12846,7 @@ export const SEED_LESSONS = [
         "pinyin": "chuáng",
         "pinyinRaw": "chuang",
         "meaningHanViet": "Sàng",
-        "meaningVi": "Giường; ghế dài",
+        "meaningVi": "Giường, ghế dài",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "房间里有一张大床。",
@@ -10199,7 +12861,7 @@ export const SEED_LESSONS = [
         "pinyin": "cì",
         "pinyinRaw": "ci",
         "meaningHanViet": "Thứ",
-        "meaningVi": "Tiếp theo; thứ hai",
+        "meaningVi": "Tiếp theo, thứ hai",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "这是我第一次来这里。",
@@ -10229,7 +12891,7 @@ export const SEED_LESSONS = [
         "pinyin": "cuò",
         "pinyinRaw": "cuo",
         "meaningHanViet": "Thác",
-        "meaningVi": "Sai; nhầm lẫn",
+        "meaningVi": "Sai, nhầm lẫn",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "你说得没错。",
@@ -10244,7 +12906,7 @@ export const SEED_LESSONS = [
         "pinyin": "dǎ",
         "pinyinRaw": "da",
         "meaningHanViet": "Tá",
-        "meaningVi": "Đánh; gọi (điện thoại); chơi (bóng)",
+        "meaningVi": "Đánh, gọi (điện thoại), chơi (bóng)",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "我们下午去打篮球吧。",
@@ -10259,7 +12921,7 @@ export const SEED_LESSONS = [
         "pinyin": "dǎchē",
         "pinyinRaw": "dache",
         "meaningHanViet": "Tá Xa",
-        "meaningVi": "Bắt taxi; đón xe",
+        "meaningVi": "Bắt taxi, đón xe",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "外面下雨了，我们打车走吧。",
@@ -10289,7 +12951,7 @@ export const SEED_LESSONS = [
         "pinyin": "dǎkāi",
         "pinyinRaw": "dakai",
         "meaningHanViet": "Tá Khai",
-        "meaningVi": "Mở; cho xem",
+        "meaningVi": "Mở, cho xem",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "请打开书本。",
@@ -10304,7 +12966,7 @@ export const SEED_LESSONS = [
         "pinyin": "dǎ qiú",
         "pinyinRaw": "da qiu",
         "meaningHanViet": "Tá Cầu",
-        "meaningVi": "Chơi bóng; chơi với bóng",
+        "meaningVi": "Chơi bóng, chơi với bóng",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "周末我喜欢和朋友打球。",
@@ -10334,7 +12996,7 @@ export const SEED_LESSONS = [
         "pinyin": "dà",
         "pinyinRaw": "da",
         "meaningHanViet": "Đại",
-        "meaningVi": "Lớn; to",
+        "meaningVi": "Lớn, to",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "这个西瓜很大。",
@@ -10364,7 +13026,7 @@ export const SEED_LESSONS = [
         "pinyin": "dàxuéshēng",
         "pinyinRaw": "daxuesheng",
         "meaningHanViet": "Đại Học Sinh",
-        "meaningVi": "Sinh viên đại học; sinh viên cao đẳng",
+        "meaningVi": "Sinh viên đại học, sinh viên cao đẳng",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "我的哥哥是一名大学生。",
@@ -10379,7 +13041,7 @@ export const SEED_LESSONS = [
         "pinyin": "dào",
         "pinyinRaw": "dao",
         "meaningHanViet": "Đáo",
-        "meaningVi": "Đến; tới",
+        "meaningVi": "Đến, tới",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "我们到了火车站。",
@@ -10394,7 +13056,7 @@ export const SEED_LESSONS = [
         "pinyin": "dédào",
         "pinyinRaw": "dedao",
         "meaningHanViet": "Đắc Đáo",
-        "meaningVi": "Được; đạt được; nhận được",
+        "meaningVi": "Được, đạt được, nhận được",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "他得到了一份好工作。",
@@ -10409,7 +13071,7 @@ export const SEED_LESSONS = [
         "pinyin": "de",
         "pinyinRaw": "de",
         "meaningHanViet": "Địa",
-        "meaningVi": "Đất; mặt đất; trợ từ trạng ngữ",
+        "meaningVi": "Đất, mặt đất, trợ từ trạng ngữ",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "地上有一本书。",
@@ -10424,7 +13086,7 @@ export const SEED_LESSONS = [
         "pinyin": "de",
         "pinyinRaw": "de",
         "meaningHanViet": "Đích",
-        "meaningVi": "Của; trợ từ sở hữu hoặc bổ nghĩa",
+        "meaningVi": "Của, trợ từ sở hữu hoặc bổ nghĩa",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "这是我的汉语书。",
@@ -10439,7 +13101,7 @@ export const SEED_LESSONS = [
         "pinyin": "děng",
         "pinyinRaw": "deng",
         "meaningHanViet": "Đẳng",
-        "meaningVi": "Đợi; chờ đợi; vân vân",
+        "meaningVi": "Đợi, chờ đợi, vân vân",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "请等我五分钟。",
@@ -10454,7 +13116,7 @@ export const SEED_LESSONS = [
         "pinyin": "dì",
         "pinyinRaw": "di",
         "meaningHanViet": "Địa",
-        "meaningVi": "Đất; mặt đất; trợ từ trạng ngữ",
+        "meaningVi": "Đất, mặt đất, trợ từ trạng ngữ",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "地上有一本书。",
@@ -10469,7 +13131,7 @@ export const SEED_LESSONS = [
         "pinyin": "dìdiǎn",
         "pinyinRaw": "didian",
         "meaningHanViet": "Địa Điểm",
-        "meaningVi": "Nơi; chỗ",
+        "meaningVi": "Nơi, chỗ",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "开会的地点在二楼。",
@@ -10484,7 +13146,7 @@ export const SEED_LESSONS = [
         "pinyin": "dìfang",
         "pinyinRaw": "difang",
         "meaningHanViet": "Địa Phương",
-        "meaningVi": "Khu vực; mang tính khu vực",
+        "meaningVi": "Khu vực, mang tính khu vực",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "这是一个美丽的地方。",
@@ -10499,7 +13161,7 @@ export const SEED_LESSONS = [
         "pinyin": "dìshang",
         "pinyinRaw": "dishang",
         "meaningHanViet": "Địa Thướng",
-        "meaningVi": "Trên mặt đất; trên sàn nhà",
+        "meaningVi": "Trên mặt đất, trên sàn nhà",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "地上有很多落叶。",
@@ -10544,7 +13206,7 @@ export const SEED_LESSONS = [
         "pinyin": "dì (dì-èr)",
         "pinyinRaw": "di (di-er)",
         "meaningHanViet": "Đệ",
-        "meaningVi": "Thứ hạng mà thí sinh đỗ đạt trong kỳ thi đình được xếp vào; nơi ở của quan chức cao cấp",
+        "meaningVi": "Thứ hạng mà thí sinh đỗ đạt trong kỳ thi đình được xếp vào, nơi ở của quan chức cao cấp",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "他是第一个到教室的人。",
@@ -10574,7 +13236,7 @@ export const SEED_LESSONS = [
         "pinyin": "diǎn",
         "pinyinRaw": "dian",
         "meaningHanViet": "Điểm",
-        "meaningVi": "Giờ; điểm; chấm; chút ít",
+        "meaningVi": "Giờ, điểm, chấm, chút ít",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "现在是早上八点。",
@@ -10589,7 +13251,7 @@ export const SEED_LESSONS = [
         "pinyin": "diàn",
         "pinyinRaw": "dian",
         "meaningHanViet": "Điện",
-        "meaningVi": "Điện; pin",
+        "meaningVi": "Điện, pin",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "手机没有电了。",
@@ -10604,7 +13266,7 @@ export const SEED_LESSONS = [
         "pinyin": "diànhuà",
         "pinyinRaw": "dianhua",
         "meaningHanViet": "Điện Thoại",
-        "meaningVi": "Điện thoại; cuộc gọi điện thoại",
+        "meaningVi": "Điện thoại, cuộc gọi điện thoại",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "请告诉我你的电话号码。",
@@ -10634,7 +13296,7 @@ export const SEED_LESSONS = [
         "pinyin": "diànshì",
         "pinyinRaw": "dianshi",
         "meaningHanViet": "Điện Thị",
-        "meaningVi": "Truyền hình; TV",
+        "meaningVi": "Truyền hình, TV",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "晚上我们一家人看电视。",
@@ -10664,7 +13326,7 @@ export const SEED_LESSONS = [
         "pinyin": "diànyǐng",
         "pinyinRaw": "dianying",
         "meaningHanViet": "Điện Ảnh",
-        "meaningVi": "Phim; điện ảnh",
+        "meaningVi": "Phim, điện ảnh",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "明天我们去看电影吧。",
@@ -10679,7 +13341,7 @@ export const SEED_LESSONS = [
         "pinyin": "diànyǐngyuàn",
         "pinyinRaw": "dianyingyuan",
         "meaningHanViet": "Điện Ảnh Viện",
-        "meaningVi": "Rạp chiếu phim; rạp phim",
+        "meaningVi": "Rạp chiếu phim, rạp phim",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "电影院在商场三楼。",
@@ -10709,7 +13371,7 @@ export const SEED_LESSONS = [
         "pinyin": "dōngbian",
         "pinyinRaw": "dongbian",
         "meaningHanViet": "Đông Biên",
-        "meaningVi": "Hướng đông; phía đông",
+        "meaningVi": "Hướng đông, phía đông",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "学校东边有一家书店。",
@@ -10739,7 +13401,7 @@ export const SEED_LESSONS = [
         "pinyin": "dòng",
         "pinyinRaw": "dong",
         "meaningHanViet": "Động",
-        "meaningVi": "Động; cử động; chuyển động",
+        "meaningVi": "Động, cử động, chuyển động",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "别动，让我看看。",
@@ -10754,7 +13416,7 @@ export const SEED_LESSONS = [
         "pinyin": "dòngzuò",
         "pinyinRaw": "dongzuo",
         "meaningHanViet": "Động Tác",
-        "meaningVi": "Chuyển động; cử động; hành động; diễn; di chuyển",
+        "meaningVi": "Chuyển động, cử động, hành động, diễn, di chuyển",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "他的动作很快。",
@@ -10769,7 +13431,7 @@ export const SEED_LESSONS = [
         "pinyin": "dōu",
         "pinyinRaw": "dou",
         "meaningHanViet": "Đô",
-        "meaningVi": "Đều; tất cả",
+        "meaningVi": "Đều, tất cả",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "我们都是学习汉语的学生。",
@@ -10784,7 +13446,7 @@ export const SEED_LESSONS = [
         "pinyin": "dú",
         "pinyinRaw": "du",
         "meaningHanViet": "Đậu",
-        "meaningVi": "Đọc; học tập",
+        "meaningVi": "Đọc, học tập",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "请大声读这段课文。",
@@ -10814,7 +13476,7 @@ export const SEED_LESSONS = [
         "pinyin": "dúshū",
         "pinyinRaw": "dushu",
         "meaningHanViet": "Đậu Thư",
-        "meaningVi": "Đọc sách; học",
+        "meaningVi": "Đọc sách, học",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "他每天晚上都认真读书。",
@@ -10829,7 +13491,7 @@ export const SEED_LESSONS = [
         "pinyin": "duì",
         "pinyinRaw": "dui",
         "meaningHanViet": "Đối",
-        "meaningVi": "Đúng; chính xác; đối với",
+        "meaningVi": "Đúng, chính xác, đối với",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "你回答得非常对。",
@@ -10844,7 +13506,7 @@ export const SEED_LESSONS = [
         "pinyin": "duìbuqǐ",
         "pinyinRaw": "duibuqi",
         "meaningHanViet": "Đối Bất Khởi",
-        "meaningVi": "Tôi xin lỗi; xin thứ lỗi; tôi xin tha thứ; làm  thất vọng; không đạt kỳ vọng",
+        "meaningVi": "Tôi xin lỗi, xin thứ lỗi, tôi xin tha thứ, làm  thất vọng, không đạt kỳ vọng",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "对不起，我来晚了。",
@@ -10874,7 +13536,7 @@ export const SEED_LESSONS = [
         "pinyin": "duōshao",
         "pinyinRaw": "duoshao",
         "meaningHanViet": "Đa Thiểu",
-        "meaningVi": "Số lượng; mức độ; phần nào",
+        "meaningVi": "Số lượng, mức độ, phần nào",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "请问这个西瓜多少钱？",
@@ -10889,7 +13551,7 @@ export const SEED_LESSONS = [
         "pinyin": "è",
         "pinyinRaw": "e",
         "meaningHanViet": "Ngạ",
-        "meaningVi": "Đói; làm cho đói",
+        "meaningVi": "Đói, làm cho đói",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "我肚子饿了，想吃东西。",
@@ -10919,7 +13581,7 @@ export const SEED_LESSONS = [
         "pinyin": "èr",
         "pinyinRaw": "er",
         "meaningHanViet": "Nhị",
-        "meaningVi": "Hai; 2",
+        "meaningVi": "Hai, 2",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "一加一等于二。",
@@ -10934,7 +13596,7 @@ export const SEED_LESSONS = [
         "pinyin": "fàn",
         "pinyinRaw": "fan",
         "meaningHanViet": "Phạn",
-        "meaningVi": "Cơm đã nấu; bữa ăn",
+        "meaningVi": "Cơm đã nấu, bữa ăn",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "今天的米饭很香。",
@@ -10949,7 +13611,7 @@ export const SEED_LESSONS = [
         "pinyin": "fàndiàn",
         "pinyinRaw": "fandian",
         "meaningHanViet": "Phạn Điếm",
-        "meaningVi": "Nhà hàng; khách sạn",
+        "meaningVi": "Nhà hàng, khách sạn",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "我们在饭店吃晚饭。",
@@ -11049,7 +13711,7 @@ export const SEED_SRS_CARDS = [
     "cardType": "READING",
     "hanzi": "爱",
     "pinyin": "ài",
-    "meaningVi": "Yêu; thích; tình cảm",
+    "meaningVi": "Yêu, thích, tình cảm",
     "meaningHanViet": "Ái",
     "exampleSentence": "我爱我的家人。",
     "exampleTranslation": "Tôi yêu gia đình của tôi.",
@@ -11068,7 +13730,7 @@ export const SEED_SRS_CARDS = [
     "cardType": "LISTENING",
     "hanzi": "爱好",
     "pinyin": "àihào",
-    "meaningVi": "Thích; đam mê; lấy làm thú vui; say mê; sở thích",
+    "meaningVi": "Thích, đam mê, lấy làm thú vui, say mê, sở thích",
     "meaningHanViet": "Ái Hảo",
     "exampleSentence": "我的爱好是听音乐。",
     "exampleTranslation": "Sở thích của tôi là nghe nhạc.",
@@ -11087,7 +13749,7 @@ export const SEED_SRS_CARDS = [
     "cardType": "READING",
     "hanzi": "八",
     "pinyin": "bā",
-    "meaningVi": "Tám; 8",
+    "meaningVi": "Tám, 8",
     "meaningHanViet": "Bát",
     "exampleSentence": "一个星期有七天，不是八天。",
     "exampleTranslation": "Một tuần có bảy ngày, không phải tám ngày.",
@@ -11106,7 +13768,7 @@ export const SEED_SRS_CARDS = [
     "cardType": "WRITING",
     "hanzi": "爸爸",
     "pinyin": "bàba",
-    "meaningVi": "Cha; ba",
+    "meaningVi": "Cha, ba",
     "meaningHanViet": "Ba Ba",
     "exampleSentence": "我爸爸是一名医生。",
     "exampleTranslation": "Bố tôi là một bác sĩ.",
@@ -11144,7 +13806,7 @@ export const SEED_SRS_CARDS = [
     "cardType": "LISTENING",
     "hanzi": "白",
     "pinyin": "bái",
-    "meaningVi": "Màu trắng; trắng",
+    "meaningVi": "Màu trắng, trắng",
     "meaningHanViet": "Bạch",
     "exampleSentence": "这件白色的衣服很好看。",
     "exampleTranslation": "Chiếc áo màu trắng này rất đẹp.",
@@ -11163,7 +13825,7 @@ export const SEED_SRS_CARDS = [
     "cardType": "READING",
     "hanzi": "白天",
     "pinyin": "báitiān",
-    "meaningVi": "Ban ngày; trong ngày",
+    "meaningVi": "Ban ngày, trong ngày",
     "meaningHanViet": "Bạch Thiên",
     "exampleSentence": "白天他在学校学习。",
     "exampleTranslation": "Ban ngày anh ấy học ở trường.",
@@ -11182,7 +13844,7 @@ export const SEED_SRS_CARDS = [
     "cardType": "LISTENING",
     "hanzi": "百",
     "pinyin": "bǎi",
-    "meaningVi": "Một trăm; trăm",
+    "meaningVi": "Một trăm, trăm",
     "meaningHanViet": "Bách",
     "exampleSentence": "这本书有一百页。",
     "exampleTranslation": "Cuốn sách này có một trăm trang.",
@@ -11201,7 +13863,7 @@ export const SEED_SRS_CARDS = [
     "cardType": "READING",
     "hanzi": "班",
     "pinyin": "bān",
-    "meaningVi": "Lớp học; ca làm việc",
+    "meaningVi": "Lớp học, ca làm việc",
     "meaningHanViet": "Ban",
     "exampleSentence": "我们班有二十个学生。",
     "exampleTranslation": "Lớp chúng tôi có hai mươi học sinh.",
@@ -11220,7 +13882,7 @@ export const SEED_SRS_CARDS = [
     "cardType": "WRITING",
     "hanzi": "半",
     "pinyin": "bàn",
-    "meaningVi": "Một nửa; bán-",
+    "meaningVi": "Một nửa, bán-",
     "meaningHanViet": "Bán",
     "exampleSentence": "现在是三点半。",
     "exampleTranslation": "Bây giờ là ba rưỡi.",
@@ -11258,7 +13920,7 @@ export const SEED_SRS_CARDS = [
     "cardType": "LISTENING",
     "hanzi": "半天",
     "pinyin": "bàntiān",
-    "meaningVi": "Nửa ngày; một thời gian dài",
+    "meaningVi": "Nửa ngày, một thời gian dài",
     "meaningHanViet": "Bán Thiên",
     "exampleSentence": "我等了你半天。",
     "exampleTranslation": "Tôi đã đợi bạn cả buổi trời.",
@@ -11277,7 +13939,7 @@ export const SEED_SRS_CARDS = [
     "cardType": "READING",
     "hanzi": "帮",
     "pinyin": "bāng",
-    "meaningVi": "Giúp; giúp đỡ",
+    "meaningVi": "Giúp, giúp đỡ",
     "meaningHanViet": "Bang",
     "exampleSentence": "请帮我一下。",
     "exampleTranslation": "Xin hãy giúp tôi một chút.",
@@ -11296,7 +13958,7 @@ export const SEED_SRS_CARDS = [
     "cardType": "LISTENING",
     "hanzi": "帮忙",
     "pinyin": "bāngmáng",
-    "meaningVi": "Giúp; giúp đỡ",
+    "meaningVi": "Giúp, giúp đỡ",
     "meaningHanViet": "Bang Mang",
     "exampleSentence": "谢谢你帮我的忙。",
     "exampleTranslation": "Cảm ơn bạn đã giúp đỡ tôi.",
@@ -11315,7 +13977,7 @@ export const SEED_SRS_CARDS = [
     "cardType": "READING",
     "hanzi": "包",
     "pinyin": "bāo",
-    "meaningVi": "Túi; bao; gói",
+    "meaningVi": "Túi, bao, gói",
     "meaningHanViet": "Bao",
     "exampleSentence": "这个包里有很多东西。",
     "exampleTranslation": "Trong chiếc túi này có rất nhiều đồ.",
@@ -11420,24 +14082,11 @@ export const SEED_SRS_CARDS = [
 
 /**
  * =============================================================================
- * AUTHORITATIVE KANGXI RADICAL LOOKUP DICTIONARY (CHAR_TO_RADICAL_MAP)
- * 
- * Maps individual Chinese characters (Hanzi) to their canonical Kangxi Radical ID (1..214).
- * Conforms strictly to Kangxi / Shuowen Jiezi etymology and MySQL database migration V20:
- * - '爱' -> 87 (爪/爫 - Trảo)
- * - '好' -> 38 (女 - Nữ)
- * - '电' -> 102 (田 - Điền)
- * - '视' -> 113 (示/礻 - Thị)
- * - '机' -> 75 (木 - Mộc)
- * - '差' -> 123 (羊 - Dương) [Strictly 123, NOT 48]
- * - '最' -> 72 (日 - Nhật) [Strictly 72, NOT 13]
- * - '谢' -> 149 (言/讠 - Ngôn)
- * - '爷' -> 88 (父 - Phụ)
- * Covers all 300 unique vocabulary characters in HSK 1-3 seed data plus 214 Kangxi radicals.
+ * AUTHORITATIVE KANGXI PRIMARY RADICAL LOOKUP (CHAR_TO_RADICAL_MAP)
+ * Maps individual Chinese characters to their primary canonical Kangxi Radical ID (1..214).
  * =============================================================================
  */
 export const CHAR_TO_RADICAL_MAP = Object.freeze({
-  "⺮": 118,
   "一": 1,
   "七": 1,
   "三": 1,
@@ -11446,30 +14095,21 @@ export const CHAR_TO_RADICAL_MAP = Object.freeze({
   "不": 1,
   "东": 1,
   "两": 1,
-  "丨": 2,
   "个": 2,
-  "丬": 90,
   "中": 2,
-  "丶": 3,
-  "丿": 4,
   "么": 4,
-  "乙": 5,
   "九": 5,
   "也": 5,
-  "习": 5,
-  "书": 5,
-  "买": 5,
-  "亀/龟": 213,
-  "亅": 6,
+  "习": 15,
+  "书": 2,
+  "买": 37,
   "了": 6,
   "事": 6,
   "二": 7,
   "五": 7,
   "些": 7,
-  "亠": 8,
   "京": 8,
   "人": 9,
-  "亻": 9,
   "什": 9,
   "今": 9,
   "介": 9,
@@ -11488,49 +14128,30 @@ export const CHAR_TO_RADICAL_MAP = Object.freeze({
   "儿": 10,
   "元": 10,
   "先": 10,
-  "入": 11,
   "八": 12,
   "六": 12,
   "关": 12,
   "兴": 12,
-  "冂": 13,
   "再": 13,
-  "冖": 14,
   "写": 14,
-  "冫": 15,
   "冷": 15,
   "净": 15,
   "准": 15,
   "几": 16,
-  "凬/风": 182,
-  "凵": 17,
   "出": 17,
-  "刀": 18,
-  "刂": 18,
   "分": 18,
   "别": 18,
   "到": 18,
   "前": 18,
-  "力": 19,
   "动": 19,
-  "勹": 20,
   "包": 20,
-  "匕": 21,
   "北": 21,
-  "匚": 22,
-  "匸": 23,
-  "匹": 103,
   "医": 23,
   "十": 24,
   "午": 24,
   "半": 24,
   "南": 24,
-  "卜": 25,
-  "卩": 26,
-  "厂": 27,
-  "厶": 28,
   "去": 28,
-  "又": 29,
   "友": 29,
   "口": 30,
   "叫": 30,
@@ -11552,23 +14173,17 @@ export const CHAR_TO_RADICAL_MAP = Object.freeze({
   "商": 30,
   "喜": 30,
   "喝": 30,
-  "囗": 31,
   "四": 31,
   "回": 31,
   "国": 31,
   "图": 31,
-  "土": 32,
   "在": 32,
   "地": 32,
   "场": 32,
   "坏": 32,
   "坐": 32,
   "块": 32,
-  "士": 33,
-  "夂": 34,
   "备": 34,
-  "夊": 35,
-  "夕": 36,
   "外": 36,
   "多": 36,
   "大": 37,
@@ -11585,48 +14200,29 @@ export const CHAR_TO_RADICAL_MAP = Object.freeze({
   "字": 39,
   "学": 39,
   "孩": 39,
-  "宀": 40,
   "客": 40,
   "家": 40,
-  "寸": 41,
   "对": 41,
   "小": 42,
   "少": 42,
-  "尢": 43,
   "就": 43,
-  "尸": 44,
-  "屮": 45,
   "山": 46,
   "岁": 46,
-  "巛": 47,
   "工": 48,
   "左": 48,
-  "差": 123,
-  "己": 49,
-  "巾": 50,
+  "差": 48,
   "师": 50,
   "帮": 50,
   "常": 50,
-  "干": 51,
+  "干": 24,
   "年": 51,
-  "幺": 52,
-  "广": 53,
   "床": 53,
   "店": 53,
-  "廴": 54,
-  "廾": 55,
   "开": 55,
-  "弋": 56,
-  "弓": 57,
   "弟": 57,
-  "彐": 58,
-  "彡": 59,
   "影": 59,
-  "彳": 60,
   "很": 60,
   "得": 60,
-  "心": 61,
-  "忄": 61,
   "忘": 61,
   "忙": 61,
   "快": 61,
@@ -11635,28 +14231,18 @@ export const CHAR_TO_RADICAL_MAP = Object.freeze({
   "您": 61,
   "想": 61,
   "慢": 61,
-  "戈": 62,
   "我": 62,
-  "戶": 63,
   "房": 63,
   "手": 64,
-  "扌": 64,
   "打": 64,
   "找": 64,
   "拿": 64,
-  "支": 65,
-  "攴": 66,
-  "攵": 66,
   "放": 66,
   "教": 66,
   "文": 67,
-  "斉/齐": 210,
-  "斗": 68,
-  "斤": 69,
   "新": 69,
   "方": 70,
   "旁": 70,
-  "无": 71,
   "日": 72,
   "早": 72,
   "时": 72,
@@ -11665,14 +14251,12 @@ export const CHAR_TO_RADICAL_MAP = Object.freeze({
   "昨": 72,
   "是": 72,
   "晚": 72,
-  "曰": 73,
-  "最": 72,
+  "最": 73,
   "月": 74,
   "有": 74,
   "朋": 74,
   "服": 74,
   "期": 74,
-  "木": 75,
   "本": 75,
   "机": 75,
   "条": 75,
@@ -11684,142 +14268,72 @@ export const CHAR_TO_RADICAL_MAP = Object.freeze({
   "样": 75,
   "桌": 75,
   "楼": 75,
-  "欠": 76,
   "次": 76,
   "欢": 76,
   "歌": 76,
-  "止": 77,
   "正": 77,
-  "歯/齿": 211,
-  "歹": 78,
-  "殳": 79,
-  "毋": 80,
   "比": 81,
   "毛": 82,
-  "氏": 83,
   "气": 84,
   "水": 85,
-  "氵": 85,
   "汉": 85,
   "汽": 85,
   "没": 85,
   "洗": 85,
   "渴": 85,
   "火": 86,
-  "灬": 86,
   "点": 86,
   "热": 86,
-  "爪": 87,
   "爱": 87,
-  "父": 88,
   "爷": 88,
   "爸": 88,
-  "爻": 89,
-  "爿": 90,
-  "片": 91,
-  "牙": 92,
   "牛": 93,
-  "牜": 93,
-  "犬": 94,
-  "犭": 94,
-  "玄": 95,
-  "玉": 96,
   "玩": 96,
   "现": 96,
   "班": 96,
   "球": 96,
-  "瓜": 97,
-  "瓦": 98,
-  "甘": 99,
   "生": 100,
   "用": 101,
-  "田": 102,
-  "电": 102,
+  "电": 73,
   "男": 102,
-  "疋": 103,
-  "疒": 104,
   "病": 104,
-  "癶": 105,
   "白": 106,
   "百": 106,
   "的": 106,
-  "皮": 107,
-  "皿": 108,
-  "目": 109,
   "看": 109,
   "真": 109,
   "着": 109,
   "睡": 109,
-  "矛": 110,
-  "矢": 111,
   "知": 111,
-  "石": 112,
-  "示": 113,
-  "礻": 113,
   "票": 113,
-  "禸": 114,
-  "禾": 115,
-  "穴": 116,
   "穿": 116,
-  "立": 117,
   "站": 117,
-  "竹": 118,
   "笑": 118,
   "第": 118,
   "等": 118,
   "答": 118,
   "米": 119,
-  "糸": 120,
-  "糹/纟": 120,
   "系": 120,
   "累": 120,
   "绍": 120,
   "给": 120,
-  "缶": 121,
   "网": 122,
-  "罒/罓": 122,
-  "羊": 123,
-  "羽": 124,
   "老": 125,
   "考": 125,
-  "而": 126,
-  "耒": 127,
-  "耳": 128,
-  "聿": 129,
   "肉": 130,
   "能": 130,
   "脑": 130,
-  "臣": 131,
-  "自": 132,
-  "至": 133,
-  "臼": 134,
-  "舌": 135,
-  "舛": 136,
-  "舟": 137,
-  "艮": 138,
-  "色": 139,
-  "艸": 140,
-  "艹": 140,
   "花": 140,
   "茶": 140,
   "菜": 140,
-  "虍": 141,
-  "虫": 142,
   "蛋": 142,
-  "血": 143,
   "行": 144,
   "衣": 145,
-  "衤": 145,
-  "襾": 146,
   "西": 146,
   "要": 146,
-  "見": 147,
   "见": 147,
-  "视": 113,
+  "视": 147,
   "觉": 147,
-  "角": 148,
-  "言": 149,
-  "訁/讠": 149,
   "认": 149,
   "记": 149,
   "识": 149,
@@ -11833,27 +14347,14 @@ export const CHAR_TO_RADICAL_MAP = Object.freeze({
   "课": 149,
   "谁": 149,
   "谢": 149,
-  "谷": 150,
-  "豆": 151,
-  "豕": 152,
-  "豸": 153,
-  "貝": 154,
-  "贝": 154,
   "贵": 154,
-  "赤": 155,
   "走": 156,
   "起": 156,
-  "足": 157,
   "跑": 157,
   "跟": 157,
   "路": 157,
   "身": 158,
-  "車": 159,
   "车": 159,
-  "辛": 160,
-  "辰": 161,
-  "辵": 162,
-  "辶": 162,
   "边": 162,
   "过": 162,
   "还": 162,
@@ -11862,35 +14363,195 @@ export const CHAR_TO_RADICAL_MAP = Object.freeze({
   "远": 162,
   "送": 162,
   "道": 162,
-  "邑": 163,
   "那": 163,
   "都": 163,
-  "酉": 164,
-  "釆": 165,
   "里": 166,
   "重": 166,
-  "金": 167,
-  "釒/钅": 167,
   "钱": 167,
   "错": 167,
-  "長": 168,
-  "镸/长": 168,
-  "門": 169,
   "门": 169,
   "问": 169,
   "间": 169,
-  "阜": 170,
-  "阝": 163,
   "院": 170,
-  "隶": 171,
-  "隹": 172,
-  "难": 172,
+  "难": 29,
   "雨": 173,
   "零": 173,
-  "靑": 174,
-  "青": 174,
   "非": 175,
   "面": 176,
+  "页": 181,
+  "风": 182,
+  "飞": 183,
+  "饭": 184,
+  "饿": 184,
+  "馆": 184,
+  "马": 187,
+  "高": 189,
+  "鸡": 196,
+  "丨": 2,
+  "丶": 3,
+  "丿": 4,
+  "乙": 5,
+  "亅": 6,
+  "亠": 8,
+  "亻": 9,
+  "入": 11,
+  "冂": 13,
+  "冖": 14,
+  "冫": 15,
+  "凵": 17,
+  "刀": 18,
+  "刂": 18,
+  "力": 19,
+  "勹": 20,
+  "匕": 21,
+  "匚": 22,
+  "匸": 23,
+  "卜": 25,
+  "卩": 26,
+  "厂": 27,
+  "厶": 28,
+  "又": 29,
+  "囗": 31,
+  "土": 32,
+  "士": 33,
+  "夂": 34,
+  "夊": 35,
+  "夕": 36,
+  "宀": 40,
+  "寸": 41,
+  "尢": 43,
+  "尸": 44,
+  "屮": 45,
+  "巛": 47,
+  "己": 49,
+  "巾": 50,
+  "幺": 52,
+  "广": 53,
+  "廴": 54,
+  "廾": 55,
+  "弋": 56,
+  "弓": 57,
+  "彐": 58,
+  "彡": 59,
+  "彳": 60,
+  "心": 61,
+  "忄": 61,
+  "戈": 62,
+  "戶": 63,
+  "扌": 64,
+  "支": 65,
+  "攴": 66,
+  "攵": 66,
+  "斗": 68,
+  "斤": 69,
+  "无": 71,
+  "曰": 73,
+  "木": 75,
+  "欠": 76,
+  "止": 77,
+  "歹": 78,
+  "殳": 79,
+  "毋": 80,
+  "氏": 83,
+  "氵": 85,
+  "灬": 86,
+  "爪": 87,
+  "父": 88,
+  "爻": 89,
+  "爿": 90,
+  "丬": 90,
+  "片": 91,
+  "牙": 92,
+  "牜": 93,
+  "犬": 94,
+  "犭": 94,
+  "玄": 95,
+  "玉": 96,
+  "瓜": 97,
+  "瓦": 98,
+  "甘": 99,
+  "田": 102,
+  "疋": 103,
+  "匹": 103,
+  "疒": 104,
+  "癶": 105,
+  "皮": 107,
+  "皿": 108,
+  "目": 109,
+  "矛": 110,
+  "矢": 111,
+  "石": 112,
+  "示": 113,
+  "礻": 113,
+  "禸": 114,
+  "禾": 115,
+  "穴": 116,
+  "立": 117,
+  "竹": 118,
+  "⺮": 118,
+  "糸": 120,
+  "糹": 120,
+  "纟": 120,
+  "缶": 121,
+  "罒": 122,
+  "罓": 122,
+  "羊": 123,
+  "羽": 124,
+  "而": 126,
+  "耒": 127,
+  "耳": 128,
+  "聿": 129,
+  "臣": 131,
+  "自": 132,
+  "至": 133,
+  "臼": 134,
+  "舌": 135,
+  "舛": 136,
+  "舟": 137,
+  "艮": 138,
+  "色": 139,
+  "艸": 140,
+  "艹": 140,
+  "虍": 141,
+  "虫": 142,
+  "血": 143,
+  "衤": 145,
+  "襾": 146,
+  "見": 147,
+  "角": 148,
+  "言": 149,
+  "訁": 149,
+  "讠": 149,
+  "谷": 150,
+  "豆": 151,
+  "豕": 152,
+  "豸": 153,
+  "貝": 154,
+  "贝": 154,
+  "赤": 155,
+  "足": 157,
+  "𧾷": 157,
+  "車": 159,
+  "辛": 160,
+  "辰": 161,
+  "辵": 162,
+  "辶": 162,
+  "邑": 163,
+  "阝": 163,
+  "酉": 164,
+  "釆": 165,
+  "金": 167,
+  "釒": 167,
+  "钅": 167,
+  "長": 168,
+  "镸": 168,
+  "长": 168,
+  "門": 169,
+  "阜": 170,
+  "隶": 171,
+  "隹": 172,
+  "青": 174,
+  "靑": 174,
   "靣": 176,
   "革": 177,
   "韋": 178,
@@ -11898,22 +14559,16 @@ export const CHAR_TO_RADICAL_MAP = Object.freeze({
   "韭": 179,
   "音": 180,
   "頁": 181,
-  "页": 181,
   "風": 182,
-  "风": 182,
+  "凬": 182,
   "飛": 183,
-  "飞": 183,
   "食": 184,
-  "飠/饣": 184,
-  "饭": 184,
-  "饿": 184,
-  "馆": 184,
+  "飠": 184,
+  "饣": 184,
   "首": 185,
   "香": 186,
   "馬": 187,
-  "马": 187,
   "骨": 188,
-  "高": 189,
   "髟": 190,
   "鬥": 191,
   "鬯": 192,
@@ -11923,7 +14578,6 @@ export const CHAR_TO_RADICAL_MAP = Object.freeze({
   "鱼": 195,
   "鳥": 196,
   "鸟": 196,
-  "鸡": 196,
   "鹵": 197,
   "鹿": 198,
   "麥": 199,
@@ -11940,11 +14594,1931 @@ export const CHAR_TO_RADICAL_MAP = Object.freeze({
   "鼠": 208,
   "鼻": 209,
   "齊": 210,
+  "斉": 210,
+  "齐": 210,
   "齒": 211,
+  "歯": 211,
+  "齿": 211,
   "龍": 212,
-  "龙/竜": 212,
+  "龙": 212,
+  "竜": 212,
   "龜": 213,
-  "龠": 214,
-  "𧾷": 157
+  "亀": 213,
+  "龟": 213,
+  "龠": 214
 });
 
+/**
+ * =============================================================================
+ * AUTHORITATIVE CONSTITUENT RADICALS LOOKUP (CHAR_TO_RADICALS_MAP)
+ * Maps individual Chinese characters to their full set of constituent Kangxi Radical IDs.
+ * Conforms to Make Me a Hanzi structural decomposition and Kangxi variants.
+ * =============================================================================
+ */
+export const CHAR_TO_RADICALS_MAP = Object.freeze({
+  "一": [
+    1
+  ],
+  "七": [
+    1,
+    5
+  ],
+  "三": [
+    1,
+    7
+  ],
+  "上": [
+    1,
+    25
+  ],
+  "下": [
+    1,
+    25
+  ],
+  "不": [
+    1
+  ],
+  "东": [
+    1,
+    5,
+    42
+  ],
+  "两": [
+    1,
+    13,
+    9
+  ],
+  "个": [
+    2,
+    9
+  ],
+  "中": [
+    2,
+    30
+  ],
+  "么": [
+    4,
+    28
+  ],
+  "九": [
+    5,
+    4
+  ],
+  "也": [
+    5
+  ],
+  "习": [
+    15
+  ],
+  "书": [
+    2
+  ],
+  "买": [
+    37,
+    5,
+    15
+  ],
+  "了": [
+    6,
+    5
+  ],
+  "事": [
+    6,
+    1,
+    30,
+    58
+  ],
+  "二": [
+    7
+  ],
+  "五": [
+    7
+  ],
+  "些": [
+    7,
+    77,
+    21
+  ],
+  "京": [
+    8,
+    30,
+    42
+  ],
+  "人": [
+    9
+  ],
+  "什": [
+    9,
+    24
+  ],
+  "今": [
+    9
+  ],
+  "介": [
+    9
+  ],
+  "从": [
+    9
+  ],
+  "他": [
+    9,
+    5
+  ],
+  "们": [
+    9,
+    169
+  ],
+  "休": [
+    9,
+    75
+  ],
+  "会": [
+    9,
+    7,
+    28
+  ],
+  "住": [
+    9,
+    3,
+    96
+  ],
+  "体": [
+    9,
+    75,
+    1
+  ],
+  "作": [
+    9,
+    4,
+    1
+  ],
+  "你": [
+    9,
+    42,
+    18
+  ],
+  "候": [
+    9,
+    111
+  ],
+  "假": [
+    9,
+    29
+  ],
+  "做": [
+    9,
+    66
+  ],
+  "儿": [
+    10
+  ],
+  "元": [
+    10,
+    7
+  ],
+  "先": [
+    10,
+    32
+  ],
+  "八": [
+    12
+  ],
+  "六": [
+    12,
+    8
+  ],
+  "关": [
+    12,
+    37,
+    1
+  ],
+  "兴": [
+    12,
+    42,
+    1
+  ],
+  "再": [
+    13,
+    1,
+    32
+  ],
+  "写": [
+    14,
+    1
+  ],
+  "冷": [
+    15,
+    9
+  ],
+  "净": [
+    15,
+    6,
+    18,
+    58
+  ],
+  "准": [
+    15,
+    172
+  ],
+  "几": [
+    16
+  ],
+  "出": [
+    17,
+    45
+  ],
+  "分": [
+    18,
+    12
+  ],
+  "别": [
+    18,
+    30,
+    19
+  ],
+  "到": [
+    18,
+    133
+  ],
+  "前": [
+    18,
+    12,
+    1,
+    74
+  ],
+  "动": [
+    19,
+    7,
+    28
+  ],
+  "包": [
+    20,
+    49
+  ],
+  "北": [
+    21
+  ],
+  "医": [
+    23,
+    111
+  ],
+  "十": [
+    24
+  ],
+  "午": [
+    24,
+    4,
+    51
+  ],
+  "半": [
+    24,
+    12,
+    93
+  ],
+  "南": [
+    24,
+    13,
+    12,
+    51
+  ],
+  "去": [
+    28,
+    32
+  ],
+  "友": [
+    29
+  ],
+  "口": [
+    30
+  ],
+  "叫": [
+    30,
+    2
+  ],
+  "右": [
+    30
+  ],
+  "号": [
+    30,
+    1
+  ],
+  "吃": [
+    30,
+    5
+  ],
+  "同": [
+    30,
+    16,
+    3
+  ],
+  "名": [
+    30,
+    36
+  ],
+  "后": [
+    30
+  ],
+  "吗": [
+    30,
+    187
+  ],
+  "吧": [
+    30,
+    49
+  ],
+  "听": [
+    30,
+    69
+  ],
+  "告": [
+    30,
+    93
+  ],
+  "呢": [
+    30,
+    44,
+    21
+  ],
+  "和": [
+    30,
+    115
+  ],
+  "哥": [
+    30
+  ],
+  "哪": [
+    30,
+    163
+  ],
+  "唱": [
+    30,
+    72,
+    73
+  ],
+  "商": [
+    30,
+    8,
+    12,
+    13
+  ],
+  "喜": [
+    30,
+    33,
+    32
+  ],
+  "喝": [
+    30,
+    73,
+    72
+  ],
+  "四": [
+    31,
+    10
+  ],
+  "回": [
+    31,
+    30
+  ],
+  "国": [
+    31,
+    96
+  ],
+  "图": [
+    31,
+    15,
+    34
+  ],
+  "在": [
+    32,
+    64
+  ],
+  "地": [
+    32,
+    5
+  ],
+  "场": [
+    32,
+    20,
+    4
+  ],
+  "坏": [
+    32,
+    1
+  ],
+  "坐": [
+    32,
+    9
+  ],
+  "块": [
+    32,
+    37
+  ],
+  "备": [
+    34,
+    102
+  ],
+  "外": [
+    36,
+    25
+  ],
+  "多": [
+    36
+  ],
+  "大": [
+    37
+  ],
+  "天": [
+    37,
+    1
+  ],
+  "太": [
+    37,
+    3
+  ],
+  "女": [
+    38
+  ],
+  "奶": [
+    38,
+    4
+  ],
+  "她": [
+    38,
+    5
+  ],
+  "好": [
+    38,
+    39
+  ],
+  "妈": [
+    38,
+    187
+  ],
+  "妹": [
+    38,
+    75,
+    1
+  ],
+  "姐": [
+    38,
+    1,
+    74
+  ],
+  "子": [
+    39
+  ],
+  "字": [
+    39,
+    40
+  ],
+  "学": [
+    39,
+    42,
+    14
+  ],
+  "孩": [
+    39,
+    8
+  ],
+  "客": [
+    40,
+    30,
+    34
+  ],
+  "家": [
+    40,
+    152
+  ],
+  "对": [
+    41,
+    29
+  ],
+  "小": [
+    42
+  ],
+  "少": [
+    42,
+    4
+  ],
+  "就": [
+    43,
+    8,
+    30,
+    42,
+    3
+  ],
+  "山": [
+    46
+  ],
+  "岁": [
+    46,
+    36
+  ],
+  "工": [
+    48
+  ],
+  "左": [
+    48
+  ],
+  "差": [
+    48,
+    123
+  ],
+  "师": [
+    50,
+    18,
+    1
+  ],
+  "帮": [
+    50,
+    163
+  ],
+  "常": [
+    50,
+    42,
+    13,
+    30
+  ],
+  "干": [
+    24
+  ],
+  "年": [
+    51
+  ],
+  "床": [
+    53,
+    75
+  ],
+  "店": [
+    53,
+    25,
+    30
+  ],
+  "开": [
+    55,
+    1
+  ],
+  "弟": [
+    57,
+    12
+  ],
+  "影": [
+    59,
+    72
+  ],
+  "很": [
+    60,
+    138
+  ],
+  "得": [
+    60,
+    72,
+    1,
+    41
+  ],
+  "忘": [
+    61,
+    8
+  ],
+  "忙": [
+    61,
+    8
+  ],
+  "快": [
+    61,
+    37
+  ],
+  "怎": [
+    61,
+    4,
+    1
+  ],
+  "息": [
+    61,
+    132
+  ],
+  "您": [
+    61,
+    9
+  ],
+  "想": [
+    61,
+    109,
+    75
+  ],
+  "慢": [
+    61,
+    72,
+    122,
+    29
+  ],
+  "我": [
+    62,
+    64
+  ],
+  "房": [
+    63,
+    70
+  ],
+  "手": [
+    64
+  ],
+  "打": [
+    64,
+    1
+  ],
+  "找": [
+    64,
+    62
+  ],
+  "拿": [
+    64,
+    30
+  ],
+  "放": [
+    66,
+    70
+  ],
+  "教": [
+    66,
+    39,
+    125
+  ],
+  "文": [
+    67
+  ],
+  "新": [
+    69,
+    117,
+    1,
+    42
+  ],
+  "方": [
+    70
+  ],
+  "旁": [
+    70,
+    117
+  ],
+  "日": [
+    72
+  ],
+  "早": [
+    72,
+    24
+  ],
+  "时": [
+    72,
+    41
+  ],
+  "明": [
+    72,
+    74
+  ],
+  "星": [
+    72,
+    100
+  ],
+  "昨": [
+    72,
+    4,
+    1
+  ],
+  "是": [
+    72,
+    103
+  ],
+  "晚": [
+    72,
+    10,
+    18,
+    30
+  ],
+  "最": [
+    73,
+    72,
+    29,
+    128
+  ],
+  "月": [
+    74
+  ],
+  "有": [
+    74
+  ],
+  "朋": [
+    74
+  ],
+  "服": [
+    74,
+    26,
+    29
+  ],
+  "期": [
+    74,
+    12,
+    99,
+    1
+  ],
+  "本": [
+    75,
+    1
+  ],
+  "机": [
+    75,
+    16
+  ],
+  "条": [
+    75,
+    34
+  ],
+  "来": [
+    75,
+    1,
+    12
+  ],
+  "杯": [
+    75,
+    1
+  ],
+  "果": [
+    75,
+    102
+  ],
+  "树": [
+    75,
+    41,
+    29
+  ],
+  "校": [
+    75,
+    8
+  ],
+  "样": [
+    75,
+    123
+  ],
+  "桌": [
+    75,
+    24,
+    25
+  ],
+  "楼": [
+    75,
+    38,
+    119
+  ],
+  "次": [
+    76,
+    15
+  ],
+  "欢": [
+    76,
+    29
+  ],
+  "歌": [
+    76,
+    30
+  ],
+  "正": [
+    77,
+    1
+  ],
+  "比": [
+    81
+  ],
+  "毛": [
+    82
+  ],
+  "气": [
+    84
+  ],
+  "水": [
+    85
+  ],
+  "汉": [
+    85,
+    29
+  ],
+  "汽": [
+    85,
+    84
+  ],
+  "没": [
+    85,
+    79
+  ],
+  "洗": [
+    85,
+    10,
+    32
+  ],
+  "渴": [
+    85,
+    73,
+    72
+  ],
+  "火": [
+    86
+  ],
+  "点": [
+    86,
+    25,
+    30
+  ],
+  "热": [
+    86,
+    64
+  ],
+  "爱": [
+    87,
+    14,
+    29
+  ],
+  "爷": [
+    88,
+    26
+  ],
+  "爸": [
+    88,
+    49
+  ],
+  "牛": [
+    93
+  ],
+  "玩": [
+    96,
+    10,
+    7
+  ],
+  "现": [
+    96,
+    147
+  ],
+  "班": [
+    96,
+    18
+  ],
+  "球": [
+    96,
+    85,
+    1
+  ],
+  "生": [
+    100
+  ],
+  "用": [
+    101
+  ],
+  "电": [
+    73,
+    5
+  ],
+  "男": [
+    102,
+    19
+  ],
+  "病": [
+    104,
+    1
+  ],
+  "白": [
+    106
+  ],
+  "百": [
+    106,
+    1
+  ],
+  "的": [
+    106,
+    20,
+    3
+  ],
+  "看": [
+    109,
+    64
+  ],
+  "真": [
+    109,
+    24,
+    1,
+    16
+  ],
+  "着": [
+    109,
+    123
+  ],
+  "睡": [
+    109,
+    32,
+    33
+  ],
+  "知": [
+    111,
+    30
+  ],
+  "票": [
+    113,
+    146
+  ],
+  "穿": [
+    116,
+    92
+  ],
+  "站": [
+    117,
+    25,
+    30
+  ],
+  "笑": [
+    118,
+    37,
+    4
+  ],
+  "第": [
+    118,
+    57,
+    12
+  ],
+  "等": [
+    118,
+    41,
+    32
+  ],
+  "答": [
+    118,
+    30
+  ],
+  "米": [
+    119
+  ],
+  "系": [
+    120,
+    4
+  ],
+  "累": [
+    120,
+    102
+  ],
+  "绍": [
+    120,
+    30,
+    18
+  ],
+  "给": [
+    120,
+    30
+  ],
+  "网": [
+    122
+  ],
+  "老": [
+    125
+  ],
+  "考": [
+    125,
+    1
+  ],
+  "肉": [
+    130
+  ],
+  "能": [
+    130,
+    28,
+    21
+  ],
+  "脑": [
+    130,
+    8,
+    17
+  ],
+  "花": [
+    140,
+    21,
+    9
+  ],
+  "茶": [
+    140,
+    9,
+    75
+  ],
+  "菜": [
+    140,
+    165,
+    87,
+    75
+  ],
+  "蛋": [
+    142,
+    103
+  ],
+  "行": [
+    144
+  ],
+  "衣": [
+    145
+  ],
+  "西": [
+    146,
+    10,
+    31
+  ],
+  "要": [
+    146,
+    38
+  ],
+  "见": [
+    147,
+    13,
+    10
+  ],
+  "视": [
+    147,
+    113
+  ],
+  "觉": [
+    147,
+    42,
+    14
+  ],
+  "认": [
+    149,
+    9
+  ],
+  "记": [
+    149,
+    49
+  ],
+  "识": [
+    149,
+    30,
+    12
+  ],
+  "诉": [
+    149,
+    69,
+    3
+  ],
+  "试": [
+    149,
+    56,
+    48
+  ],
+  "话": [
+    149,
+    135
+  ],
+  "语": [
+    149,
+    30
+  ],
+  "说": [
+    149,
+    10,
+    12
+  ],
+  "请": [
+    149,
+    174
+  ],
+  "读": [
+    149,
+    24
+  ],
+  "课": [
+    149,
+    75,
+    102
+  ],
+  "谁": [
+    149,
+    172
+  ],
+  "谢": [
+    149,
+    41,
+    158
+  ],
+  "贵": [
+    154,
+    2,
+    30,
+    1
+  ],
+  "走": [
+    156
+  ],
+  "起": [
+    156,
+    49
+  ],
+  "跑": [
+    157,
+    20,
+    49
+  ],
+  "跟": [
+    157,
+    138
+  ],
+  "路": [
+    157,
+    30,
+    34
+  ],
+  "身": [
+    158
+  ],
+  "车": [
+    159,
+    1,
+    5,
+    24
+  ],
+  "边": [
+    162,
+    19
+  ],
+  "过": [
+    162,
+    41
+  ],
+  "还": [
+    162,
+    1
+  ],
+  "这": [
+    162,
+    67
+  ],
+  "进": [
+    162,
+    7
+  ],
+  "远": [
+    162,
+    10,
+    7
+  ],
+  "送": [
+    162,
+    12
+  ],
+  "道": [
+    162,
+    185
+  ],
+  "那": [
+    163
+  ],
+  "都": [
+    163,
+    125,
+    72
+  ],
+  "里": [
+    166
+  ],
+  "重": [
+    166,
+    24,
+    4
+  ],
+  "钱": [
+    167,
+    62,
+    1
+  ],
+  "错": [
+    167,
+    72
+  ],
+  "门": [
+    169,
+    3,
+    2
+  ],
+  "问": [
+    169,
+    30
+  ],
+  "间": [
+    169,
+    72
+  ],
+  "院": [
+    170,
+    40
+  ],
+  "难": [
+    29,
+    172
+  ],
+  "雨": [
+    173
+  ],
+  "零": [
+    173,
+    9
+  ],
+  "非": [
+    175
+  ],
+  "面": [
+    176
+  ],
+  "页": [
+    181,
+    154
+  ],
+  "风": [
+    182,
+    16,
+    4
+  ],
+  "飞": [
+    183
+  ],
+  "饭": [
+    184,
+    29,
+    27
+  ],
+  "饿": [
+    184,
+    62,
+    64
+  ],
+  "馆": [
+    184,
+    40
+  ],
+  "马": [
+    187,
+    1
+  ],
+  "高": [
+    189
+  ],
+  "鸡": [
+    196,
+    29
+  ],
+  "丨": [
+    2
+  ],
+  "丶": [
+    3
+  ],
+  "丿": [
+    4
+  ],
+  "乙": [
+    5
+  ],
+  "亅": [
+    6
+  ],
+  "亠": [
+    8
+  ],
+  "亻": [
+    9
+  ],
+  "入": [
+    11
+  ],
+  "冂": [
+    13
+  ],
+  "冖": [
+    14
+  ],
+  "冫": [
+    15
+  ],
+  "凵": [
+    17
+  ],
+  "刀": [
+    18
+  ],
+  "刂": [
+    18
+  ],
+  "力": [
+    19
+  ],
+  "勹": [
+    20
+  ],
+  "匕": [
+    21
+  ],
+  "匚": [
+    22
+  ],
+  "匸": [
+    23
+  ],
+  "卜": [
+    25
+  ],
+  "卩": [
+    26
+  ],
+  "厂": [
+    27
+  ],
+  "厶": [
+    28
+  ],
+  "又": [
+    29
+  ],
+  "囗": [
+    31
+  ],
+  "土": [
+    32
+  ],
+  "士": [
+    33
+  ],
+  "夂": [
+    34
+  ],
+  "夊": [
+    35
+  ],
+  "夕": [
+    36
+  ],
+  "宀": [
+    40
+  ],
+  "寸": [
+    41
+  ],
+  "尢": [
+    43
+  ],
+  "尸": [
+    44
+  ],
+  "屮": [
+    45
+  ],
+  "巛": [
+    47
+  ],
+  "己": [
+    49
+  ],
+  "巾": [
+    50
+  ],
+  "幺": [
+    52
+  ],
+  "广": [
+    53
+  ],
+  "廴": [
+    54
+  ],
+  "廾": [
+    55
+  ],
+  "弋": [
+    56
+  ],
+  "弓": [
+    57
+  ],
+  "彐": [
+    58
+  ],
+  "彡": [
+    59
+  ],
+  "彳": [
+    60
+  ],
+  "心": [
+    61
+  ],
+  "忄": [
+    61
+  ],
+  "戈": [
+    62
+  ],
+  "戶": [
+    63
+  ],
+  "扌": [
+    64
+  ],
+  "支": [
+    65
+  ],
+  "攴": [
+    66
+  ],
+  "攵": [
+    66
+  ],
+  "斗": [
+    68
+  ],
+  "斤": [
+    69
+  ],
+  "无": [
+    71
+  ],
+  "曰": [
+    73
+  ],
+  "木": [
+    75
+  ],
+  "欠": [
+    76
+  ],
+  "止": [
+    77
+  ],
+  "歹": [
+    78
+  ],
+  "殳": [
+    79
+  ],
+  "毋": [
+    80
+  ],
+  "氏": [
+    83
+  ],
+  "氵": [
+    85
+  ],
+  "灬": [
+    86
+  ],
+  "爪": [
+    87
+  ],
+  "父": [
+    88
+  ],
+  "爻": [
+    89
+  ],
+  "爿": [
+    90
+  ],
+  "丬": [
+    90
+  ],
+  "片": [
+    91
+  ],
+  "牙": [
+    92
+  ],
+  "牜": [
+    93
+  ],
+  "犬": [
+    94
+  ],
+  "犭": [
+    94
+  ],
+  "玄": [
+    95
+  ],
+  "玉": [
+    96
+  ],
+  "瓜": [
+    97
+  ],
+  "瓦": [
+    98
+  ],
+  "甘": [
+    99
+  ],
+  "田": [
+    102
+  ],
+  "疋": [
+    103
+  ],
+  "匹": [
+    103
+  ],
+  "疒": [
+    104
+  ],
+  "癶": [
+    105
+  ],
+  "皮": [
+    107
+  ],
+  "皿": [
+    108
+  ],
+  "目": [
+    109
+  ],
+  "矛": [
+    110
+  ],
+  "矢": [
+    111
+  ],
+  "石": [
+    112
+  ],
+  "示": [
+    113
+  ],
+  "礻": [
+    113
+  ],
+  "禸": [
+    114
+  ],
+  "禾": [
+    115
+  ],
+  "穴": [
+    116
+  ],
+  "立": [
+    117
+  ],
+  "竹": [
+    118
+  ],
+  "⺮": [
+    118
+  ],
+  "糸": [
+    120
+  ],
+  "糹": [
+    120
+  ],
+  "纟": [
+    120
+  ],
+  "缶": [
+    121
+  ],
+  "罒": [
+    122
+  ],
+  "罓": [
+    122
+  ],
+  "羊": [
+    123
+  ],
+  "羽": [
+    124
+  ],
+  "而": [
+    126
+  ],
+  "耒": [
+    127
+  ],
+  "耳": [
+    128
+  ],
+  "聿": [
+    129
+  ],
+  "臣": [
+    131
+  ],
+  "自": [
+    132
+  ],
+  "至": [
+    133
+  ],
+  "臼": [
+    134
+  ],
+  "舌": [
+    135
+  ],
+  "舛": [
+    136
+  ],
+  "舟": [
+    137
+  ],
+  "艮": [
+    138
+  ],
+  "色": [
+    139
+  ],
+  "艸": [
+    140
+  ],
+  "艹": [
+    140
+  ],
+  "虍": [
+    141
+  ],
+  "虫": [
+    142
+  ],
+  "血": [
+    143
+  ],
+  "衤": [
+    145
+  ],
+  "襾": [
+    146
+  ],
+  "見": [
+    147
+  ],
+  "角": [
+    148
+  ],
+  "言": [
+    149
+  ],
+  "訁": [
+    149
+  ],
+  "讠": [
+    149
+  ],
+  "谷": [
+    150
+  ],
+  "豆": [
+    151
+  ],
+  "豕": [
+    152
+  ],
+  "豸": [
+    153
+  ],
+  "貝": [
+    154
+  ],
+  "贝": [
+    154
+  ],
+  "赤": [
+    155
+  ],
+  "足": [
+    157
+  ],
+  "𧾷": [
+    157
+  ],
+  "車": [
+    159
+  ],
+  "辛": [
+    160
+  ],
+  "辰": [
+    161
+  ],
+  "辵": [
+    162
+  ],
+  "辶": [
+    162
+  ],
+  "邑": [
+    163
+  ],
+  "阝": [
+    163
+  ],
+  "酉": [
+    164
+  ],
+  "釆": [
+    165
+  ],
+  "金": [
+    167
+  ],
+  "釒": [
+    167
+  ],
+  "钅": [
+    167
+  ],
+  "長": [
+    168
+  ],
+  "镸": [
+    168
+  ],
+  "长": [
+    168
+  ],
+  "門": [
+    169
+  ],
+  "阜": [
+    170
+  ],
+  "隶": [
+    171
+  ],
+  "隹": [
+    172
+  ],
+  "青": [
+    174
+  ],
+  "靑": [
+    174
+  ],
+  "靣": [
+    176
+  ],
+  "革": [
+    177
+  ],
+  "韋": [
+    178
+  ],
+  "韦": [
+    178
+  ],
+  "韭": [
+    179
+  ],
+  "音": [
+    180
+  ],
+  "頁": [
+    181
+  ],
+  "風": [
+    182
+  ],
+  "凬": [
+    182
+  ],
+  "飛": [
+    183
+  ],
+  "食": [
+    184
+  ],
+  "飠": [
+    184
+  ],
+  "饣": [
+    184
+  ],
+  "首": [
+    185
+  ],
+  "香": [
+    186
+  ],
+  "馬": [
+    187
+  ],
+  "骨": [
+    188
+  ],
+  "髟": [
+    190
+  ],
+  "鬥": [
+    191
+  ],
+  "鬯": [
+    192
+  ],
+  "鬲": [
+    193
+  ],
+  "鬼": [
+    194
+  ],
+  "魚": [
+    195
+  ],
+  "鱼": [
+    195
+  ],
+  "鳥": [
+    196
+  ],
+  "鸟": [
+    196
+  ],
+  "鹵": [
+    197
+  ],
+  "鹿": [
+    198
+  ],
+  "麥": [
+    199
+  ],
+  "麦": [
+    199
+  ],
+  "麻": [
+    200
+  ],
+  "黄": [
+    201
+  ],
+  "黍": [
+    202
+  ],
+  "黑": [
+    203
+  ],
+  "黒": [
+    203
+  ],
+  "黹": [
+    204
+  ],
+  "黽": [
+    205
+  ],
+  "鼎": [
+    206
+  ],
+  "鼓": [
+    207
+  ],
+  "鼠": [
+    208
+  ],
+  "鼻": [
+    209
+  ],
+  "齊": [
+    210
+  ],
+  "斉": [
+    210
+  ],
+  "齐": [
+    210
+  ],
+  "齒": [
+    211
+  ],
+  "歯": [
+    211
+  ],
+  "齿": [
+    211
+  ],
+  "龍": [
+    212
+  ],
+  "龙": [
+    212
+  ],
+  "竜": [
+    212
+  ],
+  "龜": [
+    213
+  ],
+  "亀": [
+    213
+  ],
+  "龟": [
+    213
+  ],
+  "龠": [
+    214
+  ]
+});

@@ -26,7 +26,7 @@ import { speechController, speakHanzi, isSpeechSynthesisAvailable, SpeechState }
 import { authManager } from '../auth/auth-state.js';
 import { VocabWritingOrchestrator } from '../ui/character-writing/vocab-writing-orchestrator.js';
 import { splitHanziCharacters } from '../ui/character-writing/stroke-data-loader.js';
-import { CHAR_TO_RADICAL_MAP } from '../api/demo-seed-data.js';
+import { CHAR_TO_RADICAL_MAP, CHAR_TO_RADICALS_MAP } from '../api/demo-seed-data.js';
 
 export { createSpeakerIcon, createSpeechButton, speechController, speakHanzi, isSpeechSynthesisAvailable, SpeechState, VocabWritingOrchestrator };
 
@@ -1203,9 +1203,10 @@ export class VocabularyPageController {
         if (cleanHanzi.length === 1) {
           charInWord = cleanHanzi[0];
         } else {
-          // If multi-char word, find verified match in CHAR_TO_RADICAL_MAP
+          // If multi-char word, find verified match in CHAR_TO_RADICALS_MAP or CHAR_TO_RADICAL_MAP
           for (const ch of cleanHanzi) {
-            if (CHAR_TO_RADICAL_MAP && CHAR_TO_RADICAL_MAP[ch] === rad.radicalId) {
+            const chRads = (typeof CHAR_TO_RADICALS_MAP !== 'undefined' && CHAR_TO_RADICALS_MAP[ch]) || (CHAR_TO_RADICAL_MAP && CHAR_TO_RADICAL_MAP[ch] ? [CHAR_TO_RADICAL_MAP[ch]] : []);
+            if (chRads.includes(rad.radicalId)) {
               charInWord = ch;
               break;
             }
