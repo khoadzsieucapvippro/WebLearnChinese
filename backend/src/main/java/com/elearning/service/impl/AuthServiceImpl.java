@@ -1,6 +1,7 @@
 package com.elearning.service.impl;
 
 import com.elearning.common.ErrorCode;
+import com.elearning.dto.request.ChangePasswordRequest;
 import com.elearning.dto.request.LoginRequest;
 import com.elearning.dto.request.RegisterRequest;
 import com.elearning.dto.response.AuthResponse;
@@ -141,5 +142,39 @@ public class AuthServiceImpl implements AuthService {
                 fullName,
                 roleNames
         );
+    }
+
+    @Override
+    @Transactional
+    public void logout(String emailOrPhone) {
+        if (emailOrPhone == null || emailOrPhone.trim().isEmpty()) {
+            throw new BusinessException(ErrorCode.UNAUTHORIZED, "Chưa xác thực hoặc phiên đăng nhập đã hết hạn");
+        }
+        Account account = accountRepository.findByEmailOrPhone(emailOrPhone)
+                .orElseThrow(() -> new BusinessException(ErrorCode.UNAUTHORIZED, "Không tìm thấy tài khoản"));
+        account.incrementAuthorizationVersion();
+        accountRepository.save(account);
+    }
+
+    @Override
+    @Transactional
+    public void changePassword(String emailOrPhone, ChangePasswordRequest request) {
+        if (emailOrPhone == null || emailOrPhone.trim().isEmpty()) {
+            throw new BusinessException(ErrorCode.UNAUTHORIZED, "Chưa xác thực hoặc phiên đăng nhập đã hết hạn");
+        }
+        Account account = accountRepository.findByEmailOrPhone(emailOrPhone)
+                .orElseThrow(() -> new BusinessException(ErrorCode.UNAUTHORIZED, "Không tìm thấy tài khoản"));
+
+        if (!passwordEncoder.matches(request.getOldPassword(), account.getPasswordHash())) {
+            throw new BusinessException(ErrorCode.BAD_REQUEST, "Mật khẩu hiện tại không chính xác");
+        }
+
+        if (passwordEncoder.matches(request.getNewPassword(), account.getPasswordHash())) {
+            throw new BusinessException(ErrorCode.BAD_REQUEST, "Mật khẩu mới không được trùng với mật khẩu hiện tại");
+        }
+
+        account.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
+        account.incrementAuthorizationVersion();
+        accountRepository.save(account);
     }
 }

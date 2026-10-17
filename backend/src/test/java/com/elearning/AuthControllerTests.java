@@ -2,6 +2,7 @@ package com.elearning;
 
 import com.elearning.common.ErrorCode;
 import com.elearning.controller.AuthController;
+import com.elearning.dto.request.ChangePasswordRequest;
 import com.elearning.dto.request.LoginRequest;
 import com.elearning.dto.request.RegisterRequest;
 import com.elearning.dto.response.AuthResponse;
@@ -9,6 +10,7 @@ import com.elearning.exception.BusinessException;
 import com.elearning.exception.GlobalExceptionHandler;
 import com.elearning.service.AuthService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.security.Principal;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -25,6 +27,9 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -162,6 +167,87 @@ class AuthControllerTests {
                     .andExpect(status().isUnauthorized())
                     .andExpect(jsonPath("$.code").value("UNAUTHORIZED"))
                     .andExpect(jsonPath("$.message").value(containsString("không chính xác")));
+        }
+    }
+
+    @Nested
+    @DisplayName("Logout Endpoint Tests (POST /api/v1/auth/logout)")
+    class LogoutEndpointTests {
+
+        @Test
+        @DisplayName("GIVEN authenticated user WHEN POST /logout THEN returns 200 OK and invokes authService.logout")
+        void testLogoutAuthenticatedSuccess() throws Exception {
+            Principal principal = () -> "user@elearning.com";
+
+            mockMvc.perform(post("/api/v1/auth/logout")
+                            .principal(principal))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("SUCCESS"))
+                    .andExpect(jsonPath("$.message").value("Đăng xuất thành công"));
+
+            verify(authService).logout("user@elearning.com");
+        }
+
+        @Test
+        @DisplayName("GIVEN unauthenticated request WHEN POST /logout THEN returns 401 Unauthorized")
+        void testLogoutUnauthenticated() throws Exception {
+            mockMvc.perform(post("/api/v1/auth/logout"))
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(jsonPath("$.code").value("UNAUTHORIZED"));
+
+            verify(authService, never()).logout(any());
+        }
+    }
+
+    @Nested
+    @DisplayName("Change Password Endpoint Tests (POST /api/v1/auth/change-password)")
+    class ChangePasswordEndpointTests {
+
+        @Test
+        @DisplayName("GIVEN valid request and authenticated user WHEN POST /change-password THEN returns 200 OK")
+        void testChangePasswordSuccess() throws Exception {
+            Principal principal = () -> "user@elearning.com";
+            ChangePasswordRequest request = new ChangePasswordRequest("OldPassword@123", "NewPassword@123");
+
+            mockMvc.perform(post("/api/v1/auth/change-password")
+                            .principal(principal)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("SUCCESS"))
+                    .andExpect(jsonPath("$.message").value("Đổi mật khẩu thành công"));
+
+            verify(authService).changePassword(eq("user@elearning.com"), any(ChangePasswordRequest.class));
+        }
+
+        @Test
+        @DisplayName("GIVEN invalid request (blank new password) WHEN POST /change-password THEN returns 400 Bad Request")
+        void testChangePasswordValidationFailure() throws Exception {
+            Principal principal = () -> "user@elearning.com";
+            ChangePasswordRequest request = new ChangePasswordRequest("OldPassword@123", "");
+
+            mockMvc.perform(post("/api/v1/auth/change-password")
+                            .principal(principal)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
+
+            verify(authService, never()).changePassword(any(), any());
+        }
+
+        @Test
+        @DisplayName("GIVEN unauthenticated request WHEN POST /change-password THEN returns 401 Unauthorized")
+        void testChangePasswordUnauthenticated() throws Exception {
+            ChangePasswordRequest request = new ChangePasswordRequest("OldPassword@123", "NewPassword@123");
+
+            mockMvc.perform(post("/api/v1/auth/change-password")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(jsonPath("$.code").value("UNAUTHORIZED"));
+
+            verify(authService, never()).changePassword(any(), any());
         }
     }
 }

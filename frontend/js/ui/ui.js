@@ -205,6 +205,7 @@ export function showToast({
   message = '',
   duration = 4000
 } = {}) {
+  if (typeof document === 'undefined') return;
   let toastContainer = document.getElementById('toastContainer');
   if (!toastContainer) {
     toastContainer = createSafeElement('div', {

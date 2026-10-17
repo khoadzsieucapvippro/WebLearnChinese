@@ -123,8 +123,8 @@ public class SrsMultiSkillServiceTests {
 
         when(lessonVocabularyRepository.existsApprovedLessonForVocabulary(101L)).thenReturn(true);
         when(userSrsSettingRepository.findByUser(testUserProfile)).thenReturn(Optional.empty());
-        when(reviewLogRepository.findTodayReviewLogsWithLock(eq(testUserProfile), any(LocalDateTime.class)))
-                .thenReturn(Collections.emptyList());
+        when(reviewLogRepository.countNewItemsIntroducedToday(eq(testUserProfile), eq("VOCABULARY"), any(LocalDateTime.class)))
+                .thenReturn(0L);
 
         // No writing card exists yet
         when(cardProgressRepository.findByUserAndItemTypeAndItemIdAndCardType(testUserProfile, "VOCABULARY", 101L, "WRITING"))
@@ -165,8 +165,8 @@ public class SrsMultiSkillServiceTests {
 
         when(lessonVocabularyRepository.existsApprovedLessonForVocabulary(102L)).thenReturn(true);
         when(userSrsSettingRepository.findByUser(testUserProfile)).thenReturn(Optional.empty());
-        when(reviewLogRepository.findTodayReviewLogsWithLock(eq(testUserProfile), any(LocalDateTime.class)))
-                .thenReturn(Collections.emptyList());
+        when(reviewLogRepository.countNewItemsIntroducedToday(eq(testUserProfile), eq("VOCABULARY"), any(LocalDateTime.class)))
+                .thenReturn(0L);
 
         when(cardProgressRepository.findByUserAndItemTypeAndItemIdAndCardType(testUserProfile, "VOCABULARY", 102L, "LISTENING"))
                 .thenReturn(Optional.empty());
@@ -216,8 +216,8 @@ public class SrsMultiSkillServiceTests {
 
         when(lessonVocabularyRepository.existsApprovedLessonForVocabulary(103L)).thenReturn(true);
         when(userSrsSettingRepository.findByUser(testUserProfile)).thenReturn(Optional.empty());
-        when(reviewLogRepository.findTodayReviewLogsWithLock(eq(testUserProfile), any(LocalDateTime.class)))
-                .thenReturn(Collections.emptyList());
+        when(reviewLogRepository.countNewItemsIntroducedToday(eq(testUserProfile), eq("VOCABULARY"), any(LocalDateTime.class)))
+                .thenReturn(0L);
 
         when(cardProgressRepository.findByUserAndItemTypeAndItemIdAndCardType(testUserProfile, "VOCABULARY", 103L, "READING"))
                 .thenReturn(Optional.empty());
@@ -305,8 +305,8 @@ public class SrsMultiSkillServiceTests {
         when(vocabularyRepository.findByIdWithLock(104L)).thenReturn(Optional.of(vocab));
         when(lessonVocabularyRepository.existsApprovedLessonForVocabulary(104L)).thenReturn(true);
         when(userSrsSettingRepository.findByUser(testUserProfile)).thenReturn(Optional.empty());
-        when(reviewLogRepository.findTodayReviewLogsWithLock(eq(testUserProfile), any(LocalDateTime.class)))
-                .thenReturn(Collections.emptyList());
+        when(reviewLogRepository.countNewItemsIntroducedToday(eq(testUserProfile), eq("VOCABULARY"), any(LocalDateTime.class)))
+                .thenReturn(0L);
 
         when(cardProgressRepository.findByUserAndItemTypeAndItemIdAndCardType(testUserProfile, "VOCABULARY", 104L, "READING"))
                 .thenReturn(Optional.empty());

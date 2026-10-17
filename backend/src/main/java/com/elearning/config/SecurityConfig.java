@@ -19,6 +19,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.List;
 
 import com.elearning.security.JwtAuthenticationFilter;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 /**
@@ -29,6 +30,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
  */
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
@@ -56,10 +58,12 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // Public operational health probe
                         .requestMatchers("/actuator/health").permitAll()
-                        // Public authentication endpoints (register, login)
+                        // Authenticated auth endpoints (logout, change-password)
+                        .requestMatchers("/api/v1/auth/logout", "/api/v1/auth/change-password").authenticated()
+                        // Public authentication endpoints (register, login, test endpoints)
                         .requestMatchers("/api/v1/auth/**").permitAll()
                         // Public content lookup endpoints
-                        .requestMatchers(HttpMethod.GET, "/api/v1/radicals/**", "/api/v1/vocabulary/**", "/api/v1/lessons/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/radicals/**", "/api/v1/vocabulary/**", "/api/v1/vocabularies/**", "/api/v1/lessons/**").permitAll()
                         // Allow Spring Boot error endpoint
                         .requestMatchers("/error").permitAll()
                         // Role-based authorization boundaries

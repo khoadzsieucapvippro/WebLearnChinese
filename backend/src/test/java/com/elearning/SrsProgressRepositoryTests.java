@@ -71,6 +71,14 @@ class SrsProgressRepositoryTests {
     }
 
     private Vocabulary createTestVocabulary(String hanzi, String pinyin, String pinyinRaw) {
+        java.util.List<Vocabulary> existing = entityManager.getEntityManager().createQuery(
+                "SELECT v FROM Vocabulary v WHERE v.hanzi = :hanzi AND v.pinyinRaw = :pinyinRaw", Vocabulary.class)
+                .setParameter("hanzi", hanzi)
+                .setParameter("pinyinRaw", pinyinRaw)
+                .getResultList();
+        if (!existing.isEmpty()) {
+            return existing.get(0);
+        }
         Vocabulary vocab = new Vocabulary(hanzi, pinyin, pinyinRaw, "Nghĩa Hán Việt", "Nghĩa Tiếng Việt");
         return entityManager.persistAndFlush(vocab);
     }

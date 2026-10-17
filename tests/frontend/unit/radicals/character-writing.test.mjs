@@ -198,5 +198,81 @@ describe('Character Writing: Modal Component Contract', () => {
     modal.destroy();
     assert.strictEqual(replaced, true);
     assert.strictEqual(modal.engine, null);
+    assert.strictEqual(modal.radicalId, null);
+  });
+
+  test('modal defaults strictly to Mode 1 DEMO (Cách viết)', () => {
+    const mockMount = { replaceChildren: () => {} };
+    const modal = new CharacterWritingModal({ mountElement: mockMount });
+    assert.strictEqual(modal.currentMode, WRITING_MODES.DEMO);
+    modal.destroy();
+  });
+
+  test('switchMode maintains DEMO mode and delegates to replay', async () => {
+    const mockMount = { replaceChildren: () => {} };
+    const modal = new CharacterWritingModal({ mountElement: mockMount });
+    let replayed = false;
+    modal.engine = { replay: () => { replayed = true; }, destroy: () => {} };
+    await modal.switchMode(WRITING_MODES.PRACTICE);
+    assert.strictEqual(modal.currentMode, WRITING_MODES.DEMO);
+    assert.strictEqual(replayed, true);
+    modal.destroy();
+  });
+
+  test('replay() directly invokes engine replay', () => {
+    const mockMount = { replaceChildren: () => {} };
+    const modal = new CharacterWritingModal({ mountElement: mockMount });
+    let replayed = false;
+    modal.engine = { replay: () => { replayed = true; }, destroy: () => {} };
+    modal.replay();
+    assert.strictEqual(replayed, true);
+    modal.destroy();
+  });
+
+  test('renderFallback() hides replay button and renders notice message', () => {
+    let replacedChildren = [];
+    const mockArea = {
+      replaceChildren: (...children) => { replacedChildren = children; },
+      appendChild: (child) => { replacedChildren.push(child); }
+    };
+    const classList = new Set();
+    const mockReplayBtn = {
+      classList: {
+        add: (cls) => classList.add(cls),
+        remove: (cls) => classList.delete(cls),
+        contains: (cls) => classList.has(cls)
+      }
+    };
+    const mockStatusText = { textContent: '' };
+    const mockMount = { replaceChildren: () => {} };
+
+    // Minimal document mock for element creation
+    global.document = {
+      createElement: (tag) => ({
+        tagName: tag.toUpperCase(),
+        className: '',
+        children: [],
+        appendChild: function(c) { this.children.push(c); }
+      })
+    };
+
+    try {
+      const modal = new CharacterWritingModal({ mountElement: mockMount });
+      modal.currentCharacter = '龘';
+      modal.elements = {
+        canvasArea: mockArea,
+        replayBtn: mockReplayBtn,
+        statusText: mockStatusText
+      };
+
+      modal.renderFallback();
+
+      assert.strictEqual(mockReplayBtn.classList.contains('d-none'), true, 'Replay button must be hidden on fallback');
+      assert.ok(mockStatusText.textContent.includes('龘'), 'Status text must mention the character');
+      assert.ok(mockStatusText.textContent.includes('chưa có dữ liệu nét chi tiết'), 'Status text must show missing stroke notice');
+      modal.destroy();
+    } finally {
+      delete global.document;
+    }
   });
 });

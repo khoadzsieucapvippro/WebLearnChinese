@@ -7,9 +7,12 @@ import com.elearning.dto.response.RadicalDetailResponse;
 import com.elearning.dto.response.RadicalResponse;
 import com.elearning.entity.Radical;
 import com.elearning.exception.BusinessException;
+import com.elearning.repository.CardProgressRepository;
 import com.elearning.repository.RadicalRepository;
+import com.elearning.repository.ReviewLogRepository;
 import com.elearning.service.RadicalService;
 import org.springframework.data.domain.Page;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -28,9 +31,16 @@ import java.util.Optional;
 public class RadicalServiceImpl implements RadicalService {
 
     private final RadicalRepository radicalRepository;
+    private final CardProgressRepository cardProgressRepository;
+    private final ReviewLogRepository reviewLogRepository;
 
-    public RadicalServiceImpl(RadicalRepository radicalRepository) {
+    @Autowired
+    public RadicalServiceImpl(RadicalRepository radicalRepository,
+                              CardProgressRepository cardProgressRepository,
+                              ReviewLogRepository reviewLogRepository) {
         this.radicalRepository = radicalRepository;
+        this.cardProgressRepository = cardProgressRepository;
+        this.reviewLogRepository = reviewLogRepository;
     }
 
     @Override
@@ -171,7 +181,13 @@ public class RadicalServiceImpl implements RadicalService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "Không tìm thấy bộ thủ với ID: " + radicalId));
 
         if (radical.getVocabularies() != null && !radical.getVocabularies().isEmpty()) {
-            throw new BusinessException(ErrorCode.CONFLICT, "Không thể xóa bộ thủ đang được liên kết với từ vựng");
+            throw new BusinessException(ErrorCode.CONFLICT, "Không thể xóa bộ thủ đang được liên kết với " + radical.getVocabularies().size() + " từ vựng.");
+        }
+
+        boolean hasProgress = cardProgressRepository.existsByItemTypeAndItemId("RADICAL", Long.valueOf(radicalId));
+        boolean hasReviews = reviewLogRepository.existsByItemTypeAndItemId("RADICAL", Long.valueOf(radicalId));
+        if (hasProgress || hasReviews) {
+            throw new BusinessException(ErrorCode.CONFLICT, "Không thể xóa bộ thủ vì đang có tiến độ học tập (SRS) của học viên");
         }
 
         try {

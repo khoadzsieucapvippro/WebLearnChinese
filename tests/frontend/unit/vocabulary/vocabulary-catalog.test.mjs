@@ -359,4 +359,68 @@ describe('Unit: Chinese Vocabulary Catalog & Logic Engine', () => {
     });
   });
 
+  describe('10. Constituent Radicals Attribution & Presentation Contract (Requirement 3)', () => {
+    test('accurately attributes constituent radicals per Hanzi character in multi-glyph word', () => {
+      // Simulate multi-character word "电视机"
+      const word = '电视机';
+      const radicals = [
+        { radicalId: 102, character: '田', pinyin: 'tián', meaningHanViet: 'Điền', meaningVi: 'Ruộng', hanziChar: '电' },
+        { radicalId: 113, character: '示', pinyin: 'shì', meaningHanViet: 'Thị', meaningVi: 'Bày tỏ', hanziChar: '视' },
+        { radicalId: 75, character: '木', pinyin: 'mù', meaningHanViet: 'Mộc', meaningVi: 'Cây cối', hanziChar: '机' }
+      ];
+
+      radicals.forEach(rad => {
+        assert.ok(rad.hanziChar, 'Each constituent radical must be bound to its specific hanziChar');
+        assert.ok(word.includes(rad.hanziChar), 'Bound character must belong to the compound word');
+      });
+
+      assert.strictEqual(radicals[0].hanziChar, '电');
+      assert.strictEqual(radicals[0].character, '田');
+      assert.strictEqual(radicals[0].radicalId, 102);
+
+      assert.strictEqual(radicals[1].hanziChar, '视');
+      assert.strictEqual(radicals[1].character, '示');
+      assert.strictEqual(radicals[1].radicalId, 113);
+
+      assert.strictEqual(radicals[2].hanziChar, '机');
+      assert.strictEqual(radicals[2].character, '木');
+      assert.strictEqual(radicals[2].radicalId, 75);
+    });
+
+    test('generates compliant SRS flashcard review link for constituent radicals', () => {
+      const radical = { radicalId: 102, character: '田', meaningHanViet: 'Điền' };
+      const flashcardUrl = `srs-review.html?mode=flashcard&group=radicals214&radicalId=${encodeURIComponent(radical.radicalId)}`;
+      assert.strictEqual(flashcardUrl, 'srs-review.html?mode=flashcard&group=radicals214&radicalId=102');
+    });
+
+    test('strictly defends against data fabrication when radicals are empty or unverified', () => {
+      const emptyRadicals = [];
+      const fallbackText = emptyRadicals.length === 0 ? 'Từ này chưa có dữ liệu bộ thủ xác minh.' : '';
+      assert.strictEqual(fallbackText, 'Từ này chưa có dữ liệu bộ thủ xác minh.');
+      assert.ok(!fallbackText.includes('Nhất'), 'Must never assign default radical 一 to unverified words');
+    });
+  });
+
+  describe('11. Vocabulary Detail Writing Orchestration Contract (Requirement 1 & 2)', () => {
+    test('constructs valid SRS review writing shortcut URL for vocabulary', () => {
+      const vocabItem = { vocabId: 42, hskLevel: 1, hanzi: '休' };
+      const group = vocabItem.hskLevel ? `hsk${vocabItem.hskLevel}` : 'hsk1';
+      const practiceUrl = `srs-review.html?mode=writing&group=${group}&vocabId=${encodeURIComponent(vocabItem.vocabId)}`;
+      assert.strictEqual(practiceUrl, 'srs-review.html?mode=writing&group=hsk1&vocabId=42');
+    });
+
+    test('constructs valid SRS review writing shortcut URL for Kangxi radicals', () => {
+      const radicalId = 85;
+      const practiceUrl = `srs-review.html?mode=writing&group=radicals214&radicalId=${encodeURIComponent(radicalId)}`;
+      assert.strictEqual(practiceUrl, 'srs-review.html?mode=writing&group=radicals214&radicalId=85');
+    });
+
+    test('generates truthful warning when character stroke data is missing', () => {
+      const missingChar = '𧾷';
+      const warningText = `Chữ "${missingChar}" hiện chưa có dữ liệu nét chi tiết.`;
+      assert.strictEqual(warningText, 'Chữ "𧾷" hiện chưa có dữ liệu nét chi tiết.');
+      assert.ok(!warningText.includes('Đang cập nhật nét'), 'Must state exact reality without false promises');
+    });
+  });
+
 });

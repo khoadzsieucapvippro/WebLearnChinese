@@ -735,4 +735,85 @@ describe('Browser E2E: 214 Kangxi Radicals Two Learning Tabs & Presentation UI',
     }
   });
 
+  test('RCAT-14: Deep link via ?id=75 switches to 214 panel, scrolls to target card, adds targeted class, and opens Detail Modal', { timeout: 15000 }, async () => {
+    const { page, context } = await createMonitoredPage(browser);
+    const mockRadicals = create214MockRadicals();
+
+    try {
+      await page.route('**/api/v1/radicals*', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            code: 'SUCCESS',
+            message: 'OK',
+            data: { page: 0, size: 214, totalElements: 214, totalPages: 1, items: mockRadicals }
+          })
+        });
+      });
+
+      await page.goto(`${baseUrl}/radicals.html?id=75`, { waitUntil: 'domcontentloaded', timeout: 5000 });
+      await page.waitForSelector('.radical-card', { timeout: 5000 });
+
+      // Tab 214 must be active
+      const tabAll = page.locator('#tabAllRadicals');
+      assert.strictEqual(await tabAll.getAttribute('aria-selected'), 'true', 'Tab 214 must be active when deep-linking by ID');
+
+      // Target card #75 must have targeted class
+      const targetCard = page.locator('button[data-radical-id="75"]');
+      await targetCard.waitFor({ state: 'visible', timeout: 5000 });
+      assert.strictEqual(await targetCard.evaluate(el => el.classList.contains('radical-card-targeted')), true);
+
+      // Detail Modal must be opened automatically
+      const modal = page.locator('#radicalDetailModal');
+      await modal.waitFor({ state: 'visible', timeout: 5000 });
+      const modalTitle = await page.textContent('#modalRadicalTitle');
+      assert.ok(modalTitle.includes('Mộc') || modalTitle.includes('75'), `Modal title should reflect radical 75, got: ${modalTitle}`);
+
+      // Close modal and verify focus restores to target card
+      await page.click('#modalCloseBtn');
+      await modal.waitFor({ state: 'hidden', timeout: 5000 });
+      const activeRadicalId = await page.evaluate(() => document.activeElement?.getAttribute('data-radical-id'));
+      assert.strictEqual(activeRadicalId, '75', 'Focus must be restored to card 75');
+    } finally {
+      await page.close();
+      await context.close();
+    }
+  });
+
+  test('RCAT-15: Deep link via ?search=木 sets search input, filters results, and opens Detail Modal', { timeout: 15000 }, async () => {
+    const { page, context } = await createMonitoredPage(browser);
+    const mockRadicals = create214MockRadicals();
+
+    try {
+      await page.route('**/api/v1/radicals*', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            code: 'SUCCESS',
+            message: 'OK',
+            data: { page: 0, size: 214, totalElements: 214, totalPages: 1, items: mockRadicals }
+          })
+        });
+      });
+
+      await page.goto(`${baseUrl}/radicals.html?search=%E6%9C%A8`, { waitUntil: 'domcontentloaded', timeout: 5000 });
+      await page.waitForSelector('.radical-card', { timeout: 5000 });
+
+      // Search input should be populated with query
+      const searchInputValue = await page.inputValue('#radicalSearchInput');
+      assert.strictEqual(searchInputValue, '木', 'Search input must be populated');
+
+      // Detail Modal must open automatically for radical 木
+      const modal = page.locator('#radicalDetailModal');
+      await modal.waitFor({ state: 'visible', timeout: 5000 });
+      const modalChar = await page.textContent('#modalRadicalChar');
+      assert.strictEqual(modalChar.trim(), '木', 'Modal character must be 木');
+    } finally {
+      await page.close();
+      await context.close();
+    }
+  });
+
 });

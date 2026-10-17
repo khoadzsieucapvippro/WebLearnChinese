@@ -87,7 +87,7 @@ class RadicalIntegrationTests {
         }
 
         @Test
-        @DisplayName("GIVEN existing radical ID 1 WHEN GET /api/v1/radicals/1 THEN 200 OK with detail metadata")
+        @DisplayName("GIVEN existing radical ID 1 WHEN GET /api/v1/radicals/1 THEN 200 OK with detail metadata and explanation")
         void testGetRadicalByIdPublicSuccess() throws Exception {
             mockMvc.perform(get("/api/v1/radicals/1"))
                     .andExpect(status().isOk())
@@ -97,8 +97,20 @@ class RadicalIntegrationTests {
                     .andExpect(jsonPath("$.data.pinyin").value("yī"))
                     .andExpect(jsonPath("$.data.meaningHanViet").value("Nhất"))
                     .andExpect(jsonPath("$.data.meaningVi").value("Số một, sự khởi đầu"))
+                    .andExpect(jsonPath("$.data.explanationVi").isNotEmpty())
                     .andExpect(jsonPath("$.data.createdAt").isNotEmpty())
                     .andExpect(jsonPath("$.data.updatedAt").isNotEmpty());
+        }
+
+        @Test
+        @DisplayName("GIVEN previously unseeded radical ID 214 WHEN GET /api/v1/radicals/214 THEN 200 OK with pedagogical explanation")
+        void testGetRadical214WithExplanation() throws Exception {
+            mockMvc.perform(get("/api/v1/radicals/214"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("SUCCESS"))
+                    .andExpect(jsonPath("$.data.radicalId").value(214))
+                    .andExpect(jsonPath("$.data.character").value("龠"))
+                    .andExpect(jsonPath("$.data.explanationVi").value(org.hamcrest.Matchers.containsString("Mẹo nhớ:")));
         }
 
         @Test
@@ -109,6 +121,7 @@ class RadicalIntegrationTests {
                     .andExpect(jsonPath("$.code").value("NOT_FOUND"))
                     .andExpect(jsonPath("$.message").value("Không tìm thấy bộ thủ với ID: 999"));
         }
+
     }
 
     @Nested

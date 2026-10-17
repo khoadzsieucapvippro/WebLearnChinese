@@ -105,7 +105,15 @@ describe('Browser E2E: Adversarial DOM XSS Prevention & Safe Rendering Audit (Ta
         });
       });
 
-      await page.route('**/api/v1/srs/stats*', async (route) => {
+      await page.route('**/api/v1/srs/*', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ code: 'SUCCESS', message: 'OK', data: [] })
+        });
+      });
+
+      await page.route('**/api/v1/lessons/1**', async (route) => {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
@@ -113,10 +121,14 @@ describe('Browser E2E: Adversarial DOM XSS Prevention & Safe Rendering Audit (Ta
             code: 'SUCCESS',
             message: 'OK',
             data: {
-              reviewsToday: 5,
-              newCardsToday: 2,
-              cardsDue: 0,
-              retentionRate: 90
+              lessonId: 1,
+              title: 'Bài 1: Khởi động',
+              description: 'Mô tả bài học',
+              status: 'Approved',
+              vocabularyCount: 1,
+              vocabularies: [
+                { vocabId: 101, orderIndex: 1, hanzi: '学', pinyin: 'xué', meaningVi: 'Học tập' }
+              ]
             }
           })
         });
@@ -161,9 +173,9 @@ describe('Browser E2E: Adversarial DOM XSS Prevention & Safe Rendering Audit (Ta
         }
       });
 
-      // 3. Navigate to Vocabulary page and open Notes modal
-      await page.goto(`${server.baseUrl}/vocabulary.html`, { waitUntil: 'domcontentloaded' });
-      const noteBtn = page.locator('.vocab-card-note-btn').first();
+      // 3. Navigate to Lesson detail page and open Notes modal via vocab item
+      await page.goto(`${server.baseUrl}/lesson-detail.html?id=1`, { waitUntil: 'domcontentloaded' });
+      const noteBtn = page.locator('.lesson-vocab-note-btn').first();
       await noteBtn.waitFor({ state: 'visible' });
       await noteBtn.click();
 
@@ -520,13 +532,16 @@ describe('Browser E2E: Adversarial DOM XSS Prevention & Safe Rendering Audit (Ta
       const radicalBadge = page.locator('.vocab-radical-badge').first();
       await radicalBadge.click();
 
-      const previewLink = page.locator('#modalRadicalPreview a');
-      await previewLink.waitFor({ state: 'visible' });
-      const href = await previewLink.getAttribute('href');
-      assert.ok(
-        !href.toLowerCase().startsWith('javascript:'),
-        `Link href must not be javascript: scheme, received: "${href}"`
-      );
+      const previewLinks = page.locator('#modalRadicalPreview a');
+      await previewLinks.first().waitFor({ state: 'visible' });
+      const count = await previewLinks.count();
+      for (let i = 0; i < count; i++) {
+        const href = await previewLinks.nth(i).getAttribute('href');
+        assert.ok(
+          !href.toLowerCase().startsWith('javascript:'),
+          `Link href must not be javascript: scheme, received: "${href}"`
+        );
+      }
 
       await sentinel.assertClean();
 

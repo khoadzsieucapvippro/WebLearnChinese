@@ -67,6 +67,30 @@ async function setupAuthenticatedSession(page) {
       roles: ['Learner']
     }));
   });
+
+  await page.route('**/api/v1/**/notes*', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        code: 'SUCCESS',
+        message: 'OK',
+        data: { items: [], page: 0, size: 20, totalElements: 0, totalPages: 0 }
+      })
+    });
+  });
+
+  await page.route('**/api/v1/radicals*', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        code: 'SUCCESS',
+        message: 'OK',
+        data: { items: [], page: 0, size: 214, totalElements: 0, totalPages: 0 }
+      })
+    });
+  });
 }
 
 describe('Browser E2E: Interactive SRS Flashcard Review Session (9C.3)', () => {

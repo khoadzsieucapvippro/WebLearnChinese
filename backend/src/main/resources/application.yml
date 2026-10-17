@@ -33,12 +33,14 @@ spring:
 
   flyway:
     enabled: true
-    baseline-on-migrate: false
+    baseline-on-migrate: true
+    validate-on-migrate: false
+    encoding: UTF-8
     locations: classpath:db/migration
     clean-disabled: true
 
 jwt:
-  secret: ${JWT_SECRET}
+  secret: ${JWT_SECRET:elearning-chinese-platform-secret-key-jwt-256-bits-minimum-length-key!}
   expiration-ms: ${JWT_EXPIRATION_MS:86400000}
   issuer: ${JWT_ISSUER:elearning-backend}
 
@@ -52,7 +54,7 @@ app:
     allow-credentials: ${APP_CORS_ALLOW_CREDENTIALS:false}
     max-age-seconds: ${APP_CORS_MAX_AGE_SECONDS:3600}
   demo:
-    seed-accounts: ${APP_DEMO_SEED_ACCOUNTS:true}
+    seed-accounts: ${APP_DEMO_SEED_ACCOUNTS:false}
   rate-limit:
     login:
       max-attempts: ${APP_RATE_LIMIT_LOGIN_MAX_ATTEMPTS:10}

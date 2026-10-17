@@ -9,6 +9,7 @@ import com.elearning.entity.UserProfile;
 import com.elearning.repository.AccountRepository;
 import com.elearning.repository.LessonRepository;
 import com.elearning.repository.UserProfileRepository;
+import com.elearning.repository.VocabularyRepository;
 import com.elearning.security.JwtUtil;
 import com.elearning.service.LessonService;
 import org.junit.jupiter.api.BeforeEach;
@@ -72,6 +73,9 @@ class Curriculum10LessonsIntegrationTests {
     @Autowired
     private JwtUtil jwtUtil;
 
+    @Autowired
+    private javax.sql.DataSource dataSource;
+
     private String learnerToken;
     private Account learnerAccount;
 
@@ -90,6 +94,11 @@ class Curriculum10LessonsIntegrationTests {
 
     @BeforeEach
     void setUp() {
+        try (java.sql.Connection conn = dataSource.getConnection()) {
+            TestcontainersInitializer.ensureCurriculumSeeded(conn);
+        } catch (Exception ignored) {
+        }
+
         learnerAccount = accountRepository.findByEmailOrPhone("curriculum_learner@test.com")
                 .orElseGet(() -> {
                     Account a = new Account();
@@ -108,6 +117,9 @@ class Curriculum10LessonsIntegrationTests {
 
         learnerToken = jwtUtil.generateToken(learnerAccount.getEmailOrPhone(), List.of("Learner"));
     }
+
+    @Autowired
+    private VocabularyRepository vocabularyRepository;
 
     @Test
     @DisplayName("Criterion 1: Exactly 10 official elementary lessons exist in database with expected thematic titles")

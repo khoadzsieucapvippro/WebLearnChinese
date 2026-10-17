@@ -592,10 +592,15 @@ export function initProfileSrsSettingsForm() {
     }
 
     try {
+      const maxReview = (currentSrsSettings && typeof currentSrsSettings.maxReviewPerDay === 'number' && currentSrsSettings.maxReviewPerDay > 0)
+        ? currentSrsSettings.maxReviewPerDay
+        : 100;
+
       const updated = await apiClient('/srs/settings', {
         method: 'PUT',
         body: {
-          newCardsPerDay: parseInt(String(newCardsVal).trim(), 10)
+          newCardsPerDay: parseInt(String(newCardsVal).trim(), 10),
+          maxReviewPerDay: maxReview
         }
       });
 
@@ -606,7 +611,7 @@ export function initProfileSrsSettingsForm() {
       }
 
       if (statusEl) {
-        statusEl.textContent = '✓ Đã cập nhật cài đặt học tập SRS thành công!';
+        statusEl.textContent = '✓ Đã cập nhật cài đặt học tập thành công!';
         statusEl.className = 'small text-success fw-semibold mt-2';
       }
 
@@ -694,6 +699,7 @@ export function initProfileTabs() {
   tabSettings.addEventListener('click', () => {
     activateSettingsTab();
     loadSrsSettings();
+    initDisplayAndAudioSettings();
     if (typeof history !== 'undefined' && history.replaceState) {
       history.replaceState(null, '', '#settings');
     }
@@ -704,6 +710,7 @@ export function initProfileTabs() {
     if (hash === '#srs-settings' || hash === '#settings') {
       activateSettingsTab();
       loadSrsSettings();
+      initDisplayAndAudioSettings();
       if (hash === '#srs-settings') {
         const srsCard = document.getElementById('srs-settings-card');
         const srsInput = document.getElementById('srsNewCardsPerDayInput');
@@ -725,6 +732,243 @@ export function initProfileTabs() {
   }
 }
 
+export const AUDIO_SETTINGS_STORAGE_KEY = 'HOC_HAN_NGU_AUDIO_SETTINGS';
+export const WRITING_SETTINGS_STORAGE_KEY = 'HOC_HAN_NGU_WRITING_SETTINGS';
+
+export const DEFAULT_AUDIO_SETTINGS = Object.freeze({
+  autoPronounce: true,
+  speechRate: 1.0
+});
+
+export const DEFAULT_WRITING_SETTINGS = Object.freeze({
+  showOutline: true,
+  autoReplayStrokes: false,
+  gridSize: 'standard',
+  gridPixelSize: 170
+});
+
+/**
+ * Retrieves audio and pronunciation preferences from localStorage.
+ * Safe for SSR and environments without localStorage.
+ * 
+ * @returns {{ autoPronounce: boolean, speechRate: number }}
+ */
+export function getAudioSettings() {
+  if (typeof localStorage === 'undefined') {
+    return { ...DEFAULT_AUDIO_SETTINGS };
+  }
+  try {
+    const raw = localStorage.getItem(AUDIO_SETTINGS_STORAGE_KEY);
+    if (!raw) return { ...DEFAULT_AUDIO_SETTINGS };
+    const parsed = JSON.parse(raw);
+    const autoPronounce = typeof parsed?.autoPronounce === 'boolean'
+      ? parsed.autoPronounce
+      : (parsed?.autoPronounce === 'false' || parsed?.autoPronounce === false ? false : true);
+    const rate = parseFloat(parsed?.speechRate);
+    const speechRate = (!isNaN(rate) && rate > 0) ? rate : DEFAULT_AUDIO_SETTINGS.speechRate;
+    return { autoPronounce, speechRate };
+  } catch (_) {
+    return { ...DEFAULT_AUDIO_SETTINGS };
+  }
+}
+
+/**
+ * Saves audio and pronunciation preferences to localStorage.
+ * 
+ * @param {Partial<{ autoPronounce: boolean, speechRate: number }>} [settings={}]
+ * @returns {{ autoPronounce: boolean, speechRate: number }}
+ */
+export function saveAudioSettings(settings = {}) {
+  const current = getAudioSettings();
+  let rate = current.speechRate;
+  if (settings.speechRate !== undefined) {
+    const parsed = parseFloat(settings.speechRate);
+    rate = (!isNaN(parsed) && parsed > 0) ? parsed : DEFAULT_AUDIO_SETTINGS.speechRate;
+  }
+  const next = {
+    autoPronounce: typeof settings.autoPronounce === 'boolean'
+      ? settings.autoPronounce
+      : (settings.autoPronounce !== undefined ? Boolean(settings.autoPronounce) : current.autoPronounce),
+    speechRate: rate
+  };
+  if (typeof localStorage !== 'undefined') {
+    try {
+      localStorage.setItem(AUDIO_SETTINGS_STORAGE_KEY, JSON.stringify(next));
+    } catch (e) {
+      console.warn('[ProfilePage] Failed to save audio settings to localStorage:', e);
+    }
+  }
+  return next;
+}
+
+/**
+ * Retrieves character writing and display preferences from localStorage.
+ * 
+ * @returns {{ showOutline: boolean, autoReplayStrokes: boolean, gridSize: string, gridPixelSize: number }}
+ */
+export function getWritingSettings() {
+  if (typeof localStorage === 'undefined') {
+    return { ...DEFAULT_WRITING_SETTINGS };
+  }
+  try {
+    const raw = localStorage.getItem(WRITING_SETTINGS_STORAGE_KEY);
+    if (!raw) return { ...DEFAULT_WRITING_SETTINGS };
+    const parsed = JSON.parse(raw);
+    const showOutline = typeof parsed?.showOutline === 'boolean'
+      ? parsed.showOutline
+      : (parsed?.showOutline === 'false' || parsed?.showOutline === false ? false : true);
+    const autoReplayStrokes = typeof parsed?.autoReplayStrokes === 'boolean'
+      ? parsed.autoReplayStrokes
+      : (parsed?.autoReplayStrokes === 'true' || parsed?.autoReplayStrokes === true);
+    const gridSize = (parsed?.gridSize === 'large' || parsed?.gridSize === 'standard')
+      ? parsed.gridSize
+      : DEFAULT_WRITING_SETTINGS.gridSize;
+    return {
+      showOutline,
+      autoReplayStrokes,
+      gridSize,
+      gridPixelSize: gridSize === 'large' ? 200 : 170
+    };
+  } catch (_) {
+    return { ...DEFAULT_WRITING_SETTINGS };
+  }
+}
+
+/**
+ * Saves character writing and display preferences to localStorage.
+ * 
+ * @param {Partial<{ showOutline: boolean, autoReplayStrokes: boolean, gridSize: string }>} [settings={}]
+ * @returns {{ showOutline: boolean, autoReplayStrokes: boolean, gridSize: string, gridPixelSize: number }}
+ */
+export function saveWritingSettings(settings = {}) {
+  const current = getWritingSettings();
+  const next = {
+    showOutline: typeof settings.showOutline === 'boolean'
+      ? settings.showOutline
+      : (settings.showOutline !== undefined ? Boolean(settings.showOutline) : current.showOutline),
+    autoReplayStrokes: typeof settings.autoReplayStrokes === 'boolean'
+      ? settings.autoReplayStrokes
+      : (settings.autoReplayStrokes !== undefined ? Boolean(settings.autoReplayStrokes) : current.autoReplayStrokes),
+    gridSize: (settings.gridSize === 'large' || settings.gridSize === 'standard')
+      ? settings.gridSize
+      : current.gridSize
+  };
+  next.gridPixelSize = next.gridSize === 'large' ? 200 : 170;
+  if (typeof localStorage !== 'undefined') {
+    try {
+      localStorage.setItem(WRITING_SETTINGS_STORAGE_KEY, JSON.stringify(next));
+    } catch (e) {
+      console.warn('[ProfilePage] Failed to save writing settings to localStorage:', e);
+    }
+  }
+  return next;
+}
+
+/**
+ * Initializes controls and listeners for Audio and Writing display settings (Task UX Yêu cầu 7).
+ */
+export function initDisplayAndAudioSettings() {
+  const autoPronounceEl = document.getElementById('settingAutoPronounce');
+  const speechRateEl = document.getElementById('settingSpeechRate');
+  const showOutlineEl = document.getElementById('settingShowOutline');
+  const autoReplayStrokesEl = document.getElementById('settingAutoReplayStrokes');
+  const gridSizeEl = document.getElementById('settingGridSize');
+  const saveBtn = document.getElementById('btnSaveDisplayAudioSettings');
+  const statusEl = document.getElementById('displayAudioSettingsStatus');
+
+  const audioPrefs = getAudioSettings();
+  const writingPrefs = getWritingSettings();
+
+  if (autoPronounceEl) {
+    autoPronounceEl.checked = audioPrefs.autoPronounce;
+  }
+  if (speechRateEl) {
+    speechRateEl.value = String(audioPrefs.speechRate);
+  }
+  if (showOutlineEl) {
+    showOutlineEl.checked = writingPrefs.showOutline;
+  }
+  if (autoReplayStrokesEl) {
+    autoReplayStrokesEl.checked = writingPrefs.autoReplayStrokes;
+  }
+  if (gridSizeEl) {
+    gridSizeEl.value = writingPrefs.gridSize;
+  }
+
+  function handleSave() {
+    const updatedAudio = {
+      autoPronounce: autoPronounceEl ? autoPronounceEl.checked : true,
+      speechRate: speechRateEl ? parseFloat(speechRateEl.value) || 1.0 : 1.0
+    };
+    const updatedWriting = {
+      showOutline: showOutlineEl ? showOutlineEl.checked : true,
+      autoReplayStrokes: autoReplayStrokesEl ? autoReplayStrokesEl.checked : false,
+      gridSize: gridSizeEl ? gridSizeEl.value : 'standard'
+    };
+
+    saveAudioSettings(updatedAudio);
+    saveWritingSettings(updatedWriting);
+
+    if (statusEl) {
+      statusEl.textContent = '✓ Đã lưu cài đặt hiển thị & âm thanh thành công!';
+      statusEl.className = 'small text-success fw-semibold';
+      setTimeout(() => {
+        if (statusEl && statusEl.textContent.includes('Đã lưu cài đặt')) {
+          statusEl.textContent = '';
+        }
+      }, 4000);
+    }
+
+    showToast({
+      type: 'success',
+      title: 'Cài đặt hiển thị & âm thanh',
+      message: 'Đã lưu cấu hình phát âm và luyện viết thành công.'
+    });
+  }
+
+  if (saveBtn) {
+    saveBtn.addEventListener('click', handleSave);
+  }
+
+  const controls = [autoPronounceEl, speechRateEl, showOutlineEl, autoReplayStrokesEl, gridSizeEl];
+  controls.forEach(ctrl => {
+    if (ctrl) {
+      ctrl.addEventListener('change', () => {
+        const updatedAudio = {
+          autoPronounce: autoPronounceEl ? autoPronounceEl.checked : true,
+          speechRate: speechRateEl ? parseFloat(speechRateEl.value) || 1.0 : 1.0
+        };
+        const updatedWriting = {
+          showOutline: showOutlineEl ? showOutlineEl.checked : true,
+          autoReplayStrokes: autoReplayStrokesEl ? autoReplayStrokesEl.checked : false,
+          gridSize: gridSizeEl ? gridSizeEl.value : 'standard'
+        };
+        saveAudioSettings(updatedAudio);
+        saveWritingSettings(updatedWriting);
+        if (statusEl) {
+          statusEl.textContent = '✓ Đã lưu thay đổi!';
+          statusEl.className = 'small text-success fw-semibold';
+          setTimeout(() => {
+            if (statusEl && statusEl.textContent.includes('Đã lưu thay đổi')) {
+              statusEl.textContent = '';
+            }
+          }, 3000);
+        }
+      });
+    }
+  });
+}
+
+/**
+ * Loads both user profile and SRS settings, and synchronizes local audio/writing settings.
+ */
+export async function loadUserProfileAndSettings() {
+  await Promise.allSettled([
+    loadProfile(),
+    loadSrsSettings()
+  ]);
+  initDisplayAndAudioSettings();
+}
 
 if (typeof document !== 'undefined' && typeof document.addEventListener === 'function') {
   document.addEventListener('DOMContentLoaded', () => {
@@ -743,6 +987,7 @@ if (typeof document !== 'undefined' && typeof document.addEventListener === 'fun
     initProfileTabs();
     initProfileEditForm();
     initProfileSrsSettingsForm();
+    initDisplayAndAudioSettings();
     loadProfile();
   });
 }

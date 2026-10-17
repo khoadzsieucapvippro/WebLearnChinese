@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' https://cdn.jsdelivr.net; style-src-elem 'self' https://cdn.jsdelivr.net; style-src-attr 'unsafe-inline'; font-src 'self'; img-src 'self' data: https:; media-src 'self' blob: https:; connect-src 'self' http://localhost:8080 http://127.0.0.1:8080 https://*.up.railway.app https://*.onrender.com https://*.koyeb.app; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'self' https://www.youtube-nocookie.com">
-  <title>Phòng Ôn Tập Flashcard SRS | Hán Ngữ &amp; Bộ Thủ</title>
-  <meta name="description" content="Ôn tập từ vựng và bộ thủ tiếng Trung qua thuật toán lặp lại ngắt quãng SuperMemo-2 (SRS). Lật thẻ kiểm tra phản xạ, phát âm và củng cố trí nhớ dài hạn.">
+  <title>Trung Tâm Ôn Tập Hán Ngữ | Hán Ngữ &amp; Bộ Thủ</title>
+  <meta name="description" content="Trung tâm ôn tập từ vựng và bộ thủ tiếng Trung với Flashcard lặp lại ngắt quãng SuperMemo-2 (SRS) và Luyện viết chữ Mễ tương tác.">
 
   <!-- Verified Bootstrap 5.3.3 CSS via CDN with Authenticated Subresource Integrity (SRI) -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
@@ -52,10 +52,7 @@
               <a class="nav-link-custom" href="vocabulary.html">Từ vựng</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link-custom" href="lessons.html">Bài học</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link-custom active" href="srs-review.html" aria-current="page">Ôn tập SRS</a>
+              <a class="nav-link-custom active" href="srs-review.html" aria-current="page">Ôn tập</a>
             </li>
           </ul>
 
@@ -81,11 +78,11 @@
       <div class="text-center mb-4">
         <div class="d-inline-flex align-items-center gap-2 mb-1">
           <span class="brand-seal-mark" aria-hidden="true" style="width: 28px; height: 28px; font-size: 0.95rem;">复</span>
-          <span class="text-secondary small fw-semibold text-uppercase" style="letter-spacing: 0.05em;">Hệ Thống Lặp Lại Ngắt Quãng (SuperMemo-2)</span>
+          <span class="text-secondary small fw-semibold text-uppercase" style="letter-spacing: 0.05em;">Trung Tâm Học Tập &amp; Ôn Luyện</span>
         </div>
-        <h1 class="h2 fw-bold text-dark mb-2" id="srsPageHeading">Phòng Ôn Tập Flashcard SRS</h1>
+        <h1 class="h2 fw-bold text-dark mb-2" id="srsPageHeading">Trung Tâm Ôn Tập Hán Ngữ</h1>
         <p class="text-secondary mb-0 mx-auto" style="max-width: 44rem;">
-          Rèn luyện trí nhớ dài hạn thông qua phương pháp lặp lại ngắt quãng khoa học. Lật thẻ kiểm tra phản xạ, nghe phát âm và đánh giá mức độ ghi nhớ.
+          Củng cố kiến thức chữ Hán qua thẻ Flashcard lặp lại ngắt quãng (SRS) và phòng Luyện viết chữ Mễ tương tác chuyên sâu.
         </p>
         <div class="mt-2">
           <a href="srs-dashboard.html" id="linkToSrsDashboard" class="btn btn-sm btn-chinese-outline py-1 px-3 text-decoration-none">
@@ -93,32 +90,83 @@
           </a>
         </div>
 
-        <!-- Legacy Migration Notification Banner -->
-        <div id="srsLegacyNoticeBanner" class="alert alert-info d-flex align-items-center gap-2 mx-auto text-start py-2 px-3 mt-3 mb-3 small" style="max-width: 44rem;" role="status">
-          <span class="fs-5" aria-hidden="true">ℹ️</span>
-          <div>
-            <strong>Nâng cấp SRS theo Kỹ năng:</strong> Hệ thống tổ chức 3 chế độ độc lập: <strong>Đọc / Nhận diện</strong>, <strong>Luyện nghe</strong> và <strong>Luyện viết</strong> với lịch ôn riêng biệt.
-          </div>
-        </div>
-
-        <!-- 3 Main Skill Tabs Toolbar -->
-        <div class="d-flex justify-content-center mb-2">
-          <div class="srs-skill-tab-toolbar d-inline-flex p-1 rounded-pill bg-light border shadow-sm" role="tablist" aria-label="Chọn kỹ năng ôn tập SRS">
-            <button type="button" id="srsSkillTabReading" class="btn btn-sm rounded-pill py-2 px-3 px-sm-4 fw-bold srs-skill-tab btn-chinese-primary" role="tab" aria-selected="true" data-skill="READING">
-              📖 Đọc / Nhận diện
+        <!-- 2 Main Modes Toolbar -->
+        <div class="d-flex justify-content-center mt-3 mb-2">
+          <div class="srs-skill-tab-toolbar d-inline-flex p-1 rounded-pill bg-light border shadow-sm" role="tablist" aria-label="Chọn chế độ ôn tập">
+            <button type="button" id="srsSkillTabReading" class="btn btn-sm rounded-pill py-2 px-3 px-sm-4 fw-bold srs-skill-tab srs-mode-tab btn-chinese-primary" role="tab" aria-selected="true" data-mode="flashcard" data-skill="READING">
+              🎴 Flashcard
             </button>
-            <button type="button" id="srsSkillTabListening" class="btn btn-sm rounded-pill py-2 px-3 px-sm-4 fw-bold srs-skill-tab btn-outline-secondary border-0" role="tab" aria-selected="false" data-skill="LISTENING">
-              🎧 Luyện nghe
-            </button>
-            <button type="button" id="srsSkillTabWriting" class="btn btn-sm rounded-pill py-2 px-3 px-sm-4 fw-bold srs-skill-tab btn-outline-secondary border-0" role="tab" aria-selected="false" data-skill="WRITING">
+            <button type="button" id="srsSkillTabWriting" class="btn btn-sm rounded-pill py-2 px-3 px-sm-4 fw-bold srs-skill-tab srs-mode-tab btn-outline-secondary border-0" role="tab" aria-selected="false" data-mode="writing" data-skill="WRITING">
               ✍️ Luyện viết
             </button>
           </div>
         </div>
+
+        <!-- 5 Content Group Selector Tabs -->
+        <div class="d-flex justify-content-center flex-wrap gap-2 my-2" id="srsGroupTabsToolbar" role="tablist" aria-label="Chọn nhóm nội dung ôn tập">
+          <button type="button" id="groupTabRadicals50" class="btn btn-sm py-2 px-3 fw-semibold rounded-pill group-tab active btn-chinese-primary" data-group="radicals50">
+            50 bộ thủ thông dụng
+          </button>
+          <button type="button" id="groupTabRadicals214" class="btn btn-sm py-2 px-3 fw-semibold rounded-pill group-tab btn-outline-secondary" data-group="radicals214">
+            214 bộ thủ
+          </button>
+          <button type="button" id="groupTabHsk1" class="btn btn-sm py-2 px-3 fw-semibold rounded-pill group-tab btn-outline-secondary" data-group="hsk1">
+            HSK 1
+          </button>
+          <button type="button" id="groupTabHsk2" class="btn btn-sm py-2 px-3 fw-semibold rounded-pill group-tab btn-outline-secondary" data-group="hsk2">
+            HSK 2
+          </button>
+          <button type="button" id="groupTabHsk3" class="btn btn-sm py-2 px-3 fw-semibold rounded-pill group-tab btn-outline-secondary" data-group="hsk3">
+            HSK 3
+          </button>
+        </div>
       </div>
 
+      <!-- State 0: Catalog Selection Section (Content Group Browser) -->
+      <section id="srsCatalogSelection" class="py-2" aria-label="Danh mục nội dung ôn tập">
+        <!-- Action Bar for selected group (Học tiếp / Học lại) -->
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3 p-3 bg-light rounded-3 border">
+          <div>
+            <h2 class="h5 fw-bold text-dark mb-1" id="catalogGroupTitle">50 Bộ Thủ Thông Dụng</h2>
+            <p class="text-secondary small mb-0" id="catalogGroupSubtitle">Các bộ thủ xuất hiện với tần suất cao nhất trong chữ Hán hiện đại.</p>
+          </div>
+          <div class="d-flex gap-2">
+            <button type="button" id="btnGroupContinue" class="btn btn-chinese-primary py-2 px-3 text-nowrap fw-semibold">
+              ▶ Học tiếp
+            </button>
+            <button type="button" id="btnGroupReview" class="btn btn-chinese-secondary py-2 px-3 text-nowrap fw-semibold">
+              🔄 Học lại
+            </button>
+          </div>
+        </div>
+
+        <!-- Filter / Search Toolbar (for 214 radicals) -->
+        <div id="catalogFilterToolbar" class="d-none mb-3 p-2 bg-light rounded border">
+          <div class="row g-2 align-items-center">
+            <div class="col-12 col-md-6">
+              <input type="search" id="catalogSearchInput" class="form-control form-control-sm" placeholder="Tìm kiếm bộ thủ (chữ, pinyin, Hán-Việt, nghĩa)..." aria-label="Tìm kiếm bộ thủ">
+            </div>
+            <div class="col-12 col-md-6 d-flex gap-1 flex-wrap align-items-center" id="strokeFilterButtons">
+              <span class="small text-secondary me-1">Số nét:</span>
+              <button type="button" class="btn btn-sm py-1 px-2 btn-chinese-primary stroke-filter-btn" data-stroke="all">Tất cả</button>
+              <button type="button" class="btn btn-sm py-1 px-2 btn-outline-secondary stroke-filter-btn" data-stroke="1-2">1-2</button>
+              <button type="button" class="btn btn-sm py-1 px-2 btn-outline-secondary stroke-filter-btn" data-stroke="3">3</button>
+              <button type="button" class="btn btn-sm py-1 px-2 btn-outline-secondary stroke-filter-btn" data-stroke="4">4</button>
+              <button type="button" class="btn btn-sm py-1 px-2 btn-outline-secondary stroke-filter-btn" data-stroke="5">5</button>
+              <button type="button" class="btn btn-sm py-1 px-2 btn-outline-secondary stroke-filter-btn" data-stroke="6">6</button>
+              <button type="button" class="btn btn-sm py-1 px-2 btn-outline-secondary stroke-filter-btn" data-stroke="7+">7+</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dynamic Catalog Container -->
+        <div id="catalogContentContainer" class="catalog-items-container">
+          <!-- Dynamically populated by JS: Radicals chip grid or HSK Topics list -->
+        </div>
+      </section>
+
       <!-- State 1: Loading State -->
-      <section id="srsLoadingState" class="state-container py-5 text-center" role="status" aria-live="polite">
+      <section id="srsLoadingState" class="state-container py-5 text-center d-none" role="status" aria-live="polite">
         <div class="state-spinner" aria-hidden="true"></div>
         <p class="state-loading-text mt-3 text-secondary">Đang nạp dữ liệu thẻ ôn tập SRS...</p>
       </section>
@@ -174,13 +222,16 @@
         </div>
       </section>
 
-      <!-- State 5: Active Flashcard Session Room -->
+      <!-- State 5: Active Flashcard & Writing Session Room -->
       <section id="srsActiveSession" class="d-none srs-review-wrapper" aria-label="Khu vực ôn tập thẻ ghi nhớ">
         
         <!-- Session Progress & Reaction Timer Bar -->
         <div class="srs-session-header mb-3">
           <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
             <div class="d-flex align-items-center gap-2">
+              <button type="button" id="btnBackToSelection" class="btn btn-sm btn-outline-secondary py-1 px-2">
+                ← Đổi nội dung ôn tập
+              </button>
               <span id="srsSessionModeBadge" class="badge bg-secondary-subtle text-secondary border">Thẻ đến hạn</span>
               <span id="srsProgressText" class="fw-semibold text-dark small">Thẻ 1 / 1</span>
             </div>
@@ -195,128 +246,211 @@
           </div>
         </div>
 
-        <!-- 3D Interactive Flashcard -->
-        <div class="flashcard-scene">
-          <div id="flashcard" class="flashcard" tabindex="0" role="button" aria-label="Thẻ ghi nhớ SRS. Nhấn Phím cách hoặc Enter để lật thẻ." aria-expanded="false">
-            
-            <!-- Front Face -->
-            <div id="cardFront" class="flashcard-face flashcard-face-front" aria-hidden="false">
-              <div class="d-flex justify-content-between align-items-center w-100">
-                <span id="cardTypeBadgeFront" class="badge bg-light text-secondary border">Từ vựng</span>
-                <span id="cardSkillBadgeFront" class="badge bg-secondary-subtle text-secondary border">📖 Đọc / Nhận diện</span>
-                <span id="cardStatusBadgeFront" class="badge bg-primary-subtle text-primary border border-primary-subtle d-none">Mới</span>
-              </div>
+        <!-- Flashcard Container (For Flashcard Mode) -->
+        <div id="srsFlashcardContainer">
+          <!-- 3D Interactive Flashcard -->
+          <div class="flashcard-scene">
+            <div id="flashcard" class="flashcard" tabindex="0" role="button" aria-label="Thẻ ghi nhớ SRS. Nhấn Phím cách hoặc Enter để lật thẻ." aria-expanded="false">
               
-              <!-- Front Content Face Area (Reading / Listening) -->
-              <div id="cardFrontListeningArea" class="my-auto py-2 text-center w-100">
-                <div id="cardFrontHanzi" class="flashcard-hanzi my-auto" lang="zh-CN">学</div>
-                <div id="cardFrontPinyin" class="flashcard-pinyin mb-2 d-none">xué</div>
-                <div class="d-flex align-items-center justify-content-center gap-2 mt-2">
-                  <button 
-                    type="button" 
-                    id="btnAudioPronounceFront" 
-                    class="vocab-speech-btn" 
-                    aria-label="Phát âm từ vựng" 
-                    title="Phát âm (Web Speech API)"
-                  >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                      <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-                    </svg>
-                  </button>
-                  <span id="listeningFrontPromptText" class="small text-secondary">Bấm loa để nghe phát âm</span>
+              <!-- Front Face -->
+              <div id="cardFront" class="flashcard-face flashcard-face-front" aria-hidden="false">
+                <div class="d-flex justify-content-between align-items-center w-100">
+                  <span id="cardTypeBadgeFront" class="badge bg-light text-secondary border">Từ vựng</span>
+                  <span id="cardSkillBadgeFront" class="badge bg-secondary-subtle text-secondary border">📖 Đọc / Nhận diện</span>
+                  <span id="cardStatusBadgeFront" class="badge bg-primary-subtle text-primary border border-primary-subtle d-none">Mới</span>
+                </div>
+                
+                <!-- Front Content Face Area (Reading / Listening) -->
+                <div id="cardFrontListeningArea" class="my-auto py-2 text-center w-100">
+                  <div id="cardFrontHanzi" class="flashcard-hanzi my-auto" lang="zh-CN">学</div>
+                  <div id="cardFrontPinyin" class="flashcard-pinyin mb-2 d-none">xué</div>
+                  <div class="d-flex align-items-center justify-content-center gap-2 mt-2">
+                    <button 
+                      type="button" 
+                      id="btnAudioPronounceFront" 
+                      class="vocab-speech-btn" 
+                      aria-label="Phát âm từ vựng" 
+                      title="Phát âm (Web Speech API)"
+                    >
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                      </svg>
+                    </button>
+                    <span id="listeningFrontPromptText" class="small text-secondary">Bấm loa để nghe phát âm</span>
+                  </div>
+                </div>
+
+                <!-- Writing Mode Face Area (preserved for legacy test selectors) -->
+                <div id="cardFrontWritingArea" class="my-auto py-2 text-center w-100 d-none">
+                  <div class="mb-2">
+                    <span id="writingFrontMeaning" class="fs-5 fw-bold text-dark"></span>
+                    <span id="writingFrontHanViet" class="badge bg-secondary-subtle text-secondary ms-2"></span>
+                  </div>
+                  <div id="cardFrontWritingMount" class="d-flex justify-content-center my-2" style="touch-action: none;"></div>
+                  <span id="writingFrontPromptText" class="small text-muted">Viết chữ vào ô trên hoặc chọn mức đánh giá</span>
+                </div>
+
+                <div class="flashcard-reveal-hint mt-auto">
+                  <span>Nhấn <kbd class="bg-white text-dark border px-1 rounded">Space</kbd> để lật thẻ (tùy chọn) &bull; Đánh giá trực tiếp <strong>[1]..[4]</strong></span>
                 </div>
               </div>
 
-              <!-- Writing Mode Face Area -->
-              <div id="cardFrontWritingArea" class="my-auto py-2 text-center w-100 d-none">
-                <div class="mb-2">
-                  <span id="writingFrontMeaning" class="fs-5 fw-bold text-dark"></span>
-                  <span id="writingFrontHanViet" class="badge bg-secondary-subtle text-secondary ms-2"></span>
+              <!-- Back Face (Answer) -->
+              <div id="cardBack" class="flashcard-face flashcard-face-back" aria-hidden="true">
+                <div class="d-flex justify-content-between align-items-center w-100">
+                  <span id="cardTypeBadgeBack" class="badge bg-light text-secondary border">Từ vựng</span>
+                  <div class="d-flex align-items-center gap-2">
+                    <span id="cardBackStrokeCount" class="badge bg-light text-secondary border d-none">Số nét: <span id="radicalStrokeCountVal"></span></span>
+                    <button type="button" id="btnCardNote" class="btn btn-sm btn-outline-secondary py-1 px-2 d-none" aria-label="Xem và tạo ghi chú cá nhân cho từ vựng này">
+                      <span aria-hidden="true">📝</span> Ghi chú
+                    </button>
+                  </div>
                 </div>
-                <div id="cardFrontWritingMount" class="d-flex justify-content-center my-2" style="touch-action: none;"></div>
-                <span id="writingFrontPromptText" class="small text-muted">Viết chữ vào ô trên hoặc chọn mức đánh giá</span>
+
+                <div class="my-auto py-1 w-100">
+                  <div id="cardBackHanzi" class="flashcard-hanzi" lang="zh-CN" style="font-size: clamp(2.2rem, 6vw, 3.2rem); margin-bottom: 0.2rem;">学</div>
+                  <div class="d-flex align-items-center justify-content-center gap-2 mb-1">
+                    <div id="cardBackPinyin" class="flashcard-pinyin mb-0" style="font-size: 1.15rem;">xué</div>
+                    <button 
+                      type="button" 
+                      id="btnAudioPronounceBack" 
+                      class="vocab-speech-btn" 
+                      aria-label="Phát âm từ vựng" 
+                      title="Phát âm (Web Speech API)"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                      </svg>
+                    </button>
+                  </div>
+                  <div class="mb-2">
+                    <span id="cardBackMeaningHv" class="badge bg-secondary-subtle text-secondary me-2">Học</span>
+                    <span id="cardBackMeaningVi" class="flashcard-meaning-vi">Học tập, nghiên cứu</span>
+                  </div>
+                  <div id="cardBackExampleBox" class="flashcard-example-box d-none">
+                    <div class="text-secondary small fw-semibold mb-1">Ví dụ ngữ cảnh:</div>
+                    <div id="cardBackExampleSentence" class="fw-medium text-dark mb-1" lang="zh-CN"></div>
+                    <div id="cardBackExampleTranslation" class="text-secondary small"></div>
+                  </div>
+
+                  <!-- 2-Column Personal Notes Section on Back of Card (Requirement 2) -->
+                  <div id="cardBackNotesSection" class="card-back-notes-layout mt-2 border-top pt-2">
+                    <div class="row g-2 text-start">
+                      <!-- Left column: Notes list -->
+                      <div class="col-12 col-md-6">
+                        <label class="form-label small fw-bold text-secondary mb-1">📝 Ghi chú đã lưu:</label>
+                        <div id="cardNotesList" class="card-notes-list p-2 rounded border small" style="max-height: 90px; overflow-y: auto;">
+                          <div class="text-muted fst-italic">Chưa có ghi chú nào.</div>
+                        </div>
+                      </div>
+                      <!-- Right column: Textarea + Button -->
+                      <div class="col-12 col-md-6 d-flex flex-column">
+                        <label for="cardNewNoteInput" class="form-label small fw-bold text-secondary mb-1">Thêm ghi chú mới:</label>
+                        <textarea id="cardNewNoteInput" class="form-control form-control-sm flex-grow-1" rows="2" maxlength="500" placeholder="Nhập mẹo nhớ, ví dụ..."></textarea>
+                        <div class="d-flex justify-content-end mt-1">
+                          <button type="button" id="btnAddCardNote" class="btn btn-sm btn-chinese-primary py-1 px-3">
+                            Thêm ghi chú
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="text-muted small mt-auto">
+                  <span>Chọn 1 trong 4 mức đánh giá bên dưới để tiếp tục</span>
+                </div>
               </div>
 
-              <div class="flashcard-reveal-hint mt-auto">
-                <span>Nhấn <kbd class="bg-white text-dark border px-1 rounded">Space</kbd> để lật thẻ (tùy chọn) &bull; Đánh giá trực tiếp <strong>[1]..[4]</strong></span>
-              </div>
             </div>
-
-            <!-- Back Face (Answer) -->
-            <div id="cardBack" class="flashcard-face flashcard-face-back" aria-hidden="true">
-              <div class="d-flex justify-content-between align-items-center w-100">
-                <span id="cardTypeBadgeBack" class="badge bg-light text-secondary border">Từ vựng</span>
-                <button type="button" id="btnCardNote" class="btn btn-sm btn-outline-secondary py-1 px-2" aria-label="Xem và tạo ghi chú cá nhân cho từ vựng này">
-                  <span aria-hidden="true">📝</span> Ghi chú
-                </button>
-              </div>
-
-              <div class="my-auto py-2 w-100">
-                <div id="cardBackHanzi" class="flashcard-hanzi" lang="zh-CN" style="font-size: clamp(2.5rem, 7vw, 3.5rem); margin-bottom: 0.25rem;">学</div>
-                <div class="d-flex align-items-center justify-content-center gap-2 mb-2">
-                  <div id="cardBackPinyin" class="flashcard-pinyin mb-0" style="font-size: 1.25rem;">xué</div>
-                  <button 
-                    type="button" 
-                    id="btnAudioPronounceBack" 
-                    class="vocab-speech-btn" 
-                    aria-label="Phát âm từ vựng" 
-                    title="Phát âm (Web Speech API)"
-                  >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                      <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-                    </svg>
-                  </button>
-                </div>
-                <div class="mb-3">
-                  <span id="cardBackMeaningHv" class="badge bg-secondary-subtle text-secondary me-2">Học</span>
-                  <span id="cardBackMeaningVi" class="flashcard-meaning-vi">Học tập, nghiên cứu</span>
-                </div>
-                <div id="cardBackExampleBox" class="flashcard-example-box d-none">
-                  <div class="text-secondary small fw-semibold mb-1">Ví dụ ngữ cảnh:</div>
-                  <div id="cardBackExampleSentence" class="fw-medium text-dark mb-1" lang="zh-CN"></div>
-                  <div id="cardBackExampleTranslation" class="text-secondary small"></div>
-                </div>
-              </div>
-
-              <div class="text-muted small mt-auto">
-                <span>Chọn 1 trong 4 mức đánh giá bên dưới để tiếp tục</span>
-              </div>
-            </div>
-
           </div>
+
+          <!-- Rating Controls Toolbar -->
+          <section id="srsRatingSection" class="mt-3 text-center" aria-label="Đánh giá kết quả ghi nhớ">
+            <div id="ratingControlsBar" class="srs-rating-bar">
+              <button type="button" id="btnRatingAgain" class="btn-rating btn-rating-again" data-rating="1" aria-label="1. Học lại (Again) - Quên hoàn toàn">
+                <span>Học lại</span>
+                <span class="btn-rating-shortcut">[1]</span>
+              </button>
+              <button type="button" id="btnRatingHard" class="btn-rating btn-rating-hard" data-rating="2" aria-label="2. Khó (Hard) - Nhớ khó khăn">
+                <span>Khó</span>
+                <span class="btn-rating-shortcut">[2]</span>
+              </button>
+              <button type="button" id="btnRatingGood" class="btn-rating btn-rating-good" data-rating="3" aria-label="3. Tốt (Good) - Nhớ sau suy nghĩ">
+                <span>Tốt</span>
+                <span class="btn-rating-shortcut">[3]</span>
+              </button>
+              <button type="button" id="btnRatingEasy" class="btn-rating btn-rating-easy" data-rating="4" aria-label="4. Dễ (Easy) - Nhớ tức thì">
+                <span>Dễ</span>
+                <span class="btn-rating-shortcut">[4]</span>
+              </button>
+            </div>
+
+            <!-- Dynamic Status / Submission Feedback -->
+            <div id="ratingFeedback" class="mt-2 text-secondary small" role="status" aria-live="polite"></div>
+
+            <!-- Keyboard helper legend -->
+            <div class="text-secondary small mt-2 opacity-75">
+              <span>Phím tắt: <strong>[1]</strong> Học lại &bull; <strong>[2]</strong> Khó &bull; <strong>[3]</strong> Tốt &bull; <strong>[4]</strong> Dễ (hỗ trợ Numpad) &bull; <strong>Space/Enter</strong> (Lật thẻ - tùy chọn)</span>
+            </div>
+          </section>
         </div>
 
-        <!-- Rating Controls Toolbar -->
-        <section id="srsRatingSection" class="mt-3 text-center" aria-label="Đánh giá kết quả ghi nhớ">
-          <div id="ratingControlsBar" class="srs-rating-bar">
-            <button type="button" id="btnRatingAgain" class="btn-rating btn-rating-again" data-rating="1" aria-label="1. Học lại (Again) - Quên hoàn toàn">
-              <span>Học lại</span>
-              <span class="btn-rating-shortcut">[1]</span>
+        <!-- Dedicated Writing Session Room (Requirement 3: No flashcard flip, 1 or 2 boxes side-by-side, No 1-4 rating) -->
+        <div id="srsWritingRoom" class="d-none text-center">
+          <!-- Prompt Info Box -->
+          <div class="p-3 bg-light rounded-3 border mb-3 mx-auto text-center" style="max-width: 580px;">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span id="writingRoomBadge" class="badge bg-secondary-subtle text-secondary border">Từ vựng</span>
+              <button 
+                type="button" 
+                id="btnWritingAudio" 
+                class="vocab-speech-btn" 
+                aria-label="Phát âm từ vựng" 
+                title="Phát âm (Web Speech API)"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                  <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                </svg>
+              </button>
+            </div>
+            <div id="writingPromptPinyin" class="fs-4 fw-bold text-dark mb-1"></div>
+            <div class="mb-1">
+              <span id="writingPromptHanViet" class="badge bg-secondary-subtle text-secondary me-2"></span>
+              <span id="writingPromptMeaning" class="fw-medium text-secondary"></span>
+            </div>
+            <div id="writingPromptStrokeCount" class="small text-muted d-none"></div>
+          </div>
+
+          <!-- Warning Box if missing stroke data -->
+          <div id="writingMissingWarning" class="alert alert-warning py-2 px-3 small mx-auto d-none" style="max-width: 580px;" role="status"></div>
+
+          <!-- Rice Grid Calligraphy Mount Area (1 box for radical/1 char, 2 boxes side-by-side for 2 chars) -->
+          <div id="srsWritingCanvasContainer" class="d-flex justify-content-center align-items-center gap-3 my-3 flex-wrap" style="touch-action: none;"></div>
+
+          <!-- Writing Controls (Replay, Outline, Clear) -->
+          <div class="d-flex justify-content-center gap-2 mb-3 flex-wrap">
+            <button type="button" id="btnWritingReplay" class="btn btn-sm btn-chinese-outline py-2 px-3">
+              🔄 Phát lại nét
             </button>
-            <button type="button" id="btnRatingHard" class="btn-rating btn-rating-hard" data-rating="2" aria-label="2. Khó (Hard) - Nhớ khó khăn">
-              <span>Khó</span>
-              <span class="btn-rating-shortcut">[2]</span>
+            <button type="button" id="btnWritingOutline" class="btn btn-sm btn-chinese-outline py-2 px-3">
+              👁️ Xem gợi ý
             </button>
-            <button type="button" id="btnRatingGood" class="btn-rating btn-rating-good" data-rating="3" aria-label="3. Tốt (Good) - Nhớ sau suy nghĩ">
-              <span>Tốt</span>
-              <span class="btn-rating-shortcut">[3]</span>
-            </button>
-            <button type="button" id="btnRatingEasy" class="btn-rating btn-rating-easy" data-rating="4" aria-label="4. Dễ (Easy) - Nhớ tức thì">
-              <span>Dễ</span>
-              <span class="btn-rating-shortcut">[4]</span>
+            <button type="button" id="btnWritingClear" class="btn btn-sm btn-chinese-outline py-2 px-3">
+              ✏️ Viết lại
             </button>
           </div>
 
-          <!-- Dynamic Status / Submission Feedback -->
-          <div id="ratingFeedback" class="mt-2 text-secondary small" role="status" aria-live="polite"></div>
-
-          <!-- Keyboard helper legend -->
-          <div class="text-secondary small mt-2 opacity-75">
-            <span>Phím tắt: <strong>[1]</strong> Học lại &bull; <strong>[2]</strong> Khó &bull; <strong>[3]</strong> Tốt &bull; <strong>[4]</strong> Dễ (hỗ trợ Numpad) &bull; <strong>Space/Enter</strong> (Lật thẻ - tùy chọn)</span>
+          <!-- Next Action Button (Prominent, NO 1-4 ratings!) -->
+          <div class="mt-3">
+            <button type="button" id="btnWritingNext" class="btn btn-chinese-primary py-2 px-5 fw-bold shadow-sm fs-6">
+              Sang từ tiếp theo &rarr;
+            </button>
           </div>
-        </section>
+        </div>
 
       </section>
 
@@ -361,9 +495,9 @@
             <a href="srs-dashboard.html" id="btnCompletionToDashboard" class="btn-chinese-outline py-2 px-3 text-decoration-none">
               Thống kê &amp; Cài đặt SRS
             </a>
-            <a href="lessons.html" class="btn-chinese-secondary py-2 px-3 text-decoration-none">
-              Danh mục bài học
-            </a>
+            <button type="button" id="btnCompletionBackToCatalog" class="btn btn-chinese-secondary py-2 px-3">
+              ← Về danh mục ôn tập
+            </button>
           </div>
         </div>
       </section>
@@ -387,7 +521,7 @@
           <li class="list-inline-item">&bull;</li>
           <li class="list-inline-item"><a href="vocabulary.html" class="text-decoration-none text-secondary">Từ vựng</a></li>
           <li class="list-inline-item">&bull;</li>
-          <li class="list-inline-item"><a href="lessons.html" class="text-decoration-none text-secondary">Bài học</a></li>
+          <li class="list-inline-item"><a href="srs-review.html" class="text-decoration-none text-secondary">Ôn tập</a></li>
           <li class="list-inline-item">&bull;</li>
           <li class="list-inline-item"><a href="ui-verification.html" class="text-decoration-none text-secondary">Kiểm chứng UI</a></li>
         </ul>

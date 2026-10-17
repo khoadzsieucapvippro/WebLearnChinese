@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
  * - DELETE /api/v1/admin/vocabulary/{id}: Delete an existing vocabulary item (204 No Content)
  */
 @RestController
-@RequestMapping("/api/v1/admin/vocabulary")
+@RequestMapping({"/api/v1/admin/vocabulary", "/api/v1/admin/vocabularies"})
 public class AdminVocabularyController {
 
     private final VocabularyService vocabularyService;

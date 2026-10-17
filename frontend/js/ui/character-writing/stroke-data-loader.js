@@ -103,19 +103,21 @@ export async function loadStrokeData(character) {
     // Local fetch failed (or running in environment without local server)
   }
 
-  // 3. Fallback to approved CDN (jsdelivr)
-  const cdnUrl = `https://cdn.jsdelivr.net/npm/hanzi-writer-data@2.0/${encodeURIComponent(cleanChar)}.json`;
-  try {
-    const cdnRes = await fetch(cdnUrl);
-    if (cdnRes.ok) {
-      const data = await cdnRes.json();
-      if (isValidStrokeData(data)) {
-        strokeCache.set(cleanChar, data);
-        return data;
+  // 3. Fallback to approved CDN (jsdelivr) - only in non-browser environments where external connect is unconstrained by CSP
+  if (typeof window === 'undefined') {
+    const cdnUrl = `https://cdn.jsdelivr.net/npm/hanzi-writer-data@2.0/${encodeURIComponent(cleanChar)}.json`;
+    try {
+      const cdnRes = await fetch(cdnUrl);
+      if (cdnRes.ok) {
+        const data = await cdnRes.json();
+        if (isValidStrokeData(data)) {
+          strokeCache.set(cleanChar, data);
+          return data;
+        }
       }
+    } catch (err) {
+      // CDN fetch failed or offline
     }
-  } catch (err) {
-    // CDN fetch failed or offline
   }
 
   return null;

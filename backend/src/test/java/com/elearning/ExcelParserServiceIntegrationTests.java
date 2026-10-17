@@ -53,9 +53,10 @@ class ExcelParserServiceIntegrationTests {
 
     @BeforeEach
     void setUp() {
-        preExistingVocab = vocabularyRepository.save(
-                new Vocabulary("家", "jiā", "jia", "Gia", "Gia đình, nhà")
-        );
+        preExistingVocab = vocabularyRepository.findByHanziAndPinyinRaw("家", "jia")
+                .orElseGet(() -> vocabularyRepository.save(
+                        new Vocabulary("家", "jiā", "jia", "Gia", "Gia đình, nhà")
+                ));
     }
 
     private byte[] createWorkbook(String[] headers, String[][] data) throws IOException {

@@ -9,6 +9,11 @@
 -- Charset: utf8mb4, Collation: utf8mb4_unicode_ci
 -- =============================================================================
 
+-- Ensure creator account exists for foreign key reference
+INSERT INTO `account` (`email_or_phone`, `password_hash`, `status`, `created_at`, `updated_at`, `authorization_version`)
+SELECT 'creator@test.com', '$2a$10$UPN3ubt5uNRTKHbXcMsEgOjsd70AqQ.EMiekc6.7ngAuynlOFuFCm', 'Active', NOW(), NOW(), 1
+WHERE NOT EXISTS (SELECT 1 FROM `account` WHERE `email_or_phone` = 'creator@test.com');
+
 SET @creator_id = (SELECT `account_id` FROM `account` WHERE `email_or_phone` = 'creator@test.com' LIMIT 1);
 SET @creator_id = IFNULL(@creator_id, (SELECT `account_id` FROM `account` LIMIT 1));
 

@@ -42,6 +42,8 @@ import {
   RadicalsPageController
 } from '../../../../frontend/js/pages/radicals-page.js';
 import { sanitizeResourceUrl } from '../../../../frontend/js/ui/security.js';
+import { SEED_RADICALS } from '../../../../frontend/js/api/demo-seed-data.js';
+
 
 // Generator helper for synthetic radical fixture with common ranks
 function generateMockRadicals(count = 214, commonCount = 50) {
@@ -705,4 +707,334 @@ describe('Unit: Kangxi Radicals Catalog & Presentation Logic', () => {
     });
   });
 
+  describe('9. Pedagogical Learning & Explanation Content Integrity (214/214 Radicals)', () => {
+    test('authoritative SEED_RADICALS contains exactly 214 contiguous radicals', () => {
+      assert.ok(Array.isArray(SEED_RADICALS));
+      assert.strictEqual(SEED_RADICALS.length, 214);
+      for (let i = 0; i < 214; i++) {
+        assert.strictEqual(SEED_RADICALS[i].radicalId, i + 1);
+      }
+    });
+
+    test('all 214 radicals possess a non-empty, non-blank explanationVi', () => {
+      const missingExplanations = [];
+      for (const radical of SEED_RADICALS) {
+        if (!radical.explanationVi || typeof radical.explanationVi !== 'string' || radical.explanationVi.trim().length === 0) {
+          missingExplanations.push(radical.radicalId);
+        }
+      }
+      assert.deepStrictEqual(missingExplanations, [], 'All 214 radicals must have non-empty explanationVi');
+    });
+
+    test('all 214 explanationVi strings strictly respect the 1000-character database schema limit', () => {
+      const oversized = [];
+      for (const radical of SEED_RADICALS) {
+        if (radical.explanationVi.length > 1000) {
+          oversized.push({ id: radical.radicalId, length: radical.explanationVi.length });
+        }
+      }
+      assert.strictEqual(oversized.length, 0, 'No explanationVi may exceed 1000 characters');
+    });
+
+    test('all 214 explanationVi strings are distinct with zero generic copy-paste placeholders', () => {
+      const seenExplanations = new Set();
+      const duplicateIds = [];
+      for (const radical of SEED_RADICALS) {
+        const text = radical.explanationVi.trim();
+        if (seenExplanations.has(text)) {
+          duplicateIds.push(radical.radicalId);
+        }
+        seenExplanations.add(text);
+      }
+      assert.strictEqual(duplicateIds.length, 0, 'Every radical must have a unique, individualized pedagogical explanation');
+      assert.strictEqual(seenExplanations.size, 214);
+    });
+
+    test('all 214 explanations contain required pedagogical elements: visual association, examples with Hanzi/pinyin/meaning, and mnemonic', () => {
+      const invalidStructures = [];
+      const cjkExampleRegex = /[\u4e00-\u9fff]\s*\([^)]+:[^)]+\)/;
+
+      for (const radical of SEED_RADICALS) {
+        const text = radical.explanationVi;
+        const hasExamples = text.includes('Ví dụ:');
+        const hasMnemonic = text.includes('Mẹo nhớ:');
+        const hasCjkStructure = cjkExampleRegex.test(text);
+
+        if (!hasExamples || !hasMnemonic || !hasCjkStructure) {
+          invalidStructures.push({
+            id: radical.radicalId,
+            char: radical.character,
+            hasExamples,
+            hasMnemonic,
+            hasCjkStructure
+          });
+        }
+      }
+      assert.deepStrictEqual(invalidStructures, [], 'All 214 radical explanations must adhere to 4-part pedagogical contract');
+    });
+
+    test('preserves commonRank invariants: exactly 50 common ranks 1..50 and 164 remaining nulls', () => {
+      const common = SEED_RADICALS.filter(r => r.commonRank !== null);
+      const remaining = SEED_RADICALS.filter(r => r.commonRank === null);
+
+      assert.strictEqual(common.length, 50);
+      assert.strictEqual(remaining.length, 164);
+
+      const ranks = common.map(r => r.commonRank).sort((a, b) => a - b);
+      for (let i = 0; i < 50; i++) {
+        assert.strictEqual(ranks[i], i + 1);
+      }
+    });
+
+    test('modal population renders explanationVi and removes d-none for previously unseeded radicals (e.g. Radical 1 and 214)', () => {
+      const controller = new RadicalsPageController();
+      let dNonePresent = true;
+      let renderedText = '';
+
+      controller.elements = {
+        modal: {
+          showModal: () => {},
+          setAttribute: () => {},
+          style: {}
+        },
+        modalCloseBtn: { focus: () => {} },
+        modalRadicalChar: { textContent: '' },
+        modalRadicalTitle: { textContent: '' },
+        modalRadicalPinyin: { textContent: '' },
+        modalHeroSpeakerBtn: { setAttribute: () => {} },
+        modalRadicalHanViet: { textContent: '' },
+        modalRadicalMeaning: { textContent: '' },
+        modalRadicalExplanationContainer: {
+          classList: {
+            add: (cls) => { if (cls === 'd-none') dNonePresent = true; },
+            remove: (cls) => { if (cls === 'd-none') dNonePresent = false; },
+            contains: (cls) => cls === 'd-none' ? dNonePresent : false
+          }
+        },
+        modalRadicalExplanation: {
+          get textContent() { return renderedText; },
+          set textContent(v) { renderedText = v; }
+        }
+      };
+
+      // Test Radical 1 (previously null explanationVi)
+      const rad1 = SEED_RADICALS[0];
+      assert.strictEqual(rad1.radicalId, 1);
+      controller.openDetailModal(rad1, null);
+
+      assert.strictEqual(dNonePresent, false, 'Explanation container must NOT have d-none for radical 1');
+      assert.strictEqual(renderedText, rad1.explanationVi.trim());
+      assert.ok(renderedText.includes('Mẹo nhớ:'));
+
+      // Test Radical 214 (previously null explanationVi)
+      const rad214 = SEED_RADICALS[213];
+      assert.strictEqual(rad214.radicalId, 214);
+      controller.openDetailModal(rad214, null);
+
+      assert.strictEqual(dNonePresent, false, 'Explanation container must NOT have d-none for radical 214');
+      assert.strictEqual(renderedText, rad214.explanationVi.trim());
+      assert.ok(renderedText.includes('Mẹo nhớ:'));
+
+      // Test with synthetic radical having null explanationVi: must hide container
+      controller.openDetailModal({ radicalId: 999, character: 'X', explanationVi: null }, null);
+      assert.strictEqual(dNonePresent, true, 'Explanation container must have d-none when explanationVi is null');
+      assert.strictEqual(renderedText, '');
+    });
+
+    test('all 214 SEED_RADICALS have pedagogical explanations with genuine Hanzi decomposition', () => {
+      assert.strictEqual(SEED_RADICALS.length, 214);
+      const uniqueExplanations = new Set();
+
+      for (const r of SEED_RADICALS) {
+        assert.ok(r.explanationVi, `Radical ${r.radicalId} must have non-empty explanationVi`);
+        assert.ok(r.explanationVi.length <= 1000, `Radical ${r.radicalId} explanation exceeds 1000 chars`);
+        assert.ok(r.explanationVi.includes('Ví dụ:'), `Radical ${r.radicalId} missing 'Ví dụ:'`);
+        assert.ok(r.explanationVi.includes('Mẹo nhớ:'), `Radical ${r.radicalId} missing 'Mẹo nhớ:'`);
+        uniqueExplanations.add(r.explanationVi);
+      }
+      assert.strictEqual(uniqueExplanations.size, 214, 'All 214 explanations must be unique');
+
+      // Regression checks for genuine Hanzi radical decompositions
+      const rad189 = SEED_RADICALS.find(r => r.radicalId === 189);
+      assert.strictEqual(rad189.explanationVi.includes('亮'), false, 'Radical 189 must not reference 亮');
+      assert.strictEqual(rad189.explanationVi.includes('亭'), false, 'Radical 189 must not reference 亭');
+      assert.ok(rad189.explanationVi.includes('篙') || rad189.explanationVi.includes('槁'));
+
+      const rad209 = SEED_RADICALS.find(r => r.radicalId === 209);
+      assert.strictEqual(rad209.explanationVi.includes('嗅'), false, 'Radical 209 must not reference 嗅');
+      assert.ok(rad209.explanationVi.includes('齁'));
+
+      const rad205 = SEED_RADICALS.find(r => r.radicalId === 205);
+      assert.strictEqual(rad205.explanationVi.includes('勉'), false, 'Radical 205 must not confuse 免 with 黾');
+      assert.ok(rad205.explanationVi.includes('蝇'));
+
+      const rad139 = SEED_RADICALS.find(r => r.radicalId === 139);
+      assert.strictEqual(rad139.explanationVi.includes('爸'), false, 'Radical 139 must not confuse 巴 with 色');
+      assert.ok(rad139.explanationVi.includes('艳') || rad139.explanationVi.includes('色'));
+
+      const rad143 = SEED_RADICALS.find(r => r.radicalId === 143);
+      assert.strictEqual(rad143.explanationVi.includes('众'), false, 'Radical 143 must not reference 众');
+      assert.ok(rad143.explanationVi.includes('恤'));
+
+      const rad144 = SEED_RADICALS.find(r => r.radicalId === 144);
+      assert.strictEqual(rad144.explanationVi.includes('律'), false, 'Radical 144 must not reference 律');
+      assert.strictEqual(rad144.explanationVi.includes('术'), false, 'Radical 144 must not reference 术');
+      assert.ok(rad144.explanationVi.includes('衙') || rad144.explanationVi.includes('衡'));
+
+      const rad171 = SEED_RADICALS.find(r => r.radicalId === 171);
+      assert.strictEqual(rad171.explanationVi.includes('康'), false, 'Radical 171 must not reference 康');
+      assert.ok(rad171.explanationVi.includes('肄'));
+
+      const rad214 = SEED_RADICALS.find(r => r.radicalId === 214);
+      assert.strictEqual(rad214.explanationVi.includes('钥'), false, 'Radical 214 must not reference simplified 钥');
+      assert.strictEqual(rad214.explanationVi.includes('吁'), false, 'Radical 214 must not reference simplified 吁');
+      assert.ok(rad214.explanationVi.includes('鑰') || rad214.explanationVi.includes('籲'));
+    });
+  });
+
+  describe('7. Direct URL Deep-Linking & Parameter Resolution (RadicalsPageController)', () => {
+    const mock214 = generateMockRadicals(214, 50);
+    // Custom radical 75 for character 木
+    const rad75 = mock214.find(r => r.radicalId === 75);
+    rad75.character = '木';
+    rad75.pinyin = 'mù';
+    rad75.meaningHanViet = 'Mộc';
+
+    test('resolves target radical by numeric ID (?id=75) and activates 214 all tab', () => {
+      const controller = new RadicalsPageController();
+      controller.fullCatalog = Object.freeze(mock214);
+      const { commonRadicals, remainingRadicals } = partitionRadicals(mock214);
+      controller.commonRadicals = Object.freeze(commonRadicals);
+      controller.remainingRadicals = Object.freeze(remainingRadicals);
+
+      const originalWindow = globalThis.window;
+      const originalDoc = globalThis.document;
+
+      let modalOpenedWith = null;
+      controller.openDetailModal = (radical) => {
+        modalOpenedWith = radical;
+      };
+
+      try {
+        globalThis.window = {
+          location: { search: '?id=75', pathname: '/radicals.html' }
+        };
+        globalThis.document = {
+          querySelector: () => null,
+          getElementById: () => null
+        };
+
+        controller.handleUrlDeepLinking();
+
+        assert.strictEqual(controller.selectedTab, 'all', 'Must switch to all tab when deep-linking by ID');
+        assert.ok(modalOpenedWith, 'Detail modal must be opened');
+        assert.strictEqual(modalOpenedWith.radicalId, 75);
+        assert.strictEqual(modalOpenedWith.character, '木');
+      } finally {
+        globalThis.window = originalWindow;
+        globalThis.document = originalDoc;
+      }
+    });
+
+    test('resolves target radical by search parameter (?search=木) and opens modal', () => {
+      const controller = new RadicalsPageController();
+      controller.fullCatalog = Object.freeze(mock214);
+      const { commonRadicals, remainingRadicals } = partitionRadicals(mock214);
+      controller.commonRadicals = Object.freeze(commonRadicals);
+      controller.remainingRadicals = Object.freeze(remainingRadicals);
+
+      const originalWindow = globalThis.window;
+      const originalDoc = globalThis.document;
+
+      let modalOpenedWith = null;
+      controller.openDetailModal = (radical) => {
+        modalOpenedWith = radical;
+      };
+
+      try {
+        globalThis.window = {
+          location: { search: '?search=%E6%9C%A8', pathname: '/radicals.html' }
+        };
+        globalThis.document = {
+          querySelector: () => null,
+          getElementById: () => null
+        };
+
+        controller.handleUrlDeepLinking();
+
+        assert.ok(modalOpenedWith, 'Detail modal must be opened for character search');
+        assert.strictEqual(modalOpenedWith.radicalId, 75);
+        assert.strictEqual(modalOpenedWith.character, '木');
+      } finally {
+        globalThis.window = originalWindow;
+        globalThis.document = originalDoc;
+      }
+    });
+
+    test('switches to tab "all" when target radical is not in 50 common radicals', () => {
+      const controller = new RadicalsPageController();
+      controller.fullCatalog = Object.freeze(mock214);
+      const { commonRadicals, remainingRadicals } = partitionRadicals(mock214);
+      controller.commonRadicals = Object.freeze(commonRadicals);
+      controller.remainingRadicals = Object.freeze(remainingRadicals);
+      controller.selectedTab = 'common';
+
+      const originalWindow = globalThis.window;
+      const originalDoc = globalThis.document;
+
+      let modalOpenedWith = null;
+      controller.openDetailModal = (radical) => {
+        modalOpenedWith = radical;
+      };
+
+      try {
+        // Radical 100 has commonRank null in mock214
+        globalThis.window = {
+          location: { search: '?id=100', pathname: '/radicals.html' }
+        };
+        globalThis.document = {
+          querySelector: () => null,
+          getElementById: () => null
+        };
+
+        controller.handleUrlDeepLinking();
+
+        assert.strictEqual(controller.selectedTab, 'all', 'Must switch to all tab because radical 100 is not in 50 common');
+        assert.strictEqual(modalOpenedWith?.radicalId, 100);
+      } finally {
+        globalThis.window = originalWindow;
+        globalThis.document = originalDoc;
+      }
+    });
+
+    test('handles invalid ID safely without throwing', () => {
+      const controller = new RadicalsPageController();
+      controller.fullCatalog = Object.freeze(mock214);
+
+      const originalWindow = globalThis.window;
+      const originalDoc = globalThis.document;
+
+      let modalOpened = false;
+      controller.openDetailModal = () => { modalOpened = true; };
+
+      try {
+        globalThis.window = {
+          location: { search: '?id=9999', pathname: '/radicals.html' }
+        };
+        globalThis.document = {
+          querySelector: () => null,
+          getElementById: () => null
+        };
+
+        controller.handleUrlDeepLinking();
+
+        assert.strictEqual(modalOpened, false, 'Modal should not open for non-existent radical ID');
+      } finally {
+        globalThis.window = originalWindow;
+        globalThis.document = originalDoc;
+      }
+    });
+  });
+
 });
+

@@ -16,6 +16,18 @@
 
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
+
+if (typeof globalThis.localStorage === 'undefined') {
+  const store = new Map();
+  globalThis.localStorage = {
+    getItem: (k) => store.get(k) ?? null,
+    setItem: (k, v) => store.set(k, String(v)),
+    removeItem: (k) => store.delete(k),
+    clear: () => store.clear()
+  };
+}
+
+import { authManager } from '../../../../frontend/js/auth/auth-state.js';
 import {
   mapRatingValue,
   mapKeyToRating,
@@ -520,4 +532,161 @@ describe('Unit: SRS Flashcard Review Session Logic (9C.3)', () => {
       assert.strictEqual(pWrite.cardType, 'WRITING');
     });
   });
+
+  describe('13. Dynamic Card Normalization & Authentic Backend ID (ACT-05 / C03)', () => {
+    test('normalizeVocabCard preserves authentic backend itemId from DueCardResponse', () => {
+      const controller = new SrsReviewController();
+      const backendCard = {
+        itemType: 'VOCABULARY',
+        itemId: 42,
+        cardType: 'READING',
+        hanzi: '学',
+        pinyin: 'xué',
+        meaningVi: 'Học',
+        meaningHanViet: 'Học',
+        exampleSentence: '我学习中文。',
+        exampleTranslation: 'Tôi học tiếng Trung.'
+      };
+
+      const normalized = controller.normalizeVocabCard(backendCard, 1);
+      assert.strictEqual(normalized.itemId, 42, 'Must prioritize authentic backend itemId over default mock IDs');
+      assert.strictEqual(normalized.itemType, 'VOCABULARY');
+      assert.strictEqual(normalized.hanzi, '学');
+      assert.strictEqual(normalized.exampleSentence, '我学习中文。');
+    });
+
+    test('normalizeVocabCard falls back to vocabId for legacy static catalog objects', () => {
+      const controller = new SrsReviewController();
+      const staticWord = {
+        vocabId: 101,
+        hanzi: '请',
+        pinyin: 'qǐng',
+        meaningHanViet: 'Thỉnh',
+        meaningVi: 'Mời'
+      };
+
+      const normalized = controller.normalizeVocabCard(staticWord, 1);
+      assert.strictEqual(normalized.itemId, 101);
+      assert.strictEqual(normalized.itemType, 'VOCABULARY');
+    });
+
+    test('startTopicSession falls back to static catalog when unauthenticated', async () => {
+      const controller = new SrsReviewController();
+      let initializedQueue = null;
+      controller.initSessionQueue = (cards) => { initializedQueue = cards; };
+
+      await controller.startTopicSession(1, 'continue');
+      assert.ok(Array.isArray(initializedQueue), 'Session queue must be initialized');
+      assert.strictEqual(initializedQueue.length, 20, 'Topic 1 static catalog contains 20 items');
+      assert.strictEqual(initializedQueue[0].hanzi, '请');
+    });
+
+    test('startTopicSession sets empty queue when backend returns 0 cards for authenticated user', async () => {
+      authManager.setSession({ token: 'test-token', user: { accountId: 1, emailOrPhone: 'user@test.com' } });
+      const controller = new SrsReviewController();
+      let initializedQueue = null;
+      controller.initSessionQueue = (cards) => { initializedQueue = cards; };
+
+      const originalFetch = globalThis.fetch;
+      globalThis.fetch = async () => ({
+        ok: true,
+        status: 200,
+        headers: new Headers({ 'content-type': 'application/json' }),
+        json: async () => ({ code: 'SUCCESS', message: 'OK', data: [] })
+      });
+
+      try {
+        await controller.startTopicSession(999, 'continue');
+        assert.ok(Array.isArray(initializedQueue), 'Session queue must be initialized');
+        assert.strictEqual(initializedQueue.length, 0, 'Must NOT load fake cards from static catalog when backend returns empty');
+      } finally {
+        globalThis.fetch = originalFetch;
+        authManager.clearSession();
+      }
+    });
+
+    test('startTopicSession passes cardType WRITING when activeMode is writing', async () => {
+      authManager.setSession({ token: 'test-token', user: { accountId: 1, emailOrPhone: 'user@test.com' } });
+      const controller = new SrsReviewController();
+      controller.activeMode = 'writing';
+
+      let requestedUrl = null;
+      const originalFetch = globalThis.fetch;
+      globalThis.fetch = async (url) => {
+        requestedUrl = String(url);
+        return {
+          ok: true,
+          status: 200,
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: async () => ({
+            code: 'SUCCESS',
+            message: 'OK',
+            data: [{
+              itemType: 'VOCABULARY',
+              itemId: 55,
+              cardType: 'WRITING',
+              hanzi: '写',
+              pinyin: 'xiě',
+              meaningVi: 'Viết'
+            }]
+          })
+        };
+      };
+
+      try {
+        let initializedQueue = null;
+        controller.initSessionQueue = (cards) => { initializedQueue = cards; };
+
+        await controller.startTopicSession(1, 'continue');
+        assert.ok(requestedUrl.includes('cardType=WRITING'), 'Must pass cardType=WRITING to backend in writing mode');
+        assert.strictEqual(initializedQueue[0].cardType, 'WRITING');
+      } finally {
+        globalThis.fetch = originalFetch;
+        authManager.clearSession();
+      }
+    });
+
+    test('startVocabSession queries backend when authenticated and populates authentic card', async () => {
+      authManager.setSession({ token: 'test-token', user: { accountId: 1, emailOrPhone: 'user@test.com' } });
+      const controller = new SrsReviewController();
+
+      const originalFetch = globalThis.fetch;
+      globalThis.fetch = async (url) => {
+        if (String(url).includes('/vocabulary/15')) {
+          return {
+            ok: true,
+            status: 200,
+            headers: new Headers({ 'content-type': 'application/json' }),
+            json: async () => ({
+              code: 'SUCCESS',
+              message: 'OK',
+              data: {
+                vocabId: 15,
+                hanzi: '见',
+                pinyin: 'jiàn',
+                meaningHanViet: 'Kiến',
+                meaningVi: 'Gặp; thấy'
+              }
+            })
+          };
+        }
+        throw new Error('Not found');
+      };
+
+      try {
+        let initializedQueue = null;
+        controller.initSessionQueue = (cards) => { initializedQueue = cards; };
+
+        await controller.startVocabSession(15, 'continue');
+        assert.ok(Array.isArray(initializedQueue), 'Session queue must be initialized');
+        assert.strictEqual(initializedQueue.length, 1);
+        assert.strictEqual(initializedQueue[0].itemId, 15, 'Must have authentic itemId = 15 from backend');
+        assert.strictEqual(initializedQueue[0].hanzi, '见');
+      } finally {
+        globalThis.fetch = originalFetch;
+        authManager.clearSession();
+      }
+    });
+  });
 });
+

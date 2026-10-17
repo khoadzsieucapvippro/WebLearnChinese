@@ -712,26 +712,6 @@ public class SrsServiceImpl implements SrsService {
     }
 
     private long countNewCardsIntroducedTodayWithLock(UserProfile user, String itemType, LocalDateTime startOfDay) {
-        List<ReviewLog> todayLogs = reviewLogRepository.findTodayReviewLogsWithLock(user, startOfDay);
-        if (todayLogs == null || todayLogs.isEmpty()) {
-            return 0L;
-        }
-        Set<Long> distinctItemIds = new HashSet<>();
-        for (ReviewLog r : todayLogs) {
-            if (itemType.equalsIgnoreCase(r.getItemType()) && r.getItemId() != null) {
-                distinctItemIds.add(r.getItemId());
-            }
-        }
-        if (distinctItemIds.isEmpty()) {
-            return 0L;
-        }
-        long count = 0;
-        for (Long itemId : distinctItemIds) {
-            boolean reviewedBeforeToday = reviewLogRepository.existsByUserAndItemTypeAndItemIdAndReviewedAtLessThan(user, itemType, itemId, startOfDay);
-            if (!reviewedBeforeToday) {
-                count++;
-            }
-        }
-        return count;
+        return reviewLogRepository.countNewItemsIntroducedToday(user, itemType, startOfDay);
     }
 }

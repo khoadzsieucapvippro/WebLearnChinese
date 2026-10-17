@@ -21,12 +21,14 @@
 import { apiClient, ApiError } from '../api/api.js';
 import { initNavbarAuth } from '../ui/nav.js';
 import { createSafeElement, clearContainer, sanitizeResourceUrl, sanitizeNavigationUrl } from '../ui/security.js';
-import { setComponentState, showToast, createSpeakerIcon, createSpeechButton } from '../ui/ui.js';
-import { openNotesModal } from '../ui/notes-modal.js';
+import { setComponentState, createSpeakerIcon, createSpeechButton } from '../ui/ui.js';
 import { speechController, speakHanzi, isSpeechSynthesisAvailable, SpeechState } from '../ui/speech.js';
 import { authManager } from '../auth/auth-state.js';
+import { VocabWritingOrchestrator } from '../ui/character-writing/vocab-writing-orchestrator.js';
+import { splitHanziCharacters } from '../ui/character-writing/stroke-data-loader.js';
+import { CHAR_TO_RADICAL_MAP } from '../api/demo-seed-data.js';
 
-export { createSpeakerIcon, createSpeechButton, speechController, speakHanzi, isSpeechSynthesisAvailable, SpeechState };
+export { createSpeakerIcon, createSpeechButton, speechController, speakHanzi, isSpeechSynthesisAvailable, SpeechState, VocabWritingOrchestrator };
 
 /* -----------------------------------------------------------------------------
  * 1. PURE LOGIC & UTILITY HELPERS (Exported for Testability)
@@ -167,6 +169,9 @@ export class VocabularyPageController {
     // Active current modal item
     this.currentModalVocab = null;
 
+    // Interactive Stroke Writing Orchestrator
+    this.vocabWritingOrchestrator = null;
+
     // DOM Element References
     this.elements = {};
   }
@@ -251,15 +256,13 @@ export class VocabularyPageController {
 
       modal: document.getElementById('vocabDetailModal'),
       modalCloseBtn: document.getElementById('modalCloseBtn'),
-      modalDismissBtn: document.getElementById('modalDismissBtn'),
-      modalVocabNoteBtn: document.getElementById('modalVocabNoteBtn'),
       modalVocabHanzi: document.getElementById('modalVocabHanzi'),
       modalSpeechBtn: document.getElementById('modalSpeechBtn'),
       modalVocabTitle: document.getElementById('modalVocabTitle'),
       modalVocabPinyin: document.getElementById('modalVocabPinyin'),
-      modalVocabPinyinRaw: document.getElementById('modalVocabPinyinRaw'),
       modalVocabHanViet: document.getElementById('modalVocabHanViet'),
       modalVocabMeaning: document.getElementById('modalVocabMeaning'),
+      modalVocabWritingSection: document.getElementById('modalVocabWritingSection'),
       modalRadicalsSection: document.getElementById('modalRadicalsSection'),
       modalRadicalsList: document.getElementById('modalRadicalsList'),
       modalRadicalsCount: document.getElementById('modalRadicalsCount'),
@@ -307,12 +310,9 @@ export class VocabularyPageController {
       });
     }
 
-    // 4. Modal close & dismiss buttons
+    // 4. Modal close button (Top right X)
     if (this.elements.modalCloseBtn) {
       this.elements.modalCloseBtn.addEventListener('click', () => this.closeDetailModal());
-    }
-    if (this.elements.modalDismissBtn) {
-      this.elements.modalDismissBtn.addEventListener('click', () => this.closeDetailModal());
     }
 
     // 5. Modal Escape key and native cancel event
@@ -372,21 +372,6 @@ export class VocabularyPageController {
       });
     }
 
-    // 7. Modal Note button
-    if (this.elements.modalVocabNoteBtn) {
-      this.elements.modalVocabNoteBtn.addEventListener('click', () => {
-        if (this.currentModalVocab) {
-          openNotesModal({
-            vocabId: this.currentModalVocab.vocabId,
-            hanzi: this.currentModalVocab.hanzi,
-            pinyin: this.currentModalVocab.pinyin,
-            meaning: this.currentModalVocab.meaningVi,
-            triggerElement: this.elements.modalVocabNoteBtn
-          });
-        }
-      });
-    }
-
     // 8. HSK Level Tabs Binding & APG Keyboard Navigation
     const hskTabs = [
       { el: this.elements.tabHsk1, level: 1 },
@@ -425,6 +410,7 @@ export class VocabularyPageController {
    * @param {number} totalElements
    */
   async updateGroupOverview(totalElements = 0) {
+    if (!this.elements.groupBanner) return;
     let studyStats = null;
     if (authManager.isAuthenticated()) {
       try {
@@ -682,11 +668,6 @@ export class VocabularyPageController {
       if (parsed.totalElements === 0) {
         // Empty State: distinguish between empty catalog vs no search results
         if (isSearching) {
-          showToast({
-            type: 'info',
-            title: 'Không tìm thấy',
-            message: `Không có từ vựng nào khớp với "${this.activeSearchQuery}".`
-          });
           setComponentState(this.elements.stateContainer, 'EMPTY', {
             glyph: '查',
             title: 'Không tìm thấy từ vựng',
@@ -777,20 +758,20 @@ export class VocabularyPageController {
     if (this.activeSearchQuery.length > 0) {
       if (totalElements === 0) {
         this.elements.resultCount.textContent = 'Không có kết quả';
-        this.elements.resultCount.className = 'badge-status badge-status-pending text-nowrap';
+        this.elements.resultCount.className = 'visually-hidden';
       } else {
         this.elements.resultCount.textContent = `Tìm thấy ${totalElements} từ vựng`;
-        this.elements.resultCount.className = 'badge-status badge-status-active text-nowrap';
+        this.elements.resultCount.className = 'visually-hidden';
       }
     } else {
       if (totalElements === 0) {
         this.elements.resultCount.textContent = '0 từ vựng';
-        this.elements.resultCount.className = 'badge-status badge-status-draft text-nowrap';
+        this.elements.resultCount.className = 'visually-hidden';
       } else {
         const start = this.currentPage * this.pageSize + 1;
         const end = Math.min(totalElements, start + currentCount - 1);
         this.elements.resultCount.textContent = `Hiển thị ${start}–${end} / ${totalElements} từ vựng`;
-        this.elements.resultCount.className = 'badge-status badge-status-draft text-nowrap';
+        this.elements.resultCount.className = 'visually-hidden';
       }
     }
   }
@@ -816,44 +797,13 @@ export class VocabularyPageController {
         }
       });
 
-      // Top Row: Hanzi character + Action Buttons (Note + Speech)
+      // Top Row: Hanzi character + Pronunciation Button
       const topRow = createSafeElement('div', { className: 'vocab-card-top' });
 
       const hanziEl = createSafeElement('div', {
         className: 'vocab-card-hanzi',
         attrs: { lang: 'zh-Hans' },
         text: vocab.hanzi || '—'
-      });
-
-      const cardActions = createSafeElement('div', { className: 'd-flex align-items-center gap-1' });
-
-      const hskLevel = vocab.hskLevel || this.selectedHsk;
-      if (hskLevel) {
-        const hskBadge = createSafeElement('span', {
-          className: 'vocab-hsk-badge',
-          text: `HSK ${hskLevel}`
-        });
-        cardActions.appendChild(hskBadge);
-      }
-
-      const noteBtn = createSafeElement('button', {
-        className: 'vocab-speech-btn vocab-card-note-btn',
-        attrs: {
-          type: 'button',
-          'aria-label': `Ghi chú cá nhân cho từ vựng ${vocab.hanzi || ''}`,
-          title: 'Ghi chú cá nhân'
-        },
-        text: '记'
-      });
-      noteBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        openNotesModal({
-          vocabId: vocab.vocabId,
-          hanzi: vocab.hanzi,
-          pinyin: vocab.pinyin,
-          meaning: vocab.meaningVi,
-          triggerElement: noteBtn
-        });
       });
 
       const speechBtn = createSafeElement('button', {
@@ -875,11 +825,8 @@ export class VocabularyPageController {
         }
       });
 
-      cardActions.appendChild(noteBtn);
-      cardActions.appendChild(speechBtn);
-
       topRow.appendChild(hanziEl);
-      topRow.appendChild(cardActions);
+      topRow.appendChild(speechBtn);
 
       // Meta Container: Pinyin, Hán-Việt, Vietnamese definition
       const metaContainer = createSafeElement('div', { className: 'vocab-card-meta' });
@@ -941,12 +888,6 @@ export class VocabularyPageController {
     clearContainer(this.elements.pagination);
 
     const pag = calculatePagination(parsed.totalElements, parsed.page, parsed.size);
-
-    // Summary label
-    const summary = createSafeElement('div', {
-      className: 'small text-secondary fw-medium',
-      text: `Hiển thị ${pag.startIndex + 1}–${pag.endIndex} trong tổng số ${parsed.totalElements} từ vựng`
-    });
 
     // Control buttons container
     const controls = createSafeElement('div', {
@@ -1061,7 +1002,6 @@ export class VocabularyPageController {
     }
     controls.appendChild(lastBtn);
 
-    this.elements.pagination.appendChild(summary);
     this.elements.pagination.appendChild(controls);
   }
 
@@ -1086,9 +1026,6 @@ export class VocabularyPageController {
     }
     if (this.elements.modalVocabPinyin) {
       this.elements.modalVocabPinyin.textContent = vocabSummary.pinyin || '—';
-    }
-    if (this.elements.modalVocabPinyinRaw) {
-      this.elements.modalVocabPinyinRaw.textContent = vocabSummary.pinyinRaw || '—';
     }
     if (this.elements.modalVocabHanViet) {
       this.elements.modalVocabHanViet.textContent = vocabSummary.meaningHanViet || '—';
@@ -1119,6 +1056,29 @@ export class VocabularyPageController {
 
     // Audio Player setup
     this.setupAudioPlayer(vocabSummary.audioUrl);
+
+    // Setup interactive Stroke Writing Section (Cách viết thứ tự nét)
+    if (this.elements.modalVocabWritingSection) {
+      if (this.vocabWritingOrchestrator) {
+        this.vocabWritingOrchestrator.destroy();
+        this.vocabWritingOrchestrator = null;
+      }
+      this.vocabWritingOrchestrator = new VocabWritingOrchestrator({
+        mountElement: this.elements.modalVocabWritingSection,
+        initialMode: 'demo',
+        demoOnly: true
+      });
+      const selectedHsk = this.selectedHsk || 1;
+      this.vocabWritingOrchestrator.mount({
+        vocabId: vocabSummary.vocabId,
+        hanzi: vocabSummary.hanzi,
+        pinyin: vocabSummary.pinyin,
+        meaningVi: vocabSummary.meaningVi,
+        hskLevel: vocabSummary.hskLevel || selectedHsk
+      }).catch(err => {
+        console.warn('[VocabularyPage] Error mounting vocab writing orchestrator:', err);
+      });
+    }
 
     // 2. Open Modal with Native Focus Trap (WCAG 2.2 APG Pattern)
     if (typeof this.elements.modal.showModal === 'function') {
@@ -1178,8 +1138,8 @@ export class VocabularyPageController {
         clearContainer(this.elements.modalRadicalsList);
         this.elements.modalRadicalsList.appendChild(
           createSafeElement('span', {
-            className: 'text-muted small',
-            text: 'Không thể tải thông tin bộ thủ cho từ này.'
+            className: 'text-muted small fst-italic',
+            text: 'Từ này chưa có dữ liệu bộ thủ xác minh.'
           })
         );
       }
@@ -1191,6 +1151,7 @@ export class VocabularyPageController {
 
   /**
    * Renders constituent radical badges in the detail modal.
+   * Disaggregates constituent radicals per Hanzi character with preview & SRS review link.
    * 
    * @param {Array<Object>} radicals 
    */
@@ -1198,7 +1159,7 @@ export class VocabularyPageController {
     if (!this.elements.modalRadicalsList) return;
     clearContainer(this.elements.modalRadicalsList);
 
-    const radicalList = Array.isArray(radicals) ? radicals : [];
+    const radicalList = Array.isArray(radicals) ? radicals.filter(r => r && (r.character || r.radicalId)) : [];
 
     if (this.elements.modalRadicalsCount) {
       this.elements.modalRadicalsCount.textContent = `${radicalList.length} bộ thủ`;
@@ -1207,90 +1168,129 @@ export class VocabularyPageController {
     if (radicalList.length === 0) {
       this.elements.modalRadicalsList.appendChild(
         createSafeElement('span', {
-          className: 'text-muted small',
-          text: 'Từ vựng này không có bộ thủ liên kết.'
+          className: 'text-muted small fst-italic',
+          text: 'Từ này chưa có dữ liệu bộ thủ xác minh.'
         })
       );
       return;
     }
 
-    for (const rad of radicalList) {
-      if (!rad) continue;
+    const container = createSafeElement('div', {
+      className: 'vocab-radicals-container'
+    });
+
+    radicalList.forEach((rad, idx) => {
+      // Identify corresponding Hanzi character (hanziChar)
+      let charInWord = rad.hanziChar;
+      if (!charInWord && this.currentModalVocab?.hanzi) {
+        const cleanHanzi = splitHanziCharacters(this.currentModalVocab.hanzi);
+        if (cleanHanzi.length === 1) {
+          charInWord = cleanHanzi[0];
+        } else {
+          // If multi-char word, find verified match in CHAR_TO_RADICAL_MAP
+          for (const ch of cleanHanzi) {
+            if (CHAR_TO_RADICAL_MAP && CHAR_TO_RADICAL_MAP[ch] === rad.radicalId) {
+              charInWord = ch;
+              break;
+            }
+          }
+        }
+      }
+
+      const name = (rad.meaningHanViet || rad.meaningVi || '').trim();
+      const boName = name ? (name.startsWith('Bộ ') ? name : `Bộ ${name}`) : '';
+      const textLabel = `(${rad.character || ''}${boName ? ` · ${boName}` : ''})`;
 
       const badge = createSafeElement('button', {
-        className: 'vocab-radical-badge',
+        className: 'vocab-radical-badge border-0 bg-transparent p-0 d-inline-flex align-items-center',
         attrs: {
           type: 'button',
-          'aria-label': `Xem thông tin bộ thủ ${rad.character || ''} (${rad.meaningHanViet || ''})`
+          'aria-label': `Xem thông tin bộ thủ ${rad.character || ''} (${name})`
         },
         children: [
           createSafeElement('span', {
-            className: 'vocab-radical-badge-glyph',
-            attrs: { lang: 'zh-Hans' },
-            text: rad.character || ''
-          }),
-          createSafeElement('span', {
-            text: `${rad.pinyin || ''} (${rad.meaningHanViet || ''})`
+            className: 'vocab-radical-badge-text',
+            text: textLabel
           })
         ]
       });
 
       badge.addEventListener('click', () => {
-        this.showRadicalPreview(rad);
+        this.showRadicalPreview(rad, charInWord);
       });
 
-      this.elements.modalRadicalsList.appendChild(badge);
-    }
+      container.appendChild(badge);
+
+      if (idx < radicalList.length - 1) {
+        const sep = createSafeElement('span', {
+          className: 'vocab-radical-separator text-muted mx-1',
+          attrs: { 'aria-hidden': 'true' },
+          text: '|'
+        });
+        container.appendChild(sep);
+      }
+    });
+
+    this.elements.modalRadicalsList.appendChild(container);
   }
 
   /**
    * Expands constituent radical preview inside the modal and provides a safe link to 214 Radicals page.
    * 
    * @param {Object} radical 
+   * @param {string} [charInWord]
    */
-  showRadicalPreview(radical) {
+  showRadicalPreview(radical, charInWord) {
     if (!this.elements.modalRadicalPreview) return;
+
+    const currentRadId = radical.radicalId || radical.character;
+    if (this.activePreviewRadicalId === currentRadId && !this.elements.modalRadicalPreview.classList.contains('d-none')) {
+      this.elements.modalRadicalPreview.classList.add('d-none');
+      clearContainer(this.elements.modalRadicalPreview);
+      this.activePreviewRadicalId = null;
+      return;
+    }
+    this.activePreviewRadicalId = currentRadId;
+
     clearContainer(this.elements.modalRadicalPreview);
     this.elements.modalRadicalPreview.classList.remove('d-none');
 
+    const radicalTargetUrl = radical.radicalId
+      ? `radicals.html?id=${encodeURIComponent(radical.radicalId)}`
+      : `radicals.html?search=${encodeURIComponent(radical.character || '')}`;
+
     const preview = createSafeElement('div', {
-      className: 'd-flex flex-column gap-2',
+      className: 'd-flex align-items-center justify-content-between flex-wrap gap-3',
       children: [
         createSafeElement('div', {
-          className: 'd-flex align-items-center justify-content-between flex-wrap gap-2',
+          className: 'd-flex flex-column gap-1',
           children: [
             createSafeElement('div', {
-              className: 'd-flex align-items-center gap-2',
+              className: 'd-flex align-items-baseline gap-2',
               children: [
                 createSafeElement('span', {
-                  className: 'fs-4 fw-bold font-hanzi text-dark',
+                  className: 'fs-4 fw-bold font-hanzi text-dark lh-1',
                   attrs: { lang: 'zh-Hans' },
                   text: radical.character || ''
                 }),
                 createSafeElement('span', {
                   className: 'fw-semibold text-danger',
                   text: radical.pinyin || ''
-                }),
-                createSafeElement('span', {
-                  className: 'small text-secondary',
-                  text: `• Bộ #${radical.radicalId || ''} (${radical.meaningHanViet || ''})`
                 })
               ]
             }),
-            createSafeElement('a', {
-              className: 'btn-chinese-outline btn-sm text-decoration-none',
-              attrs: {
-                href: sanitizeNavigationUrl(`radicals.html?search=${encodeURIComponent(radical.character || '')}`),
-                target: '_blank',
-                rel: 'noopener noreferrer'
-              },
-              text: 'Xem trong 214 Bộ Thủ ↗'
+            createSafeElement('div', {
+              className: 'small text-secondary',
+              text: radical.meaningVi || 'Chưa có giải nghĩa chi tiết cho bộ thủ này.'
             })
           ]
         }),
-        createSafeElement('div', {
-          className: 'small text-secondary',
-          text: radical.meaningVi ? `Nghĩa: ${radical.meaningVi}` : 'Chưa có giải nghĩa chi tiết cho bộ thủ này.'
+        createSafeElement('a', {
+          className: 'btn-chinese-outline btn-sm text-decoration-none text-nowrap',
+          attrs: {
+            href: sanitizeNavigationUrl(radicalTargetUrl)
+          },
+          text: 'Xem trong 214 Bộ Thủ ↗'
         })
       ]
     });
@@ -1355,6 +1355,12 @@ export class VocabularyPageController {
     // Cancel any active speech and release button state
     speechController.cancel();
 
+    // Destroy writing orchestrator session and prevent memory leaks
+    if (this.vocabWritingOrchestrator) {
+      this.vocabWritingOrchestrator.destroy();
+      this.vocabWritingOrchestrator = null;
+    }
+
     // Close modal
     if (typeof this.elements.modal.close === 'function') {
       this.elements.modal.close();
@@ -1364,6 +1370,7 @@ export class VocabularyPageController {
     }
 
     this.currentModalVocab = null;
+    this.activePreviewRadicalId = null;
 
     // Restore focus to triggering card
     if (this.activeTriggerEl && typeof this.activeTriggerEl.focus === 'function') {
@@ -1378,6 +1385,9 @@ export class VocabularyPageController {
  * ----------------------------------------------------------------------------- */
 if (typeof window !== 'undefined' && typeof document !== 'undefined') {
   document.addEventListener('DOMContentLoaded', () => {
+    if (!document.getElementById('vocabGrid') && !document.getElementById('vocabDetailModal')) {
+      return;
+    }
     const controller = new VocabularyPageController();
     controller.init();
     window.__vocabularyPageController = controller;

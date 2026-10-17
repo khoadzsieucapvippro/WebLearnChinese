@@ -50,6 +50,7 @@ class AdminLessonIntegrationTests {
     private Account learnerAccount;
     private String adminToken;
     private String learnerToken;
+    private Lesson draftLesson;
 
     @BeforeEach
     void setUp() {
@@ -80,18 +81,18 @@ class AdminLessonIntegrationTests {
         learnerToken = jwtUtil.generateToken(learnerAccount.getEmailOrPhone(), List.of("Learner"), 1L);
 
         // Seed lessons in various statuses
-        createLesson("Admin Lesson Draft", "Draft");
+        draftLesson = createLesson("Admin Lesson Draft", "Draft");
         createLesson("Admin Lesson Pending", "Pending");
         createLesson("Admin Lesson Approved", "Approved");
         createLesson("Admin Lesson Rejected", "Rejected");
     }
 
-    private void createLesson(String title, String status) {
+    private Lesson createLesson(String title, String status) {
         Lesson lesson = new Lesson();
         lesson.setTitle(title);
         lesson.setStatus(status);
         lesson.setCreatedBy(adminAccount);
-        lessonRepository.save(lesson);
+        return lessonRepository.save(lesson);
     }
 
     @Nested
@@ -138,6 +139,49 @@ class AdminLessonIntegrationTests {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code", is("SUCCESS")))
                     .andExpect(jsonPath("$.data.items[0].status", is("Draft")));
+        }
+    }
+
+    @Nested
+    @DisplayName("GET /api/v1/admin/lessons/{id} Tests")
+    class GetAdminLessonByIdTests {
+
+        @Test
+        @DisplayName("GIVEN unauthenticated request WHEN calling GET /api/v1/admin/lessons/{id} THEN returns 401")
+        void testGetAdminLessonById_unauthenticated_returns401() throws Exception {
+            mockMvc.perform(get("/api/v1/admin/lessons/" + draftLesson.getLessonId()))
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(jsonPath("$.code", is("UNAUTHORIZED")));
+        }
+
+        @Test
+        @DisplayName("GIVEN non-admin user WHEN calling GET /api/v1/admin/lessons/{id} THEN returns 403")
+        void testGetAdminLessonById_nonAdmin_returns403() throws Exception {
+            mockMvc.perform(get("/api/v1/admin/lessons/" + draftLesson.getLessonId())
+                            .header("Authorization", "Bearer " + learnerToken))
+                    .andExpect(status().isForbidden())
+                    .andExpect(jsonPath("$.code", is("FORBIDDEN")));
+        }
+
+        @Test
+        @DisplayName("GIVEN admin user WHEN calling GET /api/v1/admin/lessons/{id} for Draft lesson THEN returns 200 with detail")
+        void testGetAdminLessonById_admin_returnsDraftDetail() throws Exception {
+            mockMvc.perform(get("/api/v1/admin/lessons/" + draftLesson.getLessonId())
+                            .header("Authorization", "Bearer " + adminToken))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code", is("SUCCESS")))
+                    .andExpect(jsonPath("$.data.lessonId", is(draftLesson.getLessonId().intValue())))
+                    .andExpect(jsonPath("$.data.title", is("Admin Lesson Draft")))
+                    .andExpect(jsonPath("$.data.status", is("Draft")));
+        }
+
+        @Test
+        @DisplayName("GIVEN admin user and nonexistent ID WHEN calling GET /api/v1/admin/lessons/{id} THEN returns 404")
+        void testGetAdminLessonById_notFound_returns404() throws Exception {
+            mockMvc.perform(get("/api/v1/admin/lessons/999999")
+                            .header("Authorization", "Bearer " + adminToken))
+                    .andExpect(status().isNotFound())
+                    .andExpect(jsonPath("$.code", is("NOT_FOUND")));
         }
     }
 }

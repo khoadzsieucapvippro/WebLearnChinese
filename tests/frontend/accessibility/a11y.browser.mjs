@@ -629,7 +629,15 @@ describe('Accessibility Verification: WCAG 2.2 AA Aligned', () => {
         });
       });
 
-      await page.route(/\/api\/v1\/vocabulary(\?.*)?$/, async (route) => {
+      await page.route('**/api/v1/srs/*', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ code: 'SUCCESS', message: 'OK', data: [] })
+        });
+      });
+
+      await page.route('**/api/v1/lessons/1**', async (route) => {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
@@ -637,18 +645,14 @@ describe('Accessibility Verification: WCAG 2.2 AA Aligned', () => {
             code: 'SUCCESS',
             message: 'OK',
             data: {
-              items: [{
-                vocabId: 1,
-                hanzi: '书',
-                pinyin: 'shū',
-                meaningHanViet: 'Thư',
-                meaningVi: 'Sách, vở',
-                audioUrl: null
-              }],
-              page: 0,
-              size: 20,
-              totalElements: 1,
-              totalPages: 1
+              lessonId: 1,
+              title: 'Bài 1: Chào hỏi',
+              description: 'Mô tả bài học',
+              status: 'Approved',
+              vocabularyCount: 1,
+              vocabularies: [
+                { vocabId: 1, orderIndex: 1, hanzi: '书', pinyin: 'shū', meaningVi: 'Sách, vở' }
+              ]
             }
           })
         });
@@ -666,8 +670,8 @@ describe('Accessibility Verification: WCAG 2.2 AA Aligned', () => {
         });
       });
 
-      await page.goto(`${baseUrl}/vocabulary.html`, { waitUntil: 'domcontentloaded' });
-      const noteBtn = page.locator('.vocab-card-note-btn').first();
+      await page.goto(`${baseUrl}/lesson-detail.html?id=1`, { waitUntil: 'domcontentloaded' });
+      const noteBtn = page.locator('.lesson-vocab-note-btn').first();
       await noteBtn.waitFor({ state: 'visible' });
       await noteBtn.click();
 
@@ -749,6 +753,33 @@ describe('Accessibility Verification: WCAG 2.2 AA Aligned', () => {
               intervalDays: 1,
               isNew: false
             }]
+          })
+        });
+      });
+
+      await page.route('**/api/v1/**/notes*', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            code: 'SUCCESS',
+            message: 'OK',
+            data: {
+              items: [],
+              totalElements: 0
+            }
+          })
+        });
+      });
+
+      await page.route('**/api/v1/radicals*', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            code: 'SUCCESS',
+            message: 'OK',
+            data: { items: [], page: 0, size: 214, totalElements: 0, totalPages: 0 }
           })
         });
       });

@@ -145,7 +145,7 @@ class DemoAccountSeederTest {
     class IdempotentExistingAccountsTests {
 
         @Test
-        @DisplayName("GIVEN existing accounts, profiles, and SRS settings WHEN seeder runs THEN updates credentials and does not re-create settings")
+        @DisplayName("GIVEN existing accounts WHEN seeder runs THEN preserves existing credentials and skips password overwrite")
         void testRun_existingAccountsIdempotency() {
             mockStandardRoles();
             when(passwordEncoder.encode("Password@123")).thenReturn("$2a$10$newHash123");
@@ -155,31 +155,24 @@ class DemoAccountSeederTest {
             existingLearner.setPasswordHash("$2a$10$oldHash");
             existingLearner.setStatus("Inactive");
 
-            UserProfile existingProfile = new UserProfile();
-            existingProfile.setFullName("Học Viên Mẫu");
-            existingProfile.setAccount(existingLearner);
-
             when(accountRepository.findByEmailOrPhone("learner@elearning.local")).thenReturn(Optional.of(existingLearner));
             when(accountRepository.findByEmailOrPhone(argThat(email -> !email.equals("learner@elearning.local"))))
                     .thenReturn(Optional.empty());
 
             when(accountRepository.save(any(Account.class))).thenAnswer(invocation -> invocation.getArgument(0));
-
-            when(userProfileRepository.findByAccount(existingLearner)).thenReturn(Optional.of(existingProfile));
-            when(userProfileRepository.findByAccount(argThat(acc -> acc != existingLearner))).thenReturn(Optional.empty());
+            when(userProfileRepository.findByAccount(any(Account.class))).thenReturn(Optional.empty());
             when(userProfileRepository.save(any(UserProfile.class))).thenAnswer(invocation -> invocation.getArgument(0));
-
-            when(userSrsSettingRepository.existsByUser(existingProfile)).thenReturn(true);
-            when(userSrsSettingRepository.existsByUser(argThat(p -> p != existingProfile))).thenReturn(false);
+            when(userSrsSettingRepository.existsByUser(any(UserProfile.class))).thenReturn(false);
+            when(userSrsSettingRepository.save(any(UserSrsSetting.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
             demoAccountSeeder.run(null);
 
-            // Verify learner account was updated to Active and new password
-            assertThat(existingLearner.getStatus()).isEqualTo("Active");
-            assertThat(existingLearner.getPasswordHash()).isEqualTo("$2a$10$newHash123");
-            assertThat(existingLearner.getAuthorizationVersion()).isEqualTo(1L);
+            // Verify learner account was skipped, preserving existing password and status
+            assertThat(existingLearner.getPasswordHash()).isEqualTo("$2a$10$oldHash");
+            assertThat(existingLearner.getStatus()).isEqualTo("Inactive");
 
-            // SRS setting was only saved 7 times (for the newly seeded ones, not for existing learner)
+            // Only the remaining 7 accounts were newly saved
+            verify(accountRepository, times(7)).save(any(Account.class));
             verify(userSrsSettingRepository, times(7)).save(any(UserSrsSetting.class));
         }
     }

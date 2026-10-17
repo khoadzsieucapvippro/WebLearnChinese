@@ -61,6 +61,9 @@ class LessonIntegrationTests {
     @Autowired
     private VocabularyRepository vocabularyRepository;
 
+    @Autowired
+    private javax.sql.DataSource dataSource;
+
     private Lesson approvedLesson1;
     private Lesson approvedLesson2;
     private Lesson draftLesson;
@@ -75,6 +78,11 @@ class LessonIntegrationTests {
 
     @BeforeEach
     void setUp() {
+        try (java.sql.Connection conn = dataSource.getConnection()) {
+            TestcontainersInitializer.ensureCurriculumSeeded(conn);
+        } catch (Exception ignored) {
+        }
+
         Account creator = new Account();
         creator.setEmailOrPhone("creator_controller_test@example.com");
         creator.setPasswordHash("$2a$12$dummyhashcreator123456789012345");

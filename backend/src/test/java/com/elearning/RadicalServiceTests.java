@@ -38,6 +38,12 @@ class RadicalServiceTests {
     @Mock
     private RadicalRepository radicalRepository;
 
+    @Mock
+    private com.elearning.repository.CardProgressRepository cardProgressRepository;
+
+    @Mock
+    private com.elearning.repository.ReviewLogRepository reviewLogRepository;
+
     private RadicalService radicalService;
 
     private Radical sampleRadical1;
@@ -45,7 +51,7 @@ class RadicalServiceTests {
 
     @BeforeEach
     void setUp() {
-        radicalService = new RadicalServiceImpl(radicalRepository);
+        radicalService = new RadicalServiceImpl(radicalRepository, cardProgressRepository, reviewLogRepository);
 
         sampleRadical1 = new Radical();
         sampleRadical1.setRadicalId(1);
@@ -376,6 +382,37 @@ class RadicalServiceTests {
             assertThatThrownBy(() -> radicalService.deleteRadical(5))
                     .isInstanceOf(BusinessException.class)
                     .satisfies(ex -> assertThat(((BusinessException) ex).getErrorCode()).isEqualTo(ErrorCode.CONFLICT));
+        }
+
+        @Test
+        @DisplayName("GIVEN radical with active SRS CardProgress WHEN deleteRadical THEN throws CONFLICT")
+        void testDeleteRadicalWithActiveCardProgress() {
+            when(radicalRepository.findById(1)).thenReturn(Optional.of(sampleRadical1));
+            when(cardProgressRepository.existsByItemTypeAndItemId("RADICAL", 1L)).thenReturn(true);
+
+            assertThatThrownBy(() -> radicalService.deleteRadical(1))
+                    .isInstanceOf(BusinessException.class)
+                    .satisfies(ex -> {
+                        BusinessException be = (BusinessException) ex;
+                        assertThat(be.getErrorCode()).isEqualTo(ErrorCode.CONFLICT);
+                        assertThat(be.getMessage()).contains("tiến độ học tập (SRS)");
+                    });
+        }
+
+        @Test
+        @DisplayName("GIVEN radical with immutable SRS ReviewLog history WHEN deleteRadical THEN throws CONFLICT")
+        void testDeleteRadicalWithReviewLog() {
+            when(radicalRepository.findById(1)).thenReturn(Optional.of(sampleRadical1));
+            when(cardProgressRepository.existsByItemTypeAndItemId("RADICAL", 1L)).thenReturn(false);
+            when(reviewLogRepository.existsByItemTypeAndItemId("RADICAL", 1L)).thenReturn(true);
+
+            assertThatThrownBy(() -> radicalService.deleteRadical(1))
+                    .isInstanceOf(BusinessException.class)
+                    .satisfies(ex -> {
+                        BusinessException be = (BusinessException) ex;
+                        assertThat(be.getErrorCode()).isEqualTo(ErrorCode.CONFLICT);
+                        assertThat(be.getMessage()).contains("tiến độ học tập (SRS)");
+                    });
         }
     }
 

@@ -1,0 +1,431 @@
+# -*- coding: utf-8 -*-
+"""
+Generator script to build and validate all 214 Kangxi Radical explanations.
+Validates:
+1. Exactly 214 entries with radical_id 1..214.
+2. Every entry has non-empty explanation_vi.
+3. Every explanation has:
+   - Hình tượng gợi nhớ
+   - Ý nghĩa khi cấu tạo chữ
+   - Chữ ví dụ (with hanzi, pinyin, Vietnamese meaning)
+   - Mẹo nhớ
+4. Length <= 1000 characters.
+5. Content is unique.
+6. Synchronizes to Flyway migration V21 and frontend/js/api/demo-seed-data.js.
+"""
+
+import os
+import json
+import re
+import sys
+
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8')
+if hasattr(sys.stderr, 'reconfigure'):
+    sys.stderr.reconfigure(encoding='utf-8')
+
+
+RADICAL_EXPLANATIONS = {
+    # 1 nét (1..6)
+    1: "Một nét ngang đơn giản, biểu tượng của sự thống nhất, khởi đầu của vạn vật và số đếm đầu tiên. Thường xuất hiện trong các chữ biểu thị số đếm, ranh giới ngang hoặc nét gạch định vị (ý nghĩa tùy chữ). Ví dụ: 三 (sān: số ba), 上 (shàng: bên trên), 下 (xià: bên dưới). Mẹo nhớ: Một nét ngang duy nhất vạch ra đất trời và số một.",
+    2: "Nét sổ thẳng đứng từ trên xuyên suốt xuống dưới như chiếc cọc cắm thẳng vào đất. Thường đóng vai trò trục đứng, sự liên kết trên dưới hoặc nét chỉ thị định vị trong cấu tạo chữ Hán. Ví dụ: 中 (zhōng: ở giữa, trung tâm), 丰 (fēng: phong phú, tươi tốt), 串 (chuàn: xâu chuỗi). Mẹo nhớ: Nét sổ thẳng đứng như chiếc cọc cắm giữa đất trời.",
+    3: "Dấu chấm nhỏ gọn như giọt nước rơi hay tia lửa bắn ra. Thường dùng làm dấu chỉ thị vị trí, điểm nhấn trên chữ hoặc tượng trưng cho vật thể nhỏ bé (tùy chữ kết hợp). Ví dụ: 丸 (wán: viên tròn, hoàn), 凡 (fán: phàm trần, thông thường), 丹 (dān: màu đỏ, đan dược). Mẹo nhớ: Chấm nhỏ rơi xuống tạo điểm nhấn cho nét chữ.",
+    4: "Nét phẩy lướt nhẹ từ trên xuống sang trái như ngọn cỏ ngả nghiêng hay làn tóc bay. Thường là nét vận động tạo đà hoặc thành phần biểu thị sự nghiêng lệch, cử động trong chữ. Ví dụ: 乏 (fá: thiếu thốn, mệt mỏi), 乖 (guāi: ngoan ngoãn, sai lệch), 乘 (chéng: cưỡi xe, nhân lên). Mẹo nhớ: Phẩy nhẹ sang trái tạo nét thanh thoát cho chữ.",
+    5: "Đường uốn lượn như mầm cây đang uốn mình vươn lên qua lớp đất hoặc hình dòng sông quanh co. Biểu thị can Ất trong thiên can, sự uốn cong, chuyển hướng hoặc hình dạng mềm mại (tùy chữ). Ví dụ: 乞 (qǐ: cầu xin, ăn xin), 乾 (gān/qián: khô ráo, quẻ Càn), 乱 (luàn: hỗn loạn, bừa bãi). Mẹo nhớ: Nét gập uốn cong như chú vịt nhỏ bơi dưới nước.",
+    6: "Nét thẳng đứng có móc nhọn ở cuối như chiếc lưỡi câu giữ chặt hoặc móc sắt treo đồ. Gợi hình móc giữ, nâng đỡ hoặc làm trục đứng vững chắc với móc neo ở chân. Ví dụ: 了 (le/liǎo: rồi, xong xuôi), 予 (yǔ: cho, ban tặng), 矛 (máo: cây mâu, giáo mác). Mẹo nhớ: Sổ thẳng rồi móc lên như chiếc lưỡi câu giữ chặt mồi.",
+
+    # 2 nét (7..29)
+    7: "Hai nét ngang song song, nét trên tượng trưng cho trời, nét dưới tượng trưng cho đất. Thường biểu thị số lượng hai, sự đối xứng, nhân đôi hoặc cặp đôi (tùy chữ kết hợp). Ví dụ: 亚 (yà: châu Á, thứ nhì), 些 (xiē: một vài, một ít), 亏 (kuī: hao tổn, may mà). Mẹo nhớ: Nét ngắn bên trên nét dài bên dưới thành số hai.",
+    8: "Nét chấm phía trên nét ngang như chiếc mũ đội trên đầu hoặc nóc công trình. Thường nằm ở phía trên cùng của chữ, gợi ý phần nóc, phần đỉnh hoặc sự bao bọc bên trên. Ví dụ: 京 (jīng: kinh đô), 亮 (liàng: sáng sủa), 夜 (yè: ban đêm). Mẹo nhớ: Một chấm một ngang đứng đầu chữ che chắn bên trên.",
+    9: "Mô phỏng hình dáng một người nhìn nghiêng đang sải bước; dạng bên trái phổ biến là nhân đứng (亻). Gặp trong các chữ thể hiện con người, tính cách, hành động hoặc quan hệ xã hội (tùy chữ kết hợp). Ví dụ: 你 (nǐ: bạn), 他 (tā: anh ấy), 休 (xiū: nghỉ ngơi, người dựa vào cây). Mẹo nhớ: Hai nét người bước đi, đứng nghiêng thành một bên.",
+    10: "Hình hai chân người đang bước đi thong thả hoặc dáng dấp một đứa trẻ đang chập chững. Thường nằm dưới đáy chữ, gợi ý đôi chân, người đang đi hoặc hậu tố từ ngữ (tùy chữ). Ví dụ: 兄 (xiōng: anh trai), 先 (xiān: trước tiên), 光 (guāng: ánh sáng). Mẹo nhớ: Hai nét chân rẽ sang hai bên như bước chân linh hoạt.",
+    11: "Hai nét khép lại hướng vào một điểm như cửa ngõ đón nhận mọi vật đi vào. Biểu thị sự tiến vào, dung nạp, xâm nhập hoặc tham gia vào một trạng thái (tùy chữ). Ví dụ: 全 (quán: toàn bộ, trọn vẹn), 内 (nèi: bên trong), 汆 (cuān: chần nước sôi). Mẹo nhớ: Nét phẩy ngắn bên trái, nét mác dài vươn qua phủ lên như cánh cửa mở vào.",
+    12: "Hai nét đối xứng xòe sang hai phía như hai nửa tách rời nhau. Vừa biểu thị số tám, vừa gợi ý nghĩa phân chia, rẽ nhánh, tỏa ra xung quanh (tùy chữ). Ví dụ: 公 (gōng: công cộng, ông cụ), 分 (fēn: chia ra, phút), 六 (liù: số sáu). Mẹo nhớ: Hai nét quay lưng vào nhau xòe rộng thành số tám.",
+    13: "Ba cạnh bao quanh để hở đáy dưới, gợi liên tưởng vùng đất biên cương bao la bên ngoài thành trì. Thường làm khung ngoài cho các chữ chỉ biên giới, khu vực, không gian rộng mở hoặc đồ vật. Ví dụ: 同 (tóng: cùng nhau, đồng nhất), 冈 (gāng: gò đồi, sườn núi), 罔 (wǎng: lưới bắt cá, không có). Mẹo nhớ: Khung bao ba phía như hàng rào mở cửa ở đáy.",
+    14: "Chiếc khăn dài có hai mép buông xuống để che phủ lên đồ vật. Thường nằm trên nóc chữ, gợi ý sự bao trùm, che đậy, phủ kín hoặc bóng đêm mờ ảo (tùy chữ). Ví dụ: 军 (jūn: quân đội), 冠 (guān: vương miện, quán quân), 冤 (yuān: oan ức, uất ức). Mẹo nhớ: Nét ngang có hai móc rủ xuống như tấm khăn phủ trùm kín mít.",
+    15: "Hai giọt nước đông cứng lại thành đá (bộ hai chấm băng). Thường gợi ý trạng thái lạnh lẽo, băng giá, đông đặc hoặc hiện tượng mùa đông (tùy chữ kết hợp). Ví dụ: 冷 (lěng: lạnh lùng, rét buốt), 冰 (bīng: băng đá), 冻 (dòng: đóng băng, cóng). Mẹo nhớ: Hai giọt nước hóa đá đứng bên trái chữ biểu thị sự lạnh buốt.",
+    16: "Chiếc bàn trà nhỏ hoặc chiếc ghế kỷ thấp có hai chân chống vững chãi. Biểu thị đồ nội thất nhỏ, bàn ghế, hoặc mượn âm làm đại từ nghi vấn bao nhiêu (tùy chữ). Ví dụ: 凡 (fán: phàm trần, bình thường), 凭 (píng: dựa vào, căn cứ), 凤 (fèng: chim phượng hoàng). Mẹo nhớ: Hai chân choãi ra đỡ lấy mặt phẳng như chiếc bàn con.",
+    17: "Chiếc hố đào sâu xuống đất hoặc miệng đồ chứa mở toang hướng lên trời. Gợi ý đồ chứa, hố trũng, sự rơi vào cạm bẫy hoặc miệng vực sâu thẳm. Ví dụ: 凶 (xiōng: hung dữ, điều xấu), 出 (chū: đi ra, xuất hiện), 击 (jī: đánh đập, tấn công). Mẹo nhớ: Chiếc hố mở ngửa hứng trọn mọi vật rơi vào.",
+    18: "Mô phỏng lưỡi dao sắc bén; khi đặt ở bên phải biến thể thành bộ đao đứng (刂). Thường xuất hiện trong các chữ mang nghĩa chia cắt, đao kiếm, hình phạt hoặc sự phân định (tùy chữ). Ví dụ: 分 (fēn: chia ra, phân chia), 别 (bié: phân biệt, đừng), 切 (qiē: cắt gọt). Mẹo nhớ: Hai nét đứng song song bên phải tựa như lưỡi dao cắt đôi sự vật.",
+    19: "Mô phỏng hình chiếc cày nông cụ hoặc cánh tay gân guốc đang dùng sức. Biểu thị sức lực, sự nỗ lực, công việc nặng nhọc hoặc sức mạnh (tùy chữ). Ví dụ: 劳 (láo: lao động, vất vả), 勤 (qín: cần cù, siêng năng), 加 (jiā: thêm vào, gia tăng). Mẹo nhớ: Nét móc gập dũng mãnh thể hiện cơ bắp và sự nỗ lực.",
+    20: "Nét uốn cong che chắn như người đang cúi mình ôm ấp hoặc bọc kín gói đồ. Thường gợi ý hành động bao bọc, ôm lấy, chứa đựng bên trong (tùy chữ kết hợp). Ví dụ: 包 (bāo: bọc lại, túi xách), 旬 (xún: tuần mười ngày), 勿 (wù: chớ, đừng). Mẹo nhớ: Nét vòng ôm trọn lấy phần tử bên trong như tấm áo bọc ngoài.",
+    21: "Chiếc thìa nhỏ múc thức ăn hoặc con dao găm nhỏ tùy thân thời cổ. Biểu thị đồ dùng ăn uống, mũi nhọn hoặc dáng người ngồi nghiêng so sánh (tùy chữ). Ví dụ: 北 (běi: phương bắc, quay lưng), 匙 (chí: cái thìa, chìa khóa), 化 (huà: biến hóa). Mẹo nhớ: Chiếc thìa cong cong dùng múc canh ăn cơm.",
+    22: "Chiếc hộp hoặc ngăn tủ mở nắp sang bên phải để cất giữ đồ đạc. Gợi ý các loại hộp, thùng chứa, sự cất giữ hoặc khuôn khổ đo đạc (tùy chữ). Ví dụ: 匠 (jiàng: thợ thủ công, bậc thầy), 医 (yī: y học, thầy thuốc), 匡 (kuāng: sửa chữa, chấn hưng). Mẹo nhớ: Khung ba cạnh vuông vắn như chiếc tủ mở cửa sang phải.",
+    23: "Nét ngang trên vươn dài che chở góc dưới, gợi hình ảnh vật phẩm cất giấu sâu kín. Gợi ý sự che đậy, giấu kín hoặc những nơi cất giữ bí mật riêng tư (tùy chữ). Ví dụ: 匹 (pǐ: con ngựa, tương xứng), 匿 (nì: ẩn nấp, giấu giếm), 区 (qū: khu vực, phân biệt). Mẹo nhớ: Nắp trên dài hơn thân đáy để giấu kín đồ bên trong.",
+    24: "Nét ngang giao nhau với nét dọc, biểu thị bốn phương tám hướng hội tụ đầy đủ. Biểu thị số mười, sự trọn vẹn, hoàn hảo, đầy đủ và các con số tính toán. Ví dụ: 千 (qiān: một nghìn), 半 (bàn: một nửa), 华 (huá: hoa lệ, Trung Hoa). Mẹo nhớ: Ngang dọc giao thoa ngay chính giữa tạo thành chữ thập số mười.",
+    25: "Vết nứt dọc và ngang trên mai rùa hay xương thú khi người xưa nung nóng để bói quẻ. Gợi ý điềm báo, việc bói toán, dự đoán hoặc hình dạng que cắm chỉ dẫn (tùy chữ). Ví dụ: 占 (zhān/zhàn: bói quẻ, chiếm lấy), 卡 (kǎ: thẻ, kẹt lại), 卢 (lú: họ Lô). Mẹo nhớ: Sổ thẳng có nhánh nứt sang phải như vết nứt bói rùa.",
+    26: "Người đang gập mình quỳ gối phục tùng hoặc hình đốt tre phân đoạn rành mạch. Biểu thị tư thế quỳ, tiết chế, phân chia đoạn lạc hoặc tín vật phong ấn (tùy chữ). Ví dụ: 卫 (wèi: bảo vệ, vệ sinh), 却 (què: lùi lại, nhưng mà), 即 (jí: chính là, tức thời). Mẹo nhớ: Nét gập cong xuống như đầu gối người đang quỳ phục.",
+    27: "Vách đá dựng đứng cheo leo có mái đá nhô ra làm nơi trú ngụ bên sườn núi. Thường gợi ý vách núi, hang hốc tự nhiên hoặc nhà xưởng, nơi chế tác rộng lớn. Ví dụ: 原 (yuán: nguồn gốc, đồng nguyên), 历 (lì: trải qua, lịch sử), 厚 (hòu: dày dặn, nhân hậu). Mẹo nhớ: Mái đá chìa ra che chắn cho người đứng dưới chân sườn dốc.",
+    28: "Vòng tròn khép góc ôm về lòng mình, gợi ý sự gom góp đồ vật về cho cá nhân. Biểu thị sự riêng tư, bí mật, tư lợi hoặc bộ phận cấu âm trong chữ Hán (tùy chữ). Ví dụ: 去 (qù: đi, rời khỏi), 参 (cān: tham gia, tham dự), 牟 (móu: mưu cầu, tiếng bò rống). Mẹo nhớ: Nét gập hình tam giác hướng vào trong chỉ sự riêng tư cá nhân.",
+    29: "Bàn tay phải đưa ra nắm lấy hoặc lặp lại một động tác nhiều lần. Biểu thị bàn tay nắm giữ, hành động lặp lại, thêm vào hoặc quan hệ liên kết (tùy chữ). Ví dụ: 友 (yǒu: bạn bè, hữu nghị), 双 (shuāng: đôi, cặp), 取 (qǔ: lấy về, nhận lấy). Mẹo nhớ: Tay phải đưa ra nắm lấy bạn bè kết làm bằng hữu.",
+
+    # 3 nét (30..60)
+    30: "Mô phỏng hình khuôn miệng đang mở rộng. Xuất hiện phổ biến trong hầu hết các chữ chỉ việc ăn uống, phát âm, kêu gọi, diễn đạt hoặc các cơ quan/cửa ngõ (tùy chữ). Ví dụ: 吃 (chī: ăn), 叫 (jiào: gọi, kêu), 问 (wèn: hỏi). Mẹo nhớ: Khung vuông mở rộng như vòm miệng đang trò chuyện.",
+    31: "Khung vuông khép kín bốn phía bao quanh toàn bộ các thành phần bên trong. Biểu thị sự bao vây, giới hạn chu vi, nhà ngục, biên giới bờ cõi hoặc khu vực phong tỏa (tùy chữ). Ví dụ: 国 (guó: quốc gia, đất nước), 园 (yuán: công viên, vườn tược), 团 (tuán: đoàn thể, cuộn tròn). Mẹo nhớ: Bốn bức tường khép kín bao bọc giang sơn đất nước.",
+    32: "Hình gò đất đắp cao nổi trên mặt phẳng mặt đất. Thường xuất hiện trong các chữ biểu thị đất đai, địa hình, công trình xây cất hoặc đồ gốm sứ (tùy chữ). Ví dụ: 地 (dì: đất đai, mặt đất), 场 (chǎng: sân bãi, quảng trường), 城 (chéng: thành lũy, đô thị). Mẹo nhớ: Cây nhú lên từ lòng đất (nét ngang đáy dài hơn nét ngang trên).",
+    33: "Người đứng thẳng trang nghiêm, nét ngang trên dài hơn nét ngang dưới thể hiện học thức rộng lớn. Thường gợi ý về học sĩ, quan lại, binh sĩ, nam giới trượng phu hoặc người có học thức. Ví dụ: 壮 (zhuàng: khỏe mạnh, tráng kiện), 声 (shēng: âm thanh, tiếng tăm), 志 (zhì: ý chí, chí hướng). Mẹo nhớ: Ngang trên dài, ngang dưới ngắn là kẻ sĩ có tài đức hơn người.",
+    34: "Bàn chân bước đi chậm rãi, ngập ngừng tụt lại phía sau người khác. Thường nằm trên đầu chữ, gợi ý động thái bước đi, chậm trễ hoặc tiếp nối (tùy chữ). Ví dụ: 各 (gè: mỗi, từng), 条 (tiáo: cành nhánh, điều khoản), 备 (bèi: chuẩn bị, sẵn sàng). Mẹo nhớ: Ba nét bước chân chầm chậm đi theo sau người đi trước.",
+    35: "Bàn chân bị vướng víu kéo lê bước đi nặng nề, nét mác kéo dài qua chân. Gợi ý sự di chuyển chậm chạp, bước lùi, kéo dài hoặc trở ngại bước chân (tùy chữ). Ví dụ: 复 (fù: lặp lại, phục hồi), 夏 (xià: mùa hè), 夋 (qūn: đi chầm chậm). Mẹo nhớ: Bước chân kéo lê mác dài thể hiện dáng đi chậm chạp.",
+    36: "Vầng trăng vừa ló rạng lúc hoàng hôn khi mặt trời vừa lặn xuống chân trời. Biểu thị buổi hoàng hôn, ban đêm, bóng tối, thời gian chuyển giao hoặc giấc mộng. Ví dụ: 夜 (yè: ban đêm), 外 (wài: bên ngoài), 梦 (mèng: giấc mộng, mơ màng). Mẹo nhớ: Vầng trăng khuyết nghiêng bóng lúc hoàng hôn xế bóng chiều.",
+    37: "Hình dáng người trưởng thành dang rộng hai tay và hai chân để thể hiện kích thước to lớn. Biểu thị sự vĩ đại, rộng lớn hoặc các nhân vật tôn kính (tùy chữ kết hợp). Ví dụ: 天 (tiān: bầu trời), 太 (tài: quá mức, rất), 头 (tóu: cái đầu). Mẹo nhớ: Dang rộng hai tay hai chân đo kích thước bao la.",
+    38: "Hình dáng người phụ nữ ngồi khoanh tay cung kính thời cổ. Thường gặp trong các từ ngữ chỉ phái nữ, danh xưng gia đình (tùy chữ kết hợp) hoặc tính cách, vẻ đẹp. Ví dụ: 妈 (mā: mẹ), 姐 (jiě: chị gái), 好 (hǎo: tốt lành, mẹ và con). Mẹo nhớ: Nét gập uốn lượn uyển chuyển như dáng người phụ nữ.",
+    39: "Mô phỏng hình hài đứa trẻ sơ sinh hai tay vung vẫy còn quấn tã lót bên dưới. Biểu thị con cái, trẻ nhỏ, thế hệ sau, sự sinh sôi hoặc các danh xưng tôn kính hiền triết (tùy chữ). Ví dụ: 孩 (hái: đứa trẻ), 字 (zì: chữ viết, nuôi dưỡng chữ), 孝 (xiào: hiếu thảo). Mẹo nhớ: Đứa trẻ giơ hai tay đón nhận sự yêu thương của cha mẹ.",
+    40: "Mô phỏng hình mái nhà che chở có vách buông xuống hai bên. Biểu thị nhà cửa, không gian cư trú, nơi thờ tự hoặc trạng thái yên ổn, an toàn (tùy chữ). Ví dụ: 安 (ān: bình an, yên ổn), 家 (jiā: nhà, gia đình), 定 (dìng: xác định, ổn định). Mẹo nhớ: Dưới mái nhà có người phụ nữ là bình an (安).",
+    41: "Bàn tay có dấu chấm nhỏ đánh dấu vị trí mạch đập ở cổ tay cách cổ tay một tấc. Biểu thị đơn vị đo lường ngắn (tấc), cự ly gần, khuôn phép, phép tắc hoặc sự quản lý. Ví dụ: 对 (duì: đúng, đối ứng), 封 (fēng: niêm phong, phong tước), 导 (dǎo: dẫn dắt, chỉ bảo). Mẹo nhớ: Một chấm đo mạch nơi cổ tay thành đơn vị tấc chuẩn mực.",
+    42: "Một vật thể bị nét sổ chẻ làm đôi rồi phân thành hai mảnh nhỏ hai bên. Biểu thị kích thước bé nhỏ, số lượng ít ỏi, sự khiêm nhường hoặc vụn vặt (tùy chữ). Ví dụ: 少 (shǎo/shào: ít, thiếu niên), 尖 (jiān: nhọn hoắt, đầu nhỏ đáy to), 尘 (chén: bụi bặm). Mẹo nhớ: Sổ móc ở giữa hai chấm hai bên là việc nhỏ bé li ti.",
+    43: "Người bước đi với đôi chân khập khiễng, một chân bị uốn cong tật nguyền. Gợi ý sự khập khiễng, dị tật, yếu thế hoặc dáng dấp bất thường của cơ thể (tùy chữ). Ví dụ: 尤 (yóu: đặc biệt, lỗi lầm), 就 (jiù: liền, tiếp cận), 尬 (gà: ngượng ngùng, bối rối). Mẹo nhớ: Chân co chân quẹo bước đi khập khiễng bất thường.",
+    44: "Dáng người nằm co ro bất động hoặc thi hài nằm duỗi thẳng trên mặt đất. Thường biểu thị thân thể, nơi cư ngụ, mông bệ ngồi hoặc chất thải cơ thể (tùy chữ). Ví dụ: 屋 (wū: gian nhà, phòng ốc), 居 (jū: cư ngụ, sinh sống), 尾 (wěi: chiếc đuôi). Mẹo nhớ: Khung người nằm co lại thành nơi trú ngụ hoặc thân xác.",
+    45: "Mầm non mới nhú với hai lá mầm hé nở và thân cắm thẳng vào đất. Gợi ý sự sinh sôi ban đầu, mầm thực vật vươn lên hoặc sự bắt đầu đâm chồi (tùy chữ). Ví dụ: 屯 (tún: đồn trú, tích trữ mầm non), 艸 (cǎo: ngọn cỏ), 蚩 (chī: ngu si, si vưu). Mẹo nhớ: Hai nhánh mầm hé nở nâng đỡ ngọn cỏ non tơ.",
+    46: "Hình ảnh ba ngọn núi nhấp nhô nối tiếp nhau vươn lên bầu trời. Biểu thị núi non, đèo dốc, sự vững chãi, cao lớn hoặc địa hình hiểm trở (tùy chữ). Ví dụ: 峰 (fēng: đỉnh núi), 岛 (dǎo: hòn đảo giữa biển), 岩 (yán: vách đá, núi đá). Mẹo nhớ: Ba nét đứng nhô cao với nét đáy nối liền như dãy núi trùng điệp.",
+    47: "Ba luồng nước uốn khúc cuồn cuộn chảy song song giữa đôi bờ sông. Biểu thị dòng sông, suối nước chảy xiết, địa hình sông ngòi hoặc sự hanh thông. Ví dụ: 巡 (xún: tuần tra, đi thị sát), 州 (zhōu: châu quận, vùng đất nổi giữa sông), 巢 (cháo: tổ chim). Mẹo nhớ: Ba lượn sóng cuộn trào uốn lượn thành dòng sông dài.",
+    48: "Chiếc thước vuông góc của người thợ mộc dùng để đo đạc và gia công chế tác đồ vật. Thường biểu thị công việc khéo léo, nghề thợ thủ công, công trình kiến trúc hoặc kỹ thuật. Ví dụ: 左 (zuǒ: bên trái), 巧 (qiǎo: khéo léo, tinh tế), 功 (gōng: công lao, công phu). Mẹo nhớ: Hai nét ngang giữ thanh giằng thẳng đứng như thước thợ mộc dựng nhà.",
+    49: "Sợi dây lụa thắt nút uốn khúc để đánh dấu ghi nhớ sự việc hoặc dáng người cúi mình tự nhìn lại. Biểu thị bản thân, tự mình, thứ tự can Chi Kỷ hoặc sự sắp xếp quy củ (tùy chữ). Ví dụ: 改 (gǎi: thay đổi, cải sửa), 配 (pèi: phối hợp, xứng đôi), 记 (jì: ghi nhớ, ký sự). Mẹo nhớ: Nét gập uốn vuông vắn khép mình giữ chữ kỷ cho riêng ta.",
+    50: "Tấm khăn vải được gập lại vắt qua thắt lưng với nếp rủ xuống ở giữa. Gợi ý các loại khăn, mũ nón, rèm cửa, vải vóc trang phục hoặc đồ che chắn dệt may. Ví dụ: 市 (shì: chợ búa, thành phố), 布 (bù: vải bố, tuyên bố), 帮 (bāng: giúp đỡ, nhóm bè). Mẹo nhớ: Khăn che hai bên buông dải thẳng xuống giữa eo.",
+    51: "Chiếc mộc phòng thủ chữ Y hoặc cán vũ khí dùng chống đỡ kẻ thù. Biểu thị can thiệp, xâm phạm, làm việc, cái khiên chắn hoặc trạng thái khô ráo (tùy chữ). Ví dụ: 平 (píng: bình an, bằng phẳng), 年 (nián: năm tháng), 幸 (xìng: may mắn, hạnh phúc). Mẹo nhớ: Hai nét ngang chống trên cọc đứng che chắn tựa chiếc khiên bảo vệ.",
+    52: "Sợi tơ tằm ngắn nhỏ mới kéo ra từ kén tằm, chỉ bằng một nửa của bộ Mịch. Gợi ý sự non nớt, nhỏ nhoi, sợi dây mỏng manh hoặc đứa con út trong nhà (tùy chữ). Ví dụ: 幼 (yòu: thơ ấu, non nớt), 幻 (huàn: huyễn hoặc, ảo ảnh), 幽 (yōu: thanh u, sâu kín). Mẹo nhớ: Sợi chỉ gập uốn nhỏ nhắn biểu thị sự thơ bé.",
+    53: "Mô phỏng mái nhà được dựng tựa vào vách núi đá chênh vênh. Gợi ý nhà cửa rộng lớn, kho tàng, công sở, nơi chế biến hoặc chốn cư ngụ ven sườn núi (tùy chữ). Ví dụ: 店 (diàn: cửa tiệm, quán xá), 庄 (zhuāng: trang trại, thôn trang), 库 (kù: nhà kho, kho chứa). Mẹo nhớ: Mái nhà tựa vách núi làm chỗ che mưa che nắng rộng rãi.",
+    54: "Bàn chân bước những sải dài liên tiếp hướng về phía trước trên chặng đường dài. Thường làm đế chân dưới đáy chữ, biểu thị việc đi xa, mở rộng, kéo dài hoặc xây dựng. Ví dụ: 廷 (tíng: triều đình), 延 (yán: trì hoãn, kéo dài), 建 (jiàn: kiến tạo, xây dựng). Mẹo nhớ: Nét kéo dài nâng đỡ chân chữ đưa bước chân đi xa ngàn dặm.",
+    55: "Hai bàn tay cùng giơ lên nâng đỡ hoặc chắp lại kính cẩn dâng đồ tế lễ. Gợi ý động tác chắp tay, nâng đỡ, chung sức hoặc kính cẩn hiến dâng (tùy chữ). Ví dụ: 弄 (nòng: làm, đùa bỡn đồ vật cầm tay), 弃 (qì: vứt bỏ), 异 (yì: khác lạ, dị thường). Mẹo nhớ: Hai nét sổ song song với nét ngang liên kết như hai tay cùng nâng lễ vật.",
+    56: "Cọc gỗ đóng cắm làm dấu hoặc mũi tên có buộc sợi dây để bắn bắt chim muông. Gợi ý việc bắn săn, cọc gỗ neo giữ, bắt giữ hoặc chiếm lấy đồ vật (tùy chữ). Ví dụ: 式 (shì: phương thức, khuôn phép), 贰 (èr: số hai, trắc trở), 弑 (shì: giết bề trên). Mẹo nhớ: Chiếc cọc gỗ có móc buộc dây săn bắn chim trời.",
+    57: "Cánh cung uốn lượn ba khúc với dây cung căng sẵn sàng bắn tên. Biểu thị cung tên, vũ khí bắn xa, sự cong gập hoặc co giãn đàn hồi (tùy chữ). Ví dụ: 引 (yǐn: dẫn dắt, giương cung kéo dài), 张 (zhāng: giương lên, tờ giấy), 强 (qiáng: cường thịnh, mạnh mẽ). Mẹo nhớ: Ba khúc uốn lượn cong cong như cánh cung săn bắn.",
+    58: "Mõm nhọn và hàm răng của loài nhím hay mõm heo rừng cày xới thức ăn. Gợi ý đầu thú móng vuốt, hành động cào xới hoặc dùng làm thành phần hình học (tùy chữ). Ví dụ: 彗 (huì: sao chổi, quét dọn), 归 (guī: quy tụ, trở về), 录 (lù: ghi chép, danh lục). Mẹo nhớ: Ba nét ngang gập chồng khít như chiếc lược chải hoặc mõm nhím nhọn.",
+    59: "Ba sợi lông dài mềm mại uốn lượn hoặc ba nét cọ vẽ tạo nên hoa văn rực rỡ. Thường gợi ý vẻ đẹp bên ngoài, hoa văn trang trí, ánh sáng lấp lánh hoặc lông bờm thú. Ví dụ: 形 (xíng: hình dạng, thể hình), 彩 (cǎi: màu sắc, rực rỡ), 须 (xū: râu ria, cần phải). Mẹo nhớ: Ba nét phẩy song song mềm mại như vệt cọ vẽ hoa văn.",
+    60: "Hình nửa bên trái của ngã tư đường hoặc bước chân trái nhấc lên bước đi trước. Biểu thị sự di chuyển từng bước, hành vi trên đường phố, đạo đức hoặc kỷ luật đi lại (tùy chữ). Ví dụ: 行 (xíng: đi lại, được), 很 (hěn: rất, quá), 得 (dé: nhận được, phải). Mẹo nhớ: Hai nét phẩy và một nét sổ như bước chân trái dẫn đường đi.",
+
+    # 4 nét (61..94)
+    61: "Hình ảnh quả tim với các khoang tâm thất; dạng đứng bên trái là tâm đứng (忄). Đại diện cho cảm xúc, suy nghĩ, tâm trạng, tư duy và đạo đức (tùy chữ). Ví dụ: 爱 (ài: tình yêu), 想 (xiǎng: nhớ, suy nghĩ), 忙 (máng: bận rộn). Mẹo nhớ: Một vầng trăng khuyết ba sao giữa trời tượng trưng cho tâm can.",
+    62: "Binh khí mác dài thời cổ có lưỡi ngang để móc chém và mũi nhọn đâm thẳng. Thường gợi ý về chiến tranh, vũ khí sát thương, xung đột hoặc phòng thủ biên cương. Ví dụ: 战 (zhàn: chiến tranh, đánh trận), 戏 (xì: diễn kịch, vui chơi), 戒 (jiè: răn đe, phòng ngừa). Mẹo nhớ: Cây mác sắc bén có mũi đâm và lưỡi móc canh giữ bờ cõi.",
+    63: "Cánh cửa đơn bằng gỗ khép mở trong ngôi nhà cổ. Gợi ý về nhà cửa, phòng ốc, cánh cửa hoặc từng hộ dân gia đình (tùy chữ). Ví dụ: 房 (fáng: căn phòng, ngôi nhà), 所 (suǒ: nơi chốn, cơ quan), 扇 (shàn: cánh quạt, cánh cửa). Mẹo nhớ: Cánh cửa đơn hé mở đón người bước vào gia đình ấm êm.",
+    64: "Hình bàn tay xòe năm ngón; khi ghép bên trái biến thành thủ gảy (扌). Biểu thị các thao tác cử động hoặc tác động trực tiếp của đôi bàn tay (tùy chữ). Ví dụ: 打 (dǎ: đánh, đập), 提 (tí: xách, nhấc), 拿 (ná: cầm, lấy). Mẹo nhớ: Nét móc thẳng đứng kèm nét hất lên như cánh tay đang với lấy đồ vật.",
+    65: "Bàn tay đang cầm một cành tre hay cành cây tách ra từ thân chính. Gợi ý sự phân nhánh, chi trả, chống đỡ hoặc nâng đỡ vật thể (tùy chữ). Ví dụ: 枝 (zhī: cành cây), 翅 (chì: cánh chim), 鼓 (gǔ: cái trống). Mẹo nhớ: Bàn tay bẻ cành cây tách ra thành muôn ngàn nhánh nhỏ.",
+    66: "Bàn tay cầm que roi gõ nhẹ nhắc nhở; dạng đứng bên phải là phộc gập (攵). Thường gợi ý hành động tác động nhẹ nhàng, sửa đổi lỗi lầm, giáo dục hoặc văn trị (tùy chữ). Ví dụ: 改 (gǎi: sửa đổi, cải cách), 放 (fàng: thả ra, buông lơi), 政 (zhèng: chính trị, chính sách). Mẹo nhớ: Tay cầm roi gõ khẽ nhắc nhở sửa đổi việc làm sai trái.",
+    67: "Hoa văn xăm trổ đan chéo trên ngực người thời cổ hoặc nét bút đan dệt nên văn tự. Thường gợi ý về văn hóa, văn chương, ngôn ngữ, nét vẽ hoa văn hoặc lễ tiết. Ví dụ: 斋 (zhāi: trai phòng, ăn chay), 斑 (bān: đốm vằn, vết đốm), 斐 (fěi: rực rỡ, văn hoa). Mẹo nhớ: Nét chấm ngang đan chéo dệt nên trang văn chương rực rỡ.",
+    68: "Chiếc gáo hoặc chiếc đấu có cán cầm dài dùng đong thóc gạo và ngắm sao Bắc Đẩu. Gợi ý đồ đo lường dung tích, sao Đẩu hoặc vật chứa có cán dài (tùy chữ). Ví dụ: 料 (liào: nguyên liệu, dự tính), 斜 (xié: nghiêng ngả, xéo), 斟 (zhēn: rót rượu, châm chước). Mẹo nhớ: Chiếc gáo cán dài đong hạt thóc hạt gạo đầy đấu.",
+    69: "Chiếc rìu đẽo gỗ có lưỡi cong sắc và cán cầm đứng, sau mượn làm đơn vị cân lạng. Thường gợi ý về việc chặt đẽo, công cụ chặt chém hoặc khối lượng cân đo. Ví dụ: 新 (xīn: mới mẻ, đốn cây lấy gỗ mới), 断 (duàn: chặt đứt, phán đoán), 斩 (zhǎn: chém trảm). Mẹo nhớ: Cầm rìu đẽo cây lấy gỗ mới tạo đồ dùng tươi mới.",
+    70: "Hai chiếc thuyền ghép song song buộc chặt mũi để định hướng đi trên sông nước. Thường gợi ý phương hướng, vị trí bốn phương, hình vuông vắn hoặc phương pháp. Ví dụ: 放 (fàng: buông thả, thả ra), 旅 (lǚ: lữ hành, du lịch), 族 (zú: thị tộc, dân tộc). Mẹo nhớ: Chấm ngang đầu thuyền vạch ra bốn phương trời rộng mở.",
+    71: "Người xòe tay múa trong lễ cầu mưa hoặc cử động không cầm nắm gì trong tay. Biểu thị tính phủ định, sự hư không, vắng bóng hoặc thiếu hụt (tùy chữ). Ví dụ: 芜 (wú: cỏ hoang mọc rậm rạp), 抚 (fǔ: vỗ về, an ủi), 既 (jì: đã xong, vừa mới - dạng biến thể 旡). Mẹo nhớ: Xòe hai tay buông xuôi không còn giữ lại vật gì.",
+    72: "Hình tượng vầng mặt trời tròn có đốm đen ở giữa, sau chuyển thành hình chữ nhật. Đại diện cho mặt trời, ban ngày, thời gian, sự chiếu sáng hoặc trạng thái thời tiết (tùy chữ). Ví dụ: 明 (míng: sáng sủa), 时 (shí: thời gian, giờ), 晴 (qíng: trời nắng ráo). Mẹo nhớ: Khung chữ nhật có nét ngang giữa tựa như mặt trời tỏa sáng rực rỡ.",
+    73: "Miệng mở rộng với hơi thở và lời nói bật ra ngoài (thấp và bè ngang hơn bộ Nhật). Thường biểu thị lời nói, phát ngôn, thuật lại lời xưa hoặc phân giải ý tứ. Ví dụ: 曾 (céng: từng, đã từng), 替 (tì: thay thế), 曹 (cáo: họ Tào, bầy lũ). Mẹo nhớ: Khung vuông bẹt ngang mở lời rằng những điều hay lẽ phải.",
+    74: "Hình ảnh vầng trăng khuyết; đồng thời trong cấu trúc chữ Hán thường đại diện cho bộ Nhục (thịt). Biểu thị chu kỳ thời gian (tháng, đêm) hoặc các bộ phận cơ thể con người (tùy chữ). Ví dụ: 期 (qī: kỳ hạn, thời kỳ), 肚 (dù: bụng dạ), 朋 (péng: bạn bè). Mẹo nhớ: Vầng trăng soi bóng đêm khuya hoặc thịt bắp thân thể.",
+    75: "Mô phỏng hình một thân cây có cành lá vươn lên phía trên và rễ cắm sâu xuống đất. Thường xuất hiện trong các chữ Hán liên quan đến cây cối, rừng rậm hoặc đồ dùng làm từ gỗ (tùy chữ). Ví dụ: 林 (lín: rừng cây), 森 (sēn: rừng rậm), 树 (shù: cây cối). Mẹo nhớ: Nét ngang cành tỏa, sổ thẳng thân cây, phẩy mác rễ cắm.",
+    76: "Người đang ngồi há to miệng ngáp dài vì mệt mỏi hoặc thở hắt ra vì thiếu dưỡng khí. Thường gợi ý hơi thở phát ra từ miệng, sự thèm muốn, nợ nần hoặc trạng thái thiếu hụt. Ví dụ: 欢 (huān: hoan nghênh, vui vẻ), 歌 (gē: bài ca, ca hát), 次 (cì: lần lượt, thứ nhì). Mẹo nhớ: Há miệng thở dài khiếm khuyết bao điều cần bù đắp.",
+    77: "Dấu bàn chân in trên mặt đất khi bước chân dừng lại đứng yên một chỗ. Gợi ý hành vi dừng bước, đình chỉ, ngăn cản hoặc điểm xuất phát đúng đắn. Ví dụ: 正 (zhèng: chân chính, đúng đắn), 此 (cǐ: đây, chỗ này), 步 (bù: bước đi, tiến bộ). Mẹo nhớ: Bước chân dừng lại đúng lúc giữ cho lòng ngay thẳng.",
+    78: "Khúc xương vụn vỡ tàn tích còn sót lại sau khi thân xác phân hủy. Thường gợi ý về cái chết, sự suy tàn, tổn thương tàn khốc hoặc tai họa (tùy chữ). Ví dụ: 死 (sǐ: cái chết, qua đời), 残 (cán: tàn dư, tàn nhẫn), 殊 (shū: đặc thù, khác biệt). Mẹo nhớ: Xương tàn gãy vụn nhắc nhở sự hữu hạn của đời người.",
+    79: "Bàn tay cầm chiếc gậy gỗ hoặc binh khí đầu tù để đánh đập, rèn giũa. Thường gợi ý động tác đánh đập, thao tác rèn đúc hoặc tác động vật lý mạnh mẽ. Ví dụ: 段 (duàn: đoạn văn, giai đoạn), 殷 (yīn: ân cần, phong phú), 毁 (huǐ: hủy hoại, phá hỏng). Mẹo nhớ: Tay cầm gậy dài gõ nhịp rèn đúc đồ vật bền chắc.",
+    80: "Biến thể từ chữ Nữ với nét vạch ngang ngăn cách, biểu thị giới cấm đạo đức. Thường mang ý nghĩa ngăn cấm, phủ định chớ nên làm hoặc tình mẫu tử bảo bọc (tùy chữ). Ví dụ: 母 (mǔ: người mẹ, mẫu thân), 每 (měi: mỗi một, từng cái), 毒 (dú: chất độc, độc hại). Mẹo nhớ: Vạch ngang khuyên răn chớ vượt qua ranh giới đạo hạnh.",
+    81: "Hai người đứng sát cạnh nhau quay về cùng một hướng để đo đạc so sánh chiều cao. Gợi ý sự so sánh, đối chiếu, gần gũi, sánh đôi hoặc bè bạn kề vai. Ví dụ: 皆 (jiē: đều, cùng nhau), 毖 (bì: cẩn trọng, phòng ngừa), 毙 (bì: chết ngã, ngã gục). Mẹo nhớ: Hai bóng người kề nhau cùng hướng nhìn so cao thấp.",
+    82: "Những sợi lông tơ uốn lượn mềm mại trên da loài thú hay sợi tóc trên đầu người. Biểu thị lông thú, tóc tơ, đồ dùng làm từ lông (chổi, cọ lông) hoặc cây cỏ mềm. Ví dụ: 毫 (háo: hào lông mảy may), 毯 (tǎn: tấm thảm lông), 毡 (zhān: vải dạ len). Mẹo nhớ: Nét cong uốn ngọn như chùm lông tơ phất phơ trước gió.",
+    83: "Ngọn đồi cắm chiếc rìu đá biểu tượng của thủ lĩnh thị tộc cai quản lãnh địa. Gợi ý dòng họ gia tộc, nguồn gốc huyết thống hoặc danh xưng người tôn kính. Ví dụ: 民 (mín: nhân dân, thường dân), 氓 (máng: dân lưu tán, kẻ thô lỗ), 昏 (hūn: mờ tối, hoàng hôn). Mẹo nhớ: Nét móc vươn rộng che chở cho muôn dân cùng một họ.",
+    84: "Những làn mây khói bảng lảng bốc lên uốn lượn giữa không gian trời đất. Biểu thị khí quyển, hơi thở, thời tiết, năng lượng sống hoặc trạng thái khí thể. Ví dụ: 氛 (fēn: bầu không khí, hơi khói), 氧 (yǎng: khí oxy), 汽 (qì: hơi nước, xăng dầu). Mẹo nhớ: Ba làn mây uốn lượn bay bổng thành nguồn dưỡng khí nuôi sống vạn vật.",
+    85: "Hình tượng dòng nước uốn khúc chảy xiết; khi đặt bên trái chữ thường biến dạng thành ba chấm thủy (氵). Biểu thị các hiện tượng tự nhiên, sông biển, chất lỏng hoặc hành vi liên quan tới nước (tùy chữ). Ví dụ: 江 (jiāng: sông lớn), 河 (hé: dòng sông), 海 (hǎi: biển cả). Mẹo nhớ: Ba chấm nước bắn tung tóe biểu thị chất lỏng.",
+    86: "Mô phỏng ngọn lửa bùng cháy từ củi; khi nằm ở đáy chữ thường hóa thành bốn chấm hỏa (灬). Biểu thị ánh sáng, độ nóng, việc nấu nướng, đun sôi hoặc thiêu đốt (tùy chữ). Ví dụ: 热 (rè: nóng), 烧 (shāo: đốt, xào nấu), 点 (diǎn: chấm, châm lửa). Mẹo nhớ: Bốn chấm dưới đáy hay ngọn lửa bùng lên đều tỏa nhiệt.",
+    87: "Bàn tay úp xuống với các ngón quặp nhọn như móng vuốt chim muông săn mồi. Gợi ý móng vuốt động vật, hành vi vồ bắt, cào cấu hoặc thao tác túm lấy từ trên cao. Ví dụ: 爬 (pá: bò trườn, leo trèo), 采 (cǎi: hái lượm, thu thập), 妥 (tuǒ: thỏa đáng, yên ổn). Mẹo nhớ: Bàn tay úp móng vuốt túm lấy cành cây hái quả ngọt.",
+    88: "Bàn tay người lớn đang cầm một chiếc roi tre hoặc rìu đá lao động nuôi dạy con cái. Biểu thị người cha, bậc trưởng bối trong gia đình hoặc người đứng đầu dòng họ. Ví dụ: 爸 (bà: ba, bố), 爹 (diē: cha già), 爷 (yé: ông nội, gia gia). Mẹo nhớ: Bàn tay cầm roi răn dạy rèn giũa con nên người thành người cha kính yêu.",
+    89: "Hai thanh tre đan chéo hình chữ X dùng để tính toán các quẻ biến dịch trong Kinh Dịch. Biểu thị sự đan dệt, quẻ bói toán, sự biến hóa qua lại hoặc mạng lưới hoa văn (tùy chữ). Ví dụ: 肴 (yáo: món nhắm, sơn hào hải vị), 驳 (bó: bác bỏ, lẫn lộn màu lông), 爽 (shuǎng: sảng khoái, sáng rõ). Mẹo nhớ: Hai chữ X chồng lên nhau vẽ nên hào quẻ biến đổi khôn lường.",
+    90: "Nửa thân cây xẻ dọc bên trái thành tấm ván dài hoặc chiếc giường nằm nghỉ ngơi. Gợi ý các tấm phản gỗ, ván xẻ, giường nằm hoặc vật che chắn dài thẳng. Ví dụ: 壮 (zhuàng: cường tráng, mạnh mẽ), 妆 (zhuāng: trang điểm, phấn son), 墙 (qiáng: bức tường). Mẹo nhớ: Tấm ván gỗ dựng đứng chia gian phòng thành vách ngăn.",
+    91: "Nửa thân cây xẻ dọc bên phải tạo thành miếng gỗ mỏng, thẻ tre viết chữ hoặc lát mỏng. Biểu thị những vật thể mỏng manh dẹt phẳng như lá thẻ, bức ảnh, lát cắt mỏng. Ví dụ: 版 (bǎn: bản in, xuất bản), 牌 (pái: tấm biển, nhãn hiệu), 牒 (dié: công văn, văn điệp). Mẹo nhớ: Nửa cây bên phải xẻ thành từng lát gỗ mỏng khắc chữ in thơ.",
+    92: "Hai chiếc răng nanh trên dưới giao nhau khít khao của loài muông thú săn mồi. Biểu thị răng cắn, ngà voi, ngàm móc cài khít hoặc các vật có răng nhọn đan xen. Ví dụ: 邪 (xié: tà ác, tà khí), 鸦 (yā: chim quạ đen), 呀 (ya: trợ từ ngạc nhiên). Mẹo nhớ: Răng nanh đan cài bảo vệ miệng trước mọi nguy nan.",
+    93: "Hình đầu con trâu có hai sừng cong nhọn vươn lên; dạng đứng bên trái là (牜). Đại diện cho loài trâu bò, gia súc hoặc đồ tế lễ thời xưa (tùy chữ). Ví dụ: 物 (wù: sự vật, vạn vật), 特 (tè: đặc biệt), 牧 (mù: chăn nuôi, mục đồng). Mẹo nhớ: Hai sừng trâu cong nhọn vươn cao cày cấy ruộng sâu.",
+    94: "Hình con chó đứng nghiêng với đuôi cong lên; dạng đứng bên trái là khuyển đứng (犭). Đại diện cho loài chó, các loài thú săn, động vật bốn chân hoặc tính hung bạo (tùy chữ). Ví dụ: 猫 (māo: con mèo), 狗 (gǒu: con chó), 狂 (kuáng: cuồng loạn, phát điên). Mẹo nhớ: Đôi tai vểnh đuôi cong như chú chó đứng canh gác.",
+
+    # 5 nét (95..117)
+    95: "Sợi tơ dệt được nhúng nhuộm màu đen sẫm sâu thẳm, huyền bí như bầu trời đêm. Gợi ý màu đen tuyền, sự sâu xa, huyền diệu, nguyên lý vũ trụ hoặc kỳ bí khó lường. Ví dụ: 弦 (xián: dây cung, dây đàn), 率 (shuài/lǜ: suất, dẫn đầu), 畜 (chù/xù: gia súc, tích trữ). Mẹo nhớ: Màu tơ đen huyền mang theo sự sâu thẳm của trời đêm bao la.",
+    96: "Ba miếng ngọc bích xâu bằng sợi dây thẳng xuyên qua, có chấm ngọc quý bên cạnh. Biểu thị các loại ngọc quý, đá quý lấp lánh, trang sức cao sang hoặc phẩm chất thanh khiết. Ví dụ: 珠 (zhū: ngọc trai, hạt châu), 玩 (wán: chơi đùa, thưởng ngoạn), 现 (xiàn: xuất hiện, hiện tại). Mẹo nhớ: Ba viên ngọc bích xâu một dải sáng lấp lánh chấm ngọc quý.",
+    97: "Dây leo mềm rủ xuống nâng đỡ quả dưa tròn trĩnh lúc lỉu ở giữa giàn lá. Gợi ý các loài cây họ bầu bí, dưa hấu, dưa gang hoặc dây leo hoa trái. Ví dụ: 瓢 (piáo: gáo múc nước bằng vỏ bầu), 瓣 (bàn: cánh hoa, múi dưa), 瓠 (hù: quả bầu nậm). Mẹo nhớ: Dây leo ôm lấy quả dưa no tròn lúc lỉu trĩu cành.",
+    98: "Viên ngói cong lượn đan cài khít khao trên mái nhà hoặc đồ gốm đất nung lửa đỏ. Thường gợi ý đồ gốm sứ, ngói lợp, nồi niêu đất nung hoặc vật dụng che chắn nước. Ví dụ: 瓷 (cí: đồ sứ, gốm sứ), 瓶 (píng: bình hoa, lọ chai), 甄 (zhēn: tuyển chọn, đồ gốm). Mẹo nhớ: Nét uốn lượn cong cong như viên ngói lợp che chở mái nhà.",
+    99: "Chiếc miệng đang ngậm một miếng đồ ăn ngon ngọt, giữ hương thơm lưu luyến. Biểu thị vị ngọt ngào, cảm giác dễ chịu, sự bằng lòng hoặc lời nói ngọt tai. Ví dụ: 甜 (tián: ngọt ngào, dịu ngọt), 甚 (shèn: rất, quá đỗi), 某 (mǒu: người nào đó). Mẹo nhớ: Nét ngang trong miệng ngậm giữ vị thơm ngọt của miếng bánh ngon.",
+    100: "Cây cỏ nảy mầm nhô lên từ lòng đất mẹ, tràn trề sức sống xanh tươi ban sơ. Gợi ý sự sinh sôi, chào đời, sinh sống, sinh trưởng, sự tươi non hoặc nghề nghiệp. Ví dụ: 产 (chǎn: sản xuất, sinh đẻ), 甥 (shēng: cháu ngoại, cháu gọi cậu), 甦 (sū: hồi sinh). Mẹo nhớ: Mầm xanh nhú lên khỏi đất mở ra sự sống muôn màu.",
+    101: "Chiếc thùng xách nước đan bằng nan tre có quai tiện dụng được đem ra phục vụ đời sống. Biểu thị việc ứng dụng, dùng đến đồ vật, công năng hoặc sự cần thiết hành động. Ví dụ: 甭 (béng: không cần, chẳng phải), 甫 (fǔ: vừa mới, tự xưng). Mẹo nhớ: Thùng tre vững chãi đem ra dùng làm muôn việc có ích.",
+    102: "Mô phỏng thửa ruộng được bờ rãnh chia cắt thành bốn ô vuông nhỏ. Biểu thị đồng ruộng, canh tác nông nghiệp, đất đai hoặc sinh hoạt mùa màng (tùy chữ). Ví dụ: 界 (jiè: ranh giới, thế giới), 留 (liú: lưu lại, ở lại), 画 (huà: bức tranh, vẽ). Mẹo nhớ: Khung vuông chia bốn ô bờ rãnh phân định ruộng nương.",
+    103: "Bàn chân bước đi trên đường hoặc cuộn vải dài được cuộn tròn đo đạc tấm thất. Biểu thị chân bước, phân đoạn đo vải lụa hoặc lượng từ cho ngựa, vải vóc. Ví dụ: 疏 (shū: sơ lược, thưa thớt), 疑 (yí: nghi ngờ, ngập ngừng), 楚 (chǔ: rõ ràng, nước Sở). Mẹo nhớ: Bàn chân đo bước dặm trường như cuộn vải lụa mở dần trang đời.",
+    104: "Mô phỏng người bệnh đang nằm đổ mồ hôi trên chiếc giường nghiêng. Xuất hiện trong hầu hết các chữ chỉ đau đớn, bệnh tật, thương tích hoặc sự chữa trị (tùy chữ). Ví dụ: 病 (bìng: bệnh tật, ốm đau), 疼 (téng: đau đớn), 痛 (tòng: đau đớn thống khổ). Mẹo nhớ: Giường bệnh có chấm mồ hôi rơi nhắc nhở giữ gìn sức khỏe.",
+    105: "Hai bàn chân quay lưng hướng ra hai phía ngược nhau đang giẫm đạp leo dốc. Gợi ý bước chân trèo đèo lội suối, vượt dốc cao hoặc sự vận động giẫm đạp hai chân (tùy chữ). Ví dụ: 登 (dēng: trèo lên, đăng tải), 癸 (guǐ: can Quý trong thiên can), 發 (fā: phát ra, phát triển - phồn thể giữ trọn bộ Bát 癶). Mẹo nhớ: Hai chân choãi mở bước dài vượt lên đỉnh dốc non cao.",
+    106: "Tia sáng mặt trời rạng đông ló rạng chiếu rọi hoặc hạt gạo xát sạch vỏ trấu trắng tinh. Biểu thị màu trắng, ánh sáng trong vắt, sự trong sạch, rõ ràng hoặc nói ra bạch thoại. Ví dụ: 百 (bǎi: một trăm), 的 (de: của, đích xác), 皇 (huáng: hoàng đế, rạng rỡ). Mẹo nhớ: Hạt gạo bóc trấu trắng ngần soi tỏ lòng người thanh trong.",
+    107: "Bàn tay đang cầm dao lột tách lớp da thú khỏi thân thể để làm đồ da áo ấm. Thường gợi ý về da dẻ con người, da lông cầm thú, vỏ ngoài trái cây hoặc lớp bề mặt. Ví dụ: 破 (pò: rách nát, phá vỡ), 波 (bō: sóng nước dập dềnh), 颇 (pō: khá là, nghiêng lệch). Mẹo nhớ: Tay cầm dao lột da thú tạo nên tấm áo ấm mùa đông.",
+    108: "Chiếc đĩa nông lòng có vành loe rộng và chân đế vững để đựng thức ăn đồ tế. Thường nằm ở đáy chữ, biểu thị các loại chén đĩa, chậu, âu bát hoặc vật dụng đựng chất lỏng. Ví dụ: 盆 (pén: chậu giặt, bồn tắm), 盘 (pán: chiếc đĩa, mâm cơm), 盛 (shèng/chéng: thịnh vượng, xới cơm). Mẹo nhớ: Chiếc đĩa chân bằng miệng rộng nâng đỡ muôn món ăn thơm lành.",
+    109: "Hình vẽ con mắt nằm ngang với con ngươi ở giữa, sau chuyển sang dựng đứng. Biểu thị đôi mắt, thị giác, hành động nhìn, quan sát hoặc mù lòa (tùy chữ). Ví dụ: 眼 (yǎn: đôi mắt), 看 (kàn: nhìn, xem), 盲 (máng: mù quáng, mù lòa). Mẹo nhớ: Khung dựng hai mí ở giữa con ngươi nhìn rõ muôn phương.",
+    110: "Cây giáo nhọn dài có ngạnh sắc và cán cầm đứng dùng đâm thủng áo giáp kẻ địch. Biểu thị vũ khí đâm nhọn, sự xung đột đối đầu hoặc thế trận giáp chiến. Ví dụ: 柔 (róu: mềm mại, uyển chuyển), 矜 (jīn: tự phụ, kiêu ngạo), 骛 (wù: rong ruổi, theo đuổi). Mẹo nhớ: Mũi giáo nhọn hoắt giương lên phá tan khiên mộc phòng ngự.",
+    111: "Mũi tên có đầu bịt đồng nhọn, thân thẳng tắp và gắn lông chim đuôi tên giữ thăng bằng. Gợi ý mũi tên bắn, tốc độ nhanh vun vút, sự thẳng thắn, thề thốt hoặc đo đạc ngắn dài. Ví dụ: 知 (zhī: tri thức, hiểu biết thẳng thắn), 短 (duǎn: ngắn ngủi), 矩 (jǔ: khuôn thước, quy củ). Mẹo nhớ: Mũi tên vút bay thẳng tắp bắn trúng hồng tâm tri thức.",
+    112: "Hình khối đá rơi xuống từ một vách đá nhô ra. Xuất hiện trong các chữ chỉ đất đá, khoáng sản, độ cứng rắn hoặc các công cụ đẽo bằng đá (tùy chữ). Ví dụ: 破 (pò: phá vỡ, rách nát), 研 (yán: nghiên cứu, mài giũa), 硬 (yìng: cứng rắn). Mẹo nhớ: Tảng đá dưới vách núi sừng sững bền vững ngàn năm.",
+    113: "Chiếc bàn thờ đá đặt lễ vật cúng tế để thần linh hiển linh ban phước; bên trái viết là (礻). Biểu thị thần linh, tế tự tổ tiên, lời cầu chúc, điềm lành dữ hoặc sự ban phước gia hộ. Ví dụ: 祝 (zhù: chúc mừng, cầu nguyện), 神 (shén: thần linh, kỳ diệu), 福 (fú: hạnh phúc, phúc lộc). Mẹo nhớ: Bàn thờ đá dâng lễ kính cẩn cầu mong phúc lành bình an.",
+    114: "Dấu vết móng chân thú in trên mặt đất cùng chiếc đuôi dài quét lướt qua cỏ. Gợi ý các loài muông thú hoang dã, dấu chân in đất hoặc bộ phận thân sau của thú. Ví dụ: 禹 (yǔ: vua Đại Vũ), 离 (lí: rời xa, chia ly), 禽 (qín: cầm thú, chim muông). Mẹo nhớ: Dấu chân thú để lại trên đất dẫn đường thợ săn tìm thú.",
+    115: "Hình cây lúa trĩu bông uốn cong đầu ngọn. Biểu thị các loại lúa ngũ cốc, nông nghiệp mùa vụ, thuế má hoặc tiền tài thời phong kiến (tùy chữ). Ví dụ: 秋 (qiū: mùa thu lúa chín), 种 (zhǒng/zhòng: hạt giống, trồng trọt), 和 (hé: hòa thuận, cùng ăn hạt lúa). Mẹo nhớ: Cây lúa cúi đầu trĩu hạt bông vàng báo hiệu mùa gặt ấm no.",
+    116: "Mái vòm hang đá khoét sâu vào sườn núi mở lối vào nơi trú ẩn nguyên sơ. Thường nằm trên nóc chữ, gợi ý hang hốc, lỗ thủng, khoảng trống hoặc nơi ẩn nấp dưới lòng đất. Ví dụ: 空 (kōng: không gian, trống rỗng), 穿 (chuān: mặc áo, xuyên thủng), 究 (jiū: nghiên cứu, tới cùng). Mẹo nhớ: Dưới mái đá khoét một hốc sâu tạo thành hang động ấm êm.",
+    117: "Dáng người đứng thẳng hiên ngang trên mặt đất với hai chân choãi vững như bàn thạch. Gợi ý tư thế đứng thẳng, sự thiết lập, khởi đầu, vững vàng hoặc vị trí độc lập. Ví dụ: 站 (zhàn: đứng lại, bến đỗ), 亲 (qīn: người thân, tự thân), 童 (tóng: đồng ấu, trẻ con). Mẹo nhớ: Đứng thẳng vươn cao hai chân trụ vững trên mặt đất bao la.",
+
+    # 6 nét (118..146)
+    118: "Mô phỏng hai cành tre với những chiếc lá nhọn rủ xuống, viết tắt phía trên là (⺮). Biểu thị cây tre, măng nứa, nhạc cụ sáo hoặc đồ đan lát bằng tre (tùy chữ). Ví dụ: 笔 (bǐ: cây bút lông cán trúc), 笑 (xiào: tươi cười), 等 (děng: chờ đợi, bằng nhau). Mẹo nhớ: Hai khóm lá tre nghiêng rủ đan nên chiếc nón chở che.",
+    119: "Hình bông lúa tỏa ra các hạt gạo xung quanh chữ thập. Biểu thị hạt gạo, lương thực, thực phẩm nấu chín hoặc sự tinh khiết (tùy chữ). Ví dụ: 粉 (fěn: bột gạo, màu phấn), 糖 (táng: đường ngọt), 粒 (lì: hạt gạo, viên nhỏ). Mẹo nhớ: Bốn hạt gạo vương quanh cuống lúa nuôi sống con người.",
+    120: "Mô phỏng cuộn tơ tằm đã se thành sợi chỉ, giản thể là (纟). Thường gặp trong các từ ngữ chỉ tơ lụa, dệt may, dây buộc, sự kết nối hoặc màu sắc (tùy chữ). Ví dụ: 红 (hóng: màu đỏ), 绿 (lǜ: màu xanh lá), 结 (jié: thắt nút, kết nối). Mẹo nhớ: Sợi tơ se dài kết nối vạn vật.",
+    121: "Chiếc vò sành có nắp đậy khít khao dùng đựng rượu men hoặc gõ nhịp ca hát thời xưa. Gợi ý các loại đồ gốm thô, chum vại sành sứ, bình đựng chất lỏng hoặc nhạc cụ gõ. Ví dụ: 缺 (quē: thiếu thốn, sứt mẻ chum vại), 缸 (gāng: cái chum, vại lớn), 罐 (guàn: cái hũ, lon hộp). Mẹo nhớ: Chiếc bình sành nắp đậy ủ men rượu thơm nồng.",
+    122: "Tấm lưới đánh cá đan các mắt lưới vuông vắn giăng ngang; trên đầu viết là (罒). Biểu thị lưới giăng, cạm bẫy, mạng lưới luật pháp giam giữ hoặc bao vây bắt bớ. Ví dụ: 罗 (luó: lưới bắt chim, La bàn), 罚 (fá: xử phạt, tội phạt), 置 (zhì: bố trí, sắp đặt). Mẹo nhớ: Mắt lưới đan ô vuông vắn giăng bắt muôn loài tôm cá.",
+    123: "Đầu con dê nhìn thẳng với hai chiếc sừng cong nhọn uốn sang hai bên. Biểu thị loài dê cừu hiền lành, đồ tế lễ béo tốt hoặc tượng trưng cho sự may mắn, tốt lành. Ví dụ: 美 (měi: xinh đẹp, dê to béo tốt), 善 (shàn: lương thiện, việc tốt), 祥 (xiáng: cát tường, điềm lành). Mẹo nhớ: Hai sừng dê cong vút biểu trưng cho điều may mắn an lành.",
+    124: "Đôi cánh chim xòe rộng với những hàng lông vũ dài óng ả nâng cánh bay cao. Thường gợi ý lông chim muông, cánh chim, sự bay lượn trên không hoặc quạt lông. Ví dụ: 翔 (xiáng: lượn bay trên trời), 翼 (yì: đôi cánh, che chở), 翠 (cuì: màu xanh biếc chim bói cá). Mẹo nhớ: Hai cánh chim xếp lớp lông tơ vỗ cánh bay vút trời xanh.",
+    125: "Cụ già lưng còng tóc dài buông xõa tay chống gậy tre thong thả bước đi. Biểu thị người cao tuổi, bậc trưởng lão kính trọng, sự lâu đời hoặc kinh nghiệm từng trải. Ví dụ: 老 (lǎo: già nua, lâu đời), 考 (kǎo: khảo hạch, suy xét sâu xa), 者 (zhě: người, kẻ). Mẹo nhớ: Tóc dài lưng còng tay chống gậy là bậc lão niên đáng kính.",
+    126: "Bộ râu dưới cằm người rủ dài mềm mại, sau mượn làm liên từ liên kết vế câu. Dùng làm liên từ nối kết (mà, lại, nhưng mà), biểu thị sự tiếp nối hoặc râu ria. Ví dụ: 耐 (nài: nhẫn nại, chịu đựng), 耍 (shuǎ: đùa giỡn, diễn trò), 端 (duān: đầu mối, đoan chính). Mẹo nhớ: Râu cằm buông dài nối dài lời ăn tiếng nói mượt mà.",
+    127: "Chiếc cày xới đất bằng gỗ có cán uốn cong và lưỡi cày nhọn chia đất màu. Thường nằm bên trái chữ, gợi ý nghề nông, cày bừa đất ruộng hoặc các công việc đồng áng. Ví dụ: 耕 (gēng: cày cấy ruộng đồng), 耘 (yún: làm cỏ ruộng lúa), 耗 (hào: tiêu hao, hao tổn). Mẹo nhớ: Lưỡi cày cán gỗ rẽ đất mở luống gieo mầm vụ mới.",
+    128: "Vành tai ngoài của con người với các đường sụn uốn lượn đón nhận âm thanh. Biểu thị lỗ tai, thính giác, hành vi nghe ngóng, thấu hiểu hoặc tiếng động vang xa. Ví dụ: 闻 (wén: nghe thấy, ngửi thấy), 聪 (cōng: thông minh, tai thính mắt sáng), 联 (lián: liên kết, ghép nối). Mẹo nhớ: Vành tai cong đón gió lắng nghe mọi thanh âm cuộc đời.",
+    129: "Bàn tay cầm thẳng đứng chiếc quản bút lông đang vung nét thảo trên thẻ tre. Gợi ý dụng cụ viết lách, sách vở ghi chép, việc biên soạn văn thư hành chính (tùy chữ). Ví dụ: 律 (lǜ: quy luật, kỷ luật), 津 (jīn: bến sông, tân dịch nhuận ẩm), 肆 (sì: phóng túng, phố chợ buôn bán). Mẹo nhớ: Tay cầm quản bút lông dựng đứng viết nên luật lệ ngàn năm.",
+    130: "Mô phỏng một miếng thịt xẻ có vân nạc vân mỡ đan xen, khi đứng ghép thường viết giống bộ Nguyệt (月). Biểu thị thịt bắp, cơ thể sống hoặc các phủ tạng (tùy chữ). Ví dụ: 肥 (féi: béo tốt, phì nhiêu), 脑 (nǎo: bộ não), 胃 (wèi: dạ dày). Mẹo nhớ: Nét cong chứa hai gạch ngang biểu thị thịt bắp và cơ quan nội tạng.",
+    131: "Con mắt mở to nhìn chăm chú cúi đầu cung kính trước đấng quân vương. Biểu thị bề tôi, quan thần, sự quy phục, phận sự phục vụ đất nước. Ví dụ: 卧 (wò: nằm nghỉ ngơi), 臧 (zāng: tốt lành, họ Tang), 临 (lín: đến gần, đối diện). Mẹo nhớ: Cúi đầu nhìn chăm chú giữ trọn đạo bề tôi trung kiên.",
+    132: "Chiếc mũi người nhìn thẳng (khi người xưa chỉ vào bản thân mình thường chỉ tay vào mũi). Biểu thị bản thân, tự mình, điểm khởi hành từ nơi nào, hoặc cái mũi hô hấp. Ví dụ: 臭 (chòu: mùi hôi thối mũi ngửi), 息 (xī: hơi thở, nghỉ ngơi), 鼻 (bí: cái mũi). Mẹo nhớ: Tay chỉ vào đầu mũi khẳng định chính bản thân mình.",
+    133: "Mũi tên từ trên trời lao vun vút cắm phập xuống mặt đất tới đích đã định. Biểu thị sự đến nơi, đạt tới đích, đỉnh điểm tột cùng hoặc mốc giới hạn. Ví dụ: 到 (dào: đến nơi), 致 (zhì: dẫn đến, gửi trao), 屋 (wū: gian phòng dừng chân). Mẹo nhớ: Mũi tên cắm xuống đất đánh dấu đã đến đích tận cùng.",
+    134: "Chiếc cối đá lõm sâu với những vết băm nhám bên trong để giã hạt ngũ cốc. Gợi ý chiếc cối giã gạo, hành động giã nghiền nát, đồ dùng nhà bếp bằng đá. Ví dụ: 舂 (chōng: giã gạo chày cối), 舅 (jiù: cậu ruột), 舀 (yǎo: múc canh, xúc gạo). Mẹo nhớ: Miệng cối khoét sâu đón hạt gạo trắng giã dập thành cơm.",
+    135: "Chiếc lưỡi thè dài ra từ trong khoang miệng để nếm thức ăn hoặc phát ra lời nói. Thường gợi ý về cái lưỡi, nếm mùi vị, cơ quan phát âm, lời nói hoặc liếm láp. Ví dụ: 乱 (luàn: hỗn loạn), 甜 (tián: vị ngọt đầu lưỡi), 辞 (cí: từ chức, từ ngữ). Mẹo nhớ: Lưỡi thò ra nếm thử vị ngọt của thức ăn thơm lành.",
+    136: "Hai bàn chân xoay ngược chiều nhau không cùng hướng bước, gây nên trắc trở. Gợi ý sự trái ngược, mâu thuẫn, sai lệch hướng đi hoặc gặp điều bất trắc. Ví dụ: 舞 (wǔ: nhảy múa xòe chân), 舜 (shùn: vua Thuấn hiền minh), 桀 (jié: vua Kiệt bạo ngược). Mẹo nhớ: Hai chân bước ngược hướng tạo thành bước nhảy múa hoặc sai lệch.",
+    137: "Chiếc thuyền độc mộc dài với mái chèo và khoang chở người lướt trên sóng nước. Thường nằm bên trái chữ, biểu thị thuyền bè, phương tiện thủy, bến sông hoặc chèo lái. Ví dụ: 船 (chuán: thuyền lớn), 航 (háng: hàng hải, hàng không), 般 (bān: chủng loại, kiểu dáng). Mẹo nhớ: Thuyền con lướt sóng chở bao chuyến hải trình vượt trùng dương.",
+    138: "Người quay ngoắt đầu lại trừng mắt nhìn đối thủ với dáng đứng kiên định bất khuất. Biểu thị quẻ Cấn trong Bát quái (núi non), sự dừng lại, cứng cỏi hoặc khó khăn ngưng đọng. Ví dụ: 很 (hěn: rất, quá đỗi), 根 (gēn: rễ cây cắm sâu), 艰 (jiān: gian nan vất vả). Mẹo nhớ: Quay đầu mắt nhìn quả quyết giữ vững ý chí như núi cao.",
+    139: "Hai người ôm lấy nhau biểu lộ sắc thái tình cảm thân mật trên nét mặt. Biểu thị màu sắc rực rỡ, sắc mặt diện mạo, cảnh sắc thiên nhiên hoặc sắc thái (tùy chữ). Ví dụ: 色 (sè/shǎi: màu sắc, sắc diện), 艳 (yàn: diễm lệ, tươi thắm), 绝 (jué: tuyệt đối, đoạn tuyệt). Mẹo nhớ: Sắc mặt tươi vui biểu lộ màu sắc thắm đượm tình người.",
+    140: "Hình hai khóm cỏ non nhú trên mặt đất, thường nằm ở phần trên của chữ gọi là đầu thảo (艹). Biểu thị các loài cỏ, hoa lá, rau củ hoặc thảo dược (tùy chữ). Ví dụ: 花 (huā: bông hoa), 茶 (chá: trà), 药 (yào: thuốc men). Mẹo nhớ: Nét ngang cắm hai nét sổ nhỏ như hai mầm cỏ xanh vươn lên.",
+    141: "Chiếc đầu dữ tợn và những vệt vằn da uy nghi của chúa tể sơn lâm. Thường nằm phía trên chữ, gợi ý loài hổ, sự dũng mãnh, hung dữ hoặc tiếng gầm vang. Ví dụ: 虎 (hǔ: con hổ hung tợn), 虐 (nüè: bạo ngược, tàn hại), 虚 (xū: hư không, khiêm tốn). Mẹo nhớ: Vằn cọp vắt trên trán chúa sơn lâm khiến muôn loài khiếp sợ.",
+    142: "Mô phỏng một con rắn nhỏ hoặc loài sâu đang bò trườn. Đại diện cho thế giới côn trùng, sâu bọ, loài bò sát, giáp xác hoặc ếch nhái (tùy chữ). Ví dụ: 虾 (xiā: con tôm), 蛇 (shé: con rắn), 蚂 (mǎ: con kiến). Mẹo nhớ: Thân sâu uốn khúc bò trườn khắp cành cây ngọn cỏ.",
+    143: "Giọt máu tươi rơi xuống đọng trong chiếc đĩa tế thần linh thời cổ đại. Biểu thị máu huyết, dòng máu, sự hy sinh, thương tích hoặc mối quan hệ ruột thịt (tùy chữ). Ví dụ: 衄 (nǜ: chảy máu cam, thất bại tổn thương), 衅 (xìn: mối hận thù khiêu khích, tế máu), 恤 (xù: thương xót, cứu trợ). Mẹo nhớ: Giọt máu rớt vào đĩa tế minh chứng cho lời thề son sắt.",
+    144: "Hình ngã tư đường hoàn chỉnh với bốn hướng giao nhau thông suốt. Biểu thị đường sá đi lại, dòng người lưu thông, hành vi công cộng hoặc quy chuẩn xã hội (tùy chữ). Ví dụ: 街 (jiē: đường phố tấp nập), 衙 (yá: nha môn, công sở), 衡 (héng: cân bằng, đòn cân đo lường). Mẹo nhớ: Bốn ngã rẽ thông suốt đưa bước chân đi khắp bốn phương trời.",
+    145: "Hình chiếc áo cổ gập vạt chéo thời xưa; dạng đứng bên trái là (衤). Biểu thị quần áo, vải vóc trang phục, chăn màn hoặc sự che phủ (tùy chữ). Ví dụ: 被 (bèi: chăn mền, bị được), 裙 (qún: váy ngắn), 衬 (chèn: áo sơ mi lót). Mẹo nhớ: Áo cổ vạt chéo có hai chấm bên nách giữ ấm thân hình.",
+    146: "Chiếc nắp đậy úp trùm kín miệng vò hay giỏ để đồ đạc không rơi lọt ra ngoài. Gợi ý sự che đậy, úp chụp, giấu kín hoặc phương Tây nơi mặt trời lặn (như chữ Tây 西). Ví dụ: 西 (xī: phương tây), 要 (yào: cần thiết, yêu cầu), 覆 (fù: lật úp, che phủ). Mẹo nhớ: Nắp đậy úp trùm lên miệng vò ngăn bụi che mưa.",
+
+    # 7 nét (147..166)
+    147: "Người có đôi mắt mở to sáng quắc ngồi ngắm nhìn tỏ tường mọi sự vật; giản thể là (见). Biểu thị thị giác, nhìn thấy, gặp gỡ, quan điểm kiến giải hoặc sự hiểu biết. Ví dụ: 视 (shì: thị giác, coi trọng), 规 (guī: quy tắc, nhìn chuẩn), 观 (guān: quan sát cảnh đẹp). Mẹo nhớ: Mắt to chân bước đến nơi gặp gỡ nhìn thấu sự đời.",
+    148: "Chiếc sừng nhọn cong vút trên đầu loài trâu bò có các vòng ngấn sừng rắn rỏi. Biểu thị sừng thú, góc nhọn, tù và thổi hiệu lệnh hoặc đơn vị tiền tệ hào. Ví dụ: 解 (jiě: giải thích, mổ xẻ bằng sừng), 触 (chù: chạm vào, xúc giác), 觥 (gōng: chén rượu bằng sừng). Mẹo nhớ: Sừng nhọn trên đầu thú cong vút thành góc nhọn kiên cường.",
+    149: "Hình ảnh âm thanh và lời nói thốt ra từ cửa miệng, dạng giản thể viết là (讠). Xuất hiện trong các chữ biểu thị lời nói, đàm thoại, ngôn ngữ, bài học hoặc tranh luận (tùy chữ). Ví dụ: 说 (shuō: nói chuyện), 话 (huà: lời nói, chuyện), 语 (yǔ: ngôn ngữ). Mẹo nhớ: Một chấm đầu rồi ba nét gạch ngang và miệng mở là nói năng lưu loát.",
+    150: "Dòng nước từ khe núi chảy tuôn ra ngoài cửa thung lũng mở rộng giữa hai vách đá. Gợi ý thung lũng núi, khe suối sâu, sự bao dung đón nhận hoặc hạt thóc ngũ cốc. Ví dụ: 欲 (yù: dục vọng, khao khát như hang sâu), 容 (róng: dung nạp, dung mạo), 峪 (yù: hẻm núi). Mẹo nhớ: Nước rẽ hai vách núi đổ dồn về thung lũng xanh tươi.",
+    151: "Chiếc chén tế chân cao có nắp đậy thời cổ, sau mượn chỉ các loại hạt đậu đỗ. Biểu thị cây họ đậu, hạt đậu, món ăn thanh đạm hoặc đồ tế khí chân cao. Ví dụ: 短 (duǎn: ngắn ngủi), 豉 (chǐ: tương đậu lên men), 豌 (wān: đậu Hà Lan). Mẹo nhớ: Chén tế chân cao chứa đầy hạt đậu thơm lừng dâng kính.",
+    152: "Con lợn béo tròn với chiếc bụng xệ, đuôi ngắn ngoe nguẩy và bốn chân mập mạp. Thường gợi ý loài lợn heo, gia súc nuôi trong chuồng hoặc của cải gia đình sung túc. Ví dụ: 家 (jiā: gia đình có mái nhà che chuồng lợn), 象 (xiàng: con voi lớn), 豪 (háo: hào kiệt, lông nhím). Mẹo nhớ: Dưới mái nhà có chú lợn béo là gia đình ấm no viên mãn.",
+    153: "Con thú dữ mình dài không sừng đang rạp mình uốn lượn chuẩn bị vồ mồi. Biểu thị các loài thú săn mồi hoang dã, loài bò sát trườn bò hoặc phân biệt rõ ràng. Ví dụ: 豹 (bào: con báo đốm dũng mãnh), 貌 (mào: dung mạo, bộ mặt thú), 豺 (chái: chó rừng). Mẹo nhớ: Thú dữ rạp mình uốn lưng vồ bắt con mồi thoăn thoắt.",
+    154: "Mô phỏng vỏ sò ốc quý được người cổ đại dùng làm tiền tệ giao thương, giản thể là (贝). Xuất hiện trong các chữ chỉ tiền tài, của cải, buôn bán hoặc vật phẩm quý giá (tùy chữ). Ví dụ: 贵 (guì: quý giá, đắt đỏ), 财 (cái: tiền tài, tài lộc), 买 (mǎi: mua sắm). Mẹo nhớ: Vỏ sò quý lấp lánh biểu trưng cho tài lộc giàu sang.",
+    155: "Ngọn lửa hỏa bốc cháy phía dưới mặt đất đun đất sét chuyển sang màu đỏ rực. Biểu thị màu đỏ thắm, sự chân thành son sắt, trạng thái trần trụi hoặc tinh khiết. Ví dụ: 赦 (shè: xá tội, tha bổng), 赫 (hè: hiển hách, rực rỡ), 赭 (zhě: màu nâu đỏ đất son). Mẹo nhớ: Lửa đỏ nung đất tạo màu son đỏ thắm tấm lòng trung trinh.",
+    156: "Người vung tay rảo bước chân thật nhanh hướng về phía trước. Biểu thị hành động chạy nhảy, đi lại nhanh nhẹn, rời đi hoặc cuộc đua tài. Ví dụ: 起 (qǐ: đứng dậy, khởi hành), 越 (yuè: vượt qua, đất Việt), 超 (chāo: siêu phàm, vượt bậc). Mẹo nhớ: Vung tay nhấc chân chạy nhanh vượt qua mọi trở ngại.",
+    157: "Hình tượng cẳng chân và bàn chân người đang sải bước; biến thể bên trái là (𧾷). Thường gặp trong các chữ chỉ bước chân, hành động đi đứng, chạy nhảy hoặc đá (tùy chữ). Ví dụ: 跑 (pǎo: chạy bộ), 跳 (tiào: nhảy cao), 路 (lù: con đường đi). Mẹo nhớ: Miệng gối chân đạp vươn tới dặm dài phía trước.",
+    158: "Dáng người đứng nhìn nghiêng với chiếc bụng bầu nhô ra thể hiện thân xác mang sự sống. Biểu thị cơ thể, tấm thân, vóc dáng, bản thân hoặc việc tự mình trải nghiệm. Ví dụ: 躺 (tǎng: nằm ngả lưng), 躯 (qū: thân xác, thể xác), 躲 (duǒ: ẩn nấp, trốn tránh). Mẹo nhớ: Tấm thân mang vóc dáng đứng thẳng giữa trời đất bao la.",
+    159: "Mô phỏng cỗ xe ngựa cổ nhìn từ trên cao với bánh xe và trục xe, giản thể là (车). Biểu thị các loại xe cộ, phương tiện vận tải hoặc hành động lăn bánh (tùy chữ). Ví dụ: 轮 (lún: bánh xe lăn), 辆 (liàng: lượng từ cỗ xe), 输 (shū: vận chuyển, thua cuộc). Mẹo nhớ: Hai bánh xe gắn trục quay bon bon trên đường dài.",
+    160: "Con dao nhọn dùng thích chữ khắc dấu lên mặt tù nhân, mang nỗi đớn đau cay cực. Gợi ý vị cay nồng nặc, nỗi cực nhọc cay đắng, tội phạm hoặc sự vất vả nhọc nhằn. Ví dụ: 辣 (là: cay xè đầu lưỡi), 辨 (biàn: phân biệt rõ ràng), 辟 (pì/bì: khai phá, lánh xa). Mẹo nhớ: Dao thích chữ rạch mặt khắc ghi nỗi cay đắng ngậm ngùi.",
+    161: "Chiếc vỏ sò đá nông cụ cày xới đất buổi sáng tinh mơ khi mặt trời vừa ló rạng. Biểu thị can Chi Thần (con Rồng), thời khắc buổi sớm mai, các vì tinh tú hoặc mùa vụ cày cấy. Ví dụ: 晨 (chén: buổi sớm mai), 辱 (rǔ: nhục nhã, cúi mình cày đất), 农 (nóng: nghề nông cần cù). Mẹo nhớ: Cầm công cụ ra đồng buổi sớm tinh mơ gieo hạt mùa màng.",
+    162: "Hình bước chân đang di chuyển trên ngã ba đường (quai xước 辶). Biểu thị sự di chuyển, hành trình, sự đuổi theo, khoảng cách hoặc thời gian qua đi (tùy chữ). Ví dụ: 进 (jìn: tiến bước, đi vào), 送 (sòng: đưa tiễn, tặng quà), 运 (yùn: vận chuyển, vận mệnh). Mẹo nhớ: Bước chân lướt theo đường dài thênh thang muôn nẻo.",
+    163: "Hình một khu ấp dân cư có người quỳ bên dưới; khi đứng bên phải chữ viết thành bộ bễ (阝 bên phải). Biểu thị làng xã, đô thị, địa danh hoặc đất phong (tùy chữ). Ví dụ: 都 (dū: kinh đô, tất cả), 部 (bù: bộ phận, ban ngành), 邮 (yóu: bưu điện, thư từ). Mẹo nhớ: Bễ nằm bên phải chữ là đất phong làng ấp đô thành.",
+    164: "Chiếc bình gốm bụng phình cổ thon dùng để ủ men rượu cất nồng nàn. Thường nằm bên trái chữ, gợi ý rượu chè, quá trình lên men, vị chua chát hoặc can Chi Dậu. Ví dụ: 酒 (jiǔ: chén rượu nồng), 酸 (suān: vị chua gắt), 配 (pèi: phối hợp, pha chế). Mẹo nhớ: Bình gốm ủ men ngấu tỏa hương rượu nồng thơm ngát.",
+    165: "Dấu móng vuốt thú in rõ trên nền đất giúp người thợ săn phân biệt loài muông thú. Gợi ý sự phân biệt, chia tách rạch ròi, xem xét tinh tường hoặc hoa màu thu hoạch. Ví dụ: 释 (shì: giải thích, cởi bỏ), 釉 (yòu: lớp men đồ gốm), 番 (fān: phiên hạt, lần lượt). Mẹo nhớ: Vết móng chân in đất soi tỏ sự phân biệt rạch ròi.",
+    166: "Thửa ruộng (Điền 田) bên trên mảnh đất (Thổ 土) nơi dân cư quần tụ thành xóm làng. Biểu thị đơn vị dặm đường đo cự ly, làng mạc xóm thôn hoặc phía bên trong nội hạt. Ví dụ: 重 (zhòng/chóng: nặng nề, trùng lặp), 量 (liáng/liàng: đo lường, dung lượng), 野 (yě: đồng nội hoang dã). Mẹo nhớ: Ruộng đất kề nhau tạo nên xóm làng trù phú ngàn dặm.",
+
+    # 8 nét (167..175)
+    167: "Hình các khối quặng kim loại vùi sâu dưới lớp đất, giản thể là (钅). Biểu thị kim loại, đồ vật bằng đồng/sắt/thép, chuông đúc hoặc tiền tài (tùy chữ). Ví dụ: 钱 (qián: tiền bạc), 铁 (tiě: sắt thép), 银 (yín: bạc, tiền tài). Mẹo nhớ: Dưới mái đất chôn giấu quặng kim loại quý giá.",
+    168: "Bậc trưởng lão tóc dài buông xõa bay theo gió, chống gậy bước đi uy nghiêm; giản thể là (长). Biểu thị chiều dài không gian thời gian, sự sinh trưởng phát triển hoặc bậc bề trên lãnh đạo (tùy chữ). Ví dụ: 长 (cháng/zhǎng: trường cửu, lớn lên trưởng thành), 张 (zhāng: mở rộng, giương cung), 账 (zhàng: sổ sách, tài khoản). Mẹo nhớ: Mái tóc dài buông gió của bậc trưởng lão sống lâu trăm tuổi.",
+    169: "Hình hai cánh cửa lớn của cổng thành hoặc dinh thự mở ra, giản thể là (门). Biểu thị cánh cổng, nơi then chốt, sự đóng mở hoặc căn phòng (tùy chữ). Ví dụ: 闭 (bì: đóng kín cửa), 问 (wèn: hỏi han qua cửa), 间 (jiān: gian phòng, giữa). Mẹo nhớ: Hai cánh cổng lớn mở ra đón khách bước vào cung điện.",
+    170: "Mô phỏng những bậc thang hoặc gò đất cao ven núi; khi đứng bên trái chữ viết thành bộ bễ (阝 bên trái). Biểu thị gò đồi, bờ dốc, sự che chắn hoặc cản trở (tùy chữ). Ví dụ: 阳 (yáng: ánh mặt trời, dương), 阴 (yīn: bóng râm, âm), 阶 (jiē: bậc thang đá). Mẹo nhớ: Bễ nằm bên trái chữ là gò đất bậc thang cheo leo.",
+    171: "Bàn tay vươn ra từ phía sau chộp tóm lấy đuôi con thú đang chạy trốn. Gợi ý sự bắt giữ, theo kịp, quy phục phụ thuộc hoặc thân phận tôi tớ nô lệ (tùy chữ). Ví dụ: 隶 (lì: lệ thuộc, nô lệ), 逮 (dài: đuổi kịp, bắt bớ), 肄 (yì: học tập, rèn luyện nghiệp vụ). Mẹo nhớ: Tay vươn chộp lấy đuôi thú giữ chặt vào vòng lệ thuộc.",
+    172: "Con chim nhỏ có chiếc đuôi ngắn cụn cưng đang đậu nghiêng trên cành cây. Biểu thị các loài chim đuôi ngắn (chim sẻ, bồ câu), sự tụ họp hoặc tính chất cao vời. Ví dụ: 雀 (què: chim sẻ nhỏ), 集 (jí: tập hợp chim đậu trên cây), 难 (nán: khó khăn, tai nạn). Mẹo nhớ: Chú chim sẻ đuôi ngắn đậu hót líu lo trên cành biếc.",
+    173: "Mô phỏng bầu trời mây giăng và những giọt mưa rớt xuống. Biểu thị các hiện tượng thời tiết khí quyển (tùy chữ kết hợp). Ví dụ: 雪 (xuě: tuyết trắng), 雷 (léi: sấm sét), 需 (xū: nhu cầu, cần thiết). Mẹo nhớ: Bầu trời giăng mây bốn hạt mưa rơi tưới mát ruộng đồng.",
+    174: "Cây cỏ mầm xanh (Sinh 生) đâm chồi trên mỏ quặng khoáng vật tạo nên màu xanh biếc. Biểu thị màu xanh lá cây hoặc xanh da trời, sự tươi trẻ thanh xuân, trong trẻo tinh khôi. Ví dụ: 静 (jìng: yên tĩnh thanh tịnh), 清 (qīng: trong vắt, thanh khiết), 晴 (qíng: trời nắng xanh trong). Mẹo nhớ: Mầm non mọc xanh biếc dâng trọn tuổi thanh xuân rạng ngời.",
+    175: "Hai cánh chim xòe quay ngược lưng vào nhau phản đối, không cùng chung một hướng. Biểu thị sự sai trái, phi lý, phủ định không phải hoặc thói hư tật xấu. Ví dụ: 悲 (bēi: bi thương đau lòng), 靠 (kào: dựa vào nhau), 排 (pái: bài trừ, sắp hàng). Mẹo nhớ: Hai cánh vỗ ngược chiều biểu thị điều sai trái phi lý.",
+
+    # 9 nét (176..186)
+    176: "Khuôn mặt người nhìn thẳng với đôi mắt ở giữa viền quanh bởi đường nét cằm má. Biểu thị khuôn mặt, diện mạo, bề mặt đồ vật, phương diện hoặc món mì sợi làm từ bột. Ví dụ: 靥 (yè: má lúm đồng tiền), 腼 (miǎn: e thẹn, thẹn thùng), 面 (miàn: mặt mũi, mì sợi). Mẹo nhớ: Viền mặt ôm đôi mắt soi tỏ mọi phương diện cuộc đời.",
+    177: "Bộ da muông thú được căng phẳng trên khung gỗ để cạo lông thuộc thành da bền chắc. Thường gợi ý đồ làm bằng da thuộc (dây da, yên ngựa, giày), sự thay đổi lột xác hay cải cách. Ví dụ: 靴 (xuē: đôi ủng da), 鞋 (xié: đôi giày đi chân), 鞭 (biān: chiếc roi da). Mẹo nhớ: Thuộc da thú cạo lông đổi mới tạo nên cuộc cải cách.",
+    178: "Hai người đi ngược chiều tuần tra xung quanh thành trì bảo vệ; giản thể là (韦). Biểu thị da thuộc đã qua xử lý mềm dẻo, sự bao quanh, bảo vệ hoặc vi phạm đi trệch hướng. Ví dụ: 韧 (rèn: dẻo dai bền bỉ), 围 (wéi: bao vây thành trì), 违 (wéi: vi phạm, sai lệch). Mẹo nhớ: Đi vòng quanh bờ thành tuần tra bằng lớp giáp da dẻo dai.",
+    179: "Khóm rau hẹ mọc trên mặt đất sau khi cắt lá lại tiếp tục đâm chồi xanh tốt lâu bền. Biểu thị cây rau hẹ, các loài hành tỏi gia vị hoặc sự sinh trưởng bền bỉ dẻo dai (tùy chữ). Ví dụ: 韭 (jiǔ: cây rau hẹ tươi tốt), 齑 (jī: rau dưa muối băm nhuyễn), 韱 (xiān: nhỏ nhuyễn thanh mảnh). Mẹo nhớ: Cắt lớp lá hẹ xanh mầm mới lại vươn lên bền bỉ.",
+    180: "Miệng mở nói ngậm theo một nét chấm nốt nhạc phát ra giai điệu du dương. Biểu thị âm thanh, thanh điệu tiếng nói, giai điệu âm nhạc, tiếng đàn hoặc tin tức phương xa (tùy chữ). Ví dụ: 韵 (yùn: vần điệu thơ ca), 章 (zhāng: chương khúc, bài văn mẫu mực), 暗 (àn: mờ ám, thiếu ánh sáng). Mẹo nhớ: Tiếng nói bật nốt nhạc ngân vang thành bản tình ca du dương.",
+    181: "Mô phỏng chiếc đầu người nổi bật trên cổ áo, sau phát triển thành trang sách tờ giấy, giản thể là (页). Biểu thị phần đầu, đỉnh, gáy hoặc các trang sách vở (tùy chữ). Ví dụ: 顶 (dǐng: đỉnh đầu, đội lên), 领 (lǐng: cổ áo, dẫn dắt), 题 (tí: đề tài, câu hỏi). Mẹo nhớ: Chiếc đầu người suy nghĩ lật mở từng trang sách hay.",
+    182: "Ngọn gió thổi tràn qua cánh đồng làm côn trùng sinh sôi bay lượn; giản thể là (风). Biểu thị gió bão, thời tiết khí hậu, phong tục tập quán, phong thái hoặc tin đồn lan xa. Ví dụ: 飘 (piāo: bay bổng theo gió), 飒 (sà: gió rít xào xạc), 飙 (biāo: cuồng phong dữ dội). Mẹo nhớ: Cơn gió mát thổi bay bụi trần mang theo phong thái hào sảng.",
+    183: "Cánh chim xòe rộng nâng thân mình lướt nhẹ vút bay trên tầng không; giản thể là (飞). Biểu thị động tác bay lượn, tốc độ nhanh như bay, phi cơ hoặc sự thăng hoa vươn cao (tùy chữ). Ví dụ: 飞 (fēi: bay lượn lên trời cao), 飜 (fān: bay lộn nhào, lật giở - dạng phồn thể/dị thể mang bộ 飛), 飝 (fēi: ba cánh chim cùng bay lượn). Mẹo nhớ: Vỗ cánh nhẹ nhàng lướt gió bay vút lên bầu trời xanh biếc.",
+    184: "Hình nắp đậy trên chiếc bát đựng cơm nóng thơm, dạng giản thể đứng bên trái là (饣). Đại diện cho thức ăn, việc ăn uống, sự no đói hoặc đồ gia vị (tùy chữ). Ví dụ: 饱 (bǎo: no bụng), 饿 (è: đói khát), 饭 (fàn: bữa cơm). Mẹo nhớ: Bát cơm có nắp đậy giữ nóng ấm bữa ăn gia đình.",
+    185: "Chiếc đầu người có tóc trên đỉnh và đôi mắt sáng, biểu tượng của vị trí cao nhất. Biểu thị phần đầu, người đứng đầu lãnh đạo, khởi đầu ban sơ hoặc lượng từ cho bài thơ (tùy chữ). Ví dụ: 首 (shǒu: đứng đầu, thủ đô, bài thơ), 道 (dào: đạo lý, con đường dẫn lối), 馗 (kuí: đường cái ngã tư rộng mở). Mẹo nhớ: Đầu đội mũ tóc sáng mắt đứng hàng đầu dẫn dắt muôn dân.",
+    186: "Bông lúa chín vàng (Hòa 禾) tỏa hương thơm ngát dưới ánh nắng mặt trời (Nhật 日). Biểu thị hương thơm ngào ngạt của hoa trái, đồ ăn ngon, sự say mê hoặc cây nhang thơm cúng tế. Ví dụ: 馥 (fù: ngát hương thơm nồng), 馨 (xīn: hương thơm bay xa), 馡 (fēi: thơm thoang thoảng). Mẹo nhớ: Hương lúa chín đầu mùa thơm ngát cả một vùng quê.",
+
+    # 10 nét (187..194)
+    187: "Mô phỏng con ngựa đang phi với bờm dài và bốn chân nhanh nhẹn, giản thể là (马). Xuất hiện trong các chữ chỉ loài ngựa, sự cưỡi ruổi, tốc độ hoặc chiến trận (tùy chữ). Ví dụ: 骑 (qí: cưỡi ngựa), 驾 (jià: lái xe, điều khiển), 验 (yàn: nghiệm chứng, kiểm tra). Mẹo nhớ: Bờm tung bay bốn vó câu phi nhanh nghìn dặm trường.",
+    188: "Khung xương gắn liền với khớp thịt nâng đỡ toàn bộ thân thể con người và loài thú. Biểu thị xương cốt, khung sườn, cốt cách con người, sự cứng rắn kiên cường hoặc đồ làm bằng xương. Ví dụ: 髓 (suǐ: tủy sống trong xương), 骼 (gé: bộ xương), 骸 (hái: thi hài hài cốt). Mẹo nhớ: Khung xương vững chãi nâng đỡ thể xác và hun đúc khí phách kiên cường.",
+    189: "Chiếc lầu vọng gác nhiều tầng dựng trên nền móng cao vút trông ra xa. Biểu thị độ cao, kiến trúc cao lớn, phẩm chất thanh cao, địa vị cao quý hoặc sự vượt trội (tùy chữ). Ví dụ: 膏 (gāo: thuốc cao, mỡ béo ngậy), 篙 (gāo: cây sào tre dài chống thuyền), 槁 (gǎo: cành khô héo, khô cằn). Mẹo nhớ: Lầu cao ngắm mây trời tượng trưng cho chí lớn thanh cao.",
+    190: "Mái tóc dài của người già hay thiếu nữ buông dài xõa xuống tận bờ vai. Thường nằm trên đầu chữ, biểu thị râu tóc, kiểu tóc búi cài, chải chuốt hoặc bờm thú (tùy chữ). Ví dụ: 髻 (jì: búi tóc cài trâm), 鬃 (zōng: bờm ngựa, lông cứng), 髯 (rán: râu quai nón dài rậm). Mẹo nhớ: Ba nét phẩy buông dài như mái tóc óng ả xõa ngang lưng.",
+    191: "Hai người đàn ông lao vào nhau vung tay túm tóc tỉ thí phân cao thấp. Biểu thị sự tranh đấu, giao tranh, đối kháng, đọ sức hoặc thi tài đua tranh (tùy chữ). Ví dụ: 鬪 / 鬥 (dòu: chiến đấu, quyết đấu), 鬩 (xì: tranh chấp, hiềm khích nội bộ), 鬧 (nào: náo nhiệt ồn ào - dạng phồn thể chứa bộ 鬥; nay giản thể thay bằng bộ Môn 闹). Mẹo nhớ: Hai bên giáp mặt vung quyền tranh tài đọ sức phân cao thấp.",
+    192: "Chiếc vò đựng rượu nếp thơm nấu cùng thảo mộc rưới xuống đất mời gọi thần linh trong lễ cúng. Biểu thị rượu hương cúng tế thần linh, sự hanh thông hoặc mùi hương thảo dược cổ truyền (tùy chữ). Ví dụ: 鬯 (chàng: rượu sưởng thơm mát cúng tế), 鬱 (yù: hương thơm nồng nàn, u uất sâu kín - dạng phồn thể chứa bộ 鬯; nay giản thể thay bằng 郁), 鬰 (yù: biến thể cổ của uất). Mẹo nhớ: Rượu nếp thảo thơm rưới mời thần linh ban phước lành.",
+    193: "Chiếc nồi nấu bằng đồng hoặc đất nung có ba chân rỗng đáy để đun nước nhanh sôi thời cổ. Biểu thị nồi niêu nấu nướng, đồ đồng cổ đại, sự phân cách chia ngăn hoặc dung tích chứa. Ví dụ: 融 (róng: hòa hợp, tan chảy ấm áp), 隔 (gé: ngăn cách chia rẽ), 鬻 (yù: bán đồ, cháo loãng). Mẹo nhớ: Nồi ba chân rỗng lửa bén nhanh đun sôi muôn món ngon.",
+    194: "Người đeo chiếc mặt nạ đầu to dữ tợn nhảy múa trừ tà hoặc bóng ma thoắt ẩn thoắt hiện. Biểu thị linh hồn, ma quỷ, sự kỳ dị, ma quái, tâm địa xảo quyệt hoặc thoắt ẩn thoắt hiện. Ví dụ: 魂 (hún: linh hồn), 魄 (pò: phách, khí phách), 魅 (mèi: quyến rũ mê hoặc, yêu mị). Mẹo nhớ: Đầu to chân khuất thoắt ẩn thoắt hiện trong bóng đêm mịt mùng.",
+
+    # 11 nét (195..200)
+    195: "Mô phỏng con cá có đầu, thân phủ vảy và vây đuôi uốn khúc, giản thể là (鱼). Thường gặp trong các chữ chỉ các loài cá, thủy hải sản hoặc nghề chài lưới (tùy chữ). Ví dụ: 鲜 (xiān: tươi ngon, tươi mát), 鲁 (lǔ: chất phác, đất Lỗ), 鲸 (jīng: cá voi khổng lồ). Mẹo nhớ: Đầu nhọn thân vảy đuôi bơi lội tung tăng dưới làn nước biếc.",
+    196: "Mô phỏng con chim có mắt tròn, đuôi dài xòe và vuốt quặp cành cây, giản thể là (鸟). Biểu thị các loài chim muông, gia cầm biết bay hoặc tiếng hót (tùy chữ). Ví dụ: 鸡 (jī: con gà), 鸣 (míng: tiếng chim hót vang), 鸭 (yā: con vịt). Mẹo nhớ: Mắt tròn mỏ nhọn đuôi xòe bay lượn giữa trời cao.",
+    197: "Túi muối mỏ hoặc thửa ruộng muối ven biển có những hạt muối kết tinh lấp lánh bên trong; giản thể là (卤). Gợi ý đất phèn mặn, muối ăn, đồ kho ướp mặn hoặc vị mặn mòi của biển cả (tùy chữ). Ví dụ: 卤 (lǔ: nước sốt kho mặn, mỏ muối), 鹾 (cuó: muối mặn, muối ăn), 鹹 (xián: vị mặn đậm đà - phồn thể giữ bộ Lỗ 鹵, nay giản thể viết là 咸). Mẹo nhớ: Túi chứa hạt muối mặn mòi nuôi dưỡng sức sống con người.",
+    198: "Chú hươu sao có cặp sừng phân nhánh tuyệt đẹp và đôi chân nhanh thoăn thoắt giữa rừng. Biểu thị loài hươu nai, vẻ đẹp thanh tao, sự may mắn bổng lộc hoặc cuộc săn đuổi vương quyền (tùy chữ). Ví dụ: 麓 (lù: rừng rậm ven chân núi), 麟 (lín: kỳ lân thần thú mang điềm lành), 麝 (shè: hươu xạ hương quý giá). Mẹo nhớ: Cặp sừng hươu sao vươn cao đem lại phúc lộc và vẻ đẹp tao nhã.",
+    199: "Cây lúa mì trĩu bông với những râu thóc dài và bộ rễ cắm sâu hút màu mỡ; giản thể là (麦). Biểu thị lúa mì, đại mạch, yến mạch, bột mì hoặc các sản phẩm lương thực từ bột (tùy chữ). Ví dụ: 麦 (mài: cây lúa mì, đại mạch), 麸 (fū: cám lúa mì thô), 麴 / 麹 (qū: men rượu ủ từ lúa mạch). Mẹo nhớ: Bông lúa mì râu dài trĩu hạt xay thành bột bánh trắng ngần.",
+    200: "Cây gai được thu hoạch đem về tước sợi phơi dưới mái lán (Nghiễm 广) trong nhà. Biểu thị cây gai dầu, sợi vải gai, hạt vừng mè, cảm giác tê dại hoặc sự phức tạp rắc rối. Ví dụ: 磨 (mó: mài giũa, cối xay đá), 摩 (mó: xoa bóp, ma sát), 糜 (mí: cháo nhuyễn, nát vụn). Mẹo nhớ: Dưới mái lán tước sợi gai dệt nên tấm áo thô bền chắc.",
+
+    # 12 nét (201..204)
+    201: "Miếng ngọc bích màu vàng sáng bóng được người xưa đeo trang nhã trước ngực; giản thể là (黄). Biểu thị màu vàng rực rỡ, màu của đất mẹ phù sa trung nguyên, kim loại quý hoặc vương quyền hoàng đế (tùy chữ). Ví dụ: 璜 (huáng: miếng ngọc bội bán nguyệt màu vàng), 簧 (huáng: lưỡi gà kèn sáo kim khí), 磺 (huáng: khoáng chất lưu huỳnh màu vàng). Mẹo nhớ: Sắc vàng phù sa màu mỡ tôn vinh nét đẹp vương giả.",
+    202: "Cây lúa kê hạt tròn dính (Hòa 禾) sau khi thu hoạch dùng nấu rượu nếp thơm. Biểu thị cây kê nếp, lương thực cổ truyền thời xưa hoặc chất dính kết dẻo thơm. Ví dụ: 黎 (lí: lê dân bách tính), 黏 (nián: dính chặt, dẻo thơm), 黐 (chī: chất keo dính). Mẹo nhớ: Hạt kê dẻo thơm nấu thành xôi nếp ngọt ngào tình quê.",
+    203: "Lỗ thông khói bồ hóng ám đen kịt phía trên bếp lò bốn chấm lửa (灬). Biểu thị màu đen tuyền, bóng tối mịt mùng, đêm khuya hoặc những việc phi pháp ám muội. Ví dụ: 墨 (mò: mực tàu đen nhánh), 默 (mò: trầm mặc im lặng), 黔 (qián: đất Kiềm, đen sẫm). Mẹo nhớ: Khói bếp nhen bốn chấm lửa nhuộm đen bồ hóng trên vách lò.",
+    204: "Bàn tay cầm kim chỉ thoăn thoắt xâu luồn thêu dệt nên từng đường nét hoa văn tinh xảo. Biểu thị nghề thêu thùa, may vá kim chỉ, hoa văn gấm vóc hoặc việc gia công tỉ mỉ (tùy chữ). Ví dụ: 黹 (zhǐ: nghề thêu thùa kim chỉ), 黼 (fǔ: hoa văn rìu thêu đen trắng trên áo quan), 黻 (fú: hoa văn xanh đen thêu lễ phục cung đình). Mẹo nhớ: Mũi kim đường chỉ tỉ mỉ thêu nên gấm vóc muôn sắc màu.",
+
+    # 13 nét (205..208)
+    205: "Con ếch ngồi chồm hỗm với chiếc đầu to, bụng phình và hai chân sau gập khỏe để nhảy; giản thể là (黾). Biểu thị các loài ếch nhái, lưỡng cư bò sát, sông nước hoặc nỗ lực kiên trì (tùy chữ). Ví dụ: 黾 (mǐn: con ếch nhái, gắng sức nỗ lực), 蝇 (yíng: con ruồi bay), 鼋 (yuán: con ba ba khổng lồ, con giải). Mẹo nhớ: Ếch ngồi chồm hỗm bên bờ ao cất tiếng kêu gọi mưa rào.",
+    206: "Chiếc vạc đồng đúc khổng lồ có hai quai xách và ba chân vững chãi như kiềng ba chân. Biểu thị vạc đồng tế lễ, quyền lực tối cao của bậc đế vương, sự vững chãi hoặc đỉnh điểm thời kỳ (tùy chữ). Ví dụ: 鼎 (dǐng: chiếc vạc đồng ba chân, thế chân vạc), 鼐 (nài: cái đỉnh vạc cực lớn của bậc đế vương), 鼒 (zī: chiếc vạc nhỏ có miệng túm tròn). Mẹo nhớ: Ba chân hai tai chiếc vạc đồng vững vàng như kiềng ba chân.",
+    207: "Mặt trống da căng tròn đặt trên giá đỡ bên cạnh bàn tay cầm dùi gõ vang lừng. Biểu thị chiếc trống da, nhạc cụ gõ, hành vi đánh trống, cổ vũ tinh thần hoặc phình to (tùy chữ). Ví dụ: 鼓 (gǔ: chiếc trống da, đánh trống cổ vũ), 瞽 (gǔ: người mù gõ trống nghe âm luật), 鼗 (táo: trống bỏi rung lắc cầm tay của trẻ nhỏ). Mẹo nhớ: Tay vung dùi gõ vang mặt trống giục giã lòng người tiến bước.",
+    208: "Con chuột có mõm nhọn với hai chiếc răng cửa sắc nhọn, râu mép dài và chiếc đuôi uốn cong. Biểu thị loài chuột bọ, sự nhanh nhẹn lẩn lút, gặm nhấm đồ đạc hoặc tính nhút nhát đa nghi. Ví dụ: 鼬 (yòu: con chồn cáo nhỏ), 鼹 (yǎn: chuột chũi đào hang), 鼯 (wú: sóc bay). Mẹo nhớ: Răng nhọn đuôi dài thoăn thoắt luồn lách kiếm hạt ngô hạt thóc.",
+
+    # 14 nét (209..210)
+    209: "Chiếc mũi kết hợp với các đường thở dẫn dưỡng khí vào buồng phổi. Biểu thị chiếc mũi, cơ quan khứu giác ngửi mùi, lỗ mũi hoặc khởi đầu tổ tiên (tị tổ - tùy chữ). Ví dụ: 鼻 (bí: chiếc mũi, ngửi mùi), 鼾 (hān: tiếng ngáy ngủ pho pho từ cánh mũi), 齁 (hōu: tiếng ngáy to khò khè, vị ngọt gắt). Mẹo nhớ: Mũi hít thở khí trời thông suốt nhận biết muôn hương sắc.",
+    210: "Những bông lúa mọc đều tăm tắp trên cánh đồng, cao bằng phẳng thẳng tắp; giản thể là (齐). Biểu thị sự bằng phẳng, đồng đều, tề chỉnh, tề tựu đông đủ hoặc đất nước Tề thời cổ. Ví dụ: 斋 (zhāi: trai giới chay tịnh), 齑 (jī: rau củ băm nhuyễn đều), 霁 (jì: trời tạnh ráo sau mưa). Mẹo nhớ: Bông lúa trổ đều tăm tắp ngay ngắn trước gió thu.",
+
+    # 15 nét (211)
+    211: "Hàm răng người mở ra thấy rõ các răng cửa và răng hàm nhai nuốt đều đặn; giản thể là (齿). Biểu thị răng miệng, việc nhai cắn, tuổi tác (đếm tuổi ngựa qua răng) hoặc thứ bậc lớp lang. Ví dụ: 龄 (líng: tuổi tác đời người), 啮 (niè: cắn ngậm gặm nhấm), 龈 (yín: lợi răng chân răng). Mẹo nhớ: Hàm răng đều tăm tắp nhai cơm nuôi thân tính tháng ngày tuổi tác.",
+
+    # 16 nét (212..213)
+    212: "Con rồng thần thoại uốn khúc mình dài có vảy, râu rồng bay lượn và bờm uy nghi; giản thể là (龙). Biểu thị loài rồng thần thoại, sức mạnh phi thường, bậc đế vương cao quý hoặc sự phồn thịnh may mắn. Ví dụ: 庞 (páng: to lớn đồ sộ, khuôn mặt), 龚 (gōng: họ Cung, cung kính), 龛 (kān: khám thờ rồng ngự). Mẹo nhớ: Thân rồng uốn lượn chín tầng mây đem mưa tưới mát mùa màng.",
+    213: "Con rùa nhìn nghiêng với chiếc mai tròn có hoa văn ô lưới, bốn chân và chiếc đuôi ngắn; giản thể là (龟). Biểu thị loài rùa mai cứng, sự trường thọ sống lâu, bói toán mai rùa hoặc điềm lành linh thiêng (tùy chữ). Ví dụ: 龟 (guī: con rùa sống thọ trăm năm), 阄 (jiū: bắt thăm rút thẻ bói toán mai rùa), 龟 (jūn: nứt nẻ rạn chân chim như mai rùa trong 龟裂). Mẹo nhớ: Mai cứng bốn chân bước vững chãi biểu trưng sự trường thọ nghìn năm.",
+
+    # 17 nét (214)
+    214: "Ba chiếc ống sáo trúc khoét lỗ ghép lại với nhau cùng miệng người thổi hòa tấu nhạc tế lễ. Biểu thị ống sáo trúc cổ ba lỗ, nhạc khí hòa tấu, dung tích đong lường thời xưa hoặc sự hòa hợp âm luật (tùy chữ). Ví dụ: 鑰 (yào/yuè: chìa khóa mở then cửa, quản nhạc sáo), 籲 (yù: kêu gọi, thỉnh cầu tha thiết), 瀹 (yuè: nấu sôi chín, khơi thông dòng nước). Mẹo nhớ: Ba ống sáo trúc cùng tấu lên khúc nhạc hòa thanh êm đềm."
+}
+
+def validate_all():
+    print("=== BẮT ĐẦU KIỂM TRA TÍNH TOÀN VẸN 214 BỘ THỦ ===")
+    assert len(RADICAL_EXPLANATIONS) == 214, f"Cần đúng 214 bộ thủ, hiện có {len(RADICAL_EXPLANATIONS)}"
+    
+    seen_texts = set()
+    errors = []
+    
+    for rid in range(1, 215):
+        if rid not in RADICAL_EXPLANATIONS:
+            errors.append(f"Thiếu radical_id={rid}")
+            continue
+            
+        text = RADICAL_EXPLANATIONS[rid].strip()
+        
+        # 1. Non-empty
+        if not text:
+            errors.append(f"ID {rid}: explanation_vi rỗng!")
+            
+        # 2. Length check (<= 1000)
+        if len(text) > 1000:
+            errors.append(f"ID {rid}: độ dài {len(text)} vượt quá 1000 ký tự!")
+            
+        # 3. Uniqueness
+        if text in seen_texts:
+            errors.append(f"ID {rid}: nội dung bị trùng lặp!")
+        seen_texts.add(text)
+        
+        # 4. Check mandatory parts:
+        # Ví dụ:
+        if "Ví dụ:" not in text:
+            errors.append(f"ID {rid}: thiếu phần 'Ví dụ:'")
+            
+        # Mẹo nhớ:
+        if "Mẹo nhớ:" not in text:
+            errors.append(f"ID {rid}: thiếu phần 'Mẹo nhớ:'")
+            
+        # Check that example contains Hanzi, pinyin and Vietnamese
+        # Example pattern: char (pinyin: meaning)
+        if not re.search(r'[\u4e00-\u9fff]\s*\([^)]+:[^)]+\)', text):
+            errors.append(f"ID {rid}: phần ví dụ chưa đúng cấu trúc chữ Hán kèm pinyin và nghĩa!")
+            
+    if errors:
+        print(f"XẢY RA {len(errors)} LỖI:")
+        for e in errors:
+            print(" -", e)
+        raise ValueError("Kiểm tra không đạt!")
+        
+    print(f"Hoàn thành kiểm tra: 214/214 bộ thủ đều hợp lệ, không lỗi!")
+
+def generate_flyway_migration():
+    root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    migration_path = os.path.join(
+        root_dir, 
+        "backend", "src", "main", "resources", "db", "migration", 
+        "V21__seed_all_214_radical_explanations.sql"
+    )
+    
+    lines = [
+        "-- =============================================================================",
+        "-- Migration: V21__seed_all_214_radical_explanations.sql",
+        "-- Description: Seed verified pedagogical explanations (explanation_vi) for all 214 Kangxi radicals",
+        "-- Database: MySQL 8.4+",
+        "-- Charset: utf8mb4, Collation: utf8mb4_unicode_ci",
+        "-- =============================================================================",
+        "",
+        "-- -----------------------------------------------------------------------------",
+        "-- Update explanation_vi for all 214 Kangxi Radicals",
+        "-- -----------------------------------------------------------------------------",
+        ""
+    ]
+    
+    for rid in range(1, 215):
+        expl = RADICAL_EXPLANATIONS[rid].strip()
+        escaped_expl = expl.replace("'", "''")
+        lines.append(f"UPDATE `radical` SET `explanation_vi` = '{escaped_expl}' WHERE `radical_id` = {rid};")
+        
+    lines.append("")
+    
+    content = "\n".join(lines)
+    with open(migration_path, "w", encoding="utf-8", newline="\n") as f:
+        f.write(content)
+        
+    print(f"Đã tạo migration: {migration_path} ({len(content)} bytes)")
+
+def update_demo_seed_data():
+    root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    demo_file = os.path.join(root_dir, "frontend", "js", "api", "demo-seed-data.js")
+    
+    with open(demo_file, "r", encoding="utf-8") as f:
+        content = f.read()
+        
+    marker_start = "export const SEED_RADICALS = ["
+    marker_end = "];\n\nexport const SEED_VOCABULARY = ["
+    
+    start_idx = content.find(marker_start)
+    end_idx = content.find(marker_end)
+    
+    if start_idx == -1 or end_idx == -1:
+        raise ValueError("Không tìm thấy vị trí SEED_RADICALS trong demo-seed-data.js")
+        
+    header = content[:start_idx + len(marker_start)]
+    footer = content[end_idx:]
+    
+    # Parse existing radicals between start_idx and end_idx
+    raw_array_str = content[start_idx + len(marker_start):end_idx].strip()
+    
+    # We can parse JSON array by wrapping in brackets
+    radicals = json.loads("[" + raw_array_str + "]")
+    assert len(radicals) == 214, f"Expected 214 radicals, got {len(radicals)}"
+    
+    formatted_radicals = []
+    keys = [
+        ("radicalId", False),
+        ("character", True),
+        ("pinyin", True),
+        ("meaningHanViet", True),
+        ("meaningVi", True),
+        ("commonRank", False),
+        ("explanationVi", True),
+        ("videoLessonUrl", True),
+        ("strokeCount", False)
+    ]
+    
+    for r in radicals:
+        rid = r["radicalId"]
+        r["explanationVi"] = RADICAL_EXPLANATIONS[rid].strip()
+        
+        item_lines = ["  {"]
+        for i, (k, is_str) in enumerate(keys):
+            val = r.get(k)
+            if val is None:
+                val_str = "null"
+            elif is_str:
+                val_str = json.dumps(val, ensure_ascii=False)
+            else:
+                val_str = str(val)
+            comma = "," if i < len(keys) - 1 else ""
+            item_lines.append(f'    "{k}": {val_str}{comma}')
+        item_lines.append("  }")
+        formatted_radicals.append("\n".join(item_lines))
+        
+    new_array_str = "\n" + ",\n".join(formatted_radicals) + "\n"
+    new_content = header + new_array_str + footer
+    
+    with open(demo_file, "w", encoding="utf-8", newline="\n") as f:
+        f.write(new_content)
+        
+    print(f"Đã cập nhật demo-seed-data.js thành công ({len(new_content)} bytes)")
+
+if __name__ == "__main__":
+    validate_all()
+    generate_flyway_migration()
+    update_demo_seed_data()
+

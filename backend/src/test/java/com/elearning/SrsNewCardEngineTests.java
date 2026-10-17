@@ -267,7 +267,7 @@ class SrsNewCardEngineTests {
             when(lessonVocabularyRepository.existsApprovedLessonForVocabulary(1L)).thenReturn(true);
             when(userSrsSettingRepository.findByUser(testUser)).thenReturn(Optional.of(userSetting));
             when(cardProgressRepository.findByUserAndItemTypeAndItemId(testUser, "VOCABULARY", 1L)).thenReturn(Optional.empty());
-            when(reviewLogRepository.findTodayReviewLogsWithLock(eq(testUser), any(LocalDateTime.class))).thenReturn(Collections.emptyList());
+            when(reviewLogRepository.countNewItemsIntroducedToday(eq(testUser), eq("VOCABULARY"), any(LocalDateTime.class))).thenReturn(0L);
 
             when(cardProgressRepository.save(any(CardProgress.class))).thenAnswer(invocation -> {
                 CardProgress cp = invocation.getArgument(0);
@@ -296,15 +296,7 @@ class SrsNewCardEngineTests {
             when(lessonVocabularyRepository.existsApprovedLessonForVocabulary(1L)).thenReturn(true);
             when(userSrsSettingRepository.findByUser(testUser)).thenReturn(Optional.of(userSetting));
             when(cardProgressRepository.findByUserAndItemTypeAndItemId(testUser, "VOCABULARY", 1L)).thenReturn(Optional.empty());
-
-            // Build 10 distinct review logs for today
-            List<ReviewLog> logs = new ArrayList<>();
-            for (long i = 1; i <= 10; i++) {
-                ReviewLog l = new ReviewLog(testUser, "VOCABULARY", 1000L + i, (byte) 3, 0, 1, 2);
-                logs.add(l);
-            }
-            when(reviewLogRepository.findTodayReviewLogsWithLock(eq(testUser), any(LocalDateTime.class))).thenReturn(logs);
-            when(reviewLogRepository.existsByUserAndItemTypeAndItemIdAndReviewedAtLessThan(eq(testUser), eq("VOCABULARY"), any(Long.class), any(LocalDateTime.class))).thenReturn(false);
+            when(reviewLogRepository.countNewItemsIntroducedToday(eq(testUser), eq("VOCABULARY"), any(LocalDateTime.class))).thenReturn(10L);
 
             ReviewCardRequest request = new ReviewCardRequest("VOCABULARY", 1L, 3, 4);
 
@@ -337,8 +329,8 @@ class SrsNewCardEngineTests {
             assertThat(response).isNotNull();
             assertThat(response.getRepetitions()).isEqualTo(2);
 
-            // findTodayReviewLogsWithLock should NOT be called for existing cards
-            verify(reviewLogRepository, never()).findTodayReviewLogsWithLock(any(), any());
+            // countNewItemsIntroducedToday should NOT be called for existing cards
+            verify(reviewLogRepository, never()).countNewItemsIntroducedToday(any(), any(), any());
         }
     }
 

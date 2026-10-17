@@ -410,8 +410,9 @@ describe('Browser E2E: SRS Dashboard & Profile Settings Integration', () => {
 
       assert.ok(response, 'PUT response received');
       assert.deepStrictEqual(putPayload, {
-        newCardsPerDay: 35
-      }, 'PUT request must contain only newCardsPerDay, no maxReviewPerDay, and no user leakage');
+        newCardsPerDay: 35,
+        maxReviewPerDay: 100
+      }, 'PUT request must contain newCardsPerDay and preserve maxReviewPerDay without user leakage');
 
       // Verify success status displayed
       const statusText = await page.locator('#srsSettingsStatus').textContent();
@@ -539,7 +540,10 @@ describe('Browser E2E: SRS Dashboard & Profile Settings Integration', () => {
       ]);
 
       // Verify submitted payload
-      assert.deepStrictEqual(submittedPayload, { newCardsPerDay: 10 });
+      assert.deepStrictEqual(submittedPayload, {
+        newCardsPerDay: 10,
+        maxReviewPerDay: 100
+      });
 
       // Verify success status
       await page.waitForFunction(() => {

@@ -52,10 +52,7 @@
               <a class="nav-link-custom" href="vocabulary.html">Từ vựng</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link-custom" href="lessons.html">Bài học</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link-custom" href="srs-review.html">Ôn tập SRS</a>
+              <a class="nav-link-custom" href="srs-review.html">Ôn tập</a>
             </li>
           </ul>
 
@@ -219,22 +216,18 @@
                 <!-- Section Header -->
                 <div class="mb-4">
                   <h2 class="h5 fw-bold text-dark mb-1">Cài Đặt Ứng Dụng</h2>
-                  <p class="text-secondary small mb-0">Tùy chỉnh nhịp độ học tập cá nhân và quản lý định danh tài khoản học viên.</p>
+                  <p class="text-secondary small mb-0">Tùy chỉnh nhịp độ học tập cá nhân và cấu hình trải nghiệm học viên.</p>
                 </div>
 
-                <!-- Group 1: Học tập & Lặp lại ngắt quãng (SRS) -->
+                <!-- Nhóm 1: Mục tiêu từ mới mỗi ngày -->
                 <div class="settings-group-card" id="srs-settings-card">
                   <div class="d-flex align-items-center gap-2 mb-3">
                     <span class="brand-seal-mark" aria-hidden="true" style="width: 26px; height: 26px; font-size: 0.85rem;">学</span>
                     <div>
-                      <h3 class="h6 fw-bold text-dark mb-0" id="srsSettingsHeading">Học tập &amp; Lặp lại ngắt quãng (SRS)</h3>
-                      <div class="text-secondary small">Cấu hình nhịp nạp thẻ mới theo thuật toán SuperMemo-2</div>
+                      <h3 class="h6 fw-bold text-dark mb-0" id="srsSettingsHeading">Mục tiêu từ mới mỗi ngày</h3>
+                      <div class="text-secondary small">Cấu hình số từ vựng hoặc bộ thủ mới học mỗi ngày</div>
                     </div>
                   </div>
-
-                  <p class="text-secondary small mb-3">
-                    Thuật toán Spaced Repetition (SRS) tự động xếp lịch ôn tập theo trí nhớ dài hạn. Bạn nên chọn số thẻ mới vừa vặn với thời gian hàng ngày để việc học luôn hứng khởi và không bị quá tải.
-                  </p>
 
                   <!-- SRS Settings Form -->
                   <form id="profileSrsSettingsForm" novalidate aria-labelledby="srsSettingsHeading">
@@ -279,7 +272,7 @@
                         <span class="input-group-text bg-light text-secondary small">thẻ / ngày</span>
                       </div>
                       <div id="srsNewCardsPerDayHelp" class="form-text text-secondary small mt-1">
-                        Số từ vựng hoặc bộ thủ mới tối đa nạp vào phòng ôn tập mỗi ngày (số nguyên dương &gt; 0).
+                        Số từ mới nạp vào lộ trình học mỗi ngày.
                       </div>
                       <div id="srsNewCardsPerDayError" class="invalid-feedback d-none" role="alert"></div>
                     </div>
@@ -312,7 +305,100 @@
                   </div>
                 </div>
 
-                <!-- Group 2: Tài khoản & Hệ thống -->
+                <!-- Nhóm 2: Âm thanh & Phát âm -->
+                <div class="settings-group-card" id="audio-settings-card">
+                  <div class="d-flex align-items-center gap-2 mb-3">
+                    <span class="brand-seal-mark" aria-hidden="true" style="width: 26px; height: 26px; font-size: 0.85rem;">音</span>
+                    <div>
+                      <h3 class="h6 fw-bold text-dark mb-0">Âm thanh &amp; Phát âm</h3>
+                      <div class="text-secondary small">Cấu hình giọng đọc và phát âm mẫu tiếng Trung</div>
+                    </div>
+                  </div>
+
+                  <div class="row g-3">
+                    <div class="col-12 col-md-7">
+                      <div class="form-check form-switch mt-1">
+                        <input class="form-check-input" type="checkbox" role="switch" id="settingAutoPronounce" checked>
+                        <label class="form-check-label fw-semibold text-dark" for="settingAutoPronounce">
+                          Tự động phát âm khi xem thẻ
+                        </label>
+                        <div class="form-text text-secondary small">
+                          Tự động phát âm thanh khi hiển thị từ mới hoặc lật thẻ Flashcard.
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="col-12 col-md-5">
+                      <label for="settingSpeechRate" class="form-label fw-semibold text-dark">
+                        Tốc độ phát âm
+                      </label>
+                      <select id="settingSpeechRate" class="form-select">
+                        <option value="0.8">0.8 - Chậm</option>
+                        <option value="1.0" selected>1.0 - Chuẩn</option>
+                        <option value="1.2">1.2 - Nhanh</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Nhóm 3: Hiển thị & Luyện viết -->
+                <div class="settings-group-card" id="writing-settings-card">
+                  <div class="d-flex align-items-center gap-2 mb-3">
+                    <span class="brand-seal-mark" aria-hidden="true" style="width: 26px; height: 26px; font-size: 0.85rem;">书</span>
+                    <div>
+                      <h3 class="h6 fw-bold text-dark mb-0">Hiển thị &amp; Luyện viết</h3>
+                      <div class="text-secondary small">Cấu hình ô chữ Mễ và trợ giúp khi tập viết chữ Hán</div>
+                    </div>
+                  </div>
+
+                  <div class="row g-3 mb-3">
+                    <div class="col-12 col-md-6">
+                      <div class="form-check form-switch mt-1">
+                        <input class="form-check-input" type="checkbox" role="switch" id="settingShowOutline" checked>
+                        <label class="form-check-label fw-semibold text-dark" for="settingShowOutline">
+                          Hiện nét mờ gợi ý trong luyện nét/viết
+                        </label>
+                        <div class="form-text text-secondary small">
+                          Hiển thị đường nét mờ chỉ dẫn nét bút trong ô chữ.
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                      <div class="form-check form-switch mt-1">
+                        <input class="form-check-input" type="checkbox" role="switch" id="settingAutoReplayStrokes">
+                        <label class="form-check-label fw-semibold text-dark" for="settingAutoReplayStrokes">
+                          Tự động phát lại nét khi mở chữ mới
+                        </label>
+                        <div class="form-text text-secondary small">
+                          Tự động minh họa hoạt ảnh từng nét khi nạp chữ mới.
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                      <label for="settingGridSize" class="form-label fw-semibold text-dark">
+                        Kích thước ô chữ Mễ
+                      </label>
+                      <select id="settingGridSize" class="form-select">
+                        <option value="standard" selected>Chuẩn (170px)</option>
+                        <option value="large">Lớn (200px)</option>
+                      </select>
+                      <div class="form-text text-secondary small">
+                        Kích thước ô lưới chữ Mễ khi luyện viết.
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="d-flex align-items-center gap-3 flex-wrap pt-3 border-top">
+                    <button type="button" id="btnSaveDisplayAudioSettings" class="btn-chinese-primary py-2 px-4 d-inline-flex align-items-center gap-2">
+                      <span class="btn-text">Lưu cài đặt hiển thị &amp; âm thanh</span>
+                    </button>
+                    <div id="displayAudioSettingsStatus" class="small" role="status" aria-live="polite"></div>
+                  </div>
+                </div>
+
+                <!-- Group 4: Tài khoản & Hệ thống -->
                 <div class="settings-group-card">
                   <div class="d-flex align-items-center gap-2 mb-3">
                     <span class="brand-seal-mark" aria-hidden="true" style="width: 26px; height: 26px; font-size: 0.85rem;">户</span>

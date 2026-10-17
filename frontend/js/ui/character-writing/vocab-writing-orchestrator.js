@@ -20,6 +20,7 @@
 
 import { CharacterWritingEngine, WRITING_MODES } from './character-writing-engine.js';
 import { splitHanziCharacters, loadStrokeData } from './stroke-data-loader.js';
+import { sanitizeNavigationUrl } from '../security.js';
 
 export { WRITING_MODES };
 
@@ -76,6 +77,8 @@ export class VocabWritingOrchestrator {
     this.mountElement = options.mountElement;
     this.initialMode = options.initialMode || WRITING_MODES.DEMO;
     this.currentMode = this.initialMode;
+    this.demoOnly = Boolean(options.demoOnly);
+    this.practiceUrl = options.practiceUrl || null;
     this.onWordComplete = typeof options.onWordComplete === 'function' ? options.onWordComplete : null;
     this.onCharacterComplete = typeof options.onCharacterComplete === 'function' ? options.onCharacterComplete : null;
     this.onStatusChange = typeof options.onStatusChange === 'function' ? options.onStatusChange : null;
@@ -85,6 +88,7 @@ export class VocabWritingOrchestrator {
     this.activeCharIndex = 0;
     this.engines = new Map(); // charIndex -> CharacterWritingEngine
     this.charStats = new Map(); // charIndex -> { completed: boolean, mistakes: number }
+    this.missingStrokesSet = new Set(); // characters lacking stroke data
     this.isDestroyed = false;
     this.dom = {};
   }
@@ -103,15 +107,19 @@ export class VocabWritingOrchestrator {
 
     if (typeof vocabItem === 'string') {
       this.wordData = {
+        vocabId: null,
         hanzi: vocabItem,
         pinyin: '',
-        meaningVi: ''
+        meaningVi: '',
+        hskLevel: 1
       };
     } else {
       this.wordData = {
+        vocabId: vocabItem.vocabId || vocabItem.id || null,
         hanzi: vocabItem.hanzi || vocabItem.character || '',
         pinyin: vocabItem.pinyin || '',
-        meaningVi: vocabItem.meaningVi || vocabItem.meaning || ''
+        meaningVi: vocabItem.meaningVi || vocabItem.meaning || '',
+        hskLevel: vocabItem.hskLevel || 1
       };
     }
 
@@ -123,6 +131,7 @@ export class VocabWritingOrchestrator {
 
     this.activeCharIndex = 0;
     this.charStats.clear();
+    this.missingStrokesSet.clear();
     this.characters.forEach((char, idx) => {
       this.charStats.set(idx, { character: char, completed: false, mistakes: 0 });
     });
@@ -132,17 +141,14 @@ export class VocabWritingOrchestrator {
   }
 
   /**
-   * Determines if side-by-side mode is appropriate (exactly 2 characters and wide viewport).
+   * Determines if side-by-side mode is appropriate.
+   * Unified to return false so that 2-character words synchronize with 3+-character words
+   * to use tab/stepper switching.
    *
    * @returns {boolean}
    */
   isDualSideBySideMode() {
-    if (this.characters.length !== 2) return false;
-    if (typeof window !== 'undefined') {
-      const isNarrow = window.innerWidth < 520;
-      if (isNarrow) return false;
-    }
-    return true;
+    return false;
   }
 
   /**
@@ -154,74 +160,76 @@ export class VocabWritingOrchestrator {
     this.mountElement.replaceChildren();
 
     const card = document.createElement('div');
-    card.className = 'vocab-writing-orchestrator p-3 rounded-3 border bg-surface mb-3 shadow-sm';
+    card.className = 'writing-engine-card vocab-writing-orchestrator p-3 rounded-3 border bg-surface mb-3 shadow-sm';
 
-    // 1. Header: Word info & Tab list
-    const headerRow = document.createElement('div');
-    headerRow.className = 'd-flex align-items-center justify-content-between mb-3 flex-wrap gap-2 border-bottom pb-2';
+    // 1. Header: Word info & Tab list (Omitted in demoOnly / compact view)
+    if (!this.demoOnly) {
+      const headerRow = document.createElement('div');
+      headerRow.className = 'd-flex align-items-center justify-content-between mb-3 flex-wrap gap-2 border-bottom pb-2';
 
-    // Word Metadata Pill
-    const wordInfo = document.createElement('div');
-    wordInfo.className = 'd-flex align-items-baseline gap-2 flex-wrap';
+      // Word Metadata Pill
+      const wordInfo = document.createElement('div');
+      wordInfo.className = 'd-flex align-items-baseline gap-2 flex-wrap';
 
-    const wordGlyph = document.createElement('span');
-    wordGlyph.className = 'fs-5 fw-bold text-dark';
-    wordGlyph.lang = 'zh-Hans';
-    wordGlyph.textContent = this.wordData.hanzi;
-    wordInfo.appendChild(wordGlyph);
+      const wordGlyph = document.createElement('span');
+      wordGlyph.className = 'fs-5 fw-bold text-dark';
+      wordGlyph.lang = 'zh-Hans';
+      wordGlyph.textContent = this.wordData.hanzi;
+      wordInfo.appendChild(wordGlyph);
 
-    if (this.wordData.pinyin) {
-      const pinyinEl = document.createElement('span');
-      pinyinEl.className = 'small text-primary fw-medium';
-      pinyinEl.textContent = `[${this.wordData.pinyin}]`;
-      wordInfo.appendChild(pinyinEl);
-    }
+      if (this.wordData.pinyin) {
+        const pinyinEl = document.createElement('span');
+        pinyinEl.className = 'small text-primary fw-medium';
+        pinyinEl.textContent = `[${this.wordData.pinyin}]`;
+        wordInfo.appendChild(pinyinEl);
+      }
 
-    if (this.wordData.meaningVi) {
-      const meaningEl = document.createElement('span');
-      meaningEl.className = 'small text-muted';
-      meaningEl.textContent = `— ${this.wordData.meaningVi}`;
-      wordInfo.appendChild(meaningEl);
-    }
+      if (this.wordData.meaningVi) {
+        const meaningEl = document.createElement('span');
+        meaningEl.className = 'small text-muted';
+        meaningEl.textContent = `— ${this.wordData.meaningVi}`;
+        wordInfo.appendChild(meaningEl);
+      }
 
-    headerRow.appendChild(wordInfo);
+      headerRow.appendChild(wordInfo);
 
-    // 3 Tabs: Cách viết | Luyện nét | Luyện viết
-    const tabList = document.createElement('div');
-    tabList.className = 'writing-tabs-toolbar d-flex rounded-2 p-1 bg-light border';
-    tabList.setAttribute('role', 'tablist');
-    tabList.setAttribute('aria-label', 'Chế độ luyện viết chữ Hán');
+      // 3 Tabs: Cách viết | Luyện nét | Luyện viết
+      const tabList = document.createElement('div');
+      tabList.className = 'writing-tabs-toolbar d-flex rounded-2 p-1 bg-light border';
+      tabList.setAttribute('role', 'tablist');
+      tabList.setAttribute('aria-label', 'Chế độ luyện viết chữ Hán');
 
-    const tabsConfig = [
-      { mode: WRITING_MODES.DEMO, label: 'Cách viết' },
-      { mode: WRITING_MODES.PRACTICE, label: 'Luyện nét' },
-      { mode: WRITING_MODES.QUIZ, label: 'Luyện viết' }
-    ];
+      const tabsConfig = [
+        { mode: WRITING_MODES.DEMO, label: 'Cách viết' },
+        { mode: WRITING_MODES.PRACTICE, label: 'Luyện nét' },
+        { mode: WRITING_MODES.QUIZ, label: 'Luyện viết' }
+      ];
 
-    this.dom.tabs = {};
-    tabsConfig.forEach(cfg => {
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'writing-tab-btn btn btn-sm py-1 px-2 border-0 fw-medium';
-      btn.setAttribute('role', 'tab');
-      btn.setAttribute('aria-selected', cfg.mode === this.currentMode ? 'true' : 'false');
-      btn.textContent = cfg.label;
+      this.dom.tabs = {};
+      tabsConfig.forEach(cfg => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'writing-tab-btn btn btn-sm py-1 px-2 border-0 fw-medium';
+        btn.setAttribute('role', 'tab');
+        btn.setAttribute('aria-selected', cfg.mode === this.currentMode ? 'true' : 'false');
+        btn.textContent = cfg.label;
 
-      btn.addEventListener('click', () => {
-        this.switchMode(cfg.mode);
+        btn.addEventListener('click', () => {
+          this.switchMode(cfg.mode);
+        });
+
+        tabList.appendChild(btn);
+        this.dom.tabs[cfg.mode] = btn;
       });
 
-      tabList.appendChild(btn);
-      this.dom.tabs[cfg.mode] = btn;
-    });
-
-    headerRow.appendChild(tabList);
-    card.appendChild(headerRow);
+      headerRow.appendChild(tabList);
+      card.appendChild(headerRow);
+    }
 
     // 2. Character Stepper Controls (for 3+ characters or mobile)
     const isDual = this.isDualSideBySideMode();
     const stepperContainer = document.createElement('div');
-    stepperContainer.className = `vocab-char-stepper d-flex align-items-center justify-content-center gap-2 mb-3 ${isDual ? 'd-none' : ''}`;
+    stepperContainer.className = `vocab-char-stepper d-flex align-items-center justify-content-center gap-2 mb-3 ${isDual || this.characters.length <= 1 ? 'd-none' : ''}`;
     this.dom.stepperContainer = stepperContainer;
 
     this.dom.stepperButtons = [];
@@ -248,48 +256,73 @@ export class VocabWritingOrchestrator {
     this.dom.stageArea = stageArea;
     card.appendChild(stageArea);
 
-    // 4. Live Feedback & Action Toolbar
-    const footerRow = document.createElement('div');
-    footerRow.className = 'd-flex align-items-center justify-content-between mt-3 pt-2 border-top flex-wrap gap-2';
+    // 4. Live Feedback & Action Toolbar (Omitted in demoOnly / compact view)
+    if (this.demoOnly) {
+      const statusText = document.createElement('div');
+      statusText.className = 'visually-hidden';
+      statusText.setAttribute('role', 'status');
+      statusText.setAttribute('aria-live', 'polite');
+      statusText.textContent = 'Đang nạp dữ liệu nét chữ...';
+      card.appendChild(statusText);
+      this.dom.statusText = statusText;
+    } else {
+      const footerRow = document.createElement('div');
+      footerRow.className = 'd-flex align-items-center justify-content-between mt-3 pt-2 border-top flex-wrap gap-2';
 
-    const statusText = document.createElement('div');
-    statusText.className = 'small text-muted flex-grow-1 text-center text-sm-start';
-    statusText.setAttribute('role', 'status');
-    statusText.setAttribute('aria-live', 'polite');
-    statusText.textContent = 'Đang nạp dữ liệu nét chữ...';
-    footerRow.appendChild(statusText);
-    this.dom.statusText = statusText;
+      const statusText = document.createElement('div');
+      statusText.className = 'small text-muted flex-grow-1 text-center text-sm-start';
+      statusText.setAttribute('role', 'status');
+      statusText.setAttribute('aria-live', 'polite');
+      statusText.textContent = 'Đang nạp dữ liệu nét chữ...';
+      footerRow.appendChild(statusText);
+      this.dom.statusText = statusText;
 
-    // Action buttons: Replay & Next Character
-    const actionsGroup = document.createElement('div');
-    actionsGroup.className = 'd-flex align-items-center gap-2 ms-auto';
+      // Action buttons: Replay, Next Character & SRS Practice Shortcut
+      const actionsGroup = document.createElement('div');
+      actionsGroup.className = 'd-flex align-items-center gap-2 ms-auto flex-wrap';
 
-    const replayBtn = document.createElement('button');
-    replayBtn.type = 'button';
-    replayBtn.className = 'btn btn-sm btn-outline-secondary py-1 px-2 d-flex align-items-center gap-1';
-    replayBtn.title = 'Phát lại / Thử lại';
-    replayBtn.textContent = '🔄 Thử lại';
-    replayBtn.addEventListener('click', () => {
-      this.replayActive();
-    });
-    actionsGroup.appendChild(replayBtn);
-    this.dom.replayBtn = replayBtn;
-
-    if (this.characters.length > 1) {
-      const nextBtn = document.createElement('button');
-      nextBtn.type = 'button';
-      nextBtn.className = 'btn btn-sm btn-chinese-secondary py-1 px-2';
-      nextBtn.textContent = 'Chữ kế &rarr;';
-      nextBtn.addEventListener('click', () => {
-        const nextIdx = (this.activeCharIndex + 1) % this.characters.length;
-        this.selectCharacter(nextIdx);
+      const replayBtn = document.createElement('button');
+      replayBtn.type = 'button';
+      replayBtn.className = 'btn btn-sm btn-outline-secondary py-1 px-2 d-flex align-items-center gap-1';
+      replayBtn.title = 'Phát lại nét (Thứ tự các nét)';
+      replayBtn.setAttribute('aria-label', 'Phát lại nét');
+      replayBtn.textContent = '🔄 Phát lại nét';
+      replayBtn.addEventListener('click', () => {
+        this.replayActive();
       });
-      actionsGroup.appendChild(nextBtn);
-      this.dom.nextBtn = nextBtn;
-    }
+      actionsGroup.appendChild(replayBtn);
+      this.dom.replayBtn = replayBtn;
 
-    footerRow.appendChild(actionsGroup);
-    card.appendChild(footerRow);
+      if (this.characters.length > 1) {
+        const nextBtn = document.createElement('button');
+        nextBtn.type = 'button';
+        nextBtn.className = 'btn btn-sm btn-chinese-secondary py-1 px-2';
+        nextBtn.textContent = 'Chữ kế &rarr;';
+        nextBtn.addEventListener('click', () => {
+          const nextIdx = (this.activeCharIndex + 1) % this.characters.length;
+          this.selectCharacter(nextIdx);
+        });
+        actionsGroup.appendChild(nextBtn);
+        this.dom.nextBtn = nextBtn;
+      }
+
+      // Shortcut: "Luyện viết từ này" -> srs-review.html?mode=writing&group=hsk1&vocabId=...
+      if (this.practiceUrl || (this.wordData && this.wordData.vocabId)) {
+        const group = this.wordData.hskLevel ? `hsk${this.wordData.hskLevel}` : 'hsk1';
+        const url = this.practiceUrl || `srs-review.html?mode=writing&group=${group}&vocabId=${encodeURIComponent(this.wordData.vocabId)}`;
+        const practiceLink = document.createElement('a');
+        practiceLink.className = 'btn btn-sm btn-chinese-primary py-1 px-2 d-inline-flex align-items-center gap-1 text-decoration-none';
+        practiceLink.href = sanitizeNavigationUrl(url);
+        practiceLink.textContent = '✍️ Luyện viết từ này';
+        practiceLink.title = 'Chuyển sang phòng Ôn tập SRS để luyện viết';
+        practiceLink.setAttribute('aria-label', `Luyện viết từ ${this.wordData.hanzi || ''} trong phòng Ôn tập SRS`);
+        actionsGroup.appendChild(practiceLink);
+        this.dom.practiceLink = practiceLink;
+      }
+
+      footerRow.appendChild(actionsGroup);
+      card.appendChild(footerRow);
+    }
 
     this.mountElement.appendChild(card);
   }
@@ -307,6 +340,7 @@ export class VocabWritingOrchestrator {
     this.dom.stageArea.replaceChildren();
 
     const isDual = this.isDualSideBySideMode();
+    let allSucceeded = false;
 
     if (isDual) {
       // Dual side-by-side layout: mount box 0 and box 1
@@ -314,14 +348,45 @@ export class VocabWritingOrchestrator {
       const p1 = this.mountCanvasBox(1, this.characters[1]);
       const results = await Promise.all([p0, p1]);
       this.updateActiveTabStyling(this.currentMode);
-      return results.every(Boolean);
+      allSucceeded = results.every(Boolean);
     } else {
       // Stepper mode: mount single active character
       const success = await this.mountCanvasBox(this.activeCharIndex, this.characters[this.activeCharIndex]);
       this.updateActiveTabStyling(this.currentMode);
       this.updateStepperButtons();
-      return success;
+      allSucceeded = success;
     }
+
+    if (this.missingStrokesSet.size > 0) {
+      const missingList = Array.from(this.missingStrokesSet);
+      const msg = missingList.length === 1
+        ? `Chữ "${missingList[0]}" hiện chưa có dữ liệu nét chi tiết.`
+        : `Các chữ [${missingList.join(', ')}] hiện chưa có dữ liệu nét chi tiết.`;
+      if (this.dom.statusText) {
+        this.dom.statusText.textContent = msg;
+        this.dom.statusText.classList.remove('text-success');
+        this.dom.statusText.classList.add('text-warning');
+      }
+      if (this.dom.practiceLink) {
+        this.dom.practiceLink.classList.add('disabled', 'opacity-50');
+        this.dom.practiceLink.removeAttribute('href');
+        this.dom.practiceLink.setAttribute('aria-disabled', 'true');
+        this.dom.practiceLink.textContent = 'Chưa có dữ liệu nét';
+        this.dom.practiceLink.title = msg;
+      }
+      if (this.dom.tabs) {
+        if (this.dom.tabs[WRITING_MODES.PRACTICE]) {
+          this.dom.tabs[WRITING_MODES.PRACTICE].disabled = true;
+          this.dom.tabs[WRITING_MODES.PRACTICE].classList.add('disabled');
+        }
+        if (this.dom.tabs[WRITING_MODES.QUIZ]) {
+          this.dom.tabs[WRITING_MODES.QUIZ].disabled = true;
+          this.dom.tabs[WRITING_MODES.QUIZ].classList.add('disabled');
+        }
+      }
+    }
+
+    return allSucceeded;
   }
 
   /**
@@ -338,8 +403,8 @@ export class VocabWritingOrchestrator {
     const boxWrapper = document.createElement('div');
     boxWrapper.className = 'd-flex flex-column align-items-center';
 
-    // Character label above canvas
-    if (this.characters.length > 1) {
+    // Character label above canvas (Omitted in demoOnly / compact view)
+    if (!this.demoOnly && this.characters.length > 1) {
       const label = document.createElement('span');
       label.className = 'small fw-bold text-secondary mb-1';
       label.textContent = `#${charIndex + 1}: ${character}`;
@@ -361,6 +426,45 @@ export class VocabWritingOrchestrator {
     const targetMount = document.createElement('div');
     targetMount.className = 'position-absolute top-0 start-0 w-100 h-100';
     canvasBox.appendChild(targetMount);
+
+    // Individual Floating Replay Button for each character (matching radical modal style)
+    let replayBtn = null;
+    if (this.demoOnly) {
+      replayBtn = document.createElement('button');
+      replayBtn.type = 'button';
+      replayBtn.className = 'btn btn-sm btn-light position-absolute bottom-0 end-0 m-1 rounded-circle p-1 border shadow-sm';
+      replayBtn.setAttribute('aria-label', `Phát lại nét chữ ${character}`);
+      replayBtn.title = 'Phát lại';
+
+      const iconSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      iconSvg.setAttribute('width', '16');
+      iconSvg.setAttribute('height', '16');
+      iconSvg.setAttribute('viewBox', '0 0 24 24');
+      iconSvg.setAttribute('fill', 'none');
+      iconSvg.setAttribute('stroke', 'currentColor');
+      iconSvg.setAttribute('stroke-width', '2');
+      iconSvg.setAttribute('stroke-linecap', 'round');
+      iconSvg.setAttribute('stroke-linejoin', 'round');
+      iconSvg.setAttribute('aria-hidden', 'true');
+
+      const path1 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path1.setAttribute('d', 'M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8');
+      const path2 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path2.setAttribute('d', 'M3 3v5h5');
+
+      iconSvg.appendChild(path1);
+      iconSvg.appendChild(path2);
+      replayBtn.appendChild(iconSvg);
+
+      replayBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const eng = this.engines.get(charIndex);
+        if (eng) eng.replay();
+      });
+
+      canvasBox.appendChild(replayBtn);
+    }
+
     boxWrapper.appendChild(canvasBox);
 
     this.dom.stageArea.appendChild(boxWrapper);
@@ -387,15 +491,18 @@ export class VocabWritingOrchestrator {
 
     const loaded = await engine.load(character, this.currentMode);
     if (!loaded) {
+      this.missingStrokesSet.add(character);
+      if (replayBtn) replayBtn.classList.add('d-none');
       targetMount.replaceChildren();
       const fallbackMsg = document.createElement('div');
       fallbackMsg.className = 'd-flex flex-column align-items-center justify-content-center h-100 text-center p-2';
       const charSpan = document.createElement('span');
-      charSpan.className = 'fs-2 fw-bold text-dark';
+      charSpan.className = 'fs-2 fw-bold text-dark font-hanzi';
+      charSpan.lang = 'zh-Hans';
       charSpan.textContent = character;
       const noteSpan = document.createElement('span');
-      noteSpan.className = 'small text-muted';
-      noteSpan.textContent = 'Đang cập nhật nét';
+      noteSpan.className = 'small text-muted mt-1';
+      noteSpan.textContent = `Chữ "${character}" hiện chưa có dữ liệu nét chi tiết.`;
       fallbackMsg.appendChild(charSpan);
       fallbackMsg.appendChild(noteSpan);
       targetMount.appendChild(fallbackMsg);
@@ -593,6 +700,12 @@ export class VocabWritingOrchestrator {
     this.destroyEngines();
     if (this.mountElement) {
       this.mountElement.replaceChildren();
+    }
+    if (this.missingStrokesSet) {
+      this.missingStrokesSet.clear();
+    }
+    if (this.charStats) {
+      this.charStats.clear();
     }
     this.dom = {};
   }

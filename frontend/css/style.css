@@ -1169,6 +1169,12 @@ p {
   border-color: var(--color-accent-primary);
 }
 
+.radical-card.radical-card-targeted {
+  border-color: var(--color-primitive-cinnabar-600);
+  box-shadow: 0 0 0 3px rgba(200, 60, 35, 0.35), var(--shadow-md);
+  transform: translateY(-2px);
+}
+
 .radical-card-header {
   width: 100%;
   display: flex;
@@ -1329,6 +1335,17 @@ dialog:not([open]) {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   flex: 1 1 auto;
+}
+
+/* Ensure no trailing margin or excessive whitespace at the bottom of the radical modal */
+.radical-modal-body > :last-child,
+.radical-modal-body > :not(.d-none):not(:has(~ :not(.d-none))) {
+  margin-bottom: 0 !important;
+}
+
+.radical-modal-body > :not(.d-none):not(:has(~ :not(.d-none))) .writing-engine-card,
+.radical-modal-body > :not(.d-none):not(:has(~ :not(.d-none))) .vocab-writing-orchestrator {
+  margin-bottom: 0 !important;
 }
 
 @media (max-width: 575.98px) {
@@ -1498,6 +1515,10 @@ dialog:not([open]) {
   gap: var(--space-3);
   padding-top: var(--space-4);
   border-top: 1px solid var(--color-border);
+}
+
+#vocabPagination {
+  justify-content: flex-end;
 }
 
 .pagination-controls {
@@ -1703,6 +1724,7 @@ dialog:not([open]) {
   color: var(--color-text-primary);
   user-select: none;
   word-break: break-word;
+  min-width: 0;
 }
 
 .vocab-card-meta {
@@ -1778,39 +1800,39 @@ dialog:not([open]) {
   color: var(--color-text-muted);
 }
 
-/* Constituent Radical Badges inside Modal */
+/* Constituent Radical Badges inside Modal (Inline Presentation) */
 .vocab-radicals-container {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2);
-  margin-top: var(--space-2);
+  align-items: center;
+  gap: 2px;
+  margin-top: 4px;
 }
 
 .vocab-radical-badge {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius-full);
-  background-color: var(--color-bg-surface);
+  padding: 2px 4px;
+  border: none;
+  background: transparent;
   color: var(--color-text-primary);
-  font-size: 0.875rem;
+  font-size: 0.9375rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.15s ease;
-  min-height: 30px;
+  border-radius: var(--radius-sm);
+  transition: color var(--transition-fast), background-color var(--transition-fast);
+  line-height: 1.4;
 }
 
 .vocab-radical-badge:hover {
-  border-color: var(--color-accent-primary);
   color: var(--color-accent-primary);
   background-color: var(--color-accent-subtle);
+  text-decoration: underline;
 }
 
 .vocab-radical-badge:focus-visible {
   outline: var(--focus-ring-width) solid var(--focus-ring-color);
-  outline-offset: var(--focus-ring-offset);
+  outline-offset: 1px;
 }
 
 .vocab-radical-badge-glyph {
@@ -1819,53 +1841,19 @@ dialog:not([open]) {
   font-weight: 700;
 }
 
+.vocab-radical-separator {
+  color: var(--color-text-muted);
+  user-select: none;
+  font-size: 0.875rem;
+  padding: 0 4px;
+}
+
 .vocab-radical-preview-box {
   background-color: var(--color-bg-subtle);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   padding: var(--space-3);
   margin-top: var(--space-3);
-}
-
-/* Learning Group & Overview Banner */
-.vocab-group-banner {
-  background-color: var(--color-bg-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  padding: var(--space-4) var(--space-5);
-  box-shadow: var(--shadow-sm);
-}
-
-.vocab-metrics-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-  gap: var(--space-3);
-  margin-top: var(--space-3);
-}
-
-.vocab-metric-card {
-  background-color: var(--color-bg-subtle);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  padding: var(--space-3);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-}
-
-.vocab-metric-label {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--color-text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.vocab-metric-value {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--color-text-primary);
-  line-height: 1.2;
 }
 
 .vocab-hsk-badge {
@@ -3583,5 +3571,98 @@ dialog:not([open]) {
 .lesson-vocab-write-btn {
   white-space: nowrap;
 }
+
+/* =============================================================================
+   Unified Review Center (Flashcard & Writing for Radicals and HSK Topics)
+   ============================================================================= */
+.chip-radical {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-2) var(--space-3);
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast, 150ms ease);
+  min-width: 82px;
+  text-decoration: none;
+  color: var(--color-text-primary);
+  user-select: none;
+}
+
+.chip-radical:hover {
+  border-color: var(--color-accent-primary);
+  background-color: var(--color-bg-canvas);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+  color: var(--color-accent-primary);
+}
+
+.chip-radical:focus-visible {
+  outline: 2px solid var(--color-accent-primary);
+  outline-offset: 2px;
+}
+
+.chip-radical-hanzi {
+  font-family: var(--font-hanzi);
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--color-accent-primary);
+}
+
+.chip-radical-pinyin {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.chip-radical-meaning {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 90px;
+}
+
+.chip-radical-strokes {
+  font-size: 0.7rem;
+  color: var(--color-text-muted, #6B7280);
+}
+
+.catalog-topic-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-bg-surface);
+  transition: all var(--transition-fast, 150ms ease);
+}
+
+.catalog-topic-card:hover {
+  border-color: var(--color-border-strong);
+  box-shadow: var(--shadow-md);
+}
+
+.card-back-notes-layout {
+  user-select: text;
+}
+
+.card-notes-list {
+  background-color: var(--color-bg-canvas);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.card-note-item {
+  border-bottom: 1px dashed var(--color-border);
+  padding: var(--space-1) 0;
+}
+
+.card-note-item:last-child {
+  border-bottom: none;
+}
+
 
 

@@ -69,4 +69,18 @@ public class LessonServiceImpl implements LessonService {
         }
         return lessonRepository.findAdminLessonSummaries(normalizedStatus, resolvedPageable);
     }
+
+    @Override
+    public LessonDetailResponse getAdminLessonById(Long lessonId) {
+        if (lessonId == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND, "ID bài học không được để trống");
+        }
+
+        Lesson lesson = lessonRepository.findById(lessonId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "Không tìm thấy bài học với ID: " + lessonId));
+
+        List<LessonVocabulary> vocabularies = lessonVocabularyRepository.findByLessonIdWithVocabularyOrderAsc(lessonId);
+
+        return LessonDetailResponse.fromEntity(lesson, vocabularies);
+    }
 }

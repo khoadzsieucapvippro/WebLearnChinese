@@ -48,11 +48,13 @@ class PinyinNormalizationAndSearchIntegrityTests {
             assertThat(pinyinRawLu2).isEqualTo("lu");
 
             // Save 绿 (lǜ)
-            Vocabulary vocabLv = new Vocabulary("绿", "lǜ", pinyinRawLu1, "Lục", "Màu xanh lá cây");
+            Vocabulary vocabLv = vocabularyRepository.findByHanziAndPinyinRaw("绿", pinyinRawLu1)
+                    .orElseGet(() -> vocabularyRepository.save(new Vocabulary("绿", "lǜ", pinyinRawLu1, "Lục", "Màu xanh lá cây")));
             Vocabulary savedLv = vocabularyRepository.save(vocabLv);
 
             // Save 路 (lù)
-            Vocabulary vocabLu = new Vocabulary("路", "lù", pinyinRawLu2, "Lộ", "Con đường, đường đi");
+            Vocabulary vocabLu = vocabularyRepository.findByHanziAndPinyinRaw("路", pinyinRawLu2)
+                    .orElseGet(() -> vocabularyRepository.save(new Vocabulary("路", "lù", pinyinRawLu2, "Lộ", "Con đường, đường đi")));
             Vocabulary savedLu = vocabularyRepository.save(vocabLu);
             vocabularyRepository.flush();
 
@@ -70,8 +72,10 @@ class PinyinNormalizationAndSearchIntegrityTests {
             assertThat(pinyinRawNv).isEqualTo("nu");
             assertThat(pinyinRawNu).isEqualTo("nu");
 
-            Vocabulary vocabNv = new Vocabulary("女", "nǚ", pinyinRawNv, "Nữ", "Phụ nữ, con gái");
-            Vocabulary vocabNu = new Vocabulary("努", "nǔ", pinyinRawNu, "Nỗ", "Nỗ lực, cố gắng");
+            Vocabulary vocabNv = vocabularyRepository.findByHanziAndPinyinRaw("女", pinyinRawNv)
+                    .orElseGet(() -> vocabularyRepository.save(new Vocabulary("女", "nǚ", pinyinRawNv, "Nữ", "Phụ nữ, con gái")));
+            Vocabulary vocabNu = vocabularyRepository.findByHanziAndPinyinRaw("努", pinyinRawNu)
+                    .orElseGet(() -> vocabularyRepository.save(new Vocabulary("努", "nǔ", pinyinRawNu, "Nỗ", "Nỗ lực, cố gắng")));
 
             vocabularyRepository.save(vocabNv);
             vocabularyRepository.save(vocabNu);
@@ -84,7 +88,8 @@ class PinyinNormalizationAndSearchIntegrityTests {
         @Test
         @DisplayName("GIVEN exact duplicate (hanzi, pinyin_raw) WHEN saving THEN database rejects with conflict")
         void testExactDuplicateHanziAndPinyinRawConflict() {
-            Vocabulary vocab1 = new Vocabulary("学习", "xuéxí", "xuexi", "Học tập", "Học tập, rèn luyện");
+            Vocabulary vocab1 = vocabularyRepository.findByHanziAndPinyinRaw("学习", "xuexi")
+                    .orElseGet(() -> vocabularyRepository.save(new Vocabulary("学习", "xuéxí", "xuexi", "Học tập", "Học tập, rèn luyện")));
             vocabularyRepository.save(vocab1);
             vocabularyRepository.flush();
 
@@ -151,7 +156,8 @@ class PinyinNormalizationAndSearchIntegrityTests {
         @Test
         @DisplayName("GIVEN vocabulary '学习' (xuéxí) WHEN searching by Hanzi, accented Pinyin, or toneless Pinyin THEN all return the record")
         void testSearchByDifferentRepresentations() {
-            Vocabulary vocab = new Vocabulary("学习", "xuéxí", "xuexi", "Học tập", "Học tập kiến thức mới");
+            Vocabulary vocab = vocabularyRepository.findByHanziAndPinyinRaw("学习", "xuexi")
+                    .orElseGet(() -> vocabularyRepository.save(new Vocabulary("学习", "xuéxí", "xuexi", "Học tập", "Học tập kiến thức mới")));
             vocabularyRepository.save(vocab);
             vocabularyRepository.flush();
 
@@ -177,7 +183,8 @@ class PinyinNormalizationAndSearchIntegrityTests {
         @Test
         @DisplayName("GIVEN vocabulary '女' (nǚ) WHEN searching by 'nu' or 'nǚ' THEN find record cleanly")
         void testSearchUmlautVocabulary() {
-            Vocabulary vocab = new Vocabulary("女", "nǚ", "nu", "Nữ", "Phụ nữ");
+            Vocabulary vocab = vocabularyRepository.findByHanziAndPinyinRaw("女", "nu")
+                    .orElseGet(() -> vocabularyRepository.save(new Vocabulary("女", "nǚ", "nu", "Nữ", "Phụ nữ")));
             vocabularyRepository.save(vocab);
             vocabularyRepository.flush();
 

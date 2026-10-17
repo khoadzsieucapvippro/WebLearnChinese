@@ -1,6 +1,7 @@
 package com.elearning;
 
 import com.elearning.common.ErrorCode;
+import com.elearning.dto.request.ChangePasswordRequest;
 import com.elearning.dto.request.LoginRequest;
 import com.elearning.dto.request.RegisterRequest;
 import com.elearning.dto.response.AuthResponse;
@@ -205,6 +206,100 @@ class AuthServiceTests {
             assertThatThrownBy(() -> authService.login(request))
                     .isInstanceOf(BusinessException.class)
                     .satisfies(ex -> assertThat(((BusinessException) ex).getErrorCode()).isEqualTo(ErrorCode.UNAUTHORIZED));
+        }
+    }
+
+    @Nested
+    @DisplayName("Logout Tests")
+    class LogoutTests {
+
+        @Test
+        @DisplayName("GIVEN active account WHEN logout THEN increments authorizationVersion and saves")
+        void testLogoutSuccess() {
+            Account account = new Account();
+            account.setEmailOrPhone("user@elearning.com");
+            account.setAuthorizationVersion(1L);
+
+            when(accountRepository.findByEmailOrPhone("user@elearning.com")).thenReturn(Optional.of(account));
+
+            authService.logout("user@elearning.com");
+
+            assertThat(account.getAuthorizationVersion()).isEqualTo(2L);
+            verify(accountRepository).save(account);
+        }
+
+        @Test
+        @DisplayName("GIVEN nonexistent account WHEN logout THEN throws UNAUTHORIZED")
+        void testLogoutNonexistentAccount() {
+            when(accountRepository.findByEmailOrPhone("ghost@elearning.com")).thenReturn(Optional.empty());
+
+            assertThatThrownBy(() -> authService.logout("ghost@elearning.com"))
+                    .isInstanceOf(BusinessException.class)
+                    .satisfies(ex -> assertThat(((BusinessException) ex).getErrorCode()).isEqualTo(ErrorCode.UNAUTHORIZED));
+        }
+    }
+
+    @Nested
+    @DisplayName("Change Password Tests")
+    class ChangePasswordTests {
+
+        @Test
+        @DisplayName("GIVEN valid current password and new password WHEN changePassword THEN encodes new password and increments auth version")
+        void testChangePasswordSuccess() {
+            Account account = new Account();
+            account.setEmailOrPhone("user@elearning.com");
+            account.setPasswordHash("hashedOldPassword");
+            account.setAuthorizationVersion(1L);
+
+            when(accountRepository.findByEmailOrPhone("user@elearning.com")).thenReturn(Optional.of(account));
+            when(passwordEncoder.matches("OldPassword@123", "hashedOldPassword")).thenReturn(true);
+            when(passwordEncoder.matches("NewPassword@123", "hashedOldPassword")).thenReturn(false);
+            when(passwordEncoder.encode("NewPassword@123")).thenReturn("hashedNewPassword");
+
+            ChangePasswordRequest request = new ChangePasswordRequest("OldPassword@123", "NewPassword@123");
+            authService.changePassword("user@elearning.com", request);
+
+            assertThat(account.getPasswordHash()).isEqualTo("hashedNewPassword");
+            assertThat(account.getAuthorizationVersion()).isEqualTo(2L);
+            verify(accountRepository).save(account);
+        }
+
+        @Test
+        @DisplayName("GIVEN incorrect current password WHEN changePassword THEN throws BAD_REQUEST")
+        void testChangePasswordIncorrectCurrentPassword() {
+            Account account = new Account();
+            account.setEmailOrPhone("user@elearning.com");
+            account.setPasswordHash("hashedOldPassword");
+
+            when(accountRepository.findByEmailOrPhone("user@elearning.com")).thenReturn(Optional.of(account));
+            when(passwordEncoder.matches("WrongPassword", "hashedOldPassword")).thenReturn(false);
+
+            ChangePasswordRequest request = new ChangePasswordRequest("WrongPassword", "NewPassword@123");
+
+            assertThatThrownBy(() -> authService.changePassword("user@elearning.com", request))
+                    .isInstanceOf(BusinessException.class)
+                    .satisfies(ex -> assertThat(((BusinessException) ex).getErrorCode()).isEqualTo(ErrorCode.BAD_REQUEST));
+
+            verify(accountRepository, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("GIVEN new password same as current password WHEN changePassword THEN throws BAD_REQUEST")
+        void testChangePasswordSameAsOldPassword() {
+            Account account = new Account();
+            account.setEmailOrPhone("user@elearning.com");
+            account.setPasswordHash("hashedOldPassword");
+
+            when(accountRepository.findByEmailOrPhone("user@elearning.com")).thenReturn(Optional.of(account));
+            when(passwordEncoder.matches("SamePassword@123", "hashedOldPassword")).thenReturn(true);
+
+            ChangePasswordRequest request = new ChangePasswordRequest("SamePassword@123", "SamePassword@123");
+
+            assertThatThrownBy(() -> authService.changePassword("user@elearning.com", request))
+                    .isInstanceOf(BusinessException.class)
+                    .satisfies(ex -> assertThat(((BusinessException) ex).getErrorCode()).isEqualTo(ErrorCode.BAD_REQUEST));
+
+            verify(accountRepository, never()).save(any());
         }
     }
 }

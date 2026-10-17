@@ -67,31 +67,26 @@ describe('Browser E2E: Vocabulary UI Reversion Fix after SRS Navigation', () => 
 
       for (let cycle = 1; cycle <= TOTAL_CYCLES; cycle++) {
         // Step 1: Assert new UI markers on /vocabulary.html
-        const banner = page.locator('#vocabGroupBanner');
-        await banner.waitFor({ state: 'visible', timeout: 5000 });
-        assert.ok(await banner.isVisible(), `[Cycle ${cycle}] #vocabGroupBanner must be visible on /vocabulary.html`);
+        const searchInput = page.locator('#vocabSearchInput');
+        await searchInput.waitFor({ state: 'visible', timeout: 5000 });
+        assert.ok(await searchInput.isVisible(), `[Cycle ${cycle}] #vocabSearchInput must be visible on /vocabulary.html`);
 
-        const totalCountEl = page.locator('#vocabGroupTotalCount');
-        assert.ok((await totalCountEl.count()) > 0, `[Cycle ${cycle}] #vocabGroupTotalCount must exist in DOM`);
+        const pageHeading = page.locator('#vocabPageHeading');
+        assert.ok((await pageHeading.count()) > 0, `[Cycle ${cycle}] #vocabPageHeading must exist in DOM`);
 
         const tabHsk1 = page.locator('#tabHsk1');
         assert.ok((await tabHsk1.count()) > 0, `[Cycle ${cycle}] #tabHsk1 must exist in DOM`);
 
         const vocabHtml = await page.content();
-        assert.ok(vocabHtml.includes('vocabGroupBanner'), `[Cycle ${cycle}] Content must contain 'vocabGroupBanner'`);
+        assert.ok(vocabHtml.includes('vocabSearchInput'), `[Cycle ${cycle}] Content must contain 'vocabSearchInput'`);
         assert.ok(!vocabHtml.includes('(Phím 1)'), `[Cycle ${cycle}] Must not contain obsolete markers`);
 
-        // Step 2: Click "Ôn tập SRS"
-        // Alternate between #vocabBtnSrsReview (banner action) and #primaryNavMenu a[href="srs-review.html"] (navbar)
-        const srsBtn = page.locator('#vocabBtnSrsReview');
+        // Step 2: Click "Ôn tập SRS" via primary navigation
         const navSrsLink = page.locator('#primaryNavMenu a[href="srs-review.html"]');
-
-        const useBannerBtn = (cycle % 2 === 1) && (await srsBtn.isVisible().catch(() => false));
-        const clickTarget = useBannerBtn ? srsBtn : navSrsLink;
 
         await Promise.all([
           page.waitForURL((url) => url.pathname.includes('srs-review.html'), { timeout: 10000 }),
-          clickTarget.click()
+          navSrsLink.click()
         ]);
         await page.waitForLoadState('domcontentloaded');
 
@@ -113,13 +108,13 @@ describe('Browser E2E: Vocabulary UI Reversion Fix after SRS Navigation', () => 
         await page.waitForLoadState('domcontentloaded');
 
         // Step 5: Assert /vocabulary.html is STILL the new version
-        await banner.waitFor({ state: 'visible', timeout: 5000 });
-        assert.ok(await banner.isVisible(), `[Cycle ${cycle}] #vocabGroupBanner must remain visible after returning from SRS`);
-        assert.ok((await totalCountEl.count()) > 0, `[Cycle ${cycle}] #vocabGroupTotalCount must remain in DOM`);
+        await searchInput.waitFor({ state: 'visible', timeout: 5000 });
+        assert.ok(await searchInput.isVisible(), `[Cycle ${cycle}] #vocabSearchInput must remain visible after returning from SRS`);
+        assert.ok((await pageHeading.count()) > 0, `[Cycle ${cycle}] #vocabPageHeading must remain in DOM`);
         assert.ok((await tabHsk1.count()) > 0, `[Cycle ${cycle}] #tabHsk1 must remain in DOM`);
 
         const postReturnHtml = await page.content();
-        assert.ok(postReturnHtml.includes('vocabGroupBanner'), `[Cycle ${cycle}] HTML must retain 'vocabGroupBanner'`);
+        assert.ok(postReturnHtml.includes('vocabSearchInput'), `[Cycle ${cycle}] HTML must retain 'vocabSearchInput'`);
         assert.ok(!postReturnHtml.includes('(Phím 1)'), `[Cycle ${cycle}] Must not revert to old UI markers`);
       }
 
@@ -142,18 +137,18 @@ describe('Browser E2E: Vocabulary UI Reversion Fix after SRS Navigation', () => 
       try {
         await freshPage.goto(`${baseUrl}/vocabulary.html`, { waitUntil: 'domcontentloaded' });
 
-        const banner = freshPage.locator('#vocabGroupBanner');
-        await banner.waitFor({ state: 'visible', timeout: 5000 });
-        assert.ok(await banner.isVisible(), '#vocabGroupBanner appears immediately on fresh browser instance');
+        const searchInput = freshPage.locator('#vocabSearchInput');
+        await searchInput.waitFor({ state: 'visible', timeout: 5000 });
+        assert.ok(await searchInput.isVisible(), '#vocabSearchInput appears immediately on fresh browser instance');
 
-        const totalCount = freshPage.locator('#vocabGroupTotalCount');
-        assert.ok((await totalCount.count()) > 0, '#vocabGroupTotalCount exists on fresh browser instance');
+        const pageHeading = freshPage.locator('#vocabPageHeading');
+        assert.ok((await pageHeading.count()) > 0, '#vocabPageHeading exists on fresh browser instance');
 
         const tabHsk1 = freshPage.locator('#tabHsk1');
         assert.ok((await tabHsk1.count()) > 0, '#tabHsk1 exists on fresh browser instance');
 
         const content = await freshPage.content();
-        assert.ok(content.includes('vocabGroupBanner'), 'Fresh browser instance serves new UI markup');
+        assert.ok(content.includes('vocabSearchInput'), 'Fresh browser instance serves new UI markup');
         assert.ok(!content.includes('(Phím 1)'), 'No obsolete markup present on fresh launch');
 
         assert.strictEqual(freshErrors().length, 0, 'Zero runtime errors on fresh browser launch');
@@ -175,13 +170,13 @@ describe('Browser E2E: Vocabulary UI Reversion Fix after SRS Navigation', () => 
     try {
       // Direct access 1: /vocabulary.html
       const response1 = await page.goto(`${baseUrl}/vocabulary.html`, { waitUntil: 'domcontentloaded' });
-      const banner1 = page.locator('#vocabGroupBanner');
-      await banner1.waitFor({ state: 'visible', timeout: 5000 });
-      assert.ok(await banner1.isVisible(), '#vocabGroupBanner visible on initial direct access');
+      const searchInput1 = page.locator('#vocabSearchInput');
+      await searchInput1.waitFor({ state: 'visible', timeout: 5000 });
+      assert.ok(await searchInput1.isVisible(), '#vocabSearchInput visible on initial direct access');
 
       const rawHtml1 = await response1.text();
       const hash1 = crypto.createHash('sha256').update(rawHtml1).digest('hex');
-      assert.ok(rawHtml1.includes('vocabGroupBanner'), 'Direct load 1 response contains vocabGroupBanner marker');
+      assert.ok(rawHtml1.includes('vocabSearchInput'), 'Direct load 1 response contains vocabSearchInput marker');
 
       // Direct access 2: /srs-review.html
       await page.goto(`${baseUrl}/srs-review.html`, { waitUntil: 'domcontentloaded' });
@@ -191,13 +186,13 @@ describe('Browser E2E: Vocabulary UI Reversion Fix after SRS Navigation', () => 
 
       // Direct access 3: /vocabulary.html again
       const response2 = await page.goto(`${baseUrl}/vocabulary.html`, { waitUntil: 'domcontentloaded' });
-      const banner2 = page.locator('#vocabGroupBanner');
-      await banner2.waitFor({ state: 'visible', timeout: 5000 });
-      assert.ok(await banner2.isVisible(), '#vocabGroupBanner visible on direct return access');
+      const searchInput2 = page.locator('#vocabSearchInput');
+      await searchInput2.waitFor({ state: 'visible', timeout: 5000 });
+      assert.ok(await searchInput2.isVisible(), '#vocabSearchInput visible on direct return access');
 
       const rawHtml2 = await response2.text();
       const hash2 = crypto.createHash('sha256').update(rawHtml2).digest('hex');
-      assert.ok(rawHtml2.includes('vocabGroupBanner'), 'Direct load 2 response contains vocabGroupBanner marker');
+      assert.ok(rawHtml2.includes('vocabSearchInput'), 'Direct load 2 response contains vocabSearchInput marker');
 
       // Hash and marker consistency assertion
       assert.strictEqual(hash1, hash2, 'Direct URL access yields consistent HTML content and SHA256 hash');
@@ -242,8 +237,8 @@ describe('Browser E2E: Vocabulary UI Reversion Fix after SRS Navigation', () => 
 
     // 6. Verify served content has new markers and zero obsolete UI markup
     const responseBody = await response.text();
-    assert.ok(responseBody.includes('vocabGroupBanner'), 'Served HTML contains #vocabGroupBanner');
-    assert.ok(responseBody.includes('vocabGroupTotalCount'), 'Served HTML contains #vocabGroupTotalCount');
+    assert.ok(responseBody.includes('vocabSearchInput'), 'Served HTML contains #vocabSearchInput');
+    assert.ok(responseBody.includes('vocabPageHeading'), 'Served HTML contains #vocabPageHeading');
     assert.ok(responseBody.includes('tabHsk1'), 'Served HTML contains #tabHsk1');
     assert.ok(!responseBody.includes('(Phím 1)'), 'Served HTML must not contain obsolete SRS markup');
   });

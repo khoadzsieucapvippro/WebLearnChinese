@@ -191,8 +191,16 @@ class LessonLifecycleAuditIntegrationTests {
             cardProgressRepository.deleteAllInBatch();
             personalNoteRepository.deleteAllInBatch();
             moderationLogRepository.deleteAllInBatch();
-            lessonVocabularyRepository.deleteAllInBatch();
-            lessonRepository.deleteAllInBatch();
+            List<Lesson> testLessons = lessonRepository.findAll().stream()
+                    .filter(l -> l.getTitle() == null || (!l.getTitle().startsWith("Bài 0") && !l.getTitle().startsWith("Bài 10")))
+                    .toList();
+            for (Lesson tl : testLessons) {
+                lessonVocabularyRepository.deleteAll(lessonVocabularyRepository.findByLessonIdWithVocabularyOrderAsc(tl.getLessonId()));
+                lessonRepository.delete(tl);
+            }
+            lessonVocabularyRepository.deleteAll(lessonVocabularyRepository.findAll().stream()
+                    .filter(lv -> lv.getVocabulary() != null && lv.getVocabulary().getHskLevel() == null)
+                    .toList());
             vocabularyRepository.deleteByHskLevelIsNull();
         });
     }

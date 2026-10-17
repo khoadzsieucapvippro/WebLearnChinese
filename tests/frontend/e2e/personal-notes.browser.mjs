@@ -48,7 +48,23 @@ async function setupVocabularyCatalogRoute(page) {
     });
   });
 
-  await page.route(/\/api\/v1\/vocabulary(\?.*)?$/, async (route) => {
+  await page.route('**/api/v1/vocabulary*', async (route) => {
+    const url = route.request().url();
+    if (url.includes('/api/v1/vocabulary/')) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          code: 'SUCCESS',
+          message: 'OK',
+          data: {
+            ...createMockVocabularyItem(),
+            radicals: []
+          }
+        })
+      });
+      return;
+    }
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
@@ -61,6 +77,36 @@ async function setupVocabularyCatalogRoute(page) {
           size: 20,
           totalElements: 1,
           totalPages: 1
+        }
+      })
+    });
+  });
+}
+async function setupLessonDetailRoute(page) {
+  await page.route('**/api/v1/srs/*', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ code: 'SUCCESS', message: 'OK', data: [] })
+    });
+  });
+
+  await page.route('**/api/v1/lessons/1', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        code: 'SUCCESS',
+        message: 'OK',
+        data: {
+          lessonId: 1,
+          title: 'Bài 1: Chào hỏi',
+          description: 'Mô tả bài học',
+          status: 'Approved',
+          vocabularies: [
+            { vocabId: 1, orderIndex: 1, hanzi: '书', pinyin: 'shū', meaningVi: 'Sách, vở' },
+            { vocabId: 2, orderIndex: 2, hanzi: '好', pinyin: 'hǎo', meaningVi: 'Tốt' }
+          ]
         }
       })
     });
@@ -103,7 +149,7 @@ describe('Browser E2E: Contextual Personal Notes Subsystem (9C.2)', () => {
     });
 
     try {
-      await setupVocabularyCatalogRoute(page);
+      await setupLessonDetailRoute(page);
 
       let interceptedNotesCall = false;
       await page.route('**/api/v1/vocabularies/*/notes*', async (route) => {
@@ -115,10 +161,9 @@ describe('Browser E2E: Contextual Personal Notes Subsystem (9C.2)', () => {
         });
       });
 
-      await page.goto(`${baseUrl}/vocabulary.html`, { waitUntil: 'domcontentloaded' });
+      await page.goto(`${baseUrl}/lesson-detail.html?id=1`, { waitUntil: 'domcontentloaded' });
 
-      // Click note button on first card
-      const noteBtn = page.locator('.vocab-card-note-btn').first();
+      const noteBtn = page.locator('.lesson-vocab-note-btn').first();
       await noteBtn.waitFor({ state: 'visible' });
       await noteBtn.click();
 
@@ -170,10 +215,10 @@ describe('Browser E2E: Contextual Personal Notes Subsystem (9C.2)', () => {
         });
       });
 
-      await setupVocabularyCatalogRoute(page);
-      await page.goto(`${baseUrl}/vocabulary.html`, { waitUntil: 'domcontentloaded' });
+      await setupLessonDetailRoute(page);
+      await page.goto(`${baseUrl}/lesson-detail.html?id=1`, { waitUntil: 'domcontentloaded' });
 
-      const noteBtn = page.locator('.vocab-card-note-btn').first();
+      const noteBtn = page.locator('.lesson-vocab-note-btn').first();
       await noteBtn.waitFor({ state: 'visible' });
       await noteBtn.click();
 
@@ -223,9 +268,10 @@ describe('Browser E2E: Contextual Personal Notes Subsystem (9C.2)', () => {
         });
       });
 
-      await setupVocabularyCatalogRoute(page);
-      await page.goto(`${baseUrl}/vocabulary.html`, { waitUntil: 'domcontentloaded' });
-      const noteBtn = page.locator('.vocab-card-note-btn').first();
+      await setupLessonDetailRoute(page);
+      await page.goto(`${baseUrl}/lesson-detail.html?id=1`, { waitUntil: 'domcontentloaded' });
+
+      const noteBtn = page.locator('.lesson-vocab-note-btn').first();
       await noteBtn.waitFor({ state: 'visible' });
       await noteBtn.click();
 
@@ -341,9 +387,10 @@ describe('Browser E2E: Contextual Personal Notes Subsystem (9C.2)', () => {
         }
       });
 
-      await setupVocabularyCatalogRoute(page);
-      await page.goto(`${baseUrl}/vocabulary.html`, { waitUntil: 'domcontentloaded' });
-      const noteBtn = page.locator('.vocab-card-note-btn').first();
+      await setupLessonDetailRoute(page);
+      await page.goto(`${baseUrl}/lesson-detail.html?id=1`, { waitUntil: 'domcontentloaded' });
+
+      const noteBtn = page.locator('.lesson-vocab-note-btn').first();
       await noteBtn.waitFor({ state: 'visible' });
       await noteBtn.click();
 
@@ -440,9 +487,10 @@ describe('Browser E2E: Contextual Personal Notes Subsystem (9C.2)', () => {
         });
       });
 
-      await setupVocabularyCatalogRoute(page);
-      await page.goto(`${baseUrl}/vocabulary.html`, { waitUntil: 'domcontentloaded' });
-      const noteBtn = page.locator('.vocab-card-note-btn').first();
+      await setupLessonDetailRoute(page);
+      await page.goto(`${baseUrl}/lesson-detail.html?id=1`, { waitUntil: 'domcontentloaded' });
+
+      const noteBtn = page.locator('.lesson-vocab-note-btn').first();
       await noteBtn.waitFor({ state: 'visible' });
       await noteBtn.click();
 
@@ -491,9 +539,10 @@ describe('Browser E2E: Contextual Personal Notes Subsystem (9C.2)', () => {
         });
       });
 
-      await setupVocabularyCatalogRoute(page);
-      await page.goto(`${baseUrl}/vocabulary.html`, { waitUntil: 'domcontentloaded' });
-      const noteBtn = page.locator('.vocab-card-note-btn').first();
+      await setupLessonDetailRoute(page);
+      await page.goto(`${baseUrl}/lesson-detail.html?id=1`, { waitUntil: 'domcontentloaded' });
+
+      const noteBtn = page.locator('.lesson-vocab-note-btn').first();
       await noteBtn.waitFor({ state: 'visible' });
       await noteBtn.focus();
       await noteBtn.click();

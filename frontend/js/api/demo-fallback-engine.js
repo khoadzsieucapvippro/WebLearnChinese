@@ -31,14 +31,15 @@ import {
   SEED_LESSONS,
   SEED_ACCOUNTS,
   SEED_SRS_SETTINGS,
-  SEED_SRS_CARDS
+  SEED_SRS_CARDS,
+  CHAR_TO_RADICAL_MAP
 } from './demo-seed-data.js';
 
 import { authManager } from '../auth/auth-state.js';
 import { ApiError } from './api.js';
 
 const STORAGE_KEY = 'ELEARNING_DEMO_DATA';
-const CURRENT_DATASET_VERSION = 2;
+const CURRENT_DATASET_VERSION = 3;
 
 /**
  * Encodes string or object into Base64URL string compliant with JWT standards.
@@ -451,7 +452,7 @@ class DemoFallbackEngine {
     // -------------------------------------------------------------------------
     // 3. VOCABULARY
     // -------------------------------------------------------------------------
-    if (cleanPath === '/vocabulary' && method === 'GET') {
+    if ((cleanPath === '/vocabulary' || cleanPath === '/vocabularies') && method === 'GET') {
       const page = parseInt(query.page || 0, 10);
       const size = parseInt(query.size || 20, 10);
       const search = (query.search || '').trim().toLowerCase();
@@ -486,7 +487,7 @@ class DemoFallbackEngine {
       };
     }
 
-    const vocabDetailMatch = cleanPath.match(/^\/vocabulary\/(\d+)$/);
+    const vocabDetailMatch = cleanPath.match(/^\/(?:vocabulary|vocabularies)\/(\d+)$/);
     if (vocabDetailMatch && method === 'GET') {
       const id = parseInt(vocabDetailMatch[1], 10);
       const v = data.vocabulary.find(item => item.vocabId === id);
@@ -494,18 +495,59 @@ class DemoFallbackEngine {
         throw new ApiError(`Không tìm thấy từ vựng ${id}`, 404, 'NOT_FOUND');
       }
 
-      // Automatically map constituent radicals
-      const constituentRadicals = data.radicals.filter(r => 
-        v.hanzi.includes(r.character) || (r.character.length === 1 && v.hanzi.indexOf(r.character) !== -1)
-      ).slice(0, 3);
+      // Automatically map constituent radicals accurately based on canonical Kangxi Radicals
+      let constituentRadicals = [];
+      const seenRadicalIds = new Set();
+
+      if (Array.isArray(v.radicalIds) && v.radicalIds.length > 0) {
+        // If explicitly assigned (e.g. via Admin API)
+        for (const rid of v.radicalIds) {
+          const numId = Number(rid);
+          if (numId > 0 && !seenRadicalIds.has(numId)) {
+            seenRadicalIds.add(numId);
+            const rad = data.radicals.find(r => r.radicalId === numId);
+            if (rad) {
+              let matchedChar = '';
+              if (v.hanzi) {
+                for (const ch of v.hanzi) {
+                  if (CHAR_TO_RADICAL_MAP[ch] === numId) {
+                    matchedChar = ch;
+                    break;
+                  }
+                }
+                if (!matchedChar) matchedChar = v.hanzi.charAt(0);
+              }
+              constituentRadicals.push({
+                ...rad,
+                hanziChar: matchedChar
+              });
+            }
+          }
+        }
+      } else if (v.hanzi && typeof v.hanzi === 'string') {
+        // Derive strictly from Chinese characters in word via authoritative CHAR_TO_RADICAL_MAP
+        for (const char of v.hanzi) {
+          const radId = CHAR_TO_RADICAL_MAP[char];
+          if (radId && !seenRadicalIds.has(radId)) {
+            seenRadicalIds.add(radId);
+            const rad = data.radicals.find(r => r.radicalId === radId);
+            if (rad) {
+              constituentRadicals.push({
+                ...rad,
+                hanziChar: char
+              });
+            }
+          }
+        }
+      }
 
       return {
         ...v,
-        radicals: constituentRadicals.length > 0 ? constituentRadicals : [data.radicals[0]]
+        radicals: constituentRadicals
       };
     }
 
-    if (cleanPath === '/admin/vocabulary' && method === 'POST') {
+    if ((cleanPath === '/admin/vocabulary' || cleanPath === '/admin/vocabularies') && method === 'POST') {
       const newVocab = {
         vocabId: data.vocabulary.length + 1,
         hanzi: body.hanzi || '',
@@ -518,20 +560,24 @@ class DemoFallbackEngine {
         exampleSentence: body.exampleSentence || '',
         exampleTranslation: body.exampleTranslation || '',
         audioUrl: body.audioUrl || null,
-        videoWritingUrl: body.videoWritingUrl || null
+        videoWritingUrl: body.videoWritingUrl || null,
+        radicalIds: Array.isArray(body.radicalIds) ? body.radicalIds.map(Number).filter(n => n > 0) : undefined
       };
       data.vocabulary.push(newVocab);
       this.saveData();
       return newVocab;
     }
 
-    const adminVocabMatch = cleanPath.match(/^\/admin\/vocabulary\/(\d+)$/);
+    const adminVocabMatch = cleanPath.match(/^\/admin\/(?:vocabulary|vocabularies)\/(\d+)$/);
     if (adminVocabMatch) {
       const id = parseInt(adminVocabMatch[1], 10);
       const index = data.vocabulary.findIndex(v => v.vocabId === id);
       if (method === 'PUT') {
         if (index >= 0) {
           data.vocabulary[index] = { ...data.vocabulary[index], ...body };
+          if (Array.isArray(body.radicalIds)) {
+            data.vocabulary[index].radicalIds = body.radicalIds.map(Number).filter(n => n > 0);
+          }
           this.saveData();
           return data.vocabulary[index];
         }
@@ -885,8 +931,18 @@ class DemoFallbackEngine {
     // -------------------------------------------------------------------------
     if (cleanPath === '/srs/stats' && method === 'GET') {
       const now = new Date();
-      const dueCards = data.srsCards.filter(c => !c.isNew && new Date(c.nextReviewAt) <= now);
-      const todayReviews = data.srsReviews.length;
+      const itemType = query.itemType ? query.itemType.toUpperCase() : null;
+
+      let allCards = data.srsCards;
+      let allReviews = data.srsReviews;
+
+      if (itemType) {
+        allCards = allCards.filter(c => (c.itemType || 'VOCABULARY').toUpperCase() === itemType);
+        allReviews = allReviews.filter(r => (r.itemType || 'VOCABULARY').toUpperCase() === itemType);
+      }
+
+      const dueCards = allCards.filter(c => !c.isNew && new Date(c.nextReviewAt) <= now);
+      const todayReviews = allReviews.length;
 
       return {
         cardsDue: dueCards.length,
@@ -896,7 +952,7 @@ class DemoFallbackEngine {
         reviewsToday: todayReviews,
         newCardsLimit: data.srsSettings.newCardsPerDay || 20,
         maxReviewLimit: data.srsSettings.maxReviewsPerDay || 50,
-        newCardsToday: data.srsCards.filter(c => c.isNew).length
+        newCardsToday: allCards.filter(c => c.isNew).length
       };
     }
 
@@ -933,9 +989,13 @@ class DemoFallbackEngine {
     if (cleanPath.startsWith('/srs/due') || cleanPath === '/srs/due-cards' || cleanPath.endsWith('/due')) {
       const lessonId = query.lessonId ? parseInt(query.lessonId, 10) : null;
       const cardType = query.cardType ? query.cardType.toUpperCase() : null;
+      const itemType = query.itemType ? query.itemType.toUpperCase() : null;
 
       const now = new Date();
       let cards = data.srsCards.filter(c => !c.isNew && new Date(c.nextReviewAt) <= now);
+      if (itemType) {
+        cards = cards.filter(c => (c.itemType || 'VOCABULARY').toUpperCase() === itemType);
+      }
       if (lessonId) {
         cards = cards.filter(c => c.lessonId === lessonId);
       }
@@ -948,14 +1008,53 @@ class DemoFallbackEngine {
 
     if (cleanPath.startsWith('/srs/new-cards') || cleanPath.endsWith('/new-cards')) {
       const lessonId = query.lessonId ? parseInt(query.lessonId, 10) : null;
+      const cardType = query.cardType ? query.cardType.toUpperCase() : null;
+      const itemType = query.itemType ? query.itemType.toUpperCase() : null;
+
       let candidates = data.srsCards.filter(c => c.isNew);
+      if (itemType) {
+        candidates = candidates.filter(c => (c.itemType || 'VOCABULARY').toUpperCase() === itemType);
+      }
       if (lessonId) {
         candidates = candidates.filter(c => c.lessonId === lessonId);
+      }
+      if (cardType) {
+        candidates = candidates.filter(c => c.cardType === cardType);
       }
       return candidates;
     }
 
     if (cleanPath.startsWith('/srs/practice-cards') || cleanPath.endsWith('/practice-cards')) {
+      const itemType = query.itemType ? query.itemType.toUpperCase() : 'VOCABULARY';
+      const cardType = query.cardType ? query.cardType.toUpperCase() : null;
+
+      if (itemType === 'RADICAL') {
+        const radicalList = query.radicalId 
+          ? data.radicals.filter(r => r.radicalId === parseInt(query.radicalId, 10))
+          : (query.commonOnly ? data.radicals.filter(r => r.commonRank != null) : data.radicals.slice(0, 50));
+        
+        return radicalList.map((r, i) => {
+          const cleanChar = (r.character || '').replace(/\(.*\)/, '').trim();
+          return {
+            cardId: 20000 + r.radicalId,
+            itemType: 'RADICAL',
+            itemId: r.radicalId,
+            cardType: cardType || (i % 2 === 0 ? 'READING' : 'WRITING'),
+            hanzi: cleanChar,
+            character: r.character,
+            pinyin: r.pinyin,
+            meaningVi: r.meaningVi,
+            meaningHanViet: r.meaningHanViet,
+            strokeCount: r.strokeCount || 1,
+            repetitions: 1,
+            easeFactor: 2.5,
+            intervalDays: 1,
+            nextReviewAt: new Date().toISOString(),
+            isNew: false
+          };
+        });
+      }
+
       const lessonId = query.lessonId ? parseInt(query.lessonId, 10) : 1;
       const lesson = data.lessons.find(l => l.lessonId === lessonId) || data.lessons[0];
       const practiceCards = (lesson?.vocabularies || []).map((v, i) => ({
@@ -963,7 +1062,7 @@ class DemoFallbackEngine {
         itemType: 'VOCABULARY',
         itemId: v.vocabId,
         lessonId: lesson.lessonId,
-        cardType: i % 2 === 0 ? 'READING' : (i % 3 === 0 ? 'WRITING' : 'LISTENING'),
+        cardType: cardType || (i % 2 === 0 ? 'READING' : (i % 3 === 0 ? 'WRITING' : 'LISTENING')),
         hanzi: v.hanzi,
         pinyin: v.pinyin,
         meaningVi: v.meaningVi,
@@ -1000,27 +1099,53 @@ class DemoFallbackEngine {
     if ((cleanPath === '/srs/review' || cleanPath === '/srs/reviews') && method === 'POST') {
       const rating = parseInt(body?.rating || 3, 10);
       const itemId = parseInt(body?.itemId || 1, 10);
-      const itemType = body?.itemType || 'VOCABULARY';
+      const itemType = (body?.itemType || 'VOCABULARY').toUpperCase();
       const cardType = body?.cardType ? body.cardType.toUpperCase() : 'READING';
 
-      let card = data.srsCards.find(c => c.itemId === itemId && c.itemType === itemType && (c.cardType || 'READING') === cardType);
+      let card = data.srsCards.find(c => 
+        c.itemId === itemId && 
+        (c.itemType || 'VOCABULARY').toUpperCase() === itemType && 
+        (c.cardType || 'READING').toUpperCase() === cardType
+      );
       if (!card) {
-        const v = data.vocabulary.find(item => item.vocabId === itemId) || data.vocabulary[0];
-        card = {
-          cardId: Date.now(),
-          itemType,
-          itemId,
-          cardType,
-          hanzi: v.hanzi,
-          pinyin: v.pinyin,
-          meaningVi: v.meaningVi,
-          meaningHanViet: v.meaningHanViet,
-          repetitions: 0,
-          easeFactor: 2.5,
-          intervalDays: 0,
-          nextReviewAt: new Date().toISOString(),
-          isNew: false
-        };
+        if (itemType === 'RADICAL') {
+          const r = data.radicals.find(item => item.radicalId === itemId) || data.radicals[0];
+          const cleanChar = (r?.character || '').replace(/\(.*\)/, '').trim();
+          card = {
+            cardId: Date.now(),
+            itemType: 'RADICAL',
+            itemId,
+            cardType,
+            hanzi: cleanChar,
+            character: r?.character || cleanChar,
+            pinyin: r?.pinyin || '',
+            meaningVi: r?.meaningVi || '',
+            meaningHanViet: r?.meaningHanViet || '',
+            strokeCount: r?.strokeCount || 1,
+            repetitions: 0,
+            easeFactor: 2.5,
+            intervalDays: 0,
+            nextReviewAt: new Date().toISOString(),
+            isNew: false
+          };
+        } else {
+          const v = data.vocabulary.find(item => item.vocabId === itemId) || data.vocabulary[0];
+          card = {
+            cardId: Date.now(),
+            itemType: 'VOCABULARY',
+            itemId,
+            cardType,
+            hanzi: v?.hanzi || '',
+            pinyin: v?.pinyin || '',
+            meaningVi: v?.meaningVi || '',
+            meaningHanViet: v?.meaningHanViet || '',
+            repetitions: 0,
+            easeFactor: 2.5,
+            intervalDays: 0,
+            nextReviewAt: new Date().toISOString(),
+            isNew: false
+          };
+        }
         data.srsCards.push(card);
       }
 
@@ -1068,7 +1193,7 @@ class DemoFallbackEngine {
     // -------------------------------------------------------------------------
     // 7. PERSONAL NOTES
     // -------------------------------------------------------------------------
-    const notesListMatch = cleanPath.match(/^\/(?:vocabularies|notes\/vocabulary)\/(\d+)(?:\/notes)?$/);
+    const notesListMatch = cleanPath.match(/^\/(?:vocabularies|vocabulary|notes\/vocabulary)\/(\d+)(?:\/notes)?$/);
     if (notesListMatch) {
       const vocabId = parseInt(notesListMatch[1], 10);
 

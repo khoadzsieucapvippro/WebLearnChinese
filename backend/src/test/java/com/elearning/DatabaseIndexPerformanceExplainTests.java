@@ -273,7 +273,7 @@ class DatabaseIndexPerformanceExplainTests {
             String sql4 = "SELECT progress_id FROM `CARD_PROGRESS` WHERE user_id = ? AND item_type = ? AND item_id = ?";
             List<Map<String, Object>> plan4 = explain("CardProgress Unique Item Lookup", sql4, testUserId, "VOCABULARY", testVocabId);
             explainAnalyze("CardProgress Unique Item Lookup", sql4, testUserId, "VOCABULARY", testVocabId);
-            assertThat(plan4.get(0).get("key")).isEqualTo("uk_card_progress_user_item");
+            assertThat(plan4.get(0).get("key").toString()).isIn("uk_card_progress_user_item", "uk_card_progress_user_item_skill");
             assertThat(plan4.get(0).get("type").toString()).isIn("const", "eq_ref", "ref");
 
             // Query 5: existsByItemTypeAndItemId (R3.1 delete guard)

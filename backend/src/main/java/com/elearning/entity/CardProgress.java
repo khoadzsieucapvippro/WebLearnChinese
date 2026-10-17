@@ -43,7 +43,7 @@ public class CardProgress {
     private Long itemId;
 
     @Column(name = "card_type", nullable = false, length = 20)
-    private String cardType = "LISTENING";
+    private String cardType = "READING";
 
     @Column(name = "ease_factor", nullable = false, precision = 4, scale = 2)
     private BigDecimal easeFactor = new BigDecimal("2.50");
@@ -65,14 +65,14 @@ public class CardProgress {
     }
 
     public CardProgress(UserProfile user, String itemType, Long itemId, BigDecimal easeFactor, Integer intervalDays, Integer repetitions, LocalDateTime nextReviewAt) {
-        this(user, itemType, itemId, "LISTENING", easeFactor, intervalDays, repetitions, nextReviewAt);
+        this(user, itemType, itemId, "READING", easeFactor, intervalDays, repetitions, nextReviewAt);
     }
 
     public CardProgress(UserProfile user, String itemType, Long itemId, String cardType, BigDecimal easeFactor, Integer intervalDays, Integer repetitions, LocalDateTime nextReviewAt) {
         this.user = user;
         this.itemType = itemType;
         this.itemId = itemId;
-        this.cardType = cardType != null ? cardType : "LISTENING";
+        this.cardType = cardType != null ? cardType : "READING";
         this.easeFactor = easeFactor;
         this.intervalDays = intervalDays;
         this.repetitions = repetitions;

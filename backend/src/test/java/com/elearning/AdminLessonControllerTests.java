@@ -1,7 +1,10 @@
 package com.elearning;
 
 import com.elearning.controller.AdminLessonController;
+import com.elearning.dto.response.LessonDetailResponse;
 import com.elearning.dto.response.LessonSummaryResponse;
+import com.elearning.exception.BusinessException;
+import com.elearning.common.ErrorCode;
 import com.elearning.exception.GlobalExceptionHandler;
 import com.elearning.service.LessonService;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,6 +24,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -69,5 +73,36 @@ class AdminLessonControllerTests {
                 .andExpect(jsonPath("$.data.items[0].title").value("Lesson Draft"))
                 .andExpect(jsonPath("$.data.items[0].status").value("Draft"))
                 .andExpect(jsonPath("$.data.totalElements").value(2));
+    }
+
+    @Test
+    @DisplayName("GIVEN existing lesson ID WHEN calling GET /api/v1/admin/lessons/{id} THEN returns 200 with LessonDetailResponse")
+    void testGetAdminLessonById_success() throws Exception {
+        LessonDetailResponse detail = new LessonDetailResponse(
+                42L, "Draft Lesson Title", "Draft", 0, Collections.emptyList(),
+                LocalDateTime.now(), LocalDateTime.now()
+        );
+
+        when(lessonService.getAdminLessonById(42L)).thenReturn(detail);
+
+        mockMvc.perform(get("/api/v1/admin/lessons/42")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value("SUCCESS"))
+                .andExpect(jsonPath("$.data.lessonId").value(42))
+                .andExpect(jsonPath("$.data.title").value("Draft Lesson Title"))
+                .andExpect(jsonPath("$.data.status").value("Draft"));
+    }
+
+    @Test
+    @DisplayName("GIVEN nonexistent lesson ID WHEN calling GET /api/v1/admin/lessons/{id} THEN returns 404 NOT_FOUND")
+    void testGetAdminLessonById_notFound() throws Exception {
+        when(lessonService.getAdminLessonById(999L))
+                .thenThrow(new BusinessException(ErrorCode.NOT_FOUND, "Không tìm thấy bài học với ID: 999"));
+
+        mockMvc.perform(get("/api/v1/admin/lessons/999")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("NOT_FOUND"));
     }
 }

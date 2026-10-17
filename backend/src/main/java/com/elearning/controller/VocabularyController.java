@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
  * - GET /api/v1/vocabulary/{id}: Detail of a vocabulary item with constituent Kangxi radicals
  */
 @RestController
-@RequestMapping("/api/v1/vocabulary")
+@RequestMapping({"/api/v1/vocabulary", "/api/v1/vocabularies"})
 public class VocabularyController {
 
     private final VocabularyService vocabularyService;

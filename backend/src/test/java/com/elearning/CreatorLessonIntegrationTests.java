@@ -97,9 +97,12 @@ class CreatorLessonIntegrationTests {
         creatorAccountB.setStatus("Active");
         creatorAccountB = accountRepository.save(creatorAccountB);
 
-        vocab1 = vocabularyRepository.save(new Vocabulary("学", "xué", "xue", "Học", "Học tập"));
-        vocab2 = vocabularyRepository.save(new Vocabulary("生", "shēng", "sheng", "Sinh", "Học sinh"));
-        vocab3 = vocabularyRepository.save(new Vocabulary("校", "xiào", "xiao", "Hiệu", "Trường học"));
+        vocab1 = vocabularyRepository.findByHanziAndPinyinRaw("学", "xue")
+                .orElseGet(() -> vocabularyRepository.save(new Vocabulary("学", "xué", "xue", "Học", "Học tập")));
+        vocab2 = vocabularyRepository.findByHanziAndPinyinRaw("生", "sheng")
+                .orElseGet(() -> vocabularyRepository.save(new Vocabulary("生", "shēng", "sheng", "Sinh", "Học sinh")));
+        vocab3 = vocabularyRepository.findByHanziAndPinyinRaw("校", "xiao")
+                .orElseGet(() -> vocabularyRepository.save(new Vocabulary("校", "xiào", "xiao", "Hiệu", "Trường học")));
 
         for (String email : List.of("admin_integ@example.com", "learner_integ@example.com", "moderator_integ@example.com")) {
             accountRepository.findByEmailOrPhone(email)

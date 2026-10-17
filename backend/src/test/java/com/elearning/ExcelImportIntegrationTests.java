@@ -259,7 +259,7 @@ class ExcelImportIntegrationTests {
             String[] headers = {"Chữ Hán", "Pinyin", "Hán-Việt", "Nghĩa tiếng Việt", "Câu ví dụ", "Dịch câu ví dụ"};
             String[][] data = {
                     {"中", "zhōng", "Trung", "Ở giữa", "中国很大。", "Trung Quốc rất lớn."},      // Pre-existing
-                    {"国", "guó", "Quốc", "Đất nước", "国家。", "Quốc gia."}                    // New
+                    {"琲", "bèi", "Bối", "Hạt ngọc chuỗi", "这是一串琲。", "Đây là một chuỗi hạt."} // New
             };
             byte[] bytes = createWorkbook(headers, data);
             MockMultipartFile file = new MockMultipartFile("file", "confirm_test.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", bytes);
@@ -277,12 +277,12 @@ class ExcelImportIntegrationTests {
                     .andExpect(jsonPath("$.data.vocabularies").isArray())
                     .andExpect(jsonPath("$.data.vocabularies[0].hanzi").value("中"))
                     .andExpect(jsonPath("$.data.vocabularies[0].orderIndex").value(1))
-                    .andExpect(jsonPath("$.data.vocabularies[1].hanzi").value("国"))
+                    .andExpect(jsonPath("$.data.vocabularies[1].hanzi").value("琲"))
                     .andExpect(jsonPath("$.data.vocabularies[1].orderIndex").value(2));
 
             // Verify DB state:
             assertThat(lessonRepository.count()).isEqualTo(lessonCountBefore + 1);
-            assertThat(vocabularyRepository.count()).isEqualTo(vocabCountBefore + 1); // Only 1 new vocab created ("国")
+            assertThat(vocabularyRepository.count()).isEqualTo(vocabCountBefore + 1); // Only 1 new vocab created ("琲")
 
             // Verify creator ownership
             Lesson created = lessonRepository.findAll().stream()

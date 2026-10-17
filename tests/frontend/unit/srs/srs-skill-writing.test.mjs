@@ -27,7 +27,8 @@ import {
 } from '../../../../frontend/js/ui/character-writing/vocab-writing-orchestrator.js';
 import {
   buildReviewPayload,
-  mapRatingValue
+  mapRatingValue,
+  SrsReviewController
 } from '../../../../frontend/js/pages/srs-review-page.js';
 
 describe('Unit: Multi-Skill SRS & Vocabulary Writing Orchestrator', () => {
@@ -110,7 +111,7 @@ describe('Unit: Multi-Skill SRS & Vocabulary Writing Orchestrator', () => {
       orch.destroy();
     });
 
-    test('determines side-by-side mode appropriately based on character count', () => {
+    test('determines side-by-side mode appropriately (unified to false for all words)', () => {
       const mockContainer = { replaceChildren: () => {}, appendChild: () => {} };
       const orch = new VocabWritingOrchestrator({ mountElement: mockContainer });
 
@@ -122,9 +123,9 @@ describe('Unit: Multi-Skill SRS & Vocabulary Writing Orchestrator', () => {
       orch.characters = ['对', '不', '起'];
       assert.strictEqual(orch.isDualSideBySideMode(), false);
 
-      // 2 chars in Node environment (no window or wide window) -> true
+      // 2 chars -> false (unified to stepper tab mode like 3-char words)
       orch.characters = ['学', '生'];
-      assert.strictEqual(orch.isDualSideBySideMode(), true);
+      assert.strictEqual(orch.isDualSideBySideMode(), false);
 
       orch.destroy();
     });
@@ -135,6 +136,19 @@ describe('Unit: Multi-Skill SRS & Vocabulary Writing Orchestrator', () => {
       orch.destroy();
       assert.strictEqual(orch.isDestroyed, true);
       assert.strictEqual(orch.engines.size, 0);
+      assert.strictEqual(orch.missingStrokesSet.size, 0);
+    });
+
+    test('supports demoOnly configuration for vocabulary detail view', () => {
+      const mockContainer = { replaceChildren: () => {}, appendChild: () => {} };
+      const orch = new VocabWritingOrchestrator({
+        mountElement: mockContainer,
+        initialMode: 'demo',
+        demoOnly: true
+      });
+      assert.strictEqual(orch.demoOnly, true);
+      assert.strictEqual(orch.currentMode, WRITING_MODES.DEMO);
+      orch.destroy();
     });
   });
 
@@ -202,6 +216,151 @@ describe('Unit: Multi-Skill SRS & Vocabulary Writing Orchestrator', () => {
       });
 
       assert.strictEqual(payload.cardType, 'WRITING');
+    });
+  });
+
+  describe('5. SRS Writing Review Room Controller & Writing Lifecycle', () => {
+    test('initializes controller with clean writing state', () => {
+      const controller = new SrsReviewController();
+      assert.strictEqual(controller.isWritingOutlineShown, false);
+      assert.ok(Array.isArray(controller.writingEngines));
+      assert.strictEqual(controller.writingEngines.length, 0);
+      assert.strictEqual(controller.vocabId, null);
+    });
+
+    test('parseQueryParams extracts vocabId and sets writing mode', () => {
+      const origWindow = global.window;
+      try {
+        global.window = {
+          location: {
+            search: '?mode=writing&group=hsk1&vocabId=101'
+          }
+        };
+
+        const controller = new SrsReviewController();
+        controller.parseQueryParams();
+
+        assert.strictEqual(controller.activeMode, 'writing');
+        assert.strictEqual(controller.activeGroup, 'hsk1');
+        assert.strictEqual(controller.vocabId, 101);
+      } finally {
+        global.window = origWindow;
+      }
+    });
+
+    test('startVocabSession queues matching vocabulary card from curriculum', async () => {
+      const controller = new SrsReviewController();
+      controller.renderCurrentCard = () => {}; // Stub view render
+
+      await controller.startVocabSession(101, 'continue');
+
+      assert.strictEqual(controller.sessionQueue.length, 1);
+      const card = controller.sessionQueue[0].card;
+      assert.strictEqual(card.itemId, 101);
+      assert.strictEqual(card.hanzi, '请');
+      assert.strictEqual(card.pinyin, 'qǐng');
+      assert.strictEqual(card.meaningHanViet, 'Thỉnh');
+      assert.strictEqual(card.meaningVi, 'Mời; mời mọc');
+      assert.strictEqual(card.itemType, 'VOCABULARY');
+    });
+
+    test('toggleWritingOutline toggles visibility state and button label', () => {
+      const controller = new SrsReviewController();
+      let outlineState = false;
+      const mockEngine = {
+        writer: {
+          showOutline: () => { outlineState = true; },
+          hideOutline: () => { outlineState = false; }
+        },
+        isOutlineShown: false
+      };
+      controller.writingEngines = [mockEngine];
+
+      let btnText = '👁️ Xem gợi ý';
+      let btnPressed = 'false';
+      controller.dom = {
+        btnWritingOutline: {
+          get textContent() { return btnText; },
+          set textContent(v) { btnText = v; },
+          setAttribute: (name, val) => { if (name === 'aria-pressed') btnPressed = val; }
+        }
+      };
+
+      // Toggle ON
+      controller.toggleWritingOutline();
+      assert.strictEqual(controller.isWritingOutlineShown, true);
+      assert.strictEqual(mockEngine.isOutlineShown, true);
+      assert.strictEqual(outlineState, true);
+      assert.strictEqual(btnText, '👁️ Ẩn gợi ý');
+      assert.strictEqual(btnPressed, 'true');
+
+      // Toggle OFF
+      controller.toggleWritingOutline();
+      assert.strictEqual(controller.isWritingOutlineShown, false);
+      assert.strictEqual(mockEngine.isOutlineShown, false);
+      assert.strictEqual(outlineState, false);
+      assert.strictEqual(btnText, '👁️ Xem gợi ý');
+      assert.strictEqual(btnPressed, 'false');
+    });
+
+    test('clearWriting triggers quiz restart without throwing', () => {
+      const controller = new SrsReviewController();
+      let quizRestarted = false;
+      const mockEngine = {
+        startQuizSession: () => { quizRestarted = true; }
+      };
+      controller.writingEngines = [mockEngine];
+
+      controller.clearWriting();
+      assert.strictEqual(quizRestarted, true, 'clearWriting must invoke startQuizSession');
+    });
+
+    test('replayWriting animates character and resets quiz on completion', () => {
+      const controller = new SrsReviewController();
+      let animated = false;
+      let quizRestarted = false;
+      const mockEngine = {
+        writer: {
+          animateCharacter: (options) => {
+            animated = true;
+            if (options && typeof options.onComplete === 'function') {
+              options.onComplete();
+            }
+          }
+        },
+        startQuizSession: () => { quizRestarted = true; }
+      };
+      controller.writingEngines = [mockEngine];
+
+      controller.replayWriting();
+      assert.strictEqual(animated, true, 'replayWriting must call animateCharacter');
+      assert.strictEqual(quizRestarted, true, 'replayWriting must restart quiz upon animation completion');
+    });
+
+    test('nextWritingItem advances index, updates statistics, and saves writing progress', async () => {
+      const controller = new SrsReviewController();
+      controller.sessionQueue = [
+        { card: { itemId: 101, itemType: 'VOCABULARY', hanzi: '请' } },
+        { card: { itemId: 102, itemType: 'VOCABULARY', hanzi: '请问' } }
+      ];
+      controller.currentIndex = 0;
+      controller.cardStartTime = Date.now() - 3000;
+      controller.renderCurrentCard = () => {};
+
+      let savedMode = null;
+      let savedIndex = null;
+      controller.persistProgress = (mode, index) => {
+        savedMode = mode;
+        savedIndex = index;
+      };
+
+      await controller.nextWritingItem();
+
+      assert.strictEqual(controller.currentIndex, 1, 'Current index must advance by 1');
+      assert.strictEqual(controller.stats.totalReviewed, 1, 'Total reviewed must increment');
+      assert.strictEqual(controller.stats.goodEasyCount, 1, 'Good/Easy count must increment');
+      assert.strictEqual(savedMode, 'writing', 'Progress must be saved under writing mode');
+      assert.strictEqual(savedIndex, 1, 'Progress saved index must be 1');
     });
   });
 });

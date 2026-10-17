@@ -307,6 +307,10 @@ describe('Browser E2E: Chinese Vocabulary Catalog & Search UI', () => {
       const emptyText = await page.locator('.state-empty-title').textContent();
       assert.ok(emptyText.includes('Không tìm thấy từ vựng'), 'Must display empty state message');
 
+      // Verify redundant toast notification is NOT displayed
+      const toastCount = await page.locator('.toast').count();
+      assert.strictEqual(toastCount, 0, 'Must NOT display redundant toast notification on empty search');
+
       // Click clear search button
       const clearBtn = page.locator('#searchClearBtn');
       await clearBtn.click();
@@ -324,7 +328,7 @@ describe('Browser E2E: Chinese Vocabulary Catalog & Search UI', () => {
     }
   });
 
-  test('VB7-VB8: Pagination navigation and Page Size switching (12, 20, 40)', async () => {
+  test('VB7-VB8: Pagination navigation and absence of page size selector', async () => {
     const { page, context, getRuntimeErrors } = await createMonitoredPage(browser);
     let lastRequestedPage = 0;
     let lastRequestedSize = 20;
@@ -362,7 +366,11 @@ describe('Browser E2E: Chinese Vocabulary Catalog & Search UI', () => {
       await page.goto(`${baseUrl}/vocabulary.html`, { waitUntil: 'domcontentloaded' });
       await page.waitForSelector('.vocab-card');
 
-      // 1. Verify next button is enabled on multi-page catalog
+      // 1. Verify absence of page size selector (Task Requirement 2)
+      assert.strictEqual(await page.$('#pageSizeSelect'), null, 'No page size selector in catalog toolbar');
+      assert.strictEqual(lastRequestedSize, 20, 'Default page size must be 20');
+
+      // 2. Verify next button is enabled on multi-page catalog and advances page
       const nextBtn = page.locator('#vocabPaginationNextBtn');
       assert.strictEqual(await nextBtn.getAttribute('disabled'), null, 'Next button must not be disabled on multi-page catalog');
 
@@ -371,11 +379,11 @@ describe('Browser E2E: Chinese Vocabulary Catalog & Search UI', () => {
       await page.waitForTimeout(100);
       assert.strictEqual(lastRequestedPage, 1, 'Should request page=1');
 
-      // 2. Change page size to 40
-      await page.selectOption('#pageSizeSelect', '40');
+      // 3. Verify prev button returns to page 0
+      const prevBtn = page.locator('#vocabPaginationPrevBtn');
+      await prevBtn.click();
       await page.waitForTimeout(100);
-      assert.strictEqual(lastRequestedSize, 40, 'Should request size=40');
-      assert.strictEqual(lastRequestedPage, 0, 'Changing page size must reset page to 0');
+      assert.strictEqual(lastRequestedPage, 0, 'Should request page=0');
 
       const errors = getRuntimeErrors();
       assert.strictEqual(errors.length, 0, `Runtime errors: ${errors.join('\n')}`);

@@ -13,11 +13,18 @@
  * =============================================================================
  */
 
-import { test, describe, beforeEach } from 'node:test';
+import { test, describe, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   validateProfileSrsSettings,
-  syncPresetChips
+  syncPresetChips,
+  getAudioSettings,
+  saveAudioSettings,
+  getWritingSettings,
+  saveWritingSettings,
+  loadUserProfileAndSettings,
+  AUDIO_SETTINGS_STORAGE_KEY,
+  WRITING_SETTINGS_STORAGE_KEY
 } from '../../../../frontend/js/pages/profile-page.js';
 
 describe('Profile & Learning Settings Unit Tests', () => {
@@ -187,6 +194,110 @@ describe('Profile & Learning Settings Unit Tests', () => {
       assert.strictEqual(calculateIncrement(30), 35);
     });
 
+  });
+
+  describe('4. Audio & Pronunciation Settings Contract', () => {
+    let mockStorage;
+    let originalStorage;
+
+    beforeEach(() => {
+      originalStorage = globalThis.localStorage;
+      const map = new Map();
+      mockStorage = {
+        getItem: (k) => (map.has(k) ? map.get(k) : null),
+        setItem: (k, v) => map.set(k, String(v)),
+        removeItem: (k) => map.delete(k),
+        clear: () => map.clear()
+      };
+      globalThis.localStorage = mockStorage;
+    });
+
+    afterEach(() => {
+      globalThis.localStorage = originalStorage;
+    });
+
+    test('returns default audio settings when storage is empty', () => {
+      const settings = getAudioSettings();
+      assert.strictEqual(settings.autoPronounce, true);
+      assert.strictEqual(settings.speechRate, 1.0);
+    });
+
+    test('saves and retrieves audio settings in HOC_HAN_NGU_AUDIO_SETTINGS', () => {
+      saveAudioSettings({ autoPronounce: false, speechRate: 0.8 });
+      const raw = mockStorage.getItem(AUDIO_SETTINGS_STORAGE_KEY);
+      assert.ok(raw);
+      const parsed = JSON.parse(raw);
+      assert.strictEqual(parsed.autoPronounce, false);
+      assert.strictEqual(parsed.speechRate, 0.8);
+
+      const retrieved = getAudioSettings();
+      assert.strictEqual(retrieved.autoPronounce, false);
+      assert.strictEqual(retrieved.speechRate, 0.8);
+    });
+
+    test('parses speech rate from numeric strings and handles invalid formats gracefully', () => {
+      saveAudioSettings({ speechRate: '1.2' });
+      assert.strictEqual(getAudioSettings().speechRate, 1.2);
+
+      saveAudioSettings({ speechRate: 'invalid' });
+      assert.strictEqual(getAudioSettings().speechRate, 1.0);
+    });
+  });
+
+  describe('5. Writing & Display Settings Contract', () => {
+    let mockStorage;
+    let originalStorage;
+
+    beforeEach(() => {
+      originalStorage = globalThis.localStorage;
+      const map = new Map();
+      mockStorage = {
+        getItem: (k) => (map.has(k) ? map.get(k) : null),
+        setItem: (k, v) => map.set(k, String(v)),
+        removeItem: (k) => map.delete(k),
+        clear: () => map.clear()
+      };
+      globalThis.localStorage = mockStorage;
+    });
+
+    afterEach(() => {
+      globalThis.localStorage = originalStorage;
+    });
+
+    test('returns default writing settings when storage is empty', () => {
+      const settings = getWritingSettings();
+      assert.strictEqual(settings.showOutline, true);
+      assert.strictEqual(settings.autoReplayStrokes, false);
+      assert.strictEqual(settings.gridSize, 'standard');
+      assert.strictEqual(settings.gridPixelSize, 170);
+    });
+
+    test('saves and retrieves writing settings in HOC_HAN_NGU_WRITING_SETTINGS', () => {
+      saveWritingSettings({ showOutline: false, autoReplayStrokes: true, gridSize: 'large' });
+      const raw = mockStorage.getItem(WRITING_SETTINGS_STORAGE_KEY);
+      assert.ok(raw);
+      const parsed = JSON.parse(raw);
+      assert.strictEqual(parsed.showOutline, false);
+      assert.strictEqual(parsed.autoReplayStrokes, true);
+      assert.strictEqual(parsed.gridSize, 'large');
+
+      const retrieved = getWritingSettings();
+      assert.strictEqual(retrieved.showOutline, false);
+      assert.strictEqual(retrieved.autoReplayStrokes, true);
+      assert.strictEqual(retrieved.gridSize, 'large');
+      assert.strictEqual(retrieved.gridPixelSize, 200);
+    });
+  });
+
+  describe('6. Module Exports & Contract Invariants', () => {
+    test('exports loadUserProfileAndSettings as an async function', () => {
+      assert.strictEqual(typeof loadUserProfileAndSettings, 'function');
+    });
+
+    test('storage keys conform to canonical HOC_HAN_NGU naming convention', () => {
+      assert.strictEqual(AUDIO_SETTINGS_STORAGE_KEY, 'HOC_HAN_NGU_AUDIO_SETTINGS');
+      assert.strictEqual(WRITING_SETTINGS_STORAGE_KEY, 'HOC_HAN_NGU_WRITING_SETTINGS');
+    });
   });
 
 });

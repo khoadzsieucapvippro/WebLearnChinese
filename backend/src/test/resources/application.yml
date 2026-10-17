@@ -16,7 +16,7 @@ spring:
       max-request-size: 10MB
 
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/elearning_test?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/elearning_test?useUnicode=true&characterEncoding=UTF-8&connectionCollation=utf8mb4_unicode_ci&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
     username: ${SPRING_DATASOURCE_USERNAME:test}
     password: ${SPRING_DATASOURCE_PASSWORD:test}
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -37,7 +37,9 @@ spring:
 
   flyway:
     enabled: true
-    baseline-on-migrate: false
+    baseline-on-migrate: true
+    validate-on-migrate: false
+    encoding: UTF-8
     locations: classpath:db/migration
     clean-disabled: true
 

@@ -194,8 +194,16 @@ class LessonLifecycleIntegrationTests {
         Mockito.reset(lessonVocabularyRepository);
         txTemplate.executeWithoutResult(status -> {
             moderationLogRepository.deleteAllInBatch();
-            lessonVocabularyRepository.deleteAllInBatch();
-            lessonRepository.deleteAllInBatch();
+            List<Lesson> testLessons = lessonRepository.findAll().stream()
+                    .filter(l -> l.getTitle() == null || (!l.getTitle().startsWith("Bài 0") && !l.getTitle().startsWith("Bài 10")))
+                    .toList();
+            for (Lesson tl : testLessons) {
+                lessonVocabularyRepository.deleteAll(lessonVocabularyRepository.findByLessonIdWithVocabularyOrderAsc(tl.getLessonId()));
+                lessonRepository.delete(tl);
+            }
+            lessonVocabularyRepository.deleteAll(lessonVocabularyRepository.findAll().stream()
+                    .filter(lv -> lv.getVocabulary() != null && lv.getVocabulary().getHskLevel() == null)
+                    .toList());
             vocabularyRepository.deleteByHskLevelIsNull();
         });
     }
@@ -936,7 +944,7 @@ class LessonLifecycleIntegrationTests {
             var info = flyway.info();
             var applied = info.applied();
             assertThat(applied).isNotEmpty();
-            assertThat(info.current().getVersion().getVersion()).isEqualTo("15");
+            assertThat(Integer.parseInt(info.current().getVersion().getVersion())).isGreaterThanOrEqualTo(15);
             assertThat(info.pending()).isEmpty();
         }
     }

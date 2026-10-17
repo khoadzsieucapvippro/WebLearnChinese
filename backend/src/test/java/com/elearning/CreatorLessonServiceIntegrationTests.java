@@ -62,21 +62,30 @@ class CreatorLessonServiceIntegrationTests {
 
     @BeforeEach
     void setUp() {
-        creatorA = new Account();
-        creatorA.setEmailOrPhone("creator_a_integ@example.com");
-        creatorA.setPasswordHash("$2a$12$dummyhashcreatorA123456789012345");
-        creatorA.setStatus("Active");
-        creatorA = accountRepository.save(creatorA);
+        creatorA = accountRepository.findByEmailOrPhone("creator_a_integ@example.com")
+                .orElseGet(() -> {
+                    Account a = new Account();
+                    a.setEmailOrPhone("creator_a_integ@example.com");
+                    a.setPasswordHash("$2a$12$dummyhashcreatorA123456789012345");
+                    a.setStatus("Active");
+                    return accountRepository.save(a);
+                });
 
-        creatorB = new Account();
-        creatorB.setEmailOrPhone("creator_b_integ@example.com");
-        creatorB.setPasswordHash("$2a$12$dummyhashcreatorB123456789012345");
-        creatorB.setStatus("Active");
-        creatorB = accountRepository.save(creatorB);
+        creatorB = accountRepository.findByEmailOrPhone("creator_b_integ@example.com")
+                .orElseGet(() -> {
+                    Account b = new Account();
+                    b.setEmailOrPhone("creator_b_integ@example.com");
+                    b.setPasswordHash("$2a$12$dummyhashcreatorB123456789012345");
+                    b.setStatus("Active");
+                    return accountRepository.save(b);
+                });
 
-        vocab1 = vocabularyRepository.save(new Vocabulary("学", "xué", "xue", "Học", "Học tập"));
-        vocab2 = vocabularyRepository.save(new Vocabulary("生", "shēng", "sheng", "Sinh", "Học sinh"));
-        vocab3 = vocabularyRepository.save(new Vocabulary("校", "xiào", "xiao", "Hiệu", "Trường học"));
+        vocab1 = vocabularyRepository.findByHanziAndPinyinRaw("学", "xue")
+                .orElseGet(() -> vocabularyRepository.save(new Vocabulary("学", "xué", "xue", "Học", "Học tập")));
+        vocab2 = vocabularyRepository.findByHanziAndPinyinRaw("生", "sheng")
+                .orElseGet(() -> vocabularyRepository.save(new Vocabulary("生", "shēng", "sheng", "Sinh", "Học sinh")));
+        vocab3 = vocabularyRepository.findByHanziAndPinyinRaw("校", "xiao")
+                .orElseGet(() -> vocabularyRepository.save(new Vocabulary("校", "xiào", "xiao", "Hiệu", "Trường học")));
 
         setAuthentication("creator_a_integ@example.com", "ROLE_CREATOR");
     }

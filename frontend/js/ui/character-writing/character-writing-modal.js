@@ -1,10 +1,8 @@
 /**
  * =============================================================================
  * CHARACTER WRITING MODAL COMPONENT
- * UI adapter providing 3-tab interactive Chinese calligraphy practice:
- * - [Cách viết]   - Trình chiếu thứ tự từng nét
- * - [Luyện nét]   - Tập tô theo khung nét chỉ dẫn
- * - [Luyện viết]  - Tự nhớ và viết trong ô kẻ chữ Mễ (米)
+ * UI adapter providing stroke order demonstration for radicals catalog:
+ * - [Thứ tự nét] - Trình chiếu mô phỏng thứ tự từng nét chuẩn mực
  *
  * Implements W3C WCAG 2.2 Level AA accessibility & zero dangerous sinks.
  * =============================================================================
@@ -27,6 +25,7 @@ export class CharacterWritingModal {
     this.engine = null;
     this.currentCharacter = '';
     this.currentMode = WRITING_MODES.DEMO;
+    this.radicalId = null;
     this.elements = {};
   }
 
@@ -34,14 +33,17 @@ export class CharacterWritingModal {
    * Builds the DOM structure and mounts the writing interface for a given character.
    *
    * @param {string} character - The Chinese character or radical string (e.g. '水' or '水(氵)')
+   * @param {Object} [options={}]
+   * @param {number|string} [options.radicalId] - Radical identifier
    * @returns {Promise<boolean>}
    */
-  async mount(character) {
+  async mount(character, options = {}) {
     this.destroy();
 
     const cleanChar = extractCleanChar(character);
     if (!cleanChar) return false;
     this.currentCharacter = cleanChar;
+    this.radicalId = options.radicalId || null;
 
     // 1. Build Shell using DOM APIs (Zero innerHTML sinks)
     this.buildDomStructure();
@@ -60,20 +62,21 @@ export class CharacterWritingModal {
         }
       },
       onComplete: () => {
-        if (this.elements.statusText) {
-          this.elements.statusText.classList.add('text-success');
-        }
+        // Safe callback retained for engine lifecycle
       }
     });
 
-    // 3. Load Character
+    // 3. Load Character in DEMO mode
     const loaded = await this.engine.load(this.currentCharacter, WRITING_MODES.DEMO);
     if (!loaded) {
       this.renderFallback();
       return false;
     }
 
-    this.updateActiveTab(WRITING_MODES.DEMO);
+    if (this.elements.replayBtn) {
+      this.elements.replayBtn.classList.remove('d-none');
+    }
+
     return true;
   }
 
@@ -88,51 +91,18 @@ export class CharacterWritingModal {
     const card = document.createElement('div');
     card.className = 'writing-engine-card p-3 rounded-3 border bg-surface mb-3';
 
-    // Header with title
+    // Header with static label
     const headerRow = document.createElement('div');
-    headerRow.className = 'd-flex align-items-center justify-content-between mb-2 flex-wrap gap-2';
+    headerRow.className = 'd-flex align-items-center mb-2';
 
     const titleEl = document.createElement('div');
     titleEl.className = 'fw-bold text-dark d-flex align-items-center gap-2 small';
-    titleEl.textContent = '✍️ Luyện viết chữ & Thứ tự nét';
+    titleEl.textContent = 'Thứ tự nét';
 
     headerRow.appendChild(titleEl);
-
-    // 3 Tabs Toolbar (W3C Tablist)
-    const tabList = document.createElement('div');
-    tabList.className = 'writing-tabs-toolbar d-flex rounded-2 p-1 bg-light border';
-    tabList.setAttribute('role', 'tablist');
-    tabList.setAttribute('aria-label', 'Chế độ luyện viết chữ');
-
-    const tabsConfig = [
-      { mode: WRITING_MODES.DEMO, label: 'Cách viết', id: 'tabWritingDemo' },
-      { mode: WRITING_MODES.PRACTICE, label: 'Luyện nét', id: 'tabWritingPractice' },
-      { mode: WRITING_MODES.QUIZ, label: 'Luyện viết', id: 'tabWritingQuiz' }
-    ];
-
-    this.elements.tabs = {};
-
-    tabsConfig.forEach(cfg => {
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.id = cfg.id;
-      btn.className = 'writing-tab-btn btn btn-sm py-1 px-2 border-0 fw-medium';
-      btn.setAttribute('role', 'tab');
-      btn.setAttribute('aria-selected', cfg.mode === WRITING_MODES.DEMO ? 'true' : 'false');
-      btn.textContent = cfg.label;
-
-      btn.addEventListener('click', () => {
-        this.switchMode(cfg.mode);
-      });
-
-      tabList.appendChild(btn);
-      this.elements.tabs[cfg.mode] = btn;
-    });
-
-    headerRow.appendChild(tabList);
     card.appendChild(headerRow);
 
-    // Main Interactive Stage (Rice Grid Canvas + Actions)
+    // Main Interactive Stage (Rice Grid Canvas)
     const stageContainer = document.createElement('div');
     stageContainer.className = 'writing-stage-container d-flex flex-column align-items-center py-2';
 
@@ -185,12 +155,12 @@ export class CharacterWritingModal {
     canvasBox.appendChild(canvasArea);
     this.elements.canvasArea = canvasArea;
 
-    // Replay / Restart Floating Button
+    // Replay Floating Button (Demonstration replay only, not practice)
     const replayBtn = document.createElement('button');
     replayBtn.type = 'button';
     replayBtn.className = 'btn btn-sm btn-light position-absolute bottom-0 end-0 m-1 rounded-circle p-1 border shadow-sm';
-    replayBtn.setAttribute('aria-label', 'Phát lại / Thử lại');
-    replayBtn.title = 'Phát lại / Bắt đầu lại';
+    replayBtn.setAttribute('aria-label', 'Phát lại');
+    replayBtn.title = 'Phát lại';
 
     // Rotate CCW icon
     const iconSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -218,14 +188,14 @@ export class CharacterWritingModal {
     });
 
     canvasBox.appendChild(replayBtn);
+    this.elements.replayBtn = replayBtn;
     stageContainer.appendChild(canvasBox);
 
-    // Live Status Text Notification (WCAG live region)
+    // Screen-reader live region (visually hidden to avoid occupying vertical space in the UI)
     const statusText = document.createElement('div');
-    statusText.className = 'small text-muted mt-2 text-center writing-status-feedback';
+    statusText.className = 'visually-hidden';
     statusText.setAttribute('role', 'status');
     statusText.setAttribute('aria-live', 'polite');
-    statusText.textContent = 'Đang tải dữ liệu nét viết...';
     stageContainer.appendChild(statusText);
     this.elements.statusText = statusText;
 
@@ -234,44 +204,22 @@ export class CharacterWritingModal {
   }
 
   /**
-   * Switches the active mode in both UI and engine.
-   *
-   * @param {string} mode
+   * Replays stroke order animation.
    */
-  async switchMode(mode) {
-    if (this.currentMode === mode) {
-      if (this.engine) this.engine.replay();
-      return;
-    }
-
-    this.currentMode = mode;
-    this.updateActiveTab(mode);
+  replay() {
     if (this.engine) {
-      await this.engine.setMode(mode);
+      this.engine.replay();
     }
   }
 
   /**
-   * Updates active styling and ARIA attributes of tab buttons.
+   * Backward compatibility: ensures DEMO replay.
    *
-   * @private
-   * @param {string} mode
+   * @param {string} [_mode=WRITING_MODES.DEMO]
    */
-  updateActiveTab(mode) {
-    Object.entries(this.elements.tabs || {}).forEach(([m, btn]) => {
-      const isActive = m === mode;
-      btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
-      if (isActive) {
-        btn.classList.add('bg-white', 'text-primary', 'shadow-sm');
-        btn.classList.remove('text-secondary');
-      } else {
-        btn.classList.remove('bg-white', 'text-primary', 'shadow-sm');
-        btn.classList.add('text-secondary');
-      }
-    });
-
-    if (this.elements.statusText) {
-      this.elements.statusText.classList.remove('text-success');
+  async switchMode(_mode = WRITING_MODES.DEMO) {
+    if (this.engine) {
+      this.engine.replay();
     }
   }
 
@@ -283,17 +231,22 @@ export class CharacterWritingModal {
   renderFallback() {
     if (!this.elements.canvasArea) return;
 
+    if (this.elements.replayBtn) {
+      this.elements.replayBtn.classList.add('d-none');
+    }
+
     this.elements.canvasArea.replaceChildren();
     const fallbackBox = document.createElement('div');
     fallbackBox.className = 'd-flex flex-column align-items-center justify-content-center h-100 text-center p-2';
 
     const charEl = document.createElement('span');
-    charEl.className = 'fs-1 fw-bold text-dark';
+    charEl.className = 'fs-1 fw-bold text-dark font-hanzi';
+    charEl.lang = 'zh-Hans';
     charEl.textContent = this.currentCharacter;
 
     const notice = document.createElement('span');
     notice.className = 'small text-muted mt-1';
-    notice.textContent = 'Dữ liệu nét đang cập nhật';
+    notice.textContent = `Chữ "${this.currentCharacter}" hiện chưa có dữ liệu nét chi tiết.`;
 
     fallbackBox.appendChild(charEl);
     fallbackBox.appendChild(notice);
@@ -309,10 +262,13 @@ export class CharacterWritingModal {
    */
   destroy() {
     if (this.engine) {
-      this.engine.destroy();
+      if (typeof this.engine.destroy === 'function') {
+        this.engine.destroy();
+      }
       this.engine = null;
     }
     this.mountElement.replaceChildren();
+    this.radicalId = null;
     this.elements = {};
   }
 }

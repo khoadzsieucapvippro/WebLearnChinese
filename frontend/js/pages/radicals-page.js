@@ -545,6 +545,8 @@ export class RadicalsPageController {
         initialTab = 'all';
       } else if (catParam === 'common50' || catParam === 'common' || hash === '#common' || hash === '#common50') {
         initialTab = 'common';
+      } else if (urlParams.has('id') || urlParams.has('radicalId')) {
+        initialTab = 'all';
       }
     }
     this.selectedTab = initialTab;
@@ -586,7 +588,6 @@ export class RadicalsPageController {
       // Detail Modal Elements
       modal: document.getElementById('radicalDetailModal'),
       modalCloseBtn: document.getElementById('modalCloseBtn'),
-      modalDismissBtn: document.getElementById('modalDismissBtn'),
       modalRadicalChar: document.getElementById('modalRadicalChar'),
       modalRadicalTitle: document.getElementById('modalRadicalTitle'),
       modalRadicalPinyin: document.getElementById('modalRadicalPinyin'),
@@ -663,12 +664,9 @@ export class RadicalsPageController {
       });
     }
 
-    // Modal close buttons
+    // Modal close button
     if (this.elements.modalCloseBtn) {
       this.elements.modalCloseBtn.addEventListener('click', () => this.closeDetailModal());
-    }
-    if (this.elements.modalDismissBtn) {
-      this.elements.modalDismissBtn.addEventListener('click', () => this.closeDetailModal());
     }
 
     // Modal Hero Speaker Button
@@ -787,6 +785,9 @@ export class RadicalsPageController {
       // Step 6: Render view
       this.renderCatalogView();
 
+      // Step 7: Handle deep-linking to specific radical (from vocabulary modal or URL params)
+      this.handleUrlDeepLinking();
+
     } catch (err) {
       console.error('[RadicalCatalog] Failed to load radicals catalog:', err);
       let errorTitle = 'Lỗi tải danh mục bộ thủ';
@@ -840,19 +841,13 @@ export class RadicalsPageController {
    * 
    * @param {'common'|'all'|'remaining'} rawTabId 
    * @param {boolean} [focus=false] 
+  /**
+   * Updates ARIA attributes and classes on tab buttons to match this.selectedTab.
+   * 
+   * @param {boolean} [focus=false]
    */
-  switchTab(rawTabId, focus = false) {
-    const tabId = (rawTabId === 'remaining' || rawTabId === 'all') ? 'all' : 'common';
-    this.selectedTab = tabId;
-
-    // Update URL query state for deep-linking (preserving history without full reload)
-    if (typeof window !== 'undefined' && window.history?.replaceState) {
-      const newUrl = `${window.location.pathname}?category=${tabId === 'common' ? 'common50' : 'all214'}`;
-      window.history.replaceState(null, '', newUrl);
-    }
-
-    // Update ARIA attributes and classes on tab buttons
-    const isCommon = tabId === 'common';
+  updateTabButtonsUi(focus = false) {
+    const isCommon = this.selectedTab === 'common';
     if (this.elements.tabCommonRadicals) {
       this.elements.tabCommonRadicals.setAttribute('aria-selected', isCommon ? 'true' : 'false');
       this.elements.tabCommonRadicals.setAttribute('tabindex', isCommon ? '0' : '-1');
@@ -870,11 +865,36 @@ export class RadicalsPageController {
         tabAll.focus();
       }
     }
+  }
+
+  /**
+   * Switches active learning tab between 'common' (50) and 'all' (214).
+   * Preserves user's current search query and re-evaluates search within the new scope.
+   * 
+   * @param {'common'|'all'|'remaining'} rawTabId 
+   * @param {boolean} [focus=false] 
+   * @param {boolean} [updateUrl=true]
+   */
+  switchTab(rawTabId, focus = false, updateUrl = true) {
+    const tabId = (rawTabId === 'remaining' || rawTabId === 'all') ? 'all' : 'common';
+    this.selectedTab = tabId;
+
+    // Update URL query state for deep-linking (preserving history without full reload)
+    if (updateUrl && typeof window !== 'undefined' && window.history?.replaceState) {
+      const urlParams = new URLSearchParams(window.location.search || '');
+      urlParams.set('category', tabId === 'common' ? 'common50' : 'all214');
+      const newUrl = `${window.location.pathname}?${urlParams.toString()}`;
+      window.history.replaceState(null, '', newUrl);
+    }
+
+    // Update ARIA attributes and classes on tab buttons
+    this.updateTabButtonsUi(focus);
 
     // Update search placeholder and accessibility label for active scope
     this.updateSearchScopeContext();
 
     // Re-evaluate search query on the newly selected scope dataset
+    const isCommon = tabId === 'common';
     const activeScopeDataset = isCommon ? this.commonRadicals : this.fullCatalog;
     this.filteredCatalog = filterRadicals(this.activeSearchQuery, activeScopeDataset);
 
@@ -954,6 +974,9 @@ export class RadicalsPageController {
     if (this.elements.searchResultsGrid) {
       clearContainer(this.elements.searchResultsGrid);
     }
+
+    // Synchronize tab button ARIA attributes and classes with selectedTab
+    this.updateTabButtonsUi();
 
     const activeSection = isCommon ? this.elements.commonRadicalsSection : (this.elements.allRadicalsSection || this.elements.remainingRadicalsSection);
     const inactiveSection = isCommon ? (this.elements.allRadicalsSection || this.elements.remainingRadicalsSection) : this.elements.commonRadicalsSection;
@@ -1056,6 +1079,104 @@ export class RadicalsPageController {
   }
 
   /**
+   * Handles direct URL deep-linking to a specific radical (via ?id=, ?radicalId=, ?search=, ?q=, ?char=, ?character=).
+   * Automatically switches to the correct catalog tab, scrolls the radical card into view,
+   * highlights it, and opens the detail modal for immediate study.
+   */
+  handleUrlDeepLinking() {
+    if (typeof window === 'undefined') return;
+
+    const urlParams = new URLSearchParams(window.location.search || '');
+    const targetId = urlParams.get('id') || urlParams.get('radicalId');
+    const targetSearch = urlParams.get('search') || urlParams.get('q') || urlParams.get('char') || urlParams.get('character');
+
+    if (!targetId && !targetSearch) return;
+
+    let targetRadical = null;
+
+    // 1. Resolve by numeric radical ID
+    if (targetId) {
+      const numId = Number(targetId);
+      if (Number.isInteger(numId) && numId > 0) {
+        targetRadical = this.fullCatalog.find(r => Number(r.radicalId) === numId);
+      }
+    }
+
+    // 2. Resolve by search/character if not already resolved by ID
+    if (!targetRadical && targetSearch) {
+      const trimmed = targetSearch.trim();
+      const numId = Number(trimmed);
+      if (Number.isInteger(numId) && numId > 0 && numId <= 214) {
+        targetRadical = this.fullCatalog.find(r => Number(r.radicalId) === numId);
+      }
+      if (!targetRadical) {
+        targetRadical = this.fullCatalog.find(r => r.character === trimmed);
+      }
+      if (!targetRadical) {
+        const norm = normalizeSearchQuery(trimmed);
+        const normNoTone = removeVietnameseDiacritics(norm);
+        targetRadical = this.fullCatalog.find(r => {
+          const hv = normalizeSearchQuery(r.meaningHanViet);
+          const py = normalizeSearchQuery(r.pinyin);
+          return hv === norm || removeVietnameseDiacritics(hv) === normNoTone ||
+                 py === norm || removeVietnameseDiacritics(py) === normNoTone;
+        });
+      }
+      if (!targetRadical) {
+        const matches = filterRadicals(trimmed, this.fullCatalog);
+        if (matches.length > 0) targetRadical = matches[0];
+      }
+    }
+
+    // If search query was passed but no radical found, still update search bar
+    if (!targetRadical) {
+      if (targetSearch && !targetId) {
+        if (this.elements.searchInput) {
+          this.elements.searchInput.value = targetSearch;
+        }
+        this.handleSearchInput(targetSearch);
+      }
+      return;
+    }
+
+    // 3. Tab management: ensure the target radical is in the currently visible tab
+    const catParam = urlParams.get('category') || '';
+    const isTargetInCommon = Boolean(targetRadical.commonRank && Number(targetRadical.commonRank) >= 1 && Number(targetRadical.commonRank) <= 50);
+
+    const shouldShowAllTab = (catParam === 'all214' || catParam === 'all' || !isTargetInCommon || Boolean(targetId));
+    if (shouldShowAllTab && this.selectedTab !== 'all') {
+      this.switchTab('all', false);
+    } else if (catParam === 'common50' && isTargetInCommon && this.selectedTab !== 'common') {
+      this.switchTab('common', false);
+    }
+
+    // 4. If search was passed without ID, filter the catalog
+    if (targetSearch && !targetId) {
+      if (this.elements.searchInput) {
+        this.elements.searchInput.value = targetSearch;
+      }
+      this.handleSearchInput(targetSearch);
+    }
+
+    // 5. Locate the card in the DOM
+    const cardSelector = `button[data-radical-id="${targetRadical.radicalId}"]`;
+    const targetCard = document.querySelector(cardSelector);
+
+    if (targetCard) {
+      document.querySelectorAll('.radical-card-targeted').forEach(el => el.classList.remove('radical-card-targeted'));
+      targetCard.classList.add('radical-card-targeted');
+      try {
+        targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } catch {
+        targetCard.scrollIntoView();
+      }
+    }
+
+    // 6. Automatically open the detail modal
+    this.openDetailModal(targetRadical, targetCard || null);
+  }
+
+  /**
    * Opens the accessible Detail Modal for a radical.
    * 
    * @param {Object} radical 
@@ -1099,7 +1220,7 @@ export class RadicalsPageController {
       }
     }
 
-    // 2b. Interactive Character Writing Section (Cách viết / Luyện nét / Luyện viết)
+    // 2b. Character Writing Section (Thứ tự nét)
     if (this.writingModal && radical.character) {
       this.writingModal.mount(radical.character).catch(err => {
         console.error('[RadicalsPageController] Error mounting character writing modal:', err);
@@ -1179,6 +1300,9 @@ export class RadicalsPageController {
  * ----------------------------------------------------------------------------- */
 if (typeof window !== 'undefined' && typeof document !== 'undefined') {
   document.addEventListener('DOMContentLoaded', () => {
+    if (!document.getElementById('commonRadicalsGrid') && !document.getElementById('radicalDetailModal')) {
+      return;
+    }
     const controller = new RadicalsPageController();
     controller.init();
     window.__radicalsPageController = controller;

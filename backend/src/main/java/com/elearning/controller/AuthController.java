@@ -1,6 +1,7 @@
 package com.elearning.controller;
 
 import com.elearning.common.ErrorCode;
+import com.elearning.dto.request.ChangePasswordRequest;
 import com.elearning.dto.request.LoginRequest;
 import com.elearning.dto.request.RegisterRequest;
 import com.elearning.dto.response.ApiResponse;
@@ -10,6 +11,7 @@ import com.elearning.security.LoginRateLimiter;
 import com.elearning.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import java.security.Principal;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -56,6 +58,26 @@ public class AuthController {
 
         AuthResponse response = authService.login(request);
         return ResponseEntity.ok(ApiResponse.success("Đăng nhập thành công", response));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<Void>> logout(Principal principal) {
+        if (principal == null || principal.getName() == null) {
+            throw new BusinessException(ErrorCode.UNAUTHORIZED, "Chưa xác thực hoặc phiên đăng nhập đã hết hạn");
+        }
+        authService.logout(principal.getName());
+        return ResponseEntity.ok(ApiResponse.success("Đăng xuất thành công", null));
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<ApiResponse<Void>> changePassword(
+            @Valid @RequestBody ChangePasswordRequest request,
+            Principal principal) {
+        if (principal == null || principal.getName() == null) {
+            throw new BusinessException(ErrorCode.UNAUTHORIZED, "Chưa xác thực hoặc phiên đăng nhập đã hết hạn");
+        }
+        authService.changePassword(principal.getName(), request);
+        return ResponseEntity.ok(ApiResponse.success("Đổi mật khẩu thành công", null));
     }
 
     private String resolveClientIp(HttpServletRequest request) {

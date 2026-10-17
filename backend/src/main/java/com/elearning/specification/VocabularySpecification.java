@@ -2,6 +2,7 @@ package com.elearning.specification;
 
 import com.elearning.dto.request.VocabularySearchCriteria;
 import com.elearning.entity.Radical;
+import com.elearning.entity.VocabRadical;
 import com.elearning.entity.Vocabulary;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Predicate;
@@ -58,8 +59,8 @@ public final class VocabularySpecification {
                 return null;
             }
             query.distinct(true);
-            Join<Vocabulary, Radical> radicalJoin = root.join("radicals");
-            return cb.equal(radicalJoin.get("radicalId"), radicalId);
+            Join<Vocabulary, VocabRadical> vocabRadicalJoin = root.join("vocabRadicals");
+            return cb.equal(vocabRadicalJoin.get("radical").get("radicalId"), radicalId);
         };
     }
 
@@ -97,8 +98,8 @@ public final class VocabularySpecification {
             }
             if (criteria.getRadicalId() != null) {
                 query.distinct(true);
-                Join<Vocabulary, Radical> radicalJoin = root.join("radicals");
-                predicates.add(cb.equal(radicalJoin.get("radicalId"), criteria.getRadicalId()));
+                Join<Vocabulary, VocabRadical> vocabRadicalJoin = root.join("vocabRadicals");
+                predicates.add(cb.equal(vocabRadicalJoin.get("radical").get("radicalId"), criteria.getRadicalId()));
             }
             if (criteria.getHskLevel() != null) {
                 // Strict semantics: only match exact HSK level; never fall back to NULL

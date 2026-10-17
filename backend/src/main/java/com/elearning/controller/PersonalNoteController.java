@@ -54,7 +54,7 @@ public class PersonalNoteController {
      * @param size page size (default 20, max 100)
      * @return ApiResponse wrapping PageResponse of PersonalNoteResponse
      */
-    @GetMapping("/vocabularies/{vocabId}/notes")
+    @GetMapping({"/vocabularies/{vocabId}/notes", "/vocabulary/{vocabId}/notes"})
     public ResponseEntity<ApiResponse<PageResponse<PersonalNoteResponse>>> getNotesByVocabulary(
             @PathVariable("vocabId") Long vocabId,
             @RequestParam(name = "page", required = false, defaultValue = "0") Integer page,
@@ -77,7 +77,7 @@ public class PersonalNoteController {
      * @param request Validated request payload containing content (max 500 characters)
      * @return 201 Created ApiResponse wrapping PersonalNoteResponse
      */
-    @PostMapping("/vocabularies/{vocabId}/notes")
+    @PostMapping({"/vocabularies/{vocabId}/notes", "/vocabulary/{vocabId}/notes"})
     public ResponseEntity<ApiResponse<PersonalNoteResponse>> createNote(
             @PathVariable("vocabId") Long vocabId,
             @Valid @RequestBody PersonalNoteRequest request) {

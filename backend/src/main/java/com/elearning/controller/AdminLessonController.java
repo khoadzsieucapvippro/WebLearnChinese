@@ -1,6 +1,7 @@
 package com.elearning.controller;
 
 import com.elearning.dto.response.ApiResponse;
+import com.elearning.dto.response.LessonDetailResponse;
 import com.elearning.dto.response.LessonSummaryResponse;
 import com.elearning.dto.response.PageResponse;
 import com.elearning.service.LessonService;
@@ -9,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -42,5 +44,18 @@ public class AdminLessonController {
             Pageable pageable) {
         Page<LessonSummaryResponse> page = lessonService.getAdminLessons(status, pageable);
         return ResponseEntity.ok(ApiResponse.success(PageResponse.from(page)));
+    }
+
+    /**
+     * Retrieves full detail of a specific lesson by ID for administrative oversight (Module 8D.4).
+     * Accessible across all lifecycle statuses (Draft, Pending, Approved, Rejected).
+     *
+     * @param id the lesson primary ID
+     * @return ApiResponse wrapping LessonDetailResponse
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<LessonDetailResponse>> getAdminLessonById(@PathVariable("id") Long id) {
+        LessonDetailResponse response = lessonService.getAdminLessonById(id);
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
 }

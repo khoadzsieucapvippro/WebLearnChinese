@@ -107,7 +107,9 @@ function resolveTestFiles(tier) {
     'tests/frontend/e2e/moderator-review.browser.mjs',
     'tests/frontend/e2e/dom-xss-adversarial.browser.mjs',
     'tests/frontend/e2e/csp-enforcement.browser.mjs',
-    'tests/frontend/e2e/responsive-layout.browser.mjs'
+    'tests/frontend/e2e/responsive-layout.browser.mjs',
+    'tests/frontend/e2e/vocab-card-elements-removed.browser.mjs',
+    'tests/frontend/e2e/vocab-modal-refactor.browser.mjs'
   ];
 
   const a11yFiles = [

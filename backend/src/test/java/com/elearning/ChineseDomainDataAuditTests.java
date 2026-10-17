@@ -157,7 +157,76 @@ class ChineseDomainDataAuditTests {
             // meaning_vi is seeded for all 214 records via V9
             assertThat(emptyMeaningViCount).isEqualTo(0);
         }
+
+        @Test
+        @DisplayName("GIVEN 214 radicals WHEN auditing pedagogical explanation fields THEN explanation_vi is 100% present, unique, and complies with schema limits")
+        void testRadicalPedagogicalExplanationAudit() {
+            List<Radical> radicals = radicalRepository.findAll(Sort.by(Sort.Direction.ASC, "radicalId"));
+
+            assertThat(radicals).hasSize(214);
+            Set<String> uniqueExplanations = new HashSet<>();
+            List<Integer> invalidExplanationIds = new ArrayList<>();
+
+            for (Radical radical : radicals) {
+                String explanation = radical.getExplanationVi();
+                if (explanation == null || explanation.isBlank() || explanation.length() > 1000) {
+                    invalidExplanationIds.add(radical.getRadicalId());
+                } else {
+                    assertThat(explanation)
+                            .withFailMessage("Radical ID %d missing 'Ví dụ:'", radical.getRadicalId())
+                            .contains("Ví dụ:");
+                    assertThat(explanation)
+                            .withFailMessage("Radical ID %d missing 'Mẹo nhớ:'", radical.getRadicalId())
+                            .contains("Mẹo nhớ:");
+                    uniqueExplanations.add(explanation);
+                }
+            }
+
+            // All 214 radicals have valid explanation_vi (214/214)
+            assertThat(invalidExplanationIds).isEmpty();
+
+            // All 214 explanations are strictly unique (no duplicate generic placeholders)
+            assertThat(uniqueExplanations).hasSize(214);
+
+            // Invariant: common_rank remains 1..50 for exactly 50 common radicals and null for 164
+            long commonRankCount = radicals.stream().filter(r -> r.getCommonRank() != null).count();
+            assertThat(commonRankCount).isEqualTo(50);
+
+            // Regression assertions for Hanzi character decomposition correctness (no false component associations)
+            // Radical 189 (高): must not reference 亮 or 亭 (they do not contain 高)
+            String exp189 = radicals.get(188).getExplanationVi();
+            assertThat(exp189).doesNotContain("亮").doesNotContain("亭").containsAnyOf("篙", "槁");
+
+            // Radical 209 (鼻): must not reference 嗅 (contains 臭, not 鼻)
+            String exp209 = radicals.get(208).getExplanationVi();
+            assertThat(exp209).doesNotContain("嗅").contains("齁");
+
+            // Radical 205 (黽): must not reference 勉 (contains 免, not 黾)
+            String exp205 = radicals.get(204).getExplanationVi();
+            assertThat(exp205).doesNotContain("勉").containsAnyOf("蝇", "黾", "黽");
+
+            // Radical 139 (色): must not reference 爸 (contains 巴, not 色)
+            String exp139 = radicals.get(138).getExplanationVi();
+            assertThat(exp139).doesNotContain("爸").containsAnyOf("艴", "艳", "色");
+
+            // Radical 143 (血): must not reference 众 (contains 人+人+人, not 血)
+            String exp143 = radicals.get(142).getExplanationVi();
+            assertThat(exp143).doesNotContain("众").containsAnyOf("恤", "衄");
+
+            // Radical 144 (行): must not reference 律 or 术 (neither has radical 行)
+            String exp144 = radicals.get(143).getExplanationVi();
+            assertThat(exp144).doesNotContain("律").doesNotContain("术").containsAnyOf("衙", "衡", "街");
+
+            // Radical 171 (隶): must not reference 康 (contains 氺, not 隶)
+            String exp171 = radicals.get(170).getExplanationVi();
+            assertThat(exp171).doesNotContain("康").containsAnyOf("肄", "隶");
+
+            // Radical 214 (龠): must not reference simplified 钥 or 吁 (which simplified away from 龠)
+            String exp214 = radicals.get(213).getExplanationVi();
+            assertThat(exp214).doesNotContain("钥").doesNotContain("吁").containsAnyOf("鑰", "籲", "瀹");
+        }
     }
+
 
     @Nested
     @DisplayName("2. Pinyin Raw Conversion & Search Semantics Audit")

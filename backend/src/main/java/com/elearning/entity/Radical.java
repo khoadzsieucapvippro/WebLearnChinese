@@ -1,19 +1,23 @@
 package com.elearning.entity;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
 import java.time.LocalDateTime;
+import java.util.AbstractSet;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -60,8 +64,8 @@ public class Radical {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    @ManyToMany(mappedBy = "radicals", fetch = FetchType.LAZY)
-    private Set<Vocabulary> vocabularies = new HashSet<>();
+    @OneToMany(mappedBy = "radical", fetch = FetchType.LAZY)
+    private Set<VocabRadical> vocabRadicals = new HashSet<>();
 
     public Radical() {
     }
@@ -178,12 +182,117 @@ public class Radical {
         this.updatedAt = updatedAt;
     }
 
+    public Set<VocabRadical> getVocabRadicals() {
+        return vocabRadicals;
+    }
+
+    public void setVocabRadicals(Set<VocabRadical> vocabRadicals) {
+        this.vocabRadicals = vocabRadicals != null ? vocabRadicals : new HashSet<>();
+    }
+
     public Set<Vocabulary> getVocabularies() {
-        return vocabularies;
+        return new AbstractSet<Vocabulary>() {
+            @Override
+            public Iterator<Vocabulary> iterator() {
+                Iterator<VocabRadical> it = vocabRadicals.iterator();
+                return new Iterator<Vocabulary>() {
+                    @Override
+                    public boolean hasNext() {
+                        return it.hasNext();
+                    }
+
+                    @Override
+                    public Vocabulary next() {
+                        return it.next().getVocabulary();
+                    }
+
+                    @Override
+                    public void remove() {
+                        it.remove();
+                    }
+                };
+            }
+
+            @Override
+            public int size() {
+                return vocabRadicals.size();
+            }
+
+            @Override
+            public boolean add(Vocabulary vocabulary) {
+                if (vocabulary == null) return false;
+                for (VocabRadical vr : vocabRadicals) {
+                    if (Objects.equals(vr.getVocabulary(), vocabulary)) {
+                        return false;
+                    }
+                }
+                VocabRadical vr = new VocabRadical(vocabulary, Radical.this, null);
+                vocabRadicals.add(vr);
+                if (vocabulary.getVocabRadicals() != null) {
+                    vocabulary.getVocabRadicals().add(vr);
+                }
+                return true;
+            }
+
+            @Override
+            public boolean remove(Object o) {
+                if (!(o instanceof Vocabulary v)) return false;
+                Iterator<VocabRadical> it = vocabRadicals.iterator();
+                while (it.hasNext()) {
+                    VocabRadical vr = it.next();
+                    if (Objects.equals(vr.getVocabulary(), v)) {
+                        it.remove();
+                        if (v.getVocabRadicals() != null) {
+                            v.getVocabRadicals().remove(vr);
+                        }
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            @Override
+            public boolean contains(Object o) {
+                if (!(o instanceof Vocabulary v)) return false;
+                for (VocabRadical vr : vocabRadicals) {
+                    if (Objects.equals(vr.getVocabulary(), v)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            @Override
+            public void clear() {
+                for (VocabRadical vr : vocabRadicals) {
+                    if (vr.getVocabulary() != null && vr.getVocabulary().getVocabRadicals() != null) {
+                        vr.getVocabulary().getVocabRadicals().remove(vr);
+                    }
+                }
+                vocabRadicals.clear();
+            }
+        };
+    }
+
+    public void addVocabulary(Vocabulary vocab) {
+        if (vocab != null) {
+            getVocabularies().add(vocab);
+        }
+    }
+
+    public void removeVocabulary(Vocabulary vocab) {
+        if (vocab != null) {
+            getVocabularies().remove(vocab);
+        }
     }
 
     public void setVocabularies(Set<Vocabulary> vocabularies) {
-        this.vocabularies = vocabularies;
+        getVocabularies().clear();
+        if (vocabularies != null) {
+            for (Vocabulary vocab : vocabularies) {
+                getVocabularies().add(vocab);
+            }
+        }
     }
 
     @Override

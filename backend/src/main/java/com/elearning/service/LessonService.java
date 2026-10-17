@@ -42,4 +42,14 @@ public interface LessonService {
      * @return Page of {@link LessonSummaryResponse}
      */
     Page<LessonSummaryResponse> getAdminLessons(String status, Pageable pageable);
+
+    /**
+     * Retrieves full detail of a specific lesson by its ID for administrative oversight (Module 8D.4),
+     * regardless of lifecycle status (Draft, Pending, Approved, Rejected).
+     *
+     * @param lessonId the primary ID of the lesson
+     * @return {@link LessonDetailResponse}
+     * @throws com.elearning.exception.BusinessException if lesson is null or not found
+     */
+    LessonDetailResponse getAdminLessonById(Long lessonId);
 }

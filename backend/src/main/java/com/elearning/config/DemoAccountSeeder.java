@@ -18,6 +18,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -103,18 +104,17 @@ public class DemoAccountSeeder implements ApplicationRunner {
     }
 
     private void seedAccount(String emailOrPhone, String fullName, Set<Role> roles, String encodedPassword) {
-        Account account = accountRepository.findByEmailOrPhone(emailOrPhone)
-                .orElseGet(() -> {
-                    Account newAcc = new Account();
-                    newAcc.setEmailOrPhone(emailOrPhone);
-                    return newAcc;
-                });
+        Optional<Account> accountOpt = accountRepository.findByEmailOrPhone(emailOrPhone);
+        if (accountOpt.isPresent()) {
+            log.info("Demo account {} already exists; skipping password reset to preserve security", emailOrPhone);
+            return;
+        }
 
+        Account account = new Account();
+        account.setEmailOrPhone(emailOrPhone);
         account.setPasswordHash(encodedPassword);
         account.setStatus("Active");
-        if (account.getAuthorizationVersion() == null) {
-            account.setAuthorizationVersion(1L);
-        }
+        account.setAuthorizationVersion(1L);
 
         for (Role role : roles) {
             account.addRole(role);
