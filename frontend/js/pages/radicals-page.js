@@ -419,6 +419,120 @@ export function playRadicalAudio(radical, audioEl = null, triggerBtn = null) {
 }
 
 /**
+ * Parses radical explanation text into pedagogical sections: description, examples, and mnemonic.
+ * 
+ * @param {string} text 
+ * @returns {{ description: string, examples: string, mnemonic: string } | null}
+ */
+export function parseRadicalExplanation(text) {
+  if (!text || typeof text !== 'string') return null;
+  const trimmed = text.trim();
+  if (!trimmed) return null;
+
+  const viDuMatch = trimmed.match(/(?:^|\s)(Ví dụ\s*:)/);
+  const meoNhoMatch = trimmed.match(/(?:^|\s)(Mẹo nhớ\s*:)/);
+
+  if (!viDuMatch && !meoNhoMatch) {
+    return { description: trimmed, examples: '', mnemonic: '' };
+  }
+
+  const viDuIdx = viDuMatch ? viDuMatch.index + viDuMatch[0].indexOf('Ví dụ') : -1;
+  const meoNhoIdx = meoNhoMatch ? meoNhoMatch.index + meoNhoMatch[0].indexOf('Mẹo nhớ') : -1;
+
+  let description = '';
+  let examples = '';
+  let mnemonic = '';
+
+  if (viDuIdx !== -1 && meoNhoIdx !== -1) {
+    if (viDuIdx < meoNhoIdx) {
+      description = trimmed.slice(0, viDuIdx).trim();
+      examples = trimmed.slice(viDuIdx + viDuMatch[1].length, meoNhoIdx).trim();
+      mnemonic = trimmed.slice(meoNhoIdx + meoNhoMatch[1].length).trim();
+    } else {
+      description = trimmed.slice(0, meoNhoIdx).trim();
+      mnemonic = trimmed.slice(meoNhoIdx + meoNhoMatch[1].length, viDuIdx).trim();
+      examples = trimmed.slice(viDuIdx + viDuMatch[1].length).trim();
+    }
+  } else if (viDuIdx !== -1) {
+    description = trimmed.slice(0, viDuIdx).trim();
+    examples = trimmed.slice(viDuIdx + viDuMatch[1].length).trim();
+  } else if (meoNhoIdx !== -1) {
+    description = trimmed.slice(0, meoNhoIdx).trim();
+    mnemonic = trimmed.slice(meoNhoIdx + meoNhoMatch[1].length).trim();
+  }
+
+  return { description, examples, mnemonic };
+}
+
+/**
+ * Renders radical explanation safely with distinct paragraphs for description, examples, and mnemonic.
+ * 
+ * @param {HTMLElement} containerEl 
+ * @param {string} expl 
+ */
+export function renderRadicalExplanation(containerEl, expl) {
+  if (!containerEl) return;
+  const trimmed = (expl || '').trim();
+  if (!trimmed) {
+    if (typeof containerEl.replaceChildren === 'function') {
+      containerEl.replaceChildren();
+    }
+    containerEl.textContent = '';
+    return;
+  }
+
+  // Graceful fallback for mock environments (e.g. unit test stubs) without DOM APIs
+  if (typeof document === 'undefined' || typeof containerEl.appendChild !== 'function') {
+    containerEl.textContent = trimmed;
+    return;
+  }
+
+  if (typeof containerEl.replaceChildren === 'function') {
+    containerEl.replaceChildren();
+  } else {
+    containerEl.textContent = '';
+  }
+
+  const parsed = parseRadicalExplanation(trimmed);
+  if (!parsed || (!parsed.examples && !parsed.mnemonic)) {
+    const p = document.createElement('p');
+    p.className = 'radical-explanation-block mb-0';
+    p.textContent = trimmed;
+    containerEl.appendChild(p);
+    return;
+  }
+
+  if (parsed.description) {
+    const pDesc = document.createElement('p');
+    pDesc.className = 'radical-explanation-block mb-2';
+    pDesc.textContent = parsed.description;
+    containerEl.appendChild(pDesc);
+  }
+
+  if (parsed.examples) {
+    const pEx = document.createElement('p');
+    pEx.className = 'radical-explanation-block mb-2';
+    const strongEx = document.createElement('strong');
+    strongEx.className = 'radical-explanation-label me-1';
+    strongEx.textContent = 'Ví dụ:';
+    pEx.appendChild(strongEx);
+    pEx.appendChild(document.createTextNode(' ' + parsed.examples));
+    containerEl.appendChild(pEx);
+  }
+
+  if (parsed.mnemonic) {
+    const pMnem = document.createElement('p');
+    pMnem.className = 'radical-explanation-block mb-0';
+    const strongMnem = document.createElement('strong');
+    strongMnem.className = 'radical-explanation-label me-1';
+    strongMnem.textContent = 'Mẹo nhớ:';
+    pMnem.appendChild(strongMnem);
+    pMnem.appendChild(document.createTextNode(' ' + parsed.mnemonic));
+    containerEl.appendChild(pMnem);
+  }
+}
+
+/**
  * Builds a single Kangxi radical catalog card element using safe DOM APIs.
  * Interaction hierarchy:
  * - Speaker button (top right, stops propagation)
@@ -1212,10 +1326,10 @@ export class RadicalsPageController {
     if (this.elements.modalRadicalExplanationContainer && this.elements.modalRadicalExplanation) {
       const expl = radical.explanationVi;
       if (expl && typeof expl === 'string' && expl.trim().length > 0) {
-        this.elements.modalRadicalExplanation.textContent = expl.trim();
+        renderRadicalExplanation(this.elements.modalRadicalExplanation, expl);
         this.elements.modalRadicalExplanationContainer.classList.remove('d-none');
       } else {
-        this.elements.modalRadicalExplanation.textContent = '';
+        renderRadicalExplanation(this.elements.modalRadicalExplanation, '');
         this.elements.modalRadicalExplanationContainer.classList.add('d-none');
       }
     }

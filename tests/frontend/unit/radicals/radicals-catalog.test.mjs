@@ -39,6 +39,8 @@ import {
   sanitizeYouTubeEmbedUrl,
   playRadicalAudio,
   speakHanzi,
+  parseRadicalExplanation,
+  renderRadicalExplanation,
   RadicalsPageController
 } from '../../../../frontend/js/pages/radicals-page.js';
 import { sanitizeResourceUrl } from '../../../../frontend/js/ui/security.js';
@@ -889,6 +891,56 @@ describe('Unit: Kangxi Radicals Catalog & Presentation Logic', () => {
       assert.strictEqual(rad214.explanationVi.includes('钥'), false, 'Radical 214 must not reference simplified 钥');
       assert.strictEqual(rad214.explanationVi.includes('吁'), false, 'Radical 214 must not reference simplified 吁');
       assert.ok(rad214.explanationVi.includes('鑰') || rad214.explanationVi.includes('籲'));
+    });
+
+    test('parseRadicalExplanation correctly splits description, examples, and mnemonic for all 214 SEED_RADICALS', () => {
+      for (const r of SEED_RADICALS) {
+        const parsed = parseRadicalExplanation(r.explanationVi);
+        assert.ok(parsed, `Radical ${r.radicalId} must produce parsed explanation`);
+        assert.ok(parsed.description.length > 0, `Radical ${r.radicalId} must have description`);
+        assert.ok(parsed.examples.length > 0, `Radical ${r.radicalId} must have examples`);
+        assert.ok(parsed.mnemonic.length > 0, `Radical ${r.radicalId} must have mnemonic`);
+        // Verify no leaked markers in parsed content
+        assert.strictEqual(parsed.description.includes('Ví dụ:'), false);
+        assert.strictEqual(parsed.examples.includes('Mẹo nhớ:'), false);
+      }
+    });
+
+    test('renderRadicalExplanation renders structured DOM paragraphs with labels when DOM APIs are present', () => {
+      const appendedChildren = [];
+      const mockContainer = {
+        appendChild: (child) => appendedChildren.push(child),
+        replaceChildren: () => { appendedChildren.length = 0; },
+        textContent: ''
+      };
+
+      // Mock document
+      const originalDoc = globalThis.document;
+      try {
+        globalThis.document = {
+          createElement: (tag) => {
+            const el = {
+              tagName: tag.toUpperCase(),
+              className: '',
+              textContent: '',
+              children: [],
+              appendChild(c) { this.children.push(c); }
+            };
+            return el;
+          },
+          createTextNode: (text) => ({ nodeType: 3, textContent: text })
+        };
+
+        const sample = 'Mô tả bộ Mộc. Ví dụ: 林 (rừng cây). Mẹo nhớ: Nét ngang cành tỏa.';
+        renderRadicalExplanation(mockContainer, sample);
+
+        assert.strictEqual(appendedChildren.length, 3, 'Must append 3 paragraphs for description, examples, mnemonic');
+        assert.strictEqual(appendedChildren[0].textContent, 'Mô tả bộ Mộc.');
+        assert.strictEqual(appendedChildren[1].className.includes('radical-explanation-block'), true);
+        assert.strictEqual(appendedChildren[2].className.includes('radical-explanation-block'), true);
+      } finally {
+        globalThis.document = originalDoc;
+      }
     });
   });
 

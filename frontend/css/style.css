@@ -1421,14 +1421,28 @@ dialog:not([open]) {
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: #c2410c;
-  margin-bottom: 4px;
+  margin-bottom: 8px;
 }
 
 .radical-learning-explanation-text {
   font-size: 0.925rem;
   color: #431407;
-  line-height: 1.5;
+  line-height: 1.55;
   margin: 0;
+}
+
+.radical-explanation-block {
+  margin-bottom: 0.5rem;
+  line-height: 1.55;
+}
+
+.radical-explanation-block:last-child {
+  margin-bottom: 0;
+}
+
+.radical-explanation-label {
+  font-weight: 700;
+  color: #9a3412;
 }
 
 .radical-media-section {
