@@ -113,6 +113,10 @@ describe('Browser E2E: Vocabulary Detail Modal Refactor & Verification', () => {
       const rawPinyin = page.locator('#modalVocabPinyinRaw');
       assert.strictEqual(await rawPinyin.count(), 0, '#modalVocabPinyinRaw must be completely removed');
 
+      // Verify visible "Từ vựng:" title line is removed from modal body
+      const titleEl = modal.locator('#modalVocabTitle');
+      assert.strictEqual(await titleEl.isVisible(), false, 'modalVocabTitle must be visually hidden to avoid duplicate title');
+
       // 2. Metadata Grid verification: exactly 2 items (Âm Hán-Việt & Giải nghĩa tiếng Việt)
       const metaGrid = modal.locator('.radical-modal-meta-grid');
       assert.ok(await metaGrid.isVisible(), 'Meta grid must be visible');

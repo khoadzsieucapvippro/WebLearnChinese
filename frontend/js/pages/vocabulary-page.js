@@ -1022,7 +1022,7 @@ export class VocabularyPageController {
       this.elements.modalVocabHanzi.textContent = vocabSummary.hanzi || '—';
     }
     if (this.elements.modalVocabTitle) {
-      this.elements.modalVocabTitle.textContent = `Từ vựng: ${vocabSummary.hanzi || ''} (${vocabSummary.meaningHanViet || ''})`;
+      this.elements.modalVocabTitle.textContent = `${vocabSummary.hanzi || ''} (${vocabSummary.meaningHanViet || ''})`;
     }
     if (this.elements.modalVocabPinyin) {
       this.elements.modalVocabPinyin.textContent = vocabSummary.pinyin || '—';
