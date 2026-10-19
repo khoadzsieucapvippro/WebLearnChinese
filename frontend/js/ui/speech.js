@@ -327,7 +327,7 @@ export class SpeechController {
           console.warn('[SpeechController] Safety timeout reached, releasing button lock');
           this._cleanup(false);
         }
-      }, 10000);
+      }, 4000);
       if (this._safetyTimer && typeof this._safetyTimer.unref === 'function') {
         this._safetyTimer.unref();
       }
@@ -457,7 +457,7 @@ export class SpeechController {
             console.warn('[SpeechController] Safety timeout reached, releasing button lock');
             this.cancel();
           }
-        }, 10000);
+        }, 4000);
 
         return true;
       } catch (err) {

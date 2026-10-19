@@ -521,51 +521,68 @@
           </div>
         </div>
 
-        <!-- Dedicated Listening Session Room (Requirement 3: Audio primary, Hanzi/Pinyin/Meaning hidden initially) -->
-        <div id="srsListeningRoom" class="d-none text-center py-2 srs-skill-room">
-          <div class="srs-skill-prompt-box">
-            <div class="d-flex justify-content-between align-items-center w-100 mb-3">
-              <span id="listeningRoomBadge" class="badge bg-secondary-subtle text-secondary border">Từ vựng</span>
-              <span class="badge bg-danger-subtle text-danger border">🎧 Luyện nghe</span>
+        <!-- Dedicated Listening Session Room: Unified Single Large Card Layout (Matching Writing Room) -->
+        <div id="srsListeningRoom" class="d-none text-center">
+          <!-- Hidden compatibility badge -->
+          <span id="listeningRoomBadge" class="badge bg-secondary-subtle text-secondary border d-none">Từ vựng</span>
+
+          <!-- Unified Single Large Listening Card -->
+          <div class="srs-writing-card srs-listening-card">
+            <!-- 1. Speaker Pronunciation Trigger (Reusing standardized .vocab-speech-btn) -->
+            <div class="d-flex flex-column align-items-center justify-content-center mb-3">
+              <button 
+                type="button" 
+                id="btnListeningPlayAudio" 
+                class="vocab-speech-btn srs-listening-speech-btn" 
+                aria-label="Phát âm từ đang học"
+                title="Bấm để nghe phát âm (Web Speech API)"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                  <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                </svg>
+              </button>
+              <span class="small text-secondary mt-1">Bấm loa để nghe phát âm</span>
             </div>
 
-            <!-- Big Audio Button -->
-            <button 
-              type="button" 
-              id="btnListeningPlayAudio" 
-              class="srs-listening-hero-btn" 
-              aria-label="Phát âm từ đang học"
-              title="Nghe phát âm"
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-              </svg>
-            </button>
-            <div class="text-secondary small mb-3">Nhấn nút loa hoặc phím [Space] để nghe &amp; hiện đáp án</div>
-
-            <!-- Pre-reveal state placeholder -->
-            <div id="listeningHiddenPlaceholder" class="p-3 bg-light rounded-2 border border-dashed w-100">
-              <span class="text-muted fst-italic">Chữ Hán, Pinyin và nghĩa đang được ẩn. Hãy lắng nghe và đoán từ!</span>
-            </div>
-
-            <!-- Revealed Answer Area -->
-            <div id="listeningAnswerArea" class="d-none p-3 bg-light rounded-3 border w-100">
-              <div id="listeningAnswerHanzi" class="flashcard-hanzi mb-1" lang="zh-CN"></div>
-              <div id="listeningAnswerPinyin" class="fs-4 fw-bold text-dark mb-1"></div>
-              <div>
-                <span id="listeningAnswerHv" class="badge bg-secondary-subtle text-secondary me-2"></span>
-                <span id="listeningAnswerMeaning" class="fw-medium text-secondary"></span>
+            <!-- 2. Chinese Character Input Field with Explicit Label -->
+            <div class="listening-input-wrapper w-100 mb-2">
+              <label for="listeningAnswerInput" class="form-label small fw-semibold text-secondary mb-1">Đáp án chữ Hán</label>
+              <input 
+                type="text" 
+                id="listeningAnswerInput" 
+                class="form-control text-center listening-answer-input font-hanzi mx-auto" 
+                placeholder="Nhập chữ Hán bạn nghe được..." 
+                aria-label="Đáp án chữ Hán"
+                autocomplete="off"
+                autocorrect="off"
+                autocapitalize="off"
+                spellcheck="false"
+                lang="zh-Hans"
+              />
+              <!-- Feedback Notices positioned directly below input -->
+              <div id="listeningCompletionNotice" class="writing-completion-notice fw-semibold small d-none mt-2 mb-1" aria-live="polite">
+                ✓ Hoàn thành!
               </div>
+              <div id="listeningErrorNotice" class="listening-error-notice fw-semibold small d-none mt-2 mb-1" aria-live="polite">
+                Chưa chính xác, hãy nghe lại và thử lần nữa.
+              </div>
+            </div>
+
+            <!-- 4. Virtual Pinyin Keyboard & Candidates Mount Point -->
+            <div id="listeningImeContainer" class="listening-ime-container w-100"></div>
+
+            <!-- 5. Check Action Button -->
+            <div id="listeningCheckContainer" class="mt-2">
+              <button type="button" id="btnListeningCheck" class="btn btn-chinese-primary py-2 px-5 fw-bold shadow-sm fs-6">
+                Kiểm tra
+              </button>
             </div>
           </div>
 
-          <!-- Controls: Reveal or Next -->
-          <div class="mt-2">
-            <button type="button" id="btnListeningReveal" class="btn btn-chinese-primary py-2 px-4 fw-semibold shadow-sm">
-              👁️ Hiện đáp án [Space]
-            </button>
-            <button type="button" id="btnListeningNext" class="btn btn-chinese-primary py-2 px-5 fw-bold shadow-sm fs-6 d-none">
+          <!-- 6. Next Action Button (Outside card, fixed height container to prevent layout jerk, matching writing) -->
+          <div id="listeningNextContainer" class="writing-next-container mt-3">
+            <button type="button" id="btnListeningNext" class="btn btn-chinese-primary py-2 px-5 fw-bold shadow-sm fs-6 writing-next-hidden" aria-hidden="true" tabindex="-1">
               Sang từ tiếp theo &rarr;
             </button>
           </div>

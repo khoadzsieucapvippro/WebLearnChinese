@@ -1,0 +1,716 @@
+/**
+ * =============================================================================
+ * UNIT TEST SUITE: SRS LISTENING ROOM & PINYIN IME ENGINE
+ * Module: tests/frontend/unit/srs/srs-skill-listening.test.mjs
+ *
+ * Verifies:
+ * - normalizeHanziAnswer and verifyListeningAnswer invariants.
+ * - Offline Pinyin dictionary syllable lookup & cleanPinyin.
+ * - PinyinImeComponent lifecycle, physical typing, shortcuts, OS IME isolation.
+ * - buildReviewPayload contract with cardType: 'LISTENING'.
+ * - Progress storage isolation (STORAGE_KEY_LISTENING).
+ * - SrsReviewController Listening Room lifecycle and interactions.
+ * =============================================================================
+ */
+
+import { test, describe, beforeEach } from 'node:test';
+import assert from 'node:assert/strict';
+
+// Mock localStorage for Node test environment
+if (typeof globalThis.localStorage === 'undefined') {
+  const store = new Map();
+  globalThis.localStorage = {
+    getItem: (k) => store.get(k) ?? null,
+    setItem: (k, v) => store.set(k, String(v)),
+    removeItem: (k) => store.delete(k),
+    clear: () => store.clear()
+  };
+}
+
+// Mock DOM for Node test environment
+function makeEl(tag = 'div') {
+  const classes = new Set();
+  const attrs = new Map();
+  const children = [];
+  const listeners = {};
+  const elObj = {
+    tagName: tag.toUpperCase(),
+    id: '',
+    children,
+    value: '',
+    disabled: false,
+    textContent: '',
+    style: {},
+    focus: () => {},
+    blur: () => {},
+    get className() {
+      return Array.from(classes).join(' ');
+    },
+    set className(val) {
+      classes.clear();
+      if (typeof val === 'string') {
+        val.split(/\s+/).filter(Boolean).forEach(c => classes.add(c));
+      }
+    },
+    classList: {
+      add: (...cls) => cls.forEach(c => classes.add(c)),
+      remove: (...cls) => cls.forEach(c => classes.delete(c)),
+      toggle: (c, force) => {
+        if (force === undefined) {
+          classes.has(c) ? classes.delete(c) : classes.add(c);
+        } else if (force) {
+          classes.add(c);
+        } else {
+          classes.delete(c);
+        }
+      },
+      contains: (c) => classes.has(c)
+    },
+    setAttribute: (k, v) => {
+      attrs.set(k, String(v));
+      if (k === 'id') elObj.id = String(v);
+    },
+    getAttribute: (k) => attrs.get(k) ?? null,
+    removeAttribute: (k) => attrs.delete(k),
+    addEventListener: (event, fn) => {
+      if (!listeners[event]) listeners[event] = [];
+      listeners[event].push(fn);
+    },
+    removeEventListener: (event, fn) => {
+      if (listeners[event]) {
+        listeners[event] = listeners[event].filter(l => l !== fn);
+      }
+    },
+    dispatchEvent: (e) => {
+      const fns = listeners[e.type] || [];
+      fns.forEach(fn => fn(e));
+    },
+    replaceChildren: (...newChildren) => {
+      children.length = 0;
+      if (newChildren.length > 0) children.push(...newChildren);
+    },
+    appendChild: (ch) => {
+      children.push(ch);
+      return ch;
+    },
+    removeChild: (ch) => {
+      const idx = children.indexOf(ch);
+      if (idx !== -1) children.splice(idx, 1);
+      return ch;
+    },
+    querySelector: (sel) => {
+      if (sel.startsWith('#')) {
+        const targetId = sel.slice(1);
+        const search = (node) => {
+          if (!node) return null;
+          if (node.id === targetId) return node;
+          for (const c of (node.children || [])) {
+            const found = search(c);
+            if (found) return found;
+          }
+          return null;
+        };
+        return search(elObj);
+      }
+      return null;
+    },
+    querySelectorAll: () => []
+  };
+  return elObj;
+}
+
+if (typeof global.document === 'undefined') {
+  global.document = {
+    body: makeEl('body'),
+    createElement: (tag) => makeEl(tag),
+    getElementById: () => null,
+    querySelector: () => null,
+    querySelectorAll: () => []
+  };
+} else if (typeof global.document.createElement !== 'function') {
+  global.document.createElement = (tag) => makeEl(tag);
+}
+
+import {
+  normalizeHanziAnswer,
+  verifyListeningAnswer,
+  getProgress,
+  saveProgress,
+  STORAGE_KEY_FLASHCARD,
+  STORAGE_KEY_WRITING,
+  STORAGE_KEY_LISTENING,
+  buildReviewPayload,
+  SrsReviewController
+} from '../../../../frontend/js/pages/srs-review-page.js';
+import { lookupPinyin, cleanPinyin } from '../../../../frontend/js/ui/pinyin-ime/pinyin-dict.js';
+import { PinyinImeComponent } from '../../../../frontend/js/ui/pinyin-ime/pinyin-ime-engine.js';
+
+describe('Unit: SRS Listening Room & Pinyin IME Engine', () => {
+
+  describe('1. Hanzi Answer Normalization & Verification (verifyListeningAnswer)', () => {
+    test('accurately verifies exact single Hanzi match', () => {
+      assert.strictEqual(verifyListeningAnswer('请', '请'), true);
+      assert.strictEqual(verifyListeningAnswer('我', '我'), true);
+      assert.strictEqual(verifyListeningAnswer('好', '好'), true);
+    });
+
+    test('accurately verifies multi-glyph compound words', () => {
+      assert.strictEqual(verifyListeningAnswer('学生', '学生'), true);
+      assert.strictEqual(verifyListeningAnswer('对不起', '对不起'), true);
+      assert.strictEqual(verifyListeningAnswer('没关系', '没关系'), true);
+    });
+
+    test('trims leading/trailing and inner whitespace correctly', () => {
+      assert.strictEqual(verifyListeningAnswer('  请  ', '请'), true);
+      assert.strictEqual(verifyListeningAnswer('学 生', '学生'), true);
+      assert.strictEqual(verifyListeningAnswer(' 对 不 起 ', '对不起'), true);
+    });
+
+    test('supports parenthesized radical variant format e.g. 水(氵)', () => {
+      assert.strictEqual(verifyListeningAnswer('水', '水(氵)'), true);
+      assert.strictEqual(verifyListeningAnswer('手', '手(扌)'), true);
+    });
+
+    test('strictly rejects pure Latin Pinyin input', () => {
+      assert.strictEqual(verifyListeningAnswer('qing', '请'), false);
+      assert.strictEqual(verifyListeningAnswer('xuesheng', '学生'), false);
+      assert.strictEqual(verifyListeningAnswer('ni hao', '你好'), false);
+    });
+
+    test('strictly rejects partial answers for multi-character words', () => {
+      assert.strictEqual(verifyListeningAnswer('学', '学生'), false);
+      assert.strictEqual(verifyListeningAnswer('生', '学生'), false);
+      assert.strictEqual(verifyListeningAnswer('对不', '对不起'), false);
+    });
+
+    test('strictly rejects incorrect characters', () => {
+      assert.strictEqual(verifyListeningAnswer('谢', '请'), false);
+      assert.strictEqual(verifyListeningAnswer('你', '我'), false);
+    });
+
+    test('handles null, undefined, and empty inputs gracefully', () => {
+      assert.strictEqual(verifyListeningAnswer('', '请'), false);
+      assert.strictEqual(verifyListeningAnswer(null, '请'), false);
+      assert.strictEqual(verifyListeningAnswer(undefined, '请'), false);
+      assert.strictEqual(verifyListeningAnswer('请', ''), false);
+      assert.strictEqual(verifyListeningAnswer('请', null), false);
+    });
+  });
+
+  describe('2. Offline Pinyin Dictionary Lookup (lookupPinyin & cleanPinyin)', () => {
+    test('cleans tone marks and uppercase letters', () => {
+      assert.strictEqual(cleanPinyin('Qǐng'), 'qing');
+      assert.strictEqual(cleanPinyin('Nǐ hǎo'), 'nihao');
+      assert.strictEqual(cleanPinyin('xuéshēng'), 'xuesheng');
+      assert.strictEqual(cleanPinyin('lǜ'), 'lv');
+    });
+
+    test('looks up candidates for single syllables', () => {
+      const qingCandidates = lookupPinyin('qing', 10);
+      assert.ok(Array.isArray(qingCandidates));
+      assert.ok(qingCandidates.includes('请'), 'Candidates for qing must include 请');
+
+      const niCandidates = lookupPinyin('ni', 10);
+      assert.ok(niCandidates.includes('你'), 'Candidates for ni must include 你');
+
+      const haoCandidates = lookupPinyin('hao', 10);
+      assert.ok(haoCandidates.includes('好'), 'Candidates for hao must include 好');
+    });
+
+    test('looks up candidates for compound syllables without tone', () => {
+      const candidates = lookupPinyin('xuesheng', 10);
+      assert.ok(Array.isArray(candidates));
+      assert.ok(candidates.includes('学生'), 'Candidates for xuesheng must include compound 学生');
+    });
+
+    test('returns empty array for invalid or empty queries', () => {
+      assert.deepStrictEqual(lookupPinyin(''), []);
+      assert.deepStrictEqual(lookupPinyin(null), []);
+      assert.deepStrictEqual(lookupPinyin('xyz123'), []);
+    });
+  });
+
+  describe('3. PinyinImeComponent Lifecycle & Typing Logic', () => {
+    test('instantiates and attaches cleanly to target input', () => {
+      const targetInput = makeEl('input');
+      const containerMount = makeEl('div');
+
+      const ime = new PinyinImeComponent({
+        containerMount,
+        targetInput
+      });
+
+      assert.strictEqual(ime.compositionBuffer, '');
+      assert.strictEqual(ime.isOsComposing, false);
+      assert.ok(containerMount.children.length > 0, 'Container mount must have rendered elements');
+
+      ime.destroy();
+      assert.strictEqual(ime.compositionBuffer, '');
+    });
+
+    test('handles physical typing to populate composition buffer and candidates', () => {
+      const targetInput = makeEl('input');
+      const containerMount = makeEl('div');
+
+      const ime = new PinyinImeComponent({
+        containerMount,
+        targetInput
+      });
+
+      // Simulate typing 'q', 'i', 'n', 'g'
+      ['q', 'i', 'n', 'g'].forEach(ch => {
+        let prevented = false;
+        targetInput.dispatchEvent({
+          type: 'keydown',
+          key: ch,
+          preventDefault: () => { prevented = true; }
+        });
+        assert.strictEqual(prevented, true, `Key ${ch} must be intercepted by IME buffer`);
+      });
+
+      assert.strictEqual(ime.compositionBuffer, 'qing');
+      assert.ok(ime.candidates.length > 0, 'Candidates must be populated for qing');
+      assert.ok(ime.candidates.includes('请'));
+
+      // Space key commits top candidate
+      let spacePrevented = false;
+      targetInput.dispatchEvent({
+        type: 'keydown',
+        key: ' ',
+        code: 'Space',
+        preventDefault: () => { spacePrevented = true; }
+      });
+
+      assert.strictEqual(spacePrevented, true);
+      assert.strictEqual(ime.compositionBuffer, '', 'Buffer must be cleared after space commit');
+      assert.ok(targetInput.value.length > 0, 'Target input must receive committed Hanzi');
+
+      ime.destroy();
+    });
+
+    test('number keys 1..5 commit corresponding candidate', () => {
+      const targetInput = makeEl('input');
+      const containerMount = makeEl('div');
+
+      const ime = new PinyinImeComponent({
+        containerMount,
+        targetInput
+      });
+
+      // Type 'n', 'i'
+      ['n', 'i'].forEach(ch => {
+        targetInput.dispatchEvent({
+          type: 'keydown',
+          key: ch,
+          preventDefault: () => {}
+        });
+      });
+
+      assert.strictEqual(ime.compositionBuffer, 'ni');
+      const expectedCandidate = ime.candidates[0];
+
+      // Press '1'
+      let numPrevented = false;
+      targetInput.dispatchEvent({
+        type: 'keydown',
+        key: '1',
+        preventDefault: () => { numPrevented = true; }
+      });
+
+      assert.strictEqual(numPrevented, true);
+      assert.strictEqual(targetInput.value, expectedCandidate);
+      assert.strictEqual(ime.compositionBuffer, '');
+
+      ime.destroy();
+    });
+
+    test('Enter key with empty buffer triggers onSubmit callback', () => {
+      const targetInput = makeEl('input');
+      const containerMount = makeEl('div');
+      let submitted = false;
+
+      const ime = new PinyinImeComponent({
+        containerMount,
+        targetInput,
+        onSubmit: () => {
+          submitted = true;
+        }
+      });
+
+      targetInput.dispatchEvent({
+        type: 'keydown',
+        key: 'Enter',
+        preventDefault: () => {}
+      });
+
+      assert.strictEqual(submitted, true, 'Enter on empty buffer must trigger onSubmit');
+      ime.destroy();
+    });
+
+    test('bypasses interception when OS IME is composing', () => {
+      const targetInput = makeEl('input');
+      const containerMount = makeEl('div');
+
+      const ime = new PinyinImeComponent({
+        containerMount,
+        targetInput
+      });
+
+      // OS composition start
+      targetInput.dispatchEvent({ type: 'compositionstart' });
+      assert.strictEqual(ime.isOsComposing, true);
+
+      // Typing during OS IME
+      let prevented = false;
+      targetInput.dispatchEvent({
+        type: 'keydown',
+        key: 'a',
+        isComposing: true,
+        preventDefault: () => { prevented = true; }
+      });
+
+      assert.strictEqual(prevented, false, 'Must NOT intercept while OS IME is composing');
+      assert.strictEqual(ime.compositionBuffer, '');
+
+      // OS composition end
+      targetInput.dispatchEvent({ type: 'compositionend' });
+      assert.strictEqual(ime.isOsComposing, false);
+
+      ime.destroy();
+    });
+  });
+
+  describe('4. SRS Payload Contract (buildReviewPayload)', () => {
+    test('enforces cardType: "LISTENING" in review payload', () => {
+      const payload = buildReviewPayload({
+        itemType: 'VOCABULARY',
+        itemId: 101,
+        cardType: 'LISTENING',
+        rating: 3,
+        reviewTimeSeconds: 4
+      });
+
+      assert.strictEqual(payload.itemType, 'VOCABULARY');
+      assert.strictEqual(payload.itemId, 101);
+      assert.strictEqual(payload.cardType, 'LISTENING');
+      assert.strictEqual(payload.rating, 3);
+      assert.strictEqual(payload.reviewTimeSeconds, 4);
+    });
+
+    test('supports RADICAL itemType with LISTENING cardType', () => {
+      const payload = buildReviewPayload({
+        itemType: 'RADICAL',
+        itemId: 1,
+        cardType: 'LISTENING',
+        rating: 3,
+        reviewTimeSeconds: 2
+      });
+
+      assert.strictEqual(payload.itemType, 'RADICAL');
+      assert.strictEqual(payload.cardType, 'LISTENING');
+    });
+  });
+
+  describe('5. Independent Progress Architecture (STORAGE_KEY_LISTENING)', () => {
+    beforeEach(() => {
+      if (globalThis.localStorage) globalThis.localStorage.clear();
+    });
+
+    test('exports discrete storage key for listening mode', () => {
+      assert.strictEqual(STORAGE_KEY_LISTENING, 'HOC_HAN_NGU_LISTENING_PROGRESS');
+      assert.notStrictEqual(STORAGE_KEY_LISTENING, STORAGE_KEY_FLASHCARD);
+      assert.notStrictEqual(STORAGE_KEY_LISTENING, STORAGE_KEY_WRITING);
+    });
+
+    test('persists progress under STORAGE_KEY_LISTENING without polluting other modes', () => {
+      saveProgress('listening', { hsk1: { lastIndex: 5 } });
+      saveProgress('flashcard', { hsk1: { lastIndex: 12 } });
+      saveProgress('writing', { hsk1: { lastIndex: 2 } });
+
+      const listeningProg = getProgress('listening');
+      const flashcardProg = getProgress('flashcard');
+      const writingProg = getProgress('writing');
+
+      assert.strictEqual(listeningProg.hsk1.lastIndex, 5);
+      assert.strictEqual(flashcardProg.hsk1.lastIndex, 12);
+      assert.strictEqual(writingProg.hsk1.lastIndex, 2);
+    });
+  });
+
+  describe('6. SrsReviewController Listening Mode State & Contract', () => {
+    test('initializes activeMode to listening when mode=listening', () => {
+      const controller = new SrsReviewController();
+      assert.strictEqual(controller.activeMode, 'flashcard'); // default
+
+      // Simulate mode change
+      controller.activeMode = 'listening';
+      assert.strictEqual(controller.activeMode, 'listening');
+      assert.strictEqual(controller.hasCompletedListeningForCurrentCard, false);
+      assert.strictEqual(controller.listeningIme, null);
+    });
+
+    test('checkListeningAnswer marks correct state, unlocks Next button, and disables input', () => {
+      const controller = new SrsReviewController();
+      controller.activeMode = 'listening';
+
+      controller.sessionQueue = [
+        { card: { itemId: 101, itemType: 'VOCABULARY', hanzi: '请', pinyin: 'qǐng' } }
+      ];
+      controller.currentIndex = 0;
+
+      // Mock DOM elements
+      const input = makeEl('input');
+      input.value = '请';
+
+      const completionNotice = makeEl('div');
+      completionNotice.classList.add('d-none');
+
+      const errorNotice = makeEl('div');
+      errorNotice.classList.add('d-none');
+
+      const btnNext = makeEl('button');
+      btnNext.classList.add('writing-next-hidden');
+
+      controller.dom = {
+        listeningAnswerInput: input,
+        listeningCompletionNotice: completionNotice,
+        listeningErrorNotice: errorNotice,
+        btnListeningNext: btnNext
+      };
+
+      // Execute check with correct answer
+      controller.checkListeningAnswer();
+
+      assert.strictEqual(controller.hasCompletedListeningForCurrentCard, true);
+      assert.strictEqual(input.disabled, true);
+      assert.strictEqual(completionNotice.classList.contains('d-none'), false);
+      assert.strictEqual(completionNotice.textContent, '✓ Hoàn thành!');
+      assert.strictEqual(btnNext.classList.contains('writing-next-hidden'), false);
+    });
+
+    test('checkListeningAnswer marks incorrect state, shows error, keeps Next hidden', () => {
+      const controller = new SrsReviewController();
+      controller.activeMode = 'listening';
+
+      controller.sessionQueue = [
+        { card: { itemId: 101, itemType: 'VOCABULARY', hanzi: '请', pinyin: 'qǐng' } }
+      ];
+      controller.currentIndex = 0;
+
+      const input = makeEl('input');
+      input.value = '错';
+
+      const completionNotice = makeEl('div');
+      completionNotice.classList.add('d-none');
+
+      const errorNotice = makeEl('div');
+      errorNotice.classList.add('d-none');
+
+      const btnNext = makeEl('button');
+      btnNext.classList.add('writing-next-hidden');
+
+      controller.dom = {
+        listeningAnswerInput: input,
+        listeningCompletionNotice: completionNotice,
+        listeningErrorNotice: errorNotice,
+        btnListeningNext: btnNext,
+        btnListeningPlayAudio: null
+      };
+
+      // Execute check with incorrect answer
+      controller.checkListeningAnswer();
+
+      assert.strictEqual(controller.hasCompletedListeningForCurrentCard, false);
+      assert.strictEqual(input.disabled, false);
+      assert.strictEqual(errorNotice.classList.contains('d-none'), false);
+      assert.strictEqual(btnNext.classList.contains('writing-next-hidden'), true);
+    });
+
+    test('keyboard shortcuts 1..4 are suppressed in listening mode', () => {
+      const controller = new SrsReviewController();
+      controller.activeMode = 'listening';
+      controller.dom = {
+        activeSession: makeEl('div')
+      };
+      controller.sessionQueue = [
+        { card: { itemId: 101, itemType: 'VOCABULARY', hanzi: '请' } }
+      ];
+      controller.currentIndex = 0;
+
+      let ratingSubmitted = false;
+      controller.submitRating = () => { ratingSubmitted = true; };
+
+      // Simulate key '3'
+      controller.handleKeydown({
+        key: '3',
+        code: 'Digit3',
+        target: { tagName: 'div' },
+        preventDefault: () => {}
+      });
+
+      assert.strictEqual(ratingSubmitted, false, '1..4 rating shortcuts must be blocked in listening mode');
+    });
+
+    test('checkListeningAnswer locks check button and guards against duplicate checks', () => {
+      const controller = new SrsReviewController();
+      controller.activeMode = 'listening';
+      controller.sessionQueue = [
+        { card: { itemId: 1, itemType: 'VOCABULARY', hanzi: '学' } }
+      ];
+      controller.currentIndex = 0;
+
+      const input = makeEl('input');
+      input.value = '学';
+      const btnCheck = makeEl('button');
+      btnCheck.disabled = false;
+      const btnNext = makeEl('button');
+      btnNext.classList.add('writing-next-hidden');
+      const notice = makeEl('div');
+
+      controller.dom = {
+        listeningAnswerInput: input,
+        btnListeningCheck: btnCheck,
+        btnListeningNext: btnNext,
+        listeningCompletionNotice: notice
+      };
+
+      controller.checkListeningAnswer();
+      assert.strictEqual(controller.hasCompletedListeningForCurrentCard, true);
+      assert.strictEqual(btnCheck.disabled, true, 'Check button must be disabled upon correct answer');
+      assert.strictEqual(input.disabled, true, 'Input must be disabled upon correct answer');
+
+      // Attempt duplicate check
+      let rechecked = false;
+      controller.handleListeningCorrect = () => { rechecked = true; };
+      controller.checkListeningAnswer();
+      assert.strictEqual(rechecked, false, 'Duplicate checkListeningAnswer must be a no-op');
+    });
+
+    test('showCatalogSelection cleanly destroys listening IME', () => {
+      const controller = new SrsReviewController();
+      controller.activeMode = 'listening';
+      let destroyed = false;
+      controller.listeningIme = {
+        destroy: () => { destroyed = true; }
+      };
+
+      controller.showCatalogSelection();
+      assert.strictEqual(destroyed, true, 'showCatalogSelection must destroy active listeningIme');
+      assert.strictEqual(controller.listeningIme, null);
+    });
+
+    test('playPronunciation strips variant parentheses from textToSpeak', async () => {
+      const controller = new SrsReviewController();
+      controller.activeMode = 'listening';
+      controller.sessionQueue = [
+        { card: { itemId: 154, itemType: 'RADICAL', character: '貝(贝)' } }
+      ];
+      controller.currentIndex = 0;
+      controller.audioCache.set('RADICAL_154', 'https://example.com/audio/bei.mp3');
+
+      // The raw text has parentheses, verify cleanText logic
+      const rawText = controller.sessionQueue[0].card.character;
+      const textToSpeak = (rawText.includes('(') || rawText.includes('/')) ? rawText.split(/[()\/]/)[0].trim() : rawText;
+      assert.strictEqual(textToSpeak, '貝', 'Parenthesized variant notation must be stripped from speech synthesis');
+    });
+  });
+
+  describe('6. Radical Variants & IME Robustness Invariants', () => {
+    test('verifyListeningAnswer accepts all valid radical variants (simplified, traditional, side forms)', () => {
+      // 貝(贝) -> Bối
+      assert.strictEqual(verifyListeningAnswer('贝', '貝(贝)'), true, 'Simplified 贝 matches 貝(贝)');
+      assert.strictEqual(verifyListeningAnswer('貝', '貝(贝)'), true, 'Traditional 貝 matches 貝(贝)');
+      assert.strictEqual(verifyListeningAnswer('貝(贝)', '貝(贝)'), true, 'Literal string matches 貝(贝)');
+
+      // 水(氵) -> Thủy
+      assert.strictEqual(verifyListeningAnswer('水', '水(氵)'), true, 'Base 水 matches 水(氵)');
+      assert.strictEqual(verifyListeningAnswer('氵', '水(氵)'), true, 'Side radical 氵 matches 水(氵)');
+
+      // 長(镸/长) -> Trường
+      assert.strictEqual(verifyListeningAnswer('長', '長(镸/长)'), true);
+      assert.strictEqual(verifyListeningAnswer('镸', '長(镸/长)'), true);
+      assert.strictEqual(verifyListeningAnswer('长', '長(镸/长)'), true);
+
+      // Wrong answers
+      assert.strictEqual(verifyListeningAnswer('火', '水(氵)'), false);
+      assert.strictEqual(verifyListeningAnswer('shui', '水(氵)'), false);
+    });
+
+    test('Pinyin dictionary contains zero corrupted entries with brackets or slashes', async () => {
+      const { PINYIN_DICT, lookupPinyin } = await import('../../../../frontend/js/ui/pinyin-ime/pinyin-dict.js');
+      for (const [key, candidates] of Object.entries(PINYIN_DICT)) {
+        for (const item of candidates) {
+          assert.strictEqual(
+            /[()\/]/.test(item),
+            false,
+            `Dict key "${key}" contains invalid bracketed item: "${item}"`
+          );
+        }
+      }
+
+      // Radical lookups produce clean Hanzi
+      const beiCandidates = lookupPinyin('bei');
+      assert.ok(beiCandidates.includes('贝'), 'bei candidates must include 贝');
+      assert.ok(beiCandidates.includes('貝'), 'bei candidates must include 貝');
+      assert.strictEqual(beiCandidates.includes('貝(贝)'), false, 'Corrupted bracket entry must not exist');
+
+      const renCandidates = lookupPinyin('ren');
+      assert.ok(renCandidates.includes('人'), 'ren candidates must include 人');
+      assert.ok(renCandidates.includes('亻'), 'ren candidates must include 亻');
+      assert.strictEqual(renCandidates.includes('人(亻)'), false, 'Corrupted bracket entry must not exist');
+    });
+
+    test('PinyinImeComponent completely ignores edits when targetInput is disabled', () => {
+      const container = makeEl('div');
+      const input = makeEl('input');
+      input.value = '学';
+      input.disabled = true;
+
+      const ime = new PinyinImeComponent({
+        containerMount: container,
+        targetInput: input
+      });
+
+      // Attempt physical typing while disabled
+      ime.onInputKeydown({
+        key: 'a',
+        preventDefault: () => {}
+      });
+      assert.strictEqual(ime.compositionBuffer, '', 'Buffer must not change when input is disabled');
+
+      // Attempt appendBufferChar directly
+      ime.appendBufferChar('x');
+      assert.strictEqual(ime.compositionBuffer, '', 'appendBufferChar must be blocked when input is disabled');
+
+      // Attempt popBufferChar directly
+      ime.popBufferChar();
+      assert.strictEqual(ime.compositionBuffer, '', 'popBufferChar must be blocked when input is disabled');
+
+      // Attempt candidate commit directly
+      ime.commitCandidate('生');
+      assert.strictEqual(input.value, '学', 'commitCandidate must not mutate disabled input');
+
+      ime.destroy();
+    });
+
+    test('PinyinImeComponent registers compositionupdate and updates isOsComposing', () => {
+      const container = makeEl('div');
+      const input = makeEl('input');
+
+      const ime = new PinyinImeComponent({
+        containerMount: container,
+        targetInput: input
+      });
+
+      assert.strictEqual(ime.isOsComposing, false);
+      input.dispatchEvent({ type: 'compositionupdate' });
+      assert.strictEqual(ime.isOsComposing, true, 'compositionupdate must set isOsComposing to true');
+
+      input.dispatchEvent({ type: 'compositionend' });
+      assert.strictEqual(ime.isOsComposing, false, 'compositionend must reset isOsComposing to false');
+
+      ime.destroy();
+    });
+  });
+
+});

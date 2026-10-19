@@ -4217,31 +4217,16 @@ dialog:not([open]) {
   align-items: center;
 }
 
-.srs-listening-hero-btn {
-  width: 76px;
-  height: 76px;
-  border-radius: 50%;
-  background-color: var(--color-accent-primary, #C83C23);
-  color: #ffffff;
-  border: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  box-shadow: 0 4px 12px rgba(200, 60, 35, 0.25);
-  margin-bottom: 1rem;
+.srs-listening-speech-btn {
+  width: 44px;
+  height: 44px;
 }
 
-.srs-listening-hero-btn:hover {
-  transform: scale(1.06);
-  box-shadow: 0 6px 18px rgba(200, 60, 35, 0.35);
+.srs-listening-speech-btn svg {
+  width: 20px;
+  height: 20px;
 }
 
-.srs-listening-hero-btn svg {
-  width: 34px;
-  height: 34px;
-}
 
 /* =============================================================================
    6. Dedicated Writing Room Unified Card (Task Writing Mode Redesign)
@@ -4326,3 +4311,314 @@ dialog:not([open]) {
   opacity: 0 !important;
   pointer-events: none !important;
 }
+
+/* =============================================================================
+   7. Dedicated Listening Room & Pinyin Virtual Keyboard (Task Listening Parity)
+   ============================================================================= */
+.srs-listening-card {
+  /* Reuses all geometry and colors of .srs-writing-card */
+  position: relative;
+}
+
+.listening-input-wrapper {
+  max-width: 480px;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.listening-answer-input {
+  width: 100%;
+  max-width: 100%;
+  height: 50px;
+  min-height: 48px;
+  font-family: var(--font-hanzi);
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-surface);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  outline: none !important;
+}
+
+.listening-answer-input::placeholder {
+  font-family: var(--font-latin);
+  font-size: 0.95rem;
+  font-weight: 400;
+  color: var(--color-text-muted);
+  opacity: 0.85;
+  letter-spacing: normal;
+}
+
+.listening-answer-input:focus,
+.listening-answer-input:focus-visible {
+  border-color: var(--color-border-strong) !important;
+  box-shadow: 0 0 0 3px var(--color-bg-subtle) !important;
+  outline: none !important;
+  outline-offset: 0 !important;
+}
+
+.listening-answer-input.is-valid,
+.listening-answer-input.is-valid:focus,
+.listening-answer-input.is-valid:focus-visible {
+  border-color: var(--color-status-success) !important;
+  box-shadow: 0 0 0 3px var(--color-status-success-bg) !important;
+  background-color: var(--color-status-success-bg) !important;
+  color: var(--color-status-success) !important;
+  outline: none !important;
+}
+
+.listening-answer-input.is-invalid,
+.listening-answer-input.is-invalid:focus,
+.listening-answer-input.is-invalid:focus-visible {
+  border-color: var(--color-status-danger) !important;
+  box-shadow: 0 0 0 3px var(--color-status-danger-bg) !important;
+  outline: none !important;
+}
+
+.listening-error-notice {
+  color: var(--color-status-danger);
+  font-size: 0.875rem;
+  letter-spacing: 0.02em;
+}
+
+/* Rectangular Frame Enclosing Virtual Keyboard & Candidates */
+.listening-ime-container {
+  width: 100%;
+  max-width: 480px;
+  margin: var(--space-2) auto var(--space-3);
+}
+
+.pinyin-ime-wrapper {
+  background-color: var(--color-bg-subtle);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: var(--space-3);
+  box-shadow: var(--shadow-sm);
+  width: 100%;
+  transition: border-color 0.2s ease;
+}
+
+.pinyin-ime-wrapper:focus-within {
+  border-color: var(--color-border-strong);
+}
+
+/* Candidates Strip inside the Frame */
+.pinyin-candidates-bar {
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  min-height: 36px;
+  padding: 3px 8px;
+  margin-bottom: var(--space-2);
+}
+
+.pinyin-buffer-display {
+  color: var(--color-accent-primary);
+  background-color: var(--color-accent-subtle);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  padding: 2px 6px;
+  letter-spacing: 0.05em;
+  font-size: 0.8125rem;
+}
+
+.pinyin-candidate-item {
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background-color 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+  min-height: 30px;
+}
+
+.pinyin-candidate-item:hover,
+.pinyin-candidate-item:focus {
+  background-color: var(--color-accent-subtle);
+  border-color: var(--color-accent-primary);
+  color: var(--color-accent-primary);
+}
+
+.pinyin-candidate-item.is-selected {
+  background-color: var(--color-accent-primary);
+  border-color: var(--color-accent-primary);
+  color: var(--color-bg-surface);
+}
+
+.pinyin-candidate-item.is-selected .candidate-num {
+  color: var(--color-bg-surface);
+  opacity: 0.9;
+}
+
+.pinyin-candidate-item.is-selected .candidate-hanzi {
+  color: var(--color-bg-surface);
+}
+
+.candidate-num {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.candidate-hanzi {
+  font-family: var(--font-hanzi);
+  font-size: 1.1rem;
+}
+
+/* Virtual Keyboard Keys */
+.pinyin-virtual-keyboard {
+  width: 100%;
+  margin: 0 auto;
+}
+
+.pinyin-key-row {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  margin-bottom: 5px;
+}
+
+.pinyin-key {
+  height: 40px;
+  min-height: 40px;
+  max-width: 44px;
+  flex: 1 1 0px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+  touch-action: manipulation;
+  user-select: none;
+  transition: background-color 0.12s ease, border-color 0.12s ease, transform 0.08s ease;
+}
+
+.pinyin-key-letter {
+  background-color: var(--color-bg-surface);
+  color: var(--color-text-primary);
+}
+
+.pinyin-key-letter:hover {
+  background-color: var(--color-bg-canvas);
+  border-color: var(--color-border-strong);
+}
+
+.pinyin-key-action {
+  font-size: 0.8125rem;
+  padding: 0 8px;
+  max-width: 78px;
+  flex: 1.4 1 0px;
+}
+
+.pinyin-key-backspace {
+  background-color: var(--color-bg-surface);
+  color: var(--color-text-secondary);
+  border-color: var(--color-border-strong);
+  max-width: 52px;
+  flex: 1.3 1 0px;
+}
+
+.pinyin-key-backspace:hover {
+  background-color: var(--color-border);
+  color: var(--color-text-primary);
+}
+
+.pinyin-key-clear {
+  background-color: var(--color-bg-surface);
+  color: var(--color-text-secondary);
+  border-color: var(--color-border);
+  font-size: 0.78rem;
+}
+
+.pinyin-key-clear:hover {
+  background-color: var(--color-status-danger-bg);
+  border-color: var(--color-status-danger-border);
+  color: var(--color-status-danger);
+}
+
+.pinyin-key-space {
+  background-color: var(--color-bg-surface);
+  color: var(--color-text-secondary);
+  border-color: var(--color-border);
+  max-width: 160px;
+  flex: 3 1 0px;
+  font-size: 0.8125rem;
+}
+
+.pinyin-key-space:hover {
+  background-color: var(--color-bg-canvas);
+  border-color: var(--color-border-strong);
+}
+
+.pinyin-key-submit {
+  background-color: var(--color-bg-surface);
+  border-color: var(--color-border);
+  color: var(--color-text-primary);
+  font-weight: 600;
+}
+
+.pinyin-key-submit:hover {
+  background-color: var(--color-bg-canvas);
+  border-color: var(--color-border-strong);
+  color: var(--color-accent-primary);
+}
+
+.pinyin-key:active {
+  transform: translateY(1px);
+}
+
+.btn-toggle-pinyin-keyboard {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
+.btn-toggle-pinyin-keyboard:hover {
+  color: var(--color-text-secondary);
+}
+
+@media (max-width: 576px) {
+  .srs-listening-card {
+    padding: var(--space-3);
+  }
+
+  .listening-answer-input {
+    font-size: 1.125rem;
+    height: 46px;
+    min-height: 46px;
+  }
+
+  .listening-answer-input::placeholder {
+    font-size: 0.8125rem;
+  }
+
+  .pinyin-ime-wrapper {
+    padding: var(--space-2);
+    border-radius: 10px;
+  }
+
+  .pinyin-key-row {
+    gap: 3px;
+    margin-bottom: 4px;
+  }
+
+  .pinyin-key {
+    height: 38px;
+    min-height: 38px;
+    font-size: 0.85rem;
+  }
+
+  .pinyin-key-action {
+    font-size: 0.75rem;
+    padding: 0 4px;
+  }
+}
+

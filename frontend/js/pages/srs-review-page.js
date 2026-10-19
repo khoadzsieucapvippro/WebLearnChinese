@@ -46,6 +46,8 @@ import { CharacterWritingEngine, WRITING_MODES } from '../ui/character-writing/c
 import { splitHanziCharacters, loadStrokeData } from '../ui/character-writing/stroke-data-loader.js';
 import { createRiceGridSvg } from '../ui/character-writing/vocab-writing-orchestrator.js';
 import { removeVietnameseDiacritics, partitionRadicals } from './radicals-page.js';
+import { PinyinImeComponent } from '../ui/pinyin-ime/pinyin-ime-engine.js';
+import { lookupPinyin, cleanPinyin } from '../ui/pinyin-ime/pinyin-dict.js';
 
 export {
   createSpeakerIcon,
@@ -55,21 +57,70 @@ export {
   playPronunciation,
   isSpeechSynthesisAvailable,
   SpeechState,
-  VocabWritingOrchestrator
+  VocabWritingOrchestrator,
+  PinyinImeComponent,
+  lookupPinyin,
+  cleanPinyin
 };
 
 export const MAX_AGAIN_REVIEWS_PER_CARD = 3;
 
 export const STORAGE_KEY_FLASHCARD = 'HOC_HAN_NGU_FLASHCARD_PROGRESS';
 export const STORAGE_KEY_WRITING = 'HOC_HAN_NGU_WRITING_PROGRESS';
+export const STORAGE_KEY_LISTENING = 'HOC_HAN_NGU_LISTENING_PROGRESS';
 
 /**
- * Reads progress from localStorage for the given mode ('flashcard' or 'writing').
- * @param {'flashcard'|'writing'} mode
+ * Normalizes user-entered Hanzi answer by trimming and NFC normalization.
+ * @param {string} value
+ * @returns {string}
+ */
+export function normalizeHanziAnswer(value) {
+  if (value == null) return '';
+  return String(value)
+    .normalize('NFC')
+    .trim()
+    .replace(/\s+/g, '');
+}
+
+/**
+ * Validates listening room answer against expected Hanzi character(s).
+ * - Enforces full-string match (no partial completion).
+ * - Disallows plain Latin Pinyin.
+ * @param {string} inputAnswer
+ * @param {string} expectedHanzi
+ * @returns {boolean}
+ */
+export function verifyListeningAnswer(inputAnswer, expectedHanzi) {
+  const cleanInput = normalizeHanziAnswer(inputAnswer);
+  const cleanExpected = normalizeHanziAnswer(expectedHanzi);
+
+  if (!cleanInput || !cleanExpected) return false;
+
+  // Latin pinyin alone is NOT accepted as valid Chinese character
+  if (/^[a-zA-Z\s]+$/.test(cleanInput)) return false;
+
+  if (cleanInput === cleanExpected) return true;
+
+  // Handle parenthesized or slashed radical variants (e.g. '水(氵)', '貝(贝)', '長(镸/长)')
+  if (cleanExpected.includes('(') || cleanExpected.includes('/')) {
+    const base = cleanExpected.split(/[()\/]/)[0].trim();
+    if (cleanInput === base) return true;
+    const variants = cleanExpected.match(/[\u4E00-\u9FFF\u3400-\u4DBF\uF900-\uFAFF\u2E80-\u2EFF]/g) || [];
+    if (variants.includes(cleanInput)) return true;
+  }
+
+  return false;
+}
+
+/**
+ * Reads progress from localStorage for the given mode ('flashcard', 'writing', or 'listening').
+ * @param {'flashcard'|'writing'|'listening'} mode
  * @returns {Object}
  */
 export function getProgress(mode) {
-  const key = mode === 'writing' ? STORAGE_KEY_WRITING : STORAGE_KEY_FLASHCARD;
+  const key = mode === 'writing'
+    ? STORAGE_KEY_WRITING
+    : (mode === 'listening' ? STORAGE_KEY_LISTENING : STORAGE_KEY_FLASHCARD);
   try {
     const raw = typeof localStorage !== 'undefined' ? localStorage.getItem(key) : null;
     return raw ? JSON.parse(raw) : {};
@@ -80,11 +131,13 @@ export function getProgress(mode) {
 
 /**
  * Saves progress updates to localStorage for the given mode.
- * @param {'flashcard'|'writing'} mode
+ * @param {'flashcard'|'writing'|'listening'} mode
  * @param {Object} updates
  */
 export function saveProgress(mode, updates) {
-  const key = mode === 'writing' ? STORAGE_KEY_WRITING : STORAGE_KEY_FLASHCARD;
+  const key = mode === 'writing'
+    ? STORAGE_KEY_WRITING
+    : (mode === 'listening' ? STORAGE_KEY_LISTENING : STORAGE_KEY_FLASHCARD);
   try {
     const current = getProgress(mode);
     const next = { ...current, ...updates };
@@ -749,6 +802,11 @@ export class SrsReviewController {
     this.totalRequiredCharCount = 0;
     this.isSubmittingWriting = false;
 
+    // Dedicated Listening Room state
+    this.listeningIme = null;
+    this.hasCompletedListeningForCurrentCard = false;
+    this.isSubmittingListening = false;
+
     // Backward compatibility fields
     this.mode = 'DUE_CARDS';
     this.activeSkill = 'READING';
@@ -938,6 +996,18 @@ export class SrsReviewController {
       btnWritingOutline: document.getElementById('btnWritingOutline'),
       btnWritingClear: document.getElementById('btnWritingClear'),
       btnWritingNext: document.getElementById('btnWritingNext'),
+
+      // Dedicated Listening Room
+      listeningRoom: document.getElementById('srsListeningRoom'),
+      listeningRoomBadge: document.getElementById('listeningRoomBadge'),
+      btnListeningPlayAudio: document.getElementById('btnListeningPlayAudio'),
+      listeningAnswerInput: document.getElementById('listeningAnswerInput'),
+      listeningCompletionNotice: document.getElementById('listeningCompletionNotice'),
+      listeningErrorNotice: document.getElementById('listeningErrorNotice'),
+      listeningImeContainer: document.getElementById('listeningImeContainer'),
+      btnListeningCheck: document.getElementById('btnListeningCheck'),
+      listeningNextContainer: document.getElementById('listeningNextContainer'),
+      btnListeningNext: document.getElementById('btnListeningNext'),
 
       // Completion Stats
       statTotalReviewed: document.getElementById('statTotalReviewed'),
@@ -1210,6 +1280,42 @@ export class SrsReviewController {
       });
     }
 
+    // Dedicated Listening Room Controls
+    if (this.dom.btnListeningPlayAudio) {
+      this.dom.btnListeningPlayAudio.addEventListener('click', (e) => {
+        e.stopPropagation();
+        speechController.cancel();
+        if (this.dom.btnListeningPlayAudio) {
+          this.dom.btnListeningPlayAudio.disabled = false;
+          this.dom.btnListeningPlayAudio.removeAttribute('aria-busy');
+          this.dom.btnListeningPlayAudio.classList.remove('is-speaking');
+        }
+        this.playPronunciation(this.dom.btnListeningPlayAudio);
+      });
+    }
+    if (this.dom.btnListeningCheck) {
+      this.dom.btnListeningCheck.addEventListener('click', () => {
+        this.checkListeningAnswer();
+      });
+    }
+    if (this.dom.btnListeningNext) {
+      this.dom.btnListeningNext.addEventListener('click', () => {
+        if (this.hasCompletedListeningForCurrentCard !== false) {
+          this.nextListeningItem();
+        }
+      });
+    }
+    if (this.dom.listeningAnswerInput) {
+      this.dom.listeningAnswerInput.addEventListener('input', () => {
+        if (this.dom.listeningErrorNotice) {
+          this.dom.listeningErrorNotice.classList.add('d-none');
+        }
+        if (this.dom.listeningAnswerInput) {
+          this.dom.listeningAnswerInput.classList.remove('is-invalid');
+        }
+      });
+    }
+
     // Global Keydown & Lifecycle
     window.addEventListener('keydown', this.onKeydown);
     window.addEventListener('popstate', this.onPopState);
@@ -1226,6 +1332,8 @@ export class SrsReviewController {
     const rawMode = (urlParams.get('mode') || '').toLowerCase();
     if (rawMode === 'writing') {
       this.activeMode = 'writing';
+    } else if (rawMode === 'listening') {
+      this.activeMode = 'listening';
     } else {
       this.activeMode = 'flashcard';
     }
@@ -1238,7 +1346,9 @@ export class SrsReviewController {
     }
 
     const rawAction = (urlParams.get('action') || '').toLowerCase();
-    this.activeAction = (rawAction === 'continue' || rawAction === 'review') ? rawAction : null;
+    this.activeAction = (rawAction === 'continue' || rawAction === 'review' || rawAction === 'start')
+      ? (rawAction === 'start' ? 'continue' : rawAction)
+      : null;
 
     const rawLessonId = urlParams.get('lessonId');
     if (rawLessonId && /^\d+$/.test(rawLessonId.trim()) && Number(rawLessonId.trim()) > 0) {
@@ -1265,6 +1375,8 @@ export class SrsReviewController {
     const rawSkill = (urlParams.get('skill') || urlParams.get('cardType') || '').toUpperCase();
     if (rawSkill === 'WRITING') {
       this.activeMode = 'writing';
+    } else if (rawSkill === 'LISTENING') {
+      this.activeMode = 'listening';
     }
     if (rawMode === 'practice') {
       this.mode = 'LESSON_PRACTICE';
@@ -1401,7 +1513,7 @@ export class SrsReviewController {
     if (!searchString) {
       if (authManager.isAuthenticated()) {
         try {
-          const cardTypeParam = this.activeMode === 'writing' ? 'WRITING' : 'READING';
+          const cardTypeParam = this.activeMode === 'writing' ? 'WRITING' : (this.activeMode === 'listening' ? 'LISTENING' : 'READING');
           const dueCards = await apiClient('/srs/due', { params: { itemType: 'VOCABULARY', cardType: cardTypeParam } });
           if (Array.isArray(dueCards) && dueCards.length > 0) {
             this.mode = 'DUE_CARDS';
@@ -1437,6 +1549,7 @@ export class SrsReviewController {
     }
     this.cleanupTimer();
     this.destroyWritingEngines();
+    this.destroyListeningIme();
     this.sessionQueue = [];
     this.currentIndex = 0;
     this.currentChapterTitle = '';
@@ -1468,7 +1581,7 @@ export class SrsReviewController {
    * Renders the catalog content container for the active group.
    */
   renderCatalog() {
-    const container = this.dom.catalogContentContainer;
+    const container = this.dom?.catalogContentContainer;
     if (!container) return;
     container.replaceChildren();
 
@@ -1526,7 +1639,7 @@ export class SrsReviewController {
   async fetchDueCounts() {
     if (!authManager.isAuthenticated()) return;
     try {
-      const cardTypeParam = this.activeMode === 'writing' ? 'WRITING' : 'READING';
+      const cardTypeParam = this.activeMode === 'writing' ? 'WRITING' : (this.activeMode === 'listening' ? 'LISTENING' : 'READING');
       const [dueVocab, dueRadicals] = await Promise.all([
         apiClient('/srs/due', { params: { itemType: 'VOCABULARY', cardType: cardTypeParam } }).catch(() => []),
         apiClient('/srs/due', { params: { itemType: 'RADICAL', cardType: cardTypeParam } }).catch(() => [])
@@ -2322,7 +2435,7 @@ export class SrsReviewController {
     if (authManager.isAuthenticated()) {
       try {
         let remoteCards = [];
-        const cardTypeParam = this.activeMode === 'writing' ? 'WRITING' : 'READING';
+        const cardTypeParam = this.activeMode === 'writing' ? 'WRITING' : (this.activeMode === 'listening' ? 'LISTENING' : 'READING');
         const requestParams = { lessonId: topicId, cardType: cardTypeParam };
 
         if (this.mode === 'LESSON_PRACTICE') {
@@ -2441,7 +2554,7 @@ export class SrsReviewController {
             vocabId: detail.vocabId || detail.id,
             itemId: detail.vocabId || detail.id,
             itemType: 'VOCABULARY',
-            cardType: this.activeMode === 'writing' ? 'WRITING' : 'READING',
+            cardType: this.activeMode === 'writing' ? 'WRITING' : (this.activeMode === 'listening' ? 'LISTENING' : 'READING'),
             hanzi: detail.hanzi,
             pinyin: detail.pinyin,
             meaningHanViet: detail.meaningHanViet,
@@ -2537,9 +2650,9 @@ export class SrsReviewController {
    */
   normalizeVocabCard(v, lessonId) {
     const rawId = v.itemId ?? v.vocabId ?? v.id ?? 1;
-    const defaultCardType = this.activeMode === 'writing' ? 'WRITING' : 'READING';
-    const cardType = (this.activeMode === 'writing' || this.activeMode === 'flashcard')
-      ? (this.activeMode === 'writing' ? 'WRITING' : 'READING')
+    const defaultCardType = this.activeMode === 'writing' ? 'WRITING' : (this.activeMode === 'listening' ? 'LISTENING' : 'READING');
+    const cardType = (this.activeMode === 'writing' || this.activeMode === 'listening' || this.activeMode === 'flashcard')
+      ? defaultCardType
       : (v.cardType || defaultCardType);
     return {
       itemType: v.itemType || 'VOCABULARY',
@@ -2565,6 +2678,7 @@ export class SrsReviewController {
   initSessionQueue(cards, isReviewMode = false, startIndex = 0) {
     this.cleanupTimer();
     this.destroyWritingEngines();
+    this.destroyListeningIme();
 
     if (!Array.isArray(cards) || cards.length === 0) {
       this.setViewState('empty');
@@ -2621,9 +2735,9 @@ export class SrsReviewController {
       }
     }
 
-    // Toggle catalog header (复 TRUNG TÂM ÔN LUYỆN SRS & Kỹ Năng Tabs) ONLY in catalog view!
+    // Toggle catalog header (复 TRUNG TÂM ÔN LUYỆN SRS & Kỹ Năng Tabs)
     if (this.dom.headerContent) {
-      if (state === 'catalog') {
+      if (state === 'catalog' || state === 'auth') {
         this.dom.headerContent.classList.remove('d-none');
       } else {
         this.dom.headerContent.classList.add('d-none');
@@ -2638,6 +2752,7 @@ export class SrsReviewController {
     speechController.cancel();
     this.cleanupTimer();
     this.destroyWritingEngines();
+    this.destroyListeningIme();
     this.isFlipped = false;
     this.isSubmitting = false;
 
@@ -2658,15 +2773,25 @@ export class SrsReviewController {
     this.updateSessionHeader(card);
 
     if (this.activeMode === 'writing') {
-      // Writing mode: hide flashcard & rating bar, show dedicated writing room
+      // Writing mode: hide flashcard, listening & rating bar, show dedicated writing room
       if (this.dom.flashcardContainer) this.dom.flashcardContainer.classList.add('d-none');
       if (this.dom.ratingSection) this.dom.ratingSection.classList.add('d-none');
+      if (this.dom.listeningRoom) this.dom.listeningRoom.classList.add('d-none');
       if (this.dom.writingRoom) this.dom.writingRoom.classList.remove('d-none');
 
       this.renderWritingRoomCard(card);
-    } else {
-      // Flashcard mode: show flashcard & rating bar, hide writing room
+    } else if (this.activeMode === 'listening') {
+      // Listening mode: hide flashcard, writing & rating bar, show dedicated listening room
+      if (this.dom.flashcardContainer) this.dom.flashcardContainer.classList.add('d-none');
+      if (this.dom.ratingSection) this.dom.ratingSection.classList.add('d-none');
       if (this.dom.writingRoom) this.dom.writingRoom.classList.add('d-none');
+      if (this.dom.listeningRoom) this.dom.listeningRoom.classList.remove('d-none');
+
+      this.renderListeningRoomCard(card);
+    } else {
+      // Flashcard mode: show flashcard & rating bar, hide writing & listening rooms
+      if (this.dom.writingRoom) this.dom.writingRoom.classList.add('d-none');
+      if (this.dom.listeningRoom) this.dom.listeningRoom.classList.add('d-none');
       if (this.dom.flashcardContainer) this.dom.flashcardContainer.classList.remove('d-none');
       if (this.dom.ratingSection) this.dom.ratingSection.classList.remove('d-none');
 
@@ -2710,7 +2835,9 @@ export class SrsReviewController {
       } else if (this.mode === 'DUE_CARDS' && this.lessonId) {
         this.dom.modeBadge.textContent = `Thẻ đến hạn #${this.lessonId}`;
       } else {
-        const modeName = this.activeMode === 'writing' ? 'Luyện viết' : 'Flashcard';
+        const modeName = this.activeMode === 'writing' 
+          ? 'Luyện viết' 
+          : (this.activeMode === 'listening' ? 'Luyện nghe' : 'Flashcard');
         const typeName = (card.itemType || '').toUpperCase() === 'RADICAL' ? 'Bộ thủ' : 'Từ vựng';
         const actionLabel = this.isReviewMode ? 'Học lại' : 'Học tiếp';
         this.dom.modeBadge.textContent = `${modeName} • ${typeName} (${actionLabel})`;
@@ -3809,6 +3936,299 @@ export class SrsReviewController {
   }
 
   /**
+   * Destroys active listening IME instance safely.
+   */
+  destroyListeningIme() {
+    if (this.listeningIme) {
+      try {
+        if (typeof this.listeningIme.destroy === 'function') {
+          this.listeningIme.destroy();
+        }
+      } catch (e) {}
+      this.listeningIme = null;
+    }
+  }
+
+  /**
+   * Renders the current card in dedicated Listening Room.
+   * - Shows speaker hero button.
+   * - Sets up input field with virtual Pinyin IME and hardware IME support.
+   * - Hides next button until answer is validated as correct.
+   * - Auto-plays pronunciation on card load.
+   * @param {Object} card
+   */
+  async renderListeningRoomCard(card) {
+    this.destroyListeningIme();
+    this.hasCompletedListeningForCurrentCard = false;
+
+    const isVocab = (card.itemType || '').toUpperCase() === 'VOCABULARY';
+
+    if (this.dom.listeningRoomBadge) {
+      this.dom.listeningRoomBadge.textContent = isVocab ? 'Từ vựng' : 'Bộ thủ';
+    }
+
+    // Reset feedback notices
+    if (this.dom.listeningCompletionNotice) {
+      this.dom.listeningCompletionNotice.classList.add('d-none');
+    }
+    if (this.dom.listeningErrorNotice) {
+      this.dom.listeningErrorNotice.classList.add('d-none');
+    }
+
+    // Reset input field
+    if (this.dom.listeningAnswerInput) {
+      this.dom.listeningAnswerInput.value = '';
+      this.dom.listeningAnswerInput.disabled = false;
+      this.dom.listeningAnswerInput.classList.remove('is-invalid', 'is-valid');
+      this.dom.listeningAnswerInput.placeholder = 'Nhập chữ Hán bạn nghe được...';
+    }
+
+    // Configure Check button
+    if (this.dom.btnListeningCheck) {
+      this.dom.btnListeningCheck.disabled = false;
+      this.dom.btnListeningCheck.classList.remove('d-none');
+    }
+
+    // Configure Next button label and HIDE it initially (keep space reserved with writing-next-hidden)
+    if (this.dom.btnListeningNext) {
+      this.dom.btnListeningNext.textContent = isVocab ? 'Sang từ tiếp theo →' : 'Sang bộ thủ tiếp theo →';
+      this.dom.btnListeningNext.classList.add('writing-next-hidden');
+      this.dom.btnListeningNext.setAttribute('aria-hidden', 'true');
+      this.dom.btnListeningNext.setAttribute('tabindex', '-1');
+      this.dom.btnListeningNext.disabled = false;
+      this.dom.btnListeningNext.removeAttribute('aria-busy');
+    }
+
+    // Mount Virtual Pinyin IME
+    if (this.dom.listeningImeContainer && this.dom.listeningAnswerInput) {
+      this.listeningIme = new PinyinImeComponent({
+        containerMount: this.dom.listeningImeContainer,
+        targetInput: this.dom.listeningAnswerInput,
+        onCommit: () => {
+          if (this.dom.listeningErrorNotice) {
+            this.dom.listeningErrorNotice.classList.add('d-none');
+          }
+          if (this.dom.listeningAnswerInput) {
+            this.dom.listeningAnswerInput.classList.remove('is-invalid');
+          }
+        },
+        onSubmit: () => {
+          if (this.hasCompletedListeningForCurrentCard) {
+            this.nextListeningItem();
+          } else {
+            this.checkListeningAnswer();
+          }
+        }
+      });
+    }
+
+    // Unlock and reset speaker button so it is always interactive for the learner
+    if (this.dom.btnListeningPlayAudio) {
+      this.dom.btnListeningPlayAudio.disabled = false;
+      this.dom.btnListeningPlayAudio.removeAttribute('aria-busy');
+      this.dom.btnListeningPlayAudio.classList.remove('is-speaking');
+    }
+
+    // Auto-play pronunciation in background without locking the physical button
+    this.playPronunciation(null).catch(() => {});
+
+    // Focus input field
+    if (this.dom.listeningAnswerInput) {
+      setTimeout(() => {
+        try {
+          this.dom.listeningAnswerInput?.focus();
+        } catch (e) {}
+      }, 50);
+    }
+  }
+
+  /**
+   * Verifies the user's Hanzi answer in Listening mode.
+   */
+  checkListeningAnswer() {
+    if (this.hasCompletedListeningForCurrentCard || this.isSubmittingListening) return;
+    if (!this.sessionQueue || this.currentIndex >= this.sessionQueue.length) return;
+    const card = this.sessionQueue[this.currentIndex]?.card;
+    if (!card) return;
+
+    const rawInput = this.dom.listeningAnswerInput ? this.dom.listeningAnswerInput.value : '';
+    const expected = card.hanzi || card.character || '';
+
+    const isCorrect = verifyListeningAnswer(rawInput, expected);
+
+    if (isCorrect) {
+      this.handleListeningCorrect(card);
+    } else {
+      this.handleListeningIncorrect();
+    }
+  }
+
+  /**
+   * Handles correct answer in Listening room.
+   * @param {Object} card
+   */
+  handleListeningCorrect(card) {
+    this.hasCompletedListeningForCurrentCard = true;
+
+    if (this.dom.listeningAnswerInput) {
+      this.dom.listeningAnswerInput.classList.remove('is-invalid');
+      this.dom.listeningAnswerInput.classList.add('is-valid');
+      this.dom.listeningAnswerInput.disabled = true;
+    }
+
+    if (this.dom.btnListeningCheck) {
+      this.dom.btnListeningCheck.disabled = true;
+    }
+
+    if (this.dom.listeningErrorNotice) {
+      this.dom.listeningErrorNotice.classList.add('d-none');
+    }
+
+    if (this.dom.listeningCompletionNotice) {
+      this.dom.listeningCompletionNotice.textContent = '✓ Hoàn thành!';
+      this.dom.listeningCompletionNotice.classList.remove('d-none');
+    }
+
+    if (this.dom.btnListeningNext) {
+      this.dom.btnListeningNext.classList.remove('writing-next-hidden');
+      this.dom.btnListeningNext.removeAttribute('aria-hidden');
+      this.dom.btnListeningNext.removeAttribute('tabindex');
+      try {
+        this.dom.btnListeningNext.focus();
+      } catch (e) {}
+    }
+  }
+
+  /**
+   * Handles incorrect answer in Listening room.
+   */
+  handleListeningIncorrect() {
+    this.hasCompletedListeningForCurrentCard = false;
+
+    if (this.dom.listeningAnswerInput) {
+      this.dom.listeningAnswerInput.classList.remove('is-valid');
+      this.dom.listeningAnswerInput.classList.add('is-invalid');
+      this.dom.listeningAnswerInput.disabled = false;
+      try {
+        this.dom.listeningAnswerInput.focus();
+      } catch (e) {}
+    }
+
+    if (this.dom.btnListeningCheck) {
+      this.dom.btnListeningCheck.disabled = false;
+    }
+
+    if (this.dom.listeningCompletionNotice) {
+      this.dom.listeningCompletionNotice.classList.add('d-none');
+    }
+
+    if (this.dom.listeningErrorNotice) {
+      this.dom.listeningErrorNotice.textContent = 'Chưa chính xác, hãy nghe lại và thử lần nữa.';
+      this.dom.listeningErrorNotice.classList.remove('d-none');
+    }
+
+    // Keep Next button hidden
+    if (this.dom.btnListeningNext) {
+      this.dom.btnListeningNext.classList.add('writing-next-hidden');
+      this.dom.btnListeningNext.setAttribute('aria-hidden', 'true');
+      this.dom.btnListeningNext.setAttribute('tabindex', '-1');
+    }
+
+    // Replay audio to assist user
+    if (this.dom.btnListeningPlayAudio) {
+      speechController.cancel();
+      if (this.dom.btnListeningPlayAudio) {
+        this.dom.btnListeningPlayAudio.disabled = false;
+        this.dom.btnListeningPlayAudio.removeAttribute('aria-busy');
+        this.dom.btnListeningPlayAudio.classList.remove('is-speaking');
+      }
+      this.playPronunciation(this.dom.btnListeningPlayAudio).catch(() => {});
+    }
+  }
+
+  /**
+   * Advances to next item in Listening mode.
+   * Saves progress independently under HOC_HAN_NGU_LISTENING_PROGRESS.
+   */
+  async nextListeningItem() {
+    if (this.isSubmittingListening) return;
+    if (this.isSubmitting) return;
+
+    if (this.dom?.btnListeningNext && this.hasCompletedListeningForCurrentCard === false) {
+      showToast({
+        type: 'warning',
+        title: 'Chưa hoàn thành',
+        message: 'Vui lòng hoàn thành câu trả lời trước khi chuyển sang từ tiếp theo.'
+      });
+      return;
+    }
+
+    this.isSubmittingListening = true;
+    if (this.dom?.btnListeningNext) {
+      this.dom.btnListeningNext.disabled = true;
+      this.dom.btnListeningNext.setAttribute('aria-busy', 'true');
+    }
+
+    try {
+      this.cleanupTimer();
+      const elapsedSeconds = calculateReviewTime(this.cardStartTime, Date.now());
+
+      if (!this.isReviewMode) {
+        if (authManager.isAuthenticated() && this.sessionQueue[this.currentIndex]?.card) {
+          const card = this.sessionQueue[this.currentIndex].card;
+          const payload = buildReviewPayload({
+            itemType: card.itemType || 'VOCABULARY',
+            itemId: card.itemId,
+            cardType: 'LISTENING',
+            rating: 3,
+            reviewTimeSeconds: elapsedSeconds
+          });
+
+          try {
+            await apiClient('/srs/review', {
+              method: 'POST',
+              body: payload
+            });
+          } catch (apiErr) {
+            console.error('[SRS Listening Review] API submission failed:', apiErr);
+            const errMsg = apiErr?.message || 'Không thể lưu kết quả luyện nghe lên máy chủ.';
+            showToast({
+              type: 'error',
+              title: 'Lỗi đồng bộ SRS',
+              message: `${errMsg} Vui lòng thử lại.`
+            });
+            if (this.dom?.listeningCompletionNotice) {
+              this.dom.listeningCompletionNotice.textContent = `⚠️ Lỗi lưu kết quả (${errMsg}). Vui lòng bấm [Sang từ tiếp theo] để thử lại.`;
+              this.dom.listeningCompletionNotice.classList.remove('d-none');
+            }
+            return;
+          }
+        }
+
+        const nextIndex = this.currentIndex + 1;
+        this.persistProgress('listening', nextIndex);
+      }
+
+      this.stats.totalReviewed++;
+      this.stats.totalTimeSeconds += elapsedSeconds;
+      this.stats.goodEasyCount++;
+
+      this.currentIndex++;
+      if (this.currentIndex >= this.sessionQueue.length) {
+        this.showCompletedState();
+      } else {
+        this.renderCurrentCard();
+      }
+    } finally {
+      this.isSubmittingListening = false;
+      if (this.dom?.btnListeningNext) {
+        this.dom.btnListeningNext.disabled = false;
+        this.dom.btnListeningNext.removeAttribute('aria-busy');
+      }
+    }
+  }
+
+  /**
    * Toggles 3D card flip between front prompt and back answer.
    */
   toggleFlip() {
@@ -3908,7 +4328,7 @@ export class SrsReviewController {
         const payload = buildReviewPayload({
           itemType: card.itemType || 'VOCABULARY',
           itemId: card.itemId,
-          cardType: card.cardType || (this.activeMode === 'writing' ? 'WRITING' : 'READING'),
+          cardType: card.cardType || (this.activeMode === 'writing' ? 'WRITING' : (this.activeMode === 'listening' ? 'LISTENING' : 'READING')),
           rating: numRating,
           reviewTimeSeconds: elapsedSeconds
         });
@@ -4039,7 +4459,8 @@ export class SrsReviewController {
     const queueItem = this.sessionQueue[this.currentIndex];
     if (!queueItem || !queueItem.card) return;
     const card = queueItem.card;
-    const textToSpeak = card.hanzi || card.character || '';
+    const rawText = card.hanzi || card.character || '';
+    const textToSpeak = (rawText.includes('(') || rawText.includes('/')) ? rawText.split(/[()\/]/)[0].trim() : rawText;
 
     const cacheKey = `${card.itemType}_${card.itemId}`;
     if (this.audioCache.has(cacheKey)) {
@@ -4048,6 +4469,11 @@ export class SrsReviewController {
         return playPronunciation({ text: textToSpeak, audioUrl: cached, button: triggerButton });
       }
       return speakHanzi(textToSpeak, { button: triggerButton });
+    }
+
+    if (card.audioUrl) {
+      this.audioCache.set(cacheKey, card.audioUrl);
+      return playPronunciation({ text: textToSpeak, audioUrl: card.audioUrl, button: triggerButton });
     }
 
     try {
@@ -4137,6 +4563,14 @@ export class SrsReviewController {
           // Temporarily locked in State 1
           e.preventDefault();
         }
+      } else if (this.activeMode === 'listening') {
+        // Space or Enter: only allowed when completed at least once
+        if (this.hasCompletedListeningForCurrentCard) {
+          e.preventDefault();
+          this.nextListeningItem();
+        } else {
+          e.preventDefault();
+        }
       }
       return;
     }
@@ -4157,6 +4591,7 @@ export class SrsReviewController {
   showCompletedState() {
     this.cleanupTimer();
     this.destroyWritingEngines();
+    this.destroyListeningIme();
     this.setViewState('completed');
 
     if (this.dom.completedTitle) {
