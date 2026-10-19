@@ -5,7 +5,7 @@
  * 
  * Responsibilities:
  * - Single authoritative navbar session rendering across the application.
- * - Renders Guest state (Đăng nhập, Bắt đầu học) vs Authenticated state
+ * - Renders Guest state (Đăng nhập, Đăng ký) vs Authenticated state
  *   (User Name, Role Badge, Hồ sơ link, Đăng xuất button).
  * - Reacts automatically to auth events: 'auth:login', 'auth:logout',
  *   'auth:expired', 'auth:update', and multi-tab synchronization.
@@ -83,22 +83,38 @@ export function renderNavbarAuth(container) {
 
   if (!authManager.isAuthenticated()) {
     // --- GUEST STATE ---
+    const rawPath = (typeof window !== 'undefined' && window.location && window.location.pathname) ? window.location.pathname : '';
+    const currentPage = (rawPath.split('/').pop() || '').toLowerCase();
+
+    const isLoginActive = currentPage === 'login.html';
+    const isRegisterActive = currentPage === 'register.html';
+
+    const loginAttrs = {
+      href: 'login.html',
+      id: 'navLoginBtn'
+    };
+    if (isLoginActive) {
+      loginAttrs['aria-current'] = 'page';
+    }
+
+    const registerAttrs = {
+      href: 'register.html',
+      id: 'navRegisterBtn'
+    };
+    if (isRegisterActive) {
+      registerAttrs['aria-current'] = 'page';
+    }
+
     const loginLink = createSafeElement('a', {
-      className: 'btn-chinese-secondary py-2 px-3 text-decoration-none',
+      className: `btn-chinese-secondary py-2 px-3 text-decoration-none${isLoginActive ? ' active' : ''}`,
       text: 'Đăng nhập',
-      attrs: {
-        href: 'login.html',
-        id: 'navLoginBtn'
-      }
+      attrs: loginAttrs
     });
 
     const registerLink = createSafeElement('a', {
-      className: 'btn-chinese-primary py-2 px-3 text-decoration-none',
-      text: 'Bắt đầu học',
-      attrs: {
-        href: 'register.html',
-        id: 'navRegisterBtn'
-      }
+      className: `btn-chinese-primary py-2 px-3 text-decoration-none${isRegisterActive ? ' active' : ''}`,
+      text: 'Đăng ký',
+      attrs: registerAttrs
     });
 
     container.appendChild(loginLink);
@@ -124,6 +140,19 @@ export function renderNavbarAuth(container) {
           href: 'profile.html',
           id: 'navProfileBtn',
           'aria-label': 'Trang quản lý hồ sơ cá nhân'
+        }
+      })
+    );
+
+    // Learning Progress link (Tiến độ học tập - ngay dưới Hồ sơ)
+    dropdownLinks.push(
+      createSafeElement('a', {
+        className: 'nav-dropdown-item py-2 px-3 text-decoration-none d-flex align-items-center gap-2',
+        text: 'Tiến độ học tập',
+        attrs: {
+          href: 'srs-dashboard.html',
+          id: 'navLearningProgressBtn',
+          'aria-label': 'Theo dõi tiến độ học tập và cài đặt SRS'
         }
       })
     );
@@ -351,6 +380,77 @@ export function renderNavbarAuth(container) {
   }
 }
 
+const REVIEW_HUB_SUBPAGES = new Set([
+  'srs-review.html',
+  'srs-dashboard.html',
+  'lessons.html',
+  'lesson-detail.html'
+]);
+
+/**
+ * Synchronizes the active state and aria-current="page" on primary navbar links (.navbar-nav),
+ * ensuring sub-pages of the Review Hub (srs-dashboard.html, lessons.html, lesson-detail.html)
+ * highlight "Ôn tập" (srs-review.html).
+ */
+export function syncActiveNavLinks() {
+  if (typeof window === 'undefined' || typeof document === 'undefined' || !window.location) return;
+  if (typeof document.querySelector !== 'function') return;
+
+  const rawPath = window.location.pathname || '';
+  const currentPage = (rawPath.split('/').pop() || 'index.html').toLowerCase();
+
+  let effectiveNavTarget = currentPage;
+  if (REVIEW_HUB_SUBPAGES.has(currentPage)) {
+    effectiveNavTarget = 'srs-review.html';
+  } else if (currentPage.startsWith('creator-')) {
+    effectiveNavTarget = 'creator-lessons.html';
+  } else if (currentPage.startsWith('moderator-')) {
+    effectiveNavTarget = 'moderator-queue.html';
+  }
+
+  const navContainer = document.querySelector('.navbar-nav');
+  if (!navContainer || typeof navContainer.querySelectorAll !== 'function') return;
+
+  const navLinks = navContainer.querySelectorAll('a.nav-link-custom, a.nav-link');
+  navLinks.forEach((link) => {
+    const href = (link.getAttribute('href') || '').trim();
+    if (!href || href.startsWith('#') || href.startsWith('javascript:')) return;
+
+    const linkPage = href.split('?')[0].split('#')[0].split('/').pop().toLowerCase();
+    const isAdminMatch = currentPage.startsWith('admin-') && linkPage.startsWith('admin-');
+
+    if (linkPage === effectiveNavTarget || isAdminMatch) {
+      if (link.classList) link.classList.add('active');
+      link.setAttribute('aria-current', 'page');
+    } else {
+      if (link.classList) link.classList.remove('active');
+      link.removeAttribute('aria-current');
+    }
+  });
+
+  const loginBtn = document.getElementById('navLoginBtn');
+  if (loginBtn) {
+    if (currentPage === 'login.html') {
+      if (loginBtn.classList) loginBtn.classList.add('active');
+      loginBtn.setAttribute('aria-current', 'page');
+    } else {
+      if (loginBtn.classList) loginBtn.classList.remove('active');
+      loginBtn.removeAttribute('aria-current');
+    }
+  }
+
+  const registerBtn = document.getElementById('navRegisterBtn');
+  if (registerBtn) {
+    if (currentPage === 'register.html') {
+      if (registerBtn.classList) registerBtn.classList.add('active');
+      registerBtn.setAttribute('aria-current', 'page');
+    } else {
+      if (registerBtn.classList) registerBtn.classList.remove('active');
+      registerBtn.removeAttribute('aria-current');
+    }
+  }
+}
+
 /**
  * Initializes the navbar authentication watcher and binds auth lifecycle events.
  * 
@@ -358,6 +458,8 @@ export function renderNavbarAuth(container) {
  * @returns {() => void} Cleanup function to unbind listeners
  */
 export function initNavbarAuth(containerOrId = 'navAuthContainer') {
+  syncActiveNavLinks();
+
   const container = typeof containerOrId === 'string'
     ? document.getElementById(containerOrId)
     : containerOrId;
@@ -392,6 +494,6 @@ export function initNavbarAuth(containerOrId = 'navAuthContainer') {
  * Kept as no-op for backward compatibility.
  */
 export function initNavbarDropdowns() {
-  // No-op: Navbar is flat with direct links (Trang chủ, Bộ thủ, Từ vựng, Bài học, Ôn tập SRS)
+  // No-op: Navbar is flat with direct links (Trang chủ, Bộ thủ, Từ vựng, Ôn tập)
 }
 

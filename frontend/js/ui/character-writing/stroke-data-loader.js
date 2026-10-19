@@ -58,7 +58,8 @@ export async function loadStrokeData(character) {
   const codeHex = cleanChar.codePointAt(0) ? cleanChar.codePointAt(0).toString(16).toUpperCase() : '';
 
   // 1. Node.js environment resolution (unit tests / server-side verification)
-  if (typeof window === 'undefined') {
+  const isNodeEnv = typeof process !== 'undefined' && Boolean(process?.versions?.node);
+  if (isNodeEnv || typeof window === 'undefined') {
     try {
       const fs = await import('node:fs/promises');
       const { fileURLToPath } = await import('node:url');
@@ -104,7 +105,7 @@ export async function loadStrokeData(character) {
   }
 
   // 3. Fallback to approved CDN (jsdelivr) - only in non-browser environments where external connect is unconstrained by CSP
-  if (typeof window === 'undefined') {
+  if (isNodeEnv || typeof window === 'undefined') {
     const cdnUrl = `https://cdn.jsdelivr.net/npm/hanzi-writer-data@2.0/${encodeURIComponent(cleanChar)}.json`;
     try {
       const cdnRes = await fetch(cdnUrl);

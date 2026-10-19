@@ -132,6 +132,7 @@ playwright-report/
 
 # Local artifacts & repo dumps
 /artifacts/
+/scratch/
 repomix-output*.xml
 .kilo/
 .agents/teamwork/

@@ -111,14 +111,16 @@ describe('Regression: Authenticated Links, Relative Paths & Data Isolation', () 
   // ---------------------------------------------------------------------------
   describe('Navbar link generation across auth states & roles', () => {
 
-    test('Unauthenticated guest: renders relative login.html and register.html', () => {
+    test('Unauthenticated guest: renders relative login.html and register.html with scholarly labels', () => {
       const container = new MockElement('div');
       renderNavbarAuth(container);
 
       const links = container.children.filter(c => c.tagName === 'A');
       assert.strictEqual(links.length, 2);
       assert.strictEqual(links[0].getAttribute('href'), 'login.html');
+      assert.strictEqual(links[0].textContent, 'Đăng nhập');
       assert.strictEqual(links[1].getAttribute('href'), 'register.html');
+      assert.strictEqual(links[1].textContent, 'Đăng ký');
     });
 
     test('Authenticated Learner: profile link preserves document-relative profile.html', () => {
@@ -139,6 +141,19 @@ describe('Regression: Authenticated Links, Relative Paths & Data Isolation', () 
       assert.strictEqual(profileLink.getAttribute('href'), 'profile.html');
       assert.ok(!profileLink.getAttribute('href').startsWith('https://khoadzsieucapvippro.github.io/profile.html'),
         'Must NOT strip repository subpath /WebLearnChinese/');
+
+      // Verify learning progress link (#navLearningProgressBtn) is immediately below #navProfileBtn
+      const learningProgressLink = findElementByAttr(container, 'id', 'navLearningProgressBtn');
+      assert.ok(learningProgressLink, 'Learning progress link (#navLearningProgressBtn) must be present in avatar dropdown');
+      assert.strictEqual(learningProgressLink.getAttribute('href'), 'srs-dashboard.html');
+      assert.strictEqual(learningProgressLink.textContent, 'Tiến độ học tập');
+
+      const dropdownPanel = findElementByAttr(container, 'id', 'navAccountDropdownMenu');
+      assert.ok(dropdownPanel, 'Dropdown panel #navAccountDropdownMenu must exist');
+      const dropdownLinksContainer = dropdownPanel.children[1];
+      const profileIdx = dropdownLinksContainer.children.indexOf(profileLink);
+      const progressIdx = dropdownLinksContainer.children.indexOf(learningProgressLink);
+      assert.strictEqual(progressIdx, profileIdx + 1, '#navLearningProgressBtn must appear immediately below #navProfileBtn');
 
       // Verify privileged links are absent for Learner
       assert.strictEqual(findElementByAttr(container, 'id', 'navCreatorStudioBtn'), null);
@@ -548,7 +563,7 @@ describe('Regression: Authenticated Links, Relative Paths & Data Isolation', () 
  */
 function findElementByAttr(node, attrName, attrValue) {
   if (!node) return null;
-  if (node.getAttribute && node.getAttribute(attrName) === attrValue) {
+  if ((node.getAttribute && node.getAttribute(attrName) === attrValue) || node[attrName] === attrValue) {
     return node;
   }
   if (Array.isArray(node.children)) {

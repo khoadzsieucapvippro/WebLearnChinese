@@ -62,6 +62,15 @@ describe('Browser E2E: Authentication UI, Profile & Session Integration', () => 
 
       await page.goto(`${baseUrl}/login.html`, { waitUntil: 'domcontentloaded' });
       await page.waitForSelector('#loginForm');
+      await page.waitForSelector('#navLoginBtn');
+      assert.strictEqual(await page.locator('#navLoginBtn').textContent(), 'Đăng nhập');
+      assert.strictEqual(await page.locator('#navLoginBtn').getAttribute('aria-current'), 'page');
+      assert.ok((await page.locator('#navLoginBtn').getAttribute('class')).includes('active'));
+      assert.strictEqual(await page.locator('#navRegisterBtn').textContent(), 'Đăng ký');
+      assert.strictEqual(await page.locator('#navRegisterBtn').getAttribute('aria-current'), null);
+
+      const footerRegLink = page.locator('a[href="register.html"]');
+      assert.strictEqual((await footerRegLink.last().textContent()).trim(), 'Đăng ký ngay');
 
       // Fill in credentials
       await page.fill('#loginEmail', 'trannghia@example.com');
@@ -123,6 +132,8 @@ describe('Browser E2E: Authentication UI, Profile & Session Integration', () => 
       // Verify navbar returns to Guest state
       await page.waitForSelector('#navLoginBtn');
       await page.waitForSelector('#navRegisterBtn');
+      assert.strictEqual(await page.locator('#navLoginBtn').textContent(), 'Đăng nhập');
+      assert.strictEqual(await page.locator('#navRegisterBtn').textContent(), 'Đăng ký');
 
       const isAuthVisible = await page.locator('#navAuthenticatedSection').count();
       assert.strictEqual(isAuthVisible, 0, 'Authenticated section must be unmounted');
@@ -211,6 +222,12 @@ describe('Browser E2E: Authentication UI, Profile & Session Integration', () => 
 
       await page.goto(`${baseUrl}/register.html`, { waitUntil: 'domcontentloaded' });
       await page.waitForSelector('#registerForm');
+      await page.waitForSelector('#navRegisterBtn');
+      assert.strictEqual(await page.locator('#navRegisterBtn').textContent(), 'Đăng ký');
+      assert.strictEqual(await page.locator('#navRegisterBtn').getAttribute('aria-current'), 'page');
+      assert.ok((await page.locator('#navRegisterBtn').getAttribute('class')).includes('active'));
+      assert.strictEqual(await page.locator('#navLoginBtn').textContent(), 'Đăng nhập');
+      assert.strictEqual(await page.locator('#navLoginBtn').getAttribute('aria-current'), null);
 
       await page.fill('#regFullName', 'Học Viên Mới');
       await page.fill('#regEmail', 'newuser@example.com');

@@ -506,8 +506,8 @@ describe('Browser E2E: Interactive SRS Flashcard Review Session (9C.3)', () => {
     }
   });
 
-  // SR-08: Contextual personal notes modal opens from vocabulary card back-face
-  test('SR-08: Contextual personal notes modal opens from vocabulary card back-face', async () => {
+  // SR-08: Redesigned compact inline note on card back (Requirements 1, 2, 3)
+  test('SR-08: Redesigned compact inline editable note on card back with auto-save, char counter, and shortcut protection', async () => {
     const { page, context, getRuntimeErrors } = await createMonitoredPage(browser, {
       viewportWidth: 1280,
       viewportHeight: 720
@@ -523,48 +523,130 @@ describe('Browser E2E: Interactive SRS Flashcard Review Session (9C.3)', () => {
           body: JSON.stringify({
             code: 'SUCCESS',
             message: 'OK',
-            data: [createMockDueCards()[0]] // Vocab card itemId: 101
+            data: [createMockDueCards()[0]] // Vocab card itemId: 101, hanzi: '学'
           })
         });
       });
 
-      let interceptedNotesCall = false;
+      let interceptedNotesGet = false;
+      let interceptedNotesPost = false;
+      let savedNoteContent = '';
+
       await page.route('**/api/v1/vocabularies/101/notes*', async (route) => {
-        interceptedNotesCall = true;
-        await route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify({
-            code: 'SUCCESS',
-            message: 'OK',
-            data: { items: [], page: 0, size: 20, totalElements: 0, totalPages: 0 }
-          })
-        });
+        if (route.request().method() === 'GET') {
+          interceptedNotesGet = true;
+          await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({
+              code: 'SUCCESS',
+              message: 'OK',
+              data: { items: [], page: 0, size: 20, totalElements: 0, totalPages: 0 }
+            })
+          });
+        } else if (route.request().method() === 'POST') {
+          interceptedNotesPost = true;
+          const body = JSON.parse(route.request().postData() || '{}');
+          savedNoteContent = body.content || '';
+          await route.fulfill({
+            status: 201,
+            contentType: 'application/json',
+            body: JSON.stringify({
+              code: 'SUCCESS',
+              message: 'OK',
+              data: { noteId: 999, content: savedNoteContent, createdAt: new Date().toISOString() }
+            })
+          });
+        }
       });
 
       await page.goto(`${baseUrl}/srs-review.html`, { waitUntil: 'domcontentloaded' });
       await page.locator('#srsActiveSession').waitFor({ state: 'visible', timeout: 5000 });
 
-      // Flip card to reveal answer and note button
+      // Flip card to reveal answer
       await page.locator('#flashcard').click();
+      await page.waitForTimeout(150);
+
+      // 1. Requirement 1: Redundant elements strictly hidden/removed
+      const cardTypeBadge = page.locator('#cardTypeBadgeBack');
+      assert.strictEqual(await cardTypeBadge.isHidden(), true, 'Card type badge ("Từ vựng") must be hidden');
+
+      const oldNoteBtn = page.locator('#btnCardNote');
+      assert.strictEqual(await oldNoteBtn.isHidden(), true, 'Old "📝 Ghi chú" button must be hidden');
+
+      const cardBackText = await page.locator('#cardBack').innerText();
+      assert.ok(!cardBackText.includes('Chọn 1 trong 4 mức đánh giá bên dưới để tiếp tục'), 'Bottom helper text must be removed');
+      assert.ok(!cardBackText.includes('Ghi chú đã lưu'), 'Old 2-column "Ghi chú đã lưu" must be removed');
+      assert.ok(!cardBackText.includes('Thêm ghi chú mới'), 'Old 2-column "Thêm ghi chú mới" must be removed');
+
+      // 2. Requirement 2: Single inline note box displayed inside example box with dashed divider
+      const exampleBox = page.locator('#cardBackExampleBox');
+      assert.ok(await exampleBox.isVisible(), 'Example box must be visible for vocabulary with example');
+
+      const inlineNoteContainer = page.locator('#cardInlineNoteContainer');
+      assert.ok(await inlineNoteContainer.isVisible(), 'Inline note container must be visible');
+
+      const inlineNoteDisplay = page.locator('#cardInlineNoteDisplay');
+      assert.ok(await inlineNoteDisplay.isVisible(), 'Inline note display state must be visible initially');
+
+      const initialDisplayText = (await page.locator('#cardInlineNoteText').textContent()).trim();
+      assert.ok(initialDisplayText.includes('Thêm mẹo nhớ hoặc ghi chú...'), 'Empty note must show placeholder');
+
+      // 3. Requirement 2: Click to edit
+      await inlineNoteDisplay.click();
       await page.waitForTimeout(100);
 
-      const noteBtn = page.locator('#btnCardNote');
-      assert.ok(await noteBtn.isVisible(), 'Ghi chú button must be visible on vocabulary card back');
+      const editWrapper = page.locator('#cardInlineNoteEditWrapper');
+      assert.ok(await editWrapper.isVisible(), 'Clicking note switches to edit mode');
 
-      // Click note button
-      await noteBtn.click();
+      const input = page.locator('#cardInlineNoteInput');
+      assert.ok(await input.isVisible(), 'Note input field must be visible');
 
-      // Notes modal opens
-      const notesModal = page.locator('#notesModal');
-      await notesModal.waitFor({ state: 'visible', timeout: 5000 });
-      assert.ok(await notesModal.isVisible(), 'Notes modal must be visible');
-      assert.strictEqual(interceptedNotesCall, true, 'Notes API must be called for vocabId 101');
+      // Check max length 150
+      const maxLength = await input.getAttribute('maxlength');
+      assert.strictEqual(maxLength, '150', 'Note input must have maxlength="150"');
 
-      // Close notes modal via Close button
-      const closeBtn = page.locator('#notesModalCloseBtn');
-      await closeBtn.click();
-      await notesModal.waitFor({ state: 'hidden', timeout: 5000 });
+      // Check live character counter
+      const charCount = page.locator('#cardInlineNoteCharCount');
+      assert.strictEqual((await charCount.textContent()).trim(), '0/150', 'Initial counter must show 0/150');
+
+      // Check checkmark save button exists and is visible at end of input bar
+      const saveBtn = page.locator('#btnSaveInlineNote');
+      assert.ok(await saveBtn.isVisible(), 'Checkmark save button must be visible at end of input bar');
+
+      // 4. Requirement 3: Typing & keyboard safety (Space & 1..4 locked while editing)
+      await input.type('Học tập mỗi ngày');
+      assert.strictEqual((await charCount.textContent()).trim(), '16/150', 'Character counter must update live to 16/150');
+
+      // Press Space while typing in input - must NOT flip card back
+      await page.keyboard.press('Space');
+      await page.waitForTimeout(100);
+      const isFlipped = await page.evaluate(() => {
+        const fc = document.getElementById('flashcard');
+        return fc ? (fc.classList.contains('flipped') || fc.classList.contains('is-flipped')) : false;
+      });
+      assert.strictEqual(isFlipped, true, 'Space key inside input must NOT flip flashcard');
+
+      // Press rating key '3' while typing in input - must NOT trigger rating
+      await page.keyboard.press('3');
+      await page.waitForTimeout(100);
+      const activeCardText = (await page.locator('#cardBackHanzi').textContent()).trim();
+      assert.strictEqual(activeCardText, '学', 'Rating shortcut inside input must NOT advance card');
+
+      // 5. Auto-save on Enter
+      await page.keyboard.press('Enter');
+      await page.waitForTimeout(200);
+
+      // Verify edit mode closed and display mode reopened
+      assert.strictEqual(await editWrapper.isHidden(), true, 'Edit mode must close on Enter');
+      assert.ok(await inlineNoteDisplay.isVisible(), 'Display mode must be restored');
+
+      // Verify display text updated
+      const updatedDisplayText = (await page.locator('#cardInlineNoteText').textContent()).trim();
+      assert.ok(updatedDisplayText.includes('Học tập mỗi ngày 3'), 'Updated text must display saved note content');
+
+      // Verify API was called
+      assert.strictEqual(interceptedNotesPost, true, 'POST /vocabularies/101/notes must be called to persist note');
 
       assert.strictEqual(getRuntimeErrors().length, 0, 'Zero unexpected runtime errors');
     } finally {
@@ -919,6 +1001,145 @@ describe('Browser E2E: Interactive SRS Flashcard Review Session (9C.3)', () => {
       await page.waitForTimeout(300);
 
       assert.strictEqual(reviewCallsCount, 1, 'Double submission guard must allow only 1 review request');
+
+      assert.strictEqual(getRuntimeErrors().length, 0, 'Zero unexpected runtime errors');
+    } finally {
+      await context.close();
+    }
+  });
+
+
+  // SR-13: Radical card note in srs_radical_notes and race-condition immunity during rating
+  test('SR-13: Radical card note in srs_radical_notes and zero cross-card pollution when rating during edit', async () => {
+    const { page, context, getRuntimeErrors } = await createMonitoredPage(browser, {
+      viewportWidth: 1280,
+      viewportHeight: 720
+    });
+
+    try {
+      await setupAuthenticatedSession(page);
+
+      await page.addInitScript(() => {
+        // Pre-populate radical 1 note
+        localStorage.setItem('srs_radical_notes', JSON.stringify({
+          '1': {
+            radicalId: 1,
+            content: 'Nét gạch ngang nhất nguyên',
+            updatedAt: new Date().toISOString()
+          }
+        }));
+      });
+
+      await page.route('**/api/v1/srs/due*', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            code: 'SUCCESS',
+            message: 'OK',
+            data: [
+              {
+                cardId: 201,
+                itemType: 'RADICAL',
+                itemId: 1,
+                cardType: 'READING',
+                hanzi: '一',
+                pinyin: 'yī',
+                meaningVi: 'Số một',
+                strokeCount: 1,
+                exampleSentence: null,
+                exampleTranslation: null,
+                state: 'REVIEW',
+                rating: 3,
+                due: true
+              },
+              {
+                cardId: 202,
+                itemType: 'VOCABULARY',
+                itemId: 102,
+                cardType: 'READING',
+                hanzi: '生',
+                pinyin: 'shēng',
+                meaningVi: 'Sinh',
+                exampleSentence: '他是大学学生。',
+                exampleTranslation: 'Anh ấy là sinh viên.',
+                state: 'REVIEW',
+                rating: 3,
+                due: true
+              }
+            ]
+          })
+        });
+      });
+
+      await page.route('**/api/v1/srs/review*', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ code: 'SUCCESS', message: 'OK', data: {} })
+        });
+      });
+
+      await page.route('**/api/v1/vocabularies/102/notes*', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ code: 'SUCCESS', message: 'OK', data: { items: [] } })
+        });
+      });
+
+      await page.goto(`${baseUrl}/srs-review.html`, { waitUntil: 'domcontentloaded' });
+      await page.locator('#srsActiveSession').waitFor({ state: 'visible', timeout: 5000 });
+
+      // Flip Radical card
+      await page.locator('#flashcard').click();
+      await page.waitForTimeout(200);
+
+      // Verify stroke count badge is visible
+      const strokeCountBadge = page.locator('#cardBackStrokeCount');
+      assert.strictEqual(await strokeCountBadge.isVisible(), true, 'Stroke count badge must be visible for radicals');
+
+      // Verify radical note was loaded from srs_radical_notes
+      const initialText = (await page.locator('#cardInlineNoteText').textContent()).trim();
+      assert.ok(initialText.includes('Nét gạch ngang nhất nguyên'), 'Must display note from srs_radical_notes');
+
+      // Edit radical note
+      await page.locator('#cardInlineNoteDisplay').click();
+      await page.waitForTimeout(100);
+
+      const input = page.locator('#cardInlineNoteInput');
+      await input.fill('Mẹo nhớ số 1 sửa đổi');
+
+      // Verify IME composition does not submit on Enter
+      await page.evaluate(() => {
+        const inp = document.getElementById('cardInlineNoteInput');
+        const evt = new KeyboardEvent('keydown', { key: 'Enter', keyCode: 229, bubbles: true });
+        Object.defineProperty(evt, 'isComposing', { value: true });
+        inp.dispatchEvent(evt);
+      });
+      await page.waitForTimeout(100);
+      assert.strictEqual(await input.isVisible(), true, 'IME Enter must not exit edit mode');
+
+      // Directly click rating button [3] to advance to next card (Vocab: '生')
+      await page.locator('#btnRatingGood').click();
+      await page.waitForTimeout(500);
+
+      // Flip card 2
+      await page.locator('#flashcard').click();
+      await page.waitForTimeout(200);
+
+      // Check card 2 is indeed '生' and has empty note placeholder (NOT polluted by Card 1!)
+      const card2Hanzi = (await page.locator('#cardBackHanzi').textContent()).trim();
+      assert.strictEqual(card2Hanzi, '生', 'Must advance to card 2');
+
+      const card2NoteText = (await page.locator('#cardInlineNoteText').textContent()).trim();
+      assert.ok(card2NoteText.includes('Thêm mẹo nhớ hoặc ghi chú...'), 'Card 2 must show empty placeholder, not Card 1 note');
+
+      // Verify srs_radical_notes in localStorage was updated with the edited content
+      const storedRadicals = await page.evaluate(() => {
+        return JSON.parse(localStorage.getItem('srs_radical_notes') || '{}');
+      });
+      assert.strictEqual(storedRadicals['1']?.content, 'Mẹo nhớ số 1 sửa đổi', 'srs_radical_notes must persist edited note');
 
       assert.strictEqual(getRuntimeErrors().length, 0, 'Zero unexpected runtime errors');
     } finally {

@@ -1060,7 +1060,9 @@ class DemoFallbackEngine {
       }
 
       const lessonId = query.lessonId ? parseInt(query.lessonId, 10) : 1;
-      const lesson = data.lessons.find(l => l.lessonId === lessonId) || data.lessons[0];
+      const lesson = query.lessonId
+        ? data.lessons.find(l => l.lessonId === lessonId)
+        : data.lessons[0];
       const practiceCards = (lesson?.vocabularies || []).map((v, i) => ({
         cardId: v.vocabId,
         itemType: 'VOCABULARY',
@@ -1197,18 +1199,22 @@ class DemoFallbackEngine {
     // -------------------------------------------------------------------------
     // 7. PERSONAL NOTES
     // -------------------------------------------------------------------------
-    const notesListMatch = cleanPath.match(/^\/(?:vocabularies|vocabulary|notes\/vocabulary)\/(\d+)(?:\/notes)?$/);
+    const notesListMatch = cleanPath.match(/^\/(?:vocabularies|vocabulary|notes\/vocabulary|radicals)\/(\d+)(?:\/notes)?$/);
     if (notesListMatch) {
-      const vocabId = parseInt(notesListMatch[1], 10);
+      const targetId = parseInt(notesListMatch[1], 10);
+      const isRadicalPath = cleanPath.startsWith('/radicals');
 
       if (method === 'GET') {
         const currentAccount = this.getCurrentAccount();
-        const vocabNotes = data.notes.filter(n => n.vocabId === vocabId && (!n.accountId || n.accountId === currentAccount.accountId));
+        const itemNotes = data.notes.filter(n => {
+          const idMatch = isRadicalPath ? n.radicalId === targetId : n.vocabId === targetId;
+          return idMatch && (!n.accountId || n.accountId === currentAccount.accountId);
+        });
         return {
-          items: vocabNotes,
+          items: itemNotes,
           page: 0,
           size: 20,
-          totalElements: vocabNotes.length,
+          totalElements: itemNotes.length,
           totalPages: 1
         };
       }
@@ -1218,7 +1224,7 @@ class DemoFallbackEngine {
         const newNote = {
           noteId: Date.now(),
           accountId: currentAccount.accountId,
-          vocabId,
+          ...(isRadicalPath ? { radicalId: targetId } : { vocabId: targetId }),
           content: String(body?.content || '').trim(),
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()

@@ -77,6 +77,24 @@ describe('Static HTML5 Semantics & Project Invariants', () => {
           assert.ok(!regex.test(html), `Obsolete presentational tag <${tag}> must not be used in ${fileName}`);
         }
       });
+
+      test('enforces guest navbar register button label is "Đăng ký" and not "Bắt đầu học"', () => {
+        const navAuthMatch = html.match(/<div[^>]*id=["']navAuthContainer["'][^>]*>([\s\S]*?)<\/div>/i);
+        if (navAuthMatch && navAuthMatch[1].includes('register.html')) {
+          const registerLinkMatch = navAuthMatch[1].match(/<a[^>]*href=["']register\.html["'][^>]*>([\s\S]*?)<\/a>/i);
+          assert.ok(registerLinkMatch, `${fileName} navAuthContainer contains register.html link`);
+          const label = registerLinkMatch[1].trim();
+          assert.strictEqual(label, 'Đăng ký', `Guest register button in ${fileName} navbar must have text "Đăng ký" (got "${label}")`);
+        }
+      });
+
+      if (fileName === 'login.html') {
+        test('enforces login.html switch link to registration is "Đăng ký ngay"', () => {
+          const switchLinkMatch = html.match(/<a[^>]*href=["']register\.html["'][^>]*style=["'][^"']*["']>([\s\S]*?)<\/a>/i);
+          assert.ok(switchLinkMatch, 'login.html must have a styled switch link to register.html');
+          assert.strictEqual(switchLinkMatch[1].trim(), 'Đăng ký ngay');
+        });
+      }
     });
   }
 });

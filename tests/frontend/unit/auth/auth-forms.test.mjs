@@ -330,7 +330,37 @@ describe('Authentication Form Validation & Business Constraints', () => {
       assert.ok(loginBtn, 'Must render login button for guest');
       assert.ok(registerBtn, 'Must render register button for guest');
       assert.strictEqual(loginBtn.textContent, 'Đăng nhập');
-      assert.strictEqual(registerBtn.textContent, 'Bắt đầu học');
+      assert.strictEqual(registerBtn.textContent, 'Đăng ký');
+      assert.strictEqual(loginBtn.getAttribute('aria-current'), null);
+      assert.strictEqual(registerBtn.getAttribute('aria-current'), null);
+    });
+
+    test('renderNavbarAuth assigns active state and aria-current on register.html', () => {
+      globalThis.window.location.pathname = '/register.html';
+      const container = new MockElement('div');
+      renderNavbarAuth(container);
+
+      const registerBtn = container.querySelector('#navRegisterBtn');
+      const loginBtn = container.querySelector('#navLoginBtn');
+      assert.strictEqual(registerBtn.textContent, 'Đăng ký');
+      assert.strictEqual(registerBtn.getAttribute('aria-current'), 'page');
+      assert.ok(registerBtn.classList.contains('active'));
+      assert.strictEqual(loginBtn.getAttribute('aria-current'), null);
+      assert.ok(!loginBtn.classList.contains('active'));
+    });
+
+    test('renderNavbarAuth assigns active state and aria-current on login.html', () => {
+      globalThis.window.location.pathname = '/login.html';
+      const container = new MockElement('div');
+      renderNavbarAuth(container);
+
+      const registerBtn = container.querySelector('#navRegisterBtn');
+      const loginBtn = container.querySelector('#navLoginBtn');
+      assert.strictEqual(loginBtn.textContent, 'Đăng nhập');
+      assert.strictEqual(loginBtn.getAttribute('aria-current'), 'page');
+      assert.ok(loginBtn.classList.contains('active'));
+      assert.strictEqual(registerBtn.getAttribute('aria-current'), null);
+      assert.ok(!registerBtn.classList.contains('active'));
     });
 
     test('renderNavbarAuth renders User Info, Role Badge, Profile link, and Logout when authenticated', () => {

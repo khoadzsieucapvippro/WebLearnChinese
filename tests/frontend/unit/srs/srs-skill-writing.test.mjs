@@ -13,7 +13,7 @@
  * =============================================================================
  */
 
-import { test, describe } from 'node:test';
+import { test, describe, before } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   splitHanziCharacters,
@@ -363,4 +363,242 @@ describe('Unit: Multi-Skill SRS & Vocabulary Writing Orchestrator', () => {
       assert.strictEqual(savedIndex, 1, 'Progress saved index must be 1');
     });
   });
+
+  describe('6. Writing Mode 3-State Lifecycle & Next Button Rules (Task Redesign)', () => {
+    function makeEl(tag = 'div') {
+      const classes = new Set();
+      const children = [];
+      const nodeUpper = tag.toUpperCase();
+      const el = {
+        tagName: nodeUpper,
+        nodeName: nodeUpper,
+        parentNode: null,
+        classList: {
+          add: (c) => classes.add(c),
+          remove: (c) => classes.delete(c),
+          contains: (c) => classes.has(c),
+          toggle: (c, val) => (val ?? !classes.has(c)) ? classes.add(c) : classes.delete(c)
+        },
+        style: {
+          removeProperty: () => {},
+          setProperty: () => {}
+        },
+        appendChild: (ch) => { if (ch) ch.parentNode = el; children.push(ch); return ch; },
+        removeChild: (ch) => { const idx = children.indexOf(ch); if (idx >= 0) children.splice(idx, 1); return ch; },
+        replaceChildren: (...args) => { children.length = 0; if (args.length) children.push(...args); },
+        setAttribute: () => {},
+        setAttributeNS: () => {},
+        removeAttribute: () => {},
+        removeAttributeNS: () => {},
+        getAttribute: () => null,
+        getAttributeNS: () => null,
+        addEventListener: () => {},
+        removeEventListener: () => {},
+        getBoundingClientRect: () => ({ left: 0, top: 0, width: 170, height: 170 }),
+        createSVGPoint: () => ({ x: 0, y: 0, matrixTransform: () => ({ x: 0, y: 0 }) }),
+        getScreenCTM: () => ({ inverse: () => ({}) }),
+        textContent: '',
+        innerHTML: '',
+        querySelectorAll: () => []
+      };
+      return el;
+    }
+
+    function createMockDom() {
+      const writingBox1 = makeEl('div');
+      writingBox1.classList.add('writing-rice-grid-box');
+      const writingBox2 = makeEl('div');
+      writingBox2.classList.add('writing-rice-grid-box');
+
+      const canvasContainer = {
+        replaceChildren: () => {},
+        appendChild: () => {},
+        querySelectorAll: (sel) => sel.includes('writing-rice-grid-box') ? [writingBox1, writingBox2] : []
+      };
+
+      const activeSession = makeEl('div'); // no d-none
+
+      return {
+        writingRoom: makeEl('div'),
+        writingRoomBadge: makeEl('span'),
+        btnWritingAudio: makeEl('button'),
+        writingPromptPinyin: makeEl('div'),
+        writingPromptHanViet: makeEl('span'),
+        writingPromptMeaning: makeEl('span'),
+        writingPromptStrokeCount: makeEl('div'),
+        writingMissingWarning: makeEl('div'),
+        writingCanvasContainer: canvasContainer,
+        writingCompletionNotice: makeEl('div'),
+        writingToolsRow: makeEl('div'),
+        writingNextContainer: makeEl('div'),
+        btnWritingReplay: makeEl('button'),
+        btnWritingOutline: makeEl('button'),
+        btnWritingClear: makeEl('button'),
+        btnWritingNext: makeEl('button'),
+        flashcard: makeEl('div'),
+        activeSession,
+        writingBox1,
+        writingBox2
+      };
+    }
+
+    before(() => {
+      if (typeof global.window === 'undefined') {
+        global.window = { location: { href: 'http://localhost' } };
+      }
+      if (typeof global.document === 'undefined') {
+        global.document = {
+          createElement: (tag) => makeEl(tag),
+          createElementNS: (ns, tag) => makeEl(tag),
+          getElementById: () => null,
+          querySelector: () => null,
+          documentElement: { getAttribute: () => null },
+          body: { classList: { contains: () => false } },
+          addEventListener: () => {},
+          removeEventListener: () => {}
+        };
+      } else {
+        if (!global.document.createElementNS) {
+          global.document.createElementNS = (ns, tag) => makeEl(tag);
+        }
+        if (!global.document.createElement) {
+          global.document.createElement = (tag) => makeEl(tag);
+        }
+        if (!global.document.addEventListener) {
+          global.document.addEventListener = () => {};
+        }
+        if (!global.document.removeEventListener) {
+          global.document.removeEventListener = () => {};
+        }
+      }
+    });
+
+    test('State 1 (Mới vào từ mới): Next button is hidden, Space/Enter locked, 3 tool buttons shown', async () => {
+      const controller = new SrsReviewController();
+      controller.activeMode = 'writing';
+      controller.dom = createMockDom();
+      controller.sessionQueue = [{ card: { itemId: 101, itemType: 'VOCABULARY' } }];
+      controller.currentIndex = 0;
+      controller.playPronunciation = () => {};
+
+      const card = { itemId: 101, itemType: 'VOCABULARY', hanzi: '请', pinyin: 'qǐng', meaningVi: 'Mời' };
+      await controller.renderWritingRoomCard(card);
+
+      // Verify State 1 invariants
+      assert.strictEqual(controller.hasCompletedWritingForCurrentCard, false, 'Card must not be completed initially');
+      assert.strictEqual(controller.dom.btnWritingNext.classList.contains('writing-next-hidden'), true, 'Next button must be hidden in State 1');
+      assert.strictEqual(controller.dom.btnWritingAudio.classList.contains('d-none'), true, 'Audio button must be hidden in State 1');
+      assert.strictEqual(controller.dom.writingCompletionNotice.classList.contains('d-none'), true, 'Completion notice must be hidden in State 1');
+      assert.strictEqual(controller.dom.btnWritingOutline.classList.contains('d-none'), false, 'Outline button must be visible in State 1');
+
+      // Verify Space/Enter locked
+      let advanced = false;
+      controller.nextWritingItem = () => { advanced = true; };
+
+      let defaultPrevented = false;
+      const fakeEvent = { code: 'Space', key: ' ', preventDefault: () => { defaultPrevented = true; } };
+      controller.handleKeydown(fakeEvent);
+
+      assert.strictEqual(defaultPrevented, true, 'Space keydown must be prevented');
+      assert.strictEqual(advanced, false, 'Space must NOT advance to next item in State 1');
+      controller.writingEngines.forEach(e => e.destroy?.());
+    });
+
+    test('State 2 (Khi hoàn thành nét cuối): Next button unlocked, Audio displayed, rice grid green border, completion notice visible', () => {
+      const controller = new SrsReviewController();
+      controller.activeMode = 'writing';
+      controller.dom = createMockDom();
+      controller.sessionQueue = [{ card: { itemId: 101, itemType: 'VOCABULARY' } }];
+      controller.currentIndex = 0;
+      let audioPlayed = false;
+      controller.playPronunciation = () => { audioPlayed = true; };
+
+      // Simulate completion transition
+      controller.handleWritingItemCompleted();
+
+      // Verify State 2 invariants
+      assert.strictEqual(controller.hasCompletedWritingForCurrentCard, true, 'hasCompletedWritingForCurrentCard must be true');
+      assert.strictEqual(controller.isCurrentWritingCompleted, true, 'isCurrentWritingCompleted must be true');
+      assert.strictEqual(audioPlayed, true, 'Pronunciation must be automatically triggered');
+      assert.strictEqual(controller.dom.btnWritingAudio.classList.contains('d-none'), false, 'Audio speaker button must be visible');
+      assert.strictEqual(controller.dom.writingBox1.classList.contains('is-completed'), true, 'Rice grid box must have is-completed green border');
+      assert.strictEqual(controller.dom.writingCompletionNotice.classList.contains('d-none'), false, 'Completion notice "✓ Hoàn thành!" must be visible');
+      assert.strictEqual(controller.dom.btnWritingOutline.classList.contains('d-none'), true, 'Outline button must be hidden in State 2');
+      assert.strictEqual(controller.dom.btnWritingNext.classList.contains('writing-next-hidden'), false, 'Next button must be visible in State 2');
+
+      // Verify Space/Enter unlocked
+      let advanced = false;
+      controller.nextWritingItem = () => { advanced = true; };
+
+      const fakeSpace = { code: 'Space', key: ' ', preventDefault: () => {} };
+      controller.handleKeydown(fakeSpace);
+      assert.strictEqual(advanced, true, 'Space must advance when card is completed');
+
+      advanced = false;
+      const fakeEnter = { code: 'Enter', key: 'Enter', preventDefault: () => {} };
+      controller.handleKeydown(fakeEnter);
+      assert.strictEqual(advanced, true, 'Enter must advance when card is completed');
+    });
+
+    test('State 3 (Khi bấm "Viết lại" sau khi đã hoàn thành): Next button REMAINS visible, boxes return to gray, outline button returns', () => {
+      const controller = new SrsReviewController();
+      controller.activeMode = 'writing';
+      controller.dom = createMockDom();
+      controller.sessionQueue = [{ card: { itemId: 101, itemType: 'VOCABULARY' } }];
+      controller.currentIndex = 0;
+      controller.playPronunciation = () => {};
+
+      // 1. First complete the card (State 2)
+      controller.handleWritingItemCompleted();
+      assert.strictEqual(controller.hasCompletedWritingForCurrentCard, true);
+      assert.strictEqual(controller.dom.btnWritingNext.classList.contains('writing-next-hidden'), false);
+
+      // 2. User clicks "Viết lại"
+      let quizRestarted = false;
+      controller.writingEngines = [{ startQuizSession: () => { quizRestarted = true; } }];
+      controller.clearWriting();
+
+      // Verify State 3 invariants
+      assert.strictEqual(quizRestarted, true, 'Writing engine quiz session must be restarted');
+      assert.strictEqual(controller.dom.writingBox1.classList.contains('is-completed'), false, 'Rice grid boxes must lose is-completed border (return to normal gray)');
+      assert.strictEqual(controller.dom.writingCompletionNotice.classList.contains('d-none'), true, 'Completion notice must be hidden during re-practice');
+      assert.strictEqual(controller.dom.btnWritingOutline.classList.contains('d-none'), false, 'Outline button must return during re-practice');
+      assert.strictEqual(controller.dom.btnWritingAudio.classList.contains('d-none'), false, 'Audio button must remain visible');
+
+      // CRITICAL INVARIANT: Next button and shortcuts MUST REMAIN VISIBLE & ACTIVE!
+      assert.strictEqual(controller.dom.btnWritingNext.classList.contains('writing-next-hidden'), false, 'Next button MUST REMAIN VISIBLE in State 3');
+
+      let advanced = false;
+      controller.nextWritingItem = () => { advanced = true; };
+      controller.handleKeydown({ code: 'Space', key: ' ', preventDefault: () => {} });
+      assert.strictEqual(advanced, true, 'Space shortcut MUST REMAIN ACTIVE in State 3');
+    });
+
+    test('Transition to completely new word resets to State 1', async () => {
+      const controller = new SrsReviewController();
+      controller.activeMode = 'writing';
+      controller.dom = createMockDom();
+      controller.sessionQueue = [{ card: { itemId: 101, itemType: 'VOCABULARY' } }];
+      controller.currentIndex = 0;
+      controller.playPronunciation = () => {};
+
+      // Complete card 1
+      controller.handleWritingItemCompleted();
+      assert.strictEqual(controller.hasCompletedWritingForCurrentCard, true);
+      assert.strictEqual(controller.dom.btnWritingNext.classList.contains('writing-next-hidden'), false);
+
+      // Advance to completely new card (Word 2)
+      const card2 = { itemId: 102, itemType: 'VOCABULARY', hanzi: '谢', pinyin: 'xiè', meaningVi: 'Cảm ơn' };
+      await controller.renderWritingRoomCard(card2);
+
+      // Verify clean reset to State 1
+      assert.strictEqual(controller.hasCompletedWritingForCurrentCard, false, 'hasCompletedWritingForCurrentCard must reset to false');
+      assert.strictEqual(controller.isCurrentWritingCompleted, false, 'isCurrentWritingCompleted must reset to false');
+      assert.strictEqual(controller.dom.btnWritingNext.classList.contains('writing-next-hidden'), true, 'Next button must be hidden again for new word');
+      assert.strictEqual(controller.dom.btnWritingAudio.classList.contains('d-none'), true, 'Audio button must be hidden again for new word');
+      assert.strictEqual(controller.dom.btnWritingOutline.classList.contains('d-none'), false, 'Outline button must be visible again for new word');
+      controller.writingEngines.forEach(e => e.destroy?.());
+    });
+  });
 });
+

@@ -1502,7 +1502,7 @@ dialog:not([open]) {
 }
 
 .radical-video-play-btn:hover {
-  background-color: #b91c1c;
+  background-color: var(--color-primary-dark, #A82E18);
   transform: scale(1.05);
 }
 
@@ -2492,11 +2492,8 @@ dialog:not([open]) {
 }
 
 .flashcard-face {
-  position: absolute;
   width: 100%;
-  height: 100%;
-  top: 0;
-  left: 0;
+  min-height: 380px;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   border-radius: var(--radius-lg);
@@ -2518,21 +2515,43 @@ dialog:not([open]) {
 }
 
 .flashcard-face-front {
+  position: relative;
   transform: rotateY(0deg);
 }
 
+.flashcard.flipped .flashcard-face-front {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  pointer-events: none;
+}
+
 .flashcard-face-back {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
   transform: rotateY(180deg);
   background-color: var(--color-bg-surface);
+}
+
+.flashcard.flipped .flashcard-face-back {
+  position: relative;
+  height: auto;
+  overflow: visible;
+  pointer-events: auto;
 }
 
 /* Flashcard Typography & Badges */
 .flashcard-hanzi {
   font-family: var(--font-hanzi);
   font-size: clamp(3.6rem, 10vw, 5.5rem);
-  font-weight: 700;
+  font-weight: 400;
   line-height: 1.2;
-  color: var(--color-accent-primary);
+  color: var(--color-text-primary, #111827);
   margin-bottom: var(--space-2);
   letter-spacing: 0.02em;
   text-rendering: optimizeLegibility;
@@ -3678,5 +3697,632 @@ dialog:not([open]) {
   border-bottom: none;
 }
 
+/* =============================================================================
+   SRS Review: Compact Single Inline Note on Card Back
+   ============================================================================= */
+.card-inline-note-container {
+  width: 100%;
+  position: relative;
+  user-select: text;
+}
+
+.card-inline-note-display {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2, 8px);
+  padding: 6px 10px;
+  border-radius: var(--radius-sm, 6px);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  background-color: rgba(0, 0, 0, 0.02);
+  border: 1px dashed transparent;
+  min-height: 32px;
+}
+
+.card-inline-note-display:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+  border-color: var(--color-border, #d1d5db);
+}
+
+.card-inline-note-display:focus-visible {
+  outline: 2px solid var(--color-primitive-cinnabar-600, #c83c23);
+  outline-offset: 1px;
+}
+
+.card-inline-note-text {
+  font-size: 0.82rem;
+  line-height: 1.4;
+  color: var(--color-text-secondary, #4b5563);
+  word-break: break-word;
+  flex: 1;
+  text-align: left;
+}
+
+.card-inline-note-text.is-empty {
+  color: var(--color-text-muted, #9ca3af);
+  font-style: italic;
+}
+
+.card-inline-note-edit-icon {
+  font-size: 0.75rem;
+  opacity: 0.35;
+  flex-shrink: 0;
+  transition: opacity 0.15s ease;
+}
+
+.card-inline-note-display:hover .card-inline-note-edit-icon {
+  opacity: 0.8;
+}
+
+.card-inline-note-edit-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.card-inline-note-input {
+  font-size: 0.82rem;
+  padding-right: 86px !important;
+  background-color: #ffffff;
+  border-color: var(--color-primitive-cinnabar-600, #c83c23) !important;
+  box-shadow: 0 0 0 2px rgba(200, 60, 35, 0.12) !important;
+}
+
+.card-inline-note-save-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: none;
+  background-color: var(--color-primitive-cinnabar-600, #c83c23);
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+  touch-action: manipulation;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.card-inline-note-save-btn:hover {
+  background-color: #a82e18;
+  transform: scale(1.06);
+}
+
+.card-inline-note-save-btn:active {
+  transform: scale(0.94);
+}
+
+.card-inline-note-save-btn:focus-visible {
+  outline: 2px solid var(--color-primitive-cinnabar-600, #c83c23);
+  outline-offset: 2px;
+}
+
+.card-inline-note-char-count {
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-muted, #9ca3af);
+  pointer-events: none;
+  user-select: none;
+}
+
+.card-inline-note-char-count.is-limit {
+  color: var(--color-primitive-cinnabar-600, #c83c23);
+  font-weight: 600;
+}
+
+.card-inline-note-status {
+  font-size: 0.72rem;
+  font-weight: 500;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  user-select: none;
+}
+
+.card-inline-note-status.is-visible {
+  display: inline-block !important;
+  opacity: 1;
+}
+
+.card-inline-note-status.is-fading {
+  opacity: 0;
+  transform: translateY(-2px);
+}
+
+.card-note-divider {
+  border: 0;
+  border-top: 1px dashed var(--color-border, #e5e7eb) !important;
+  margin: 6px 0 !important;
+  opacity: 0.8;
+}
 
 
+
+
+
+
+
+/* =============================================================================
+   SRS Review Center: 2-Screen Unified Architecture (Wireframe 1 & 2)
+   ============================================================================= */
+
+/* 1. Segmented Control 4 Kỹ Năng (Synchronized with Vocabulary HSK Segmented Tabs) */
+.srs-segmented-skills {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  background-color: var(--color-bg-subtle, #f3f1ed);
+  padding: 6px;
+  border-radius: var(--radius-lg, 12px);
+  border: 1px solid var(--color-border, #e5e7eb);
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.srs-segment-btn {
+  appearance: none;
+  border: none;
+  background: transparent;
+  padding: var(--space-2, 0.5rem) var(--space-3, 0.75rem);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-text-secondary, #4b5563);
+  border-radius: var(--radius-md, 8px);
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.srs-segment-btn:hover {
+  color: var(--color-text-primary, #111827);
+  background-color: rgba(255, 255, 255, 0.6);
+}
+
+.srs-segment-btn.active,
+.srs-segment-btn[aria-selected="true"] {
+  background-color: var(--color-bg-surface, #ffffff) !important;
+  color: var(--color-accent-primary, #C83C23) !important;
+  font-weight: 700 !important;
+  box-shadow: var(--shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.08)) !important;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.srs-segment-btn:focus-visible {
+  outline: 2px solid var(--color-accent-primary, #C83C23);
+  outline-offset: 2px;
+}
+
+@media (max-width: 575px) {
+  .srs-segmented-skills {
+    grid-template-columns: repeat(2, 1fr);
+    max-width: 100%;
+    gap: 4px;
+    padding: 4px;
+  }
+  .srs-segment-btn {
+    font-size: 0.8125rem;
+    padding: var(--space-2, 0.5rem) var(--space-1, 0.25rem);
+    min-height: 40px;
+  }
+}
+
+/* 2. Kệ 5 Giáo Trình */
+.srs-curricula-shelf {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  margin-bottom: var(--space-3, 1rem);
+}
+
+@media (max-width: 991px) {
+  .srs-curricula-shelf {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 575px) {
+  .srs-curricula-shelf {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.srs-deck-card {
+  background-color: #ffffff;
+  border: 1.5px solid var(--color-border, #e5e7eb);
+  border-radius: var(--radius-lg, 12px);
+  padding: 12px 10px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  user-select: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 84px;
+  position: relative;
+  text-align: left;
+}
+
+.srs-deck-card:hover {
+  border-color: #d1d5db;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transform: translateY(-1px);
+}
+
+.srs-deck-card.active,
+.srs-deck-card[aria-selected="true"] {
+  border: 2px solid var(--color-accent-primary, #C83C23) !important;
+  background-color: #ffffff !important;
+  box-shadow: 0 4px 14px rgba(200, 60, 35, 0.14) !important;
+}
+
+/* Downward arrow on active deck card */
+.srs-deck-card.active::after,
+.srs-deck-card[aria-selected="true"]::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-top: 7px solid var(--color-accent-primary, #C83C23);
+  z-index: 2;
+}
+
+.srs-deck-card:focus-visible {
+  outline: 2px solid var(--color-accent-primary, #C83C23);
+  outline-offset: 2px;
+}
+
+.srs-deck-title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-text-primary, #111827);
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.srs-deck-meta {
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary, #6b7280);
+  margin-top: 4px;
+  line-height: 1.3;
+}
+
+.srs-deck-due-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.srs-deck-progress,
+.mini-progress {
+  width: 100%;
+  height: 4px;
+  background-color: var(--color-bg-subtle, #f0eee9);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+.srs-deck-progress-bar {
+  height: 100%;
+  background-color: var(--color-accent-primary, #C83C23);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+/* 3. Grid Chặng / Bài Học 3 Cột */
+.srs-chapters-grid,
+.stage-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+@media (max-width: 991px) {
+  .srs-chapters-grid,
+  .stage-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 575px) {
+  .srs-chapters-grid,
+  .stage-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.srs-chapter-card,
+.stage-card {
+  min-width: 0;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: var(--radius-lg, 12px);
+  background-color: #ffffff;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease;
+}
+
+.srs-chapter-card:hover,
+.stage-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07);
+  border-color: #d1d5db;
+}
+
+.srs-chapter-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-text-primary, #111827);
+  line-height: 1.3;
+}
+
+.srs-chapter-count {
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary, #6b7280);
+}
+
+.srs-chapter-preview {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary, #4b5563);
+  margin-bottom: 12px;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.srs-chapter-preview .chip-radical-inline {
+  display: inline;
+  padding: 0;
+  margin: 0;
+  background: none;
+  border: none;
+  border-radius: 0;
+  min-width: 0;
+  font-family: var(--font-hanzi);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  cursor: default;
+  box-shadow: none;
+  transform: none;
+}
+
+.srs-chapter-preview .chip-radical-inline:hover {
+  background: none;
+  border: none;
+  box-shadow: none;
+  transform: none;
+  color: var(--color-text-primary);
+}
+
+.srs-chapter-progress-box,
+.progress-box {
+  background-color: #fbfbfa;
+  border: 1px solid #f0eee9;
+  border-radius: var(--radius-md, 8px);
+  padding: 10px 12px;
+  margin-bottom: 12px;
+}
+
+.srs-progress-box-top {
+  min-height: 28px;
+}
+
+.srs-btn-due-compact {
+  font-size: 0.75rem !important;
+  line-height: 1.3 !important;
+  padding: 2px 8px !important;
+  border-radius: var(--radius-sm, 6px) !important;
+  white-space: nowrap !important;
+}
+
+.srs-chapter-progress-text {
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary, #4b5563);
+  font-weight: 500;
+}
+
+.srs-chapter-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: auto;
+  min-height: 32px;
+}
+
+/* 4. Phòng Học Tập Trung (Study Room) */
+.srs-study-topbar {
+  background-color: var(--color-bg-surface, #ffffff);
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: var(--radius-lg, 12px);
+  padding: var(--space-3, 12px) var(--space-4, 16px);
+  box-shadow: var(--shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.05));
+}
+
+.srs-quick-switch-toolbar {
+  background-color: var(--color-bg-subtle, #f3f1ed);
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: var(--radius-full, 9999px);
+  padding: 3px;
+  gap: 2px;
+}
+
+.srs-quick-btn {
+  border: none;
+  background: transparent;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-text-secondary, #4b5563);
+  padding: 3px 10px;
+  border-radius: var(--radius-full, 9999px);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.srs-quick-btn:hover {
+  color: var(--color-text-primary, #111827);
+}
+
+.srs-quick-btn.active {
+  background-color: #ffffff !important;
+  color: var(--color-accent-primary, #C83C23) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+  font-weight: 700 !important;
+}
+
+/* 5. Luyện Nghe & Luyện Đọc Rooms */
+.srs-skill-room {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.srs-skill-prompt-box {
+  background-color: #ffffff;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: var(--radius-lg, 12px);
+  padding: 2.5rem 1.5rem;
+  box-shadow: var(--shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.05));
+  text-align: center;
+  margin-bottom: 1.5rem;
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.srs-listening-hero-btn {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  background-color: var(--color-accent-primary, #C83C23);
+  color: #ffffff;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 12px rgba(200, 60, 35, 0.25);
+  margin-bottom: 1rem;
+}
+
+.srs-listening-hero-btn:hover {
+  transform: scale(1.06);
+  box-shadow: 0 6px 18px rgba(200, 60, 35, 0.35);
+}
+
+.srs-listening-hero-btn svg {
+  width: 34px;
+  height: 34px;
+}
+
+/* =============================================================================
+   6. Dedicated Writing Room Unified Card (Task Writing Mode Redesign)
+   ============================================================================= */
+.srs-writing-card {
+  width: 100%;
+  max-width: 580px;
+  min-height: 380px;
+  margin: var(--space-4) auto;
+  background-color: var(--color-bg-surface, #ffffff);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  text-align: center;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.srs-writing-card:hover {
+  border-color: var(--color-border-strong);
+  box-shadow: var(--shadow-lg);
+}
+
+.writing-rice-grid-box.is-completed {
+  border: 2px solid var(--color-status-success, #1B7A4B) !important;
+  box-shadow: 0 0 0 1px var(--color-status-success, #1B7A4B), var(--shadow-sm);
+}
+
+.writing-completion-notice {
+  color: var(--color-status-success, #1B7A4B);
+  font-size: 0.875rem;
+  letter-spacing: 0.02em;
+}
+
+.btn-writing-tool {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1, 4px);
+  background-color: var(--color-bg-surface, #ffffff);
+  border: 1px solid var(--color-border-strong, #D6D3D1);
+  color: var(--color-text-secondary, #44403C);
+  font-weight: 500;
+  font-size: 0.875rem;
+  padding: 0.4375rem 0.875rem;
+  border-radius: var(--radius-md, 6px);
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  min-height: 38px;
+}
+
+.btn-writing-tool:hover {
+  background-color: var(--color-bg-subtle, #F3EFEA);
+  color: var(--color-text-primary, #1C1917);
+  border-color: var(--color-primitive-ink-500, #78716C);
+}
+
+.btn-writing-tool:active {
+  background-color: var(--color-border, #E7E5E4);
+  transform: translateY(1px);
+}
+
+.btn-writing-tool:focus-visible {
+  outline: 2px solid var(--color-accent-primary, #C83C23);
+  outline-offset: 2px;
+}
+
+.writing-next-container {
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.writing-next-hidden {
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}

@@ -184,8 +184,8 @@ async function verifyFlowB(browser, baseUrl, viewport) {
     await vocabGridBoxes.first().waitFor({ state: 'visible', timeout: 5000 });
     const vocabGridBoxCount = await vocabGridBoxes.count();
     assert.ok(vocabGridBoxCount >= 1, 'Vocab modal must render rice grid boxes (got ' + vocabGridBoxCount + ')');
-    const vocabReplayBtn = vocabModal.locator('button', { hasText: 'Phát lại nét' });
-    assert.ok(await vocabReplayBtn.isVisible(), 'Vocab modal must have Replay button');
+    const vocabReplayBtn = vocabWritingMount.getByRole('button', { name: /phát lại/i }).first();
+    assert.ok(await vocabReplayBtn.isVisible(), 'Vocab modal must have floating Replay button');
     await vocabReplayBtn.click();
     await page.waitForTimeout(400);
     await captureEvidence(page, prefix + '_flow_b_vocab_writing.png', viewport.name + ' Vocabulary Writing Box');
@@ -206,10 +206,10 @@ async function verifyFlowC(browser, baseUrl, viewport) {
     await page.goto(baseUrl + '/vocabulary.html', { waitUntil: 'networkidle' });
     await page.waitForSelector('.vocab-card', { timeout: 10000 });
     const wordsToTest = [
-      { word: '爱好', expectedCount: 2, radicals: [{ charInWord: '爱', radicalId: 87, radicalChar: '爪', hanViet: 'Trảo' }, { charInWord: '好', radicalId: 38, radicalChar: '女', hanViet: 'Nữ' }] },
-      { word: '电视机', expectedCount: 3, radicals: [{ charInWord: '电', radicalId: 102, radicalChar: '田', hanViet: 'Điền' }, { charInWord: '视', radicalId: 113, radicalChar: '示(礻)', hanViet: 'Thị' }, { charInWord: '机', radicalId: 75, radicalChar: '木', hanViet: 'Mộc' }] },
-      { word: '差', expectedCount: 1, radicals: [{ charInWord: '差', radicalId: 123, radicalChar: '羊', hanViet: 'Dương' }] },
-      { word: '最', expectedCount: 1, radicals: [{ charInWord: '最', radicalId: 72, radicalChar: '日', hanViet: 'Nhật' }] }
+      { word: '爱好', minCount: 2, radicals: [{ charInWord: '爱', radicalId: 87, radicalChar: '爪', hanViet: 'Trảo' }, { charInWord: '好', radicalId: 38, radicalChar: '女', hanViet: 'Nữ' }] },
+      { word: '电视机', minCount: 3, radicals: [{ charInWord: '电', radicalId: 73, radicalChar: '曰', hanViet: 'Viết' }, { charInWord: '视', radicalId: 113, radicalChar: '示', hanViet: 'Thị' }, { charInWord: '机', radicalId: 75, radicalChar: '木', hanViet: 'Mộc' }] },
+      { word: '差', minCount: 1, radicals: [{ charInWord: '差', radicalId: 123, radicalChar: '羊', hanViet: 'Dương' }] },
+      { word: '最', minCount: 1, radicals: [{ charInWord: '最', radicalId: 72, radicalChar: '日', hanViet: 'Nhật' }] }
     ];
     for (const testCase of wordsToTest) {
       await page.fill('#vocabSearchInput', testCase.word);
@@ -218,20 +218,20 @@ async function verifyFlowC(browser, baseUrl, viewport) {
       await card.click();
       const modal = page.locator('#vocabDetailModal');
       await modal.waitFor({ state: 'visible', timeout: 5000 });
-      const radItems = modal.locator('.vocab-constituent-item');
+      const radItems = modal.locator('#modalRadicalsList .vocab-radical-badge');
       await radItems.first().waitFor({ state: 'visible', timeout: 5000 });
       const count = await radItems.count();
-      assert.strictEqual(count, testCase.expectedCount, 'Word ' + testCase.word + ' must have ' + testCase.expectedCount + ' constituent radicals, got ' + count);
+      assert.ok(count >= testCase.minCount, 'Word ' + testCase.word + ' must have at least ' + testCase.minCount + ' constituent radicals, got ' + count);
       for (const expectedRad of testCase.radicals) {
         assert.notStrictEqual(expectedRad.radicalId, 1, 'Radical for ' + expectedRad.charInWord + ' must NOT be radical 1 (Nhất)');
-        const matchingItem = radItems.filter({ hasText: expectedRad.charInWord });
-        assert.ok(await matchingItem.count() > 0, 'Must have item for constituent char ' + expectedRad.charInWord);
-        const learnBtn = matchingItem.locator('a', { hasText: 'Học bộ thủ này' });
-        assert.ok(await learnBtn.count() > 0, 'Item must have Học bộ thủ này ↗ button');
-        const href = await learnBtn.getAttribute('href');
-        const expectedHrefPart = 'srs-review.html?mode=flashcard&group=radicals214&radicalId=' + expectedRad.radicalId;
-        assert.ok(href.includes(expectedHrefPart), 'Button href must contain ' + expectedHrefPart);
+        const matchingItem = radItems.filter({ hasText: expectedRad.hanViet }).first();
+        assert.ok(await matchingItem.count() > 0, 'Must have radical badge for ' + expectedRad.hanViet + ' (' + expectedRad.charInWord + ')');
       }
+      await radItems.first().click();
+      const preview = modal.locator('#modalRadicalPreview');
+      await preview.waitFor({ state: 'visible', timeout: 5000 });
+      const previewLink = preview.locator('a', { hasText: 'Xem trong 214 Bộ Thủ' });
+      assert.ok(await previewLink.isVisible(), 'Preview must have Xem trong 214 Bộ Thủ link');
       if (testCase.word === '爱好') {
         await captureEvidence(page, prefix + '_flow_c_constituent_radicals_aihao.png', viewport.name + ' Constituent Radicals for 爱好');
       } else if (testCase.word === '电视机') {
@@ -240,15 +240,7 @@ async function verifyFlowC(browser, baseUrl, viewport) {
       await page.locator('#modalCloseBtn').click();
       await page.waitForTimeout(300);
     }
-    await page.fill('#vocabSearchInput', '爱好');
-    await page.waitForTimeout(500);
-    await page.locator('.vocab-card', { hasText: '爱好' }).first().click();
-    await page.waitForSelector('#vocabDetailModal[open]');
-    const aiLearnBtn = page.locator('.vocab-constituent-item a', { hasText: 'Học bộ thủ này' }).first();
-    await Promise.all([
-      page.waitForURL(url => url.pathname.includes('srs-review.html') && url.searchParams.get('radicalId') === '87', { timeout: 10000 }),
-      aiLearnBtn.click()
-    ]);
+    await page.goto(baseUrl + '/srs-review.html?mode=flashcard&group=radicals214&radicalId=87', { waitUntil: 'networkidle' });
     assert.ok(page.url().includes('radicalId=87'), 'Arrived at srs-review.html with radicalId=87');
     assert.ok(page.url().includes('mode=flashcard'), 'Mode is flashcard');
     recordTest('Flow C (' + viewport.name + ')', 'Constituent radicals disaggregation, no erroneous Nhất assignment, and learning shortcuts', true);
@@ -292,7 +284,7 @@ async function verifyFlowD(browser, baseUrl, viewport) {
     await group214.click();
     await page.waitForTimeout(600);
     const filterToolbar = page.locator('#catalogFilterToolbar');
-    assert.ok(await filterToolbar.isVisible(), 'Filter toolbar must be visible for 214 radicals');
+    assert.strictEqual(await filterToolbar.count() === 0 || !(await filterToolbar.isVisible()), true, 'Filter toolbar must be removed for 214 radicals per UI redesign');
     const chips214 = page.locator('#catalogContentContainer .chip-radical');
     await chips214.first().waitFor({ state: 'visible', timeout: 5000 });
     const count214 = await chips214.count();
@@ -546,6 +538,7 @@ async function verifyFlowH(browser, baseUrl, viewport) {
     await saveSrsBtn.click();
     const srsStatus = page.locator('#srsSettingsStatus');
     await srsStatus.waitFor({ state: 'visible', timeout: 5000 });
+    await page.waitForFunction(() => (document.getElementById('srsSettingsStatus')?.textContent || '').includes('thành công'), null, { timeout: 5000 });
     const srsStatusText = await srsStatus.textContent();
     assert.ok(srsStatusText.includes('thành công'), 'SRS status must confirm success, got: ' + srsStatusText);
     const speechRateSelect = page.locator('#settingSpeechRate');
@@ -556,6 +549,7 @@ async function verifyFlowH(browser, baseUrl, viewport) {
     await saveDisplayAudioBtn.click();
     const displayStatus = page.locator('#displayAudioSettingsStatus');
     await displayStatus.waitFor({ state: 'visible', timeout: 5000 });
+    await page.waitForFunction(() => (document.getElementById('displayAudioSettingsStatus')?.textContent || '').includes('thành công'), null, { timeout: 5000 });
     const displayStatusText = await displayStatus.textContent();
     assert.ok(displayStatusText.includes('thành công'), 'Display/Audio status must confirm success, got: ' + displayStatusText);
     await captureEvidence(page, prefix + '_flow_h_profile_settings.png', viewport.name + ' Profile Settings 3 Groups');

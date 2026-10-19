@@ -560,4 +560,80 @@ describe('Browser E2E: SRS Dashboard & Profile Settings Integration', () => {
     }
   });
 
+  // SD-09: Avatar Dropdown "Tiến độ học tập" Navigation & Unified Navbar Active State
+  test('SD-09: Avatar dropdown displays "Tiến độ học tập" below "Hồ sơ", navigates to srs-dashboard.html, and highlights "Ôn tập" in unified 4-item navbar', async () => {
+    const { page, context, getRuntimeErrors } = await createMonitoredPage(browser, {
+      viewportWidth: 1280,
+      viewportHeight: 720
+    });
+
+    try {
+      await setupAuthenticatedSession(page);
+
+      await page.route('**/api/v1/srs/stats', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ code: 'SUCCESS', data: createMockStudyStats() })
+        });
+      });
+
+      await page.route('**/api/v1/srs/settings', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ code: 'SUCCESS', data: createMockUserSrsSetting() })
+        });
+      });
+
+      await page.goto(`${baseUrl}/index.html`, { waitUntil: 'domcontentloaded' });
+      const userToggle = page.locator('#navAccountDropdownTrigger');
+      await userToggle.waitFor({ state: 'visible' });
+      await userToggle.click();
+
+      const userMenu = page.locator('#navAccountDropdownMenu');
+      await userMenu.waitFor({ state: 'visible' });
+
+      const menuLinks = await userMenu.locator('a.nav-dropdown-item').evaluateAll(els =>
+        els.map(el => ({ id: el.id, text: (el.textContent || '').trim(), href: el.getAttribute('href') }))
+      );
+      assert.ok(menuLinks.length >= 2, 'Dropdown must contain at least Hồ sơ and Tiến độ học tập');
+      assert.strictEqual(menuLinks[0].id, 'navProfileBtn');
+      assert.strictEqual(menuLinks[0].text, 'Hồ sơ');
+      assert.strictEqual(menuLinks[1].id, 'navLearningProgressBtn');
+      assert.strictEqual(menuLinks[1].text, 'Tiến độ học tập');
+      assert.strictEqual(menuLinks[1].href, 'srs-dashboard.html');
+
+      await Promise.all([
+        page.waitForURL('**/srs-dashboard.html'),
+        page.locator('#navLearningProgressBtn').click()
+      ]);
+
+      await page.locator('#dashboardContentSection').waitFor({ state: 'visible' });
+      const headerTitle = await page.locator('h1').textContent();
+      assert.ok(headerTitle.toLowerCase().includes('tiến độ học tập'), `Expected h1 to include "Tiến độ học tập", got "${headerTitle}"`);
+
+      const publicNavLinks = await page.locator('.navbar-nav a.nav-link-custom:not([data-auth-role])').evaluateAll(els =>
+        els.map(el => ({
+          text: (el.textContent || '').trim(),
+          href: el.getAttribute('href'),
+          active: el.classList.contains('active'),
+          ariaCurrent: el.getAttribute('aria-current')
+        }))
+      );
+      assert.strictEqual(publicNavLinks.length, 4, 'Unified public navbar must have exactly 4 links');
+      assert.deepStrictEqual(
+        publicNavLinks.map(l => l.text),
+        ['Trang chủ', 'Bộ thủ', 'Từ vựng', 'Ôn tập']
+      );
+      const onTapLink = publicNavLinks.find(l => l.href === 'srs-review.html');
+      assert.ok(onTapLink && onTapLink.active && onTapLink.ariaCurrent === 'page', 'Ôn tập must be active with aria-current="page" on srs-dashboard.html');
+
+      const errors = getRuntimeErrors();
+      assert.strictEqual(errors.length, 0, `Runtime errors during avatar dropdown navigation:\n${errors.join('\n')}`);
+    } finally {
+      await context.close();
+    }
+  });
+
 });
