@@ -55,7 +55,8 @@ export async function loadStrokeData(character) {
     return strokeCache.get(cleanChar);
   }
 
-  const codeHex = cleanChar.codePointAt(0) ? cleanChar.codePointAt(0).toString(16).toUpperCase() : '';
+  const codeHexUpper = cleanChar.codePointAt(0) ? cleanChar.codePointAt(0).toString(16).toUpperCase() : '';
+  const codeHexLower = cleanChar.codePointAt(0) ? cleanChar.codePointAt(0).toString(16).toLowerCase() : '';
 
   // 1. Node.js environment resolution (unit tests / server-side verification)
   const isNodeEnv = typeof process !== 'undefined' && Boolean(process?.versions?.node);
@@ -64,15 +65,29 @@ export async function loadStrokeData(character) {
       const fs = await import('node:fs/promises');
       const { fileURLToPath } = await import('node:url');
       let content = null;
-      try {
-        const filePath = fileURLToPath(new URL(`../../../assets/data/strokes/${encodeURIComponent(cleanChar)}.json`, import.meta.url));
-        content = await fs.readFile(filePath, 'utf-8');
-      } catch (_) {
-        if (codeHex) {
-          const filePathHex = fileURLToPath(new URL(`../../../assets/data/strokes/%23U${codeHex}.json`, import.meta.url));
-          content = await fs.readFile(filePathHex, 'utf-8');
+
+      // Candidate paths in order of preference
+      const candidatePaths = [
+        new URL(`../../../assets/data/strokes/${encodeURIComponent(cleanChar)}.json`, import.meta.url)
+      ];
+      if (codeHexUpper) {
+        candidatePaths.push(new URL(`../../../assets/data/strokes/%23U${codeHexUpper}.json`, import.meta.url));
+        if (codeHexLower !== codeHexUpper) {
+          candidatePaths.push(new URL(`../../../assets/data/strokes/%23U${codeHexLower}.json`, import.meta.url));
+          candidatePaths.push(new URL(`../../../assets/data/strokes/%23u${codeHexLower}.json`, import.meta.url));
         }
       }
+
+      for (const candUrl of candidatePaths) {
+        try {
+          const filePath = fileURLToPath(candUrl);
+          content = await fs.readFile(filePath, 'utf-8');
+          if (content) break;
+        } catch (_) {
+          // Try next candidate
+        }
+      }
+
       if (content) {
         const data = JSON.parse(content);
         if (isValidStrokeData(data)) {
@@ -87,13 +102,31 @@ export async function loadStrokeData(character) {
 
   // 2. Browser static asset path (resolved relative to module root)
   try {
-    const localUrl = new URL(`../../../assets/data/strokes/${encodeURIComponent(cleanChar)}.json`, import.meta.url).href;
-    let localRes = await fetch(localUrl);
-    if (!localRes.ok && codeHex) {
-      const hexUrl = new URL(`../../../assets/data/strokes/%23U${codeHex}.json`, import.meta.url).href;
-      localRes = await fetch(hexUrl);
+    const candidateUrls = [
+      new URL(`../../../assets/data/strokes/${encodeURIComponent(cleanChar)}.json`, import.meta.url).href
+    ];
+    if (codeHexUpper) {
+      candidateUrls.push(new URL(`../../../assets/data/strokes/%23U${codeHexUpper}.json`, import.meta.url).href);
+      if (codeHexLower !== codeHexUpper) {
+        candidateUrls.push(new URL(`../../../assets/data/strokes/%23U${codeHexLower}.json`, import.meta.url).href);
+        candidateUrls.push(new URL(`../../../assets/data/strokes/%23u${codeHexLower}.json`, import.meta.url).href);
+      }
     }
-    if (localRes.ok) {
+
+    let localRes = null;
+    for (const url of candidateUrls) {
+      try {
+        const res = await fetch(url);
+        if (res.ok) {
+          localRes = res;
+          break;
+        }
+      } catch (_) {
+        // Try next candidate
+      }
+    }
+
+    if (localRes && localRes.ok) {
       const data = await localRes.json();
       if (isValidStrokeData(data)) {
         strokeCache.set(cleanChar, data);

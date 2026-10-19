@@ -746,6 +746,8 @@ export class SrsReviewController {
     this.isCurrentWritingCompleted = false;
     this.completedCharIndices = new Set();
     this.writingCharCount = 0;
+    this.totalRequiredCharCount = 0;
+    this.isSubmittingWriting = false;
 
     // Backward compatibility fields
     this.mode = 'DUE_CARDS';
@@ -1399,7 +1401,8 @@ export class SrsReviewController {
     if (!searchString) {
       if (authManager.isAuthenticated()) {
         try {
-          const dueCards = await apiClient('/srs/due', { params: { itemType: 'VOCABULARY' } });
+          const cardTypeParam = this.activeMode === 'writing' ? 'WRITING' : 'READING';
+          const dueCards = await apiClient('/srs/due', { params: { itemType: 'VOCABULARY', cardType: cardTypeParam } });
           if (Array.isArray(dueCards) && dueCards.length > 0) {
             this.mode = 'DUE_CARDS';
             this.initSessionQueue(dueCards, false);
@@ -1523,9 +1526,10 @@ export class SrsReviewController {
   async fetchDueCounts() {
     if (!authManager.isAuthenticated()) return;
     try {
+      const cardTypeParam = this.activeMode === 'writing' ? 'WRITING' : 'READING';
       const [dueVocab, dueRadicals] = await Promise.all([
-        apiClient('/srs/due', { params: { itemType: 'VOCABULARY' } }).catch(() => []),
-        apiClient('/srs/due', { params: { itemType: 'RADICAL' } }).catch(() => [])
+        apiClient('/srs/due', { params: { itemType: 'VOCABULARY', cardType: cardTypeParam } }).catch(() => []),
+        apiClient('/srs/due', { params: { itemType: 'RADICAL', cardType: cardTypeParam } }).catch(() => [])
       ]);
       this.dueItemsCache = {
         vocab: Array.isArray(dueVocab) ? dueVocab : [],
@@ -1749,25 +1753,9 @@ export class SrsReviewController {
       if (queue.length === 0) queue = items;
       this.initSessionQueue(queue, false, 0);
     } else { // 'continue'
-      const dueItems = items.filter(it => this.isItemDue(it));
-      const unlearned = items.slice(savedIndex);
-      const seen = new Set();
-      for (const it of dueItems) {
-        if (!seen.has(it.itemId)) {
-          seen.add(it.itemId);
-          queue.push(it);
-        }
-      }
-      for (const it of unlearned) {
-        if (!seen.has(it.itemId)) {
-          seen.add(it.itemId);
-          queue.push(it);
-        }
-      }
-      if (queue.length === 0) {
-        queue = items;
-      }
-      this.initSessionQueue(queue, false, 0);
+      queue = items;
+      const startIndex = (savedIndex >= 0 && savedIndex < items.length) ? savedIndex : 0;
+      this.initSessionQueue(queue, false, startIndex);
     }
   }
 
@@ -2276,6 +2264,7 @@ export class SrsReviewController {
     this.lessonId = null;
     this.radicalId = null;
     this.vocabId = null;
+    this.currentChapterIdx = null;
 
     if (this.activeGroup === 'radicals50' || this.activeGroup === 'radicals214') {
       await this.fetchRadicalsData();
@@ -2325,6 +2314,7 @@ export class SrsReviewController {
     this.lessonId = topicId;
     this.radicalId = null;
     this.vocabId = null;
+    this.currentChapterIdx = null;
 
     let items = null;
     let backendFetched = false;
@@ -2332,10 +2322,8 @@ export class SrsReviewController {
     if (authManager.isAuthenticated()) {
       try {
         let remoteCards = [];
-        const requestParams = { lessonId: topicId };
-        if (this.activeMode === 'writing') {
-          requestParams.cardType = 'WRITING';
-        }
+        const cardTypeParam = this.activeMode === 'writing' ? 'WRITING' : 'READING';
+        const requestParams = { lessonId: topicId, cardType: cardTypeParam };
 
         if (this.mode === 'LESSON_PRACTICE') {
           const practiceResp = await apiClient('/srs/practice-cards', { params: requestParams });
@@ -2348,10 +2336,7 @@ export class SrsReviewController {
             remoteCards = resp;
           }
         } else if (this.mode === 'DUE_CARDS') {
-          const dueParams = { itemType: 'VOCABULARY', lessonId: topicId };
-          if (this.activeMode === 'writing') {
-            dueParams.cardType = 'WRITING';
-          }
+          const dueParams = { itemType: 'VOCABULARY', lessonId: topicId, cardType: cardTypeParam };
           const dueResp = await apiClient('/srs/due', { params: dueParams });
           if (Array.isArray(dueResp)) {
             remoteCards = dueResp;
@@ -2413,6 +2398,7 @@ export class SrsReviewController {
     this.radicalId = radicalId;
     this.lessonId = null;
     this.vocabId = null;
+    this.currentChapterIdx = null;
 
     await this.fetchRadicalsData();
     const rad = this.fullRadicalsCatalog.find(r => Number(r.radicalId) === Number(radicalId));
@@ -2442,6 +2428,7 @@ export class SrsReviewController {
     this.vocabId = Number(vocabId);
     this.radicalId = null;
     this.lessonId = null;
+    this.currentChapterIdx = null;
 
     let foundVocab = null;
     let foundTopicId = 1;
@@ -2551,10 +2538,13 @@ export class SrsReviewController {
   normalizeVocabCard(v, lessonId) {
     const rawId = v.itemId ?? v.vocabId ?? v.id ?? 1;
     const defaultCardType = this.activeMode === 'writing' ? 'WRITING' : 'READING';
+    const cardType = (this.activeMode === 'writing' || this.activeMode === 'flashcard')
+      ? (this.activeMode === 'writing' ? 'WRITING' : 'READING')
+      : (v.cardType || defaultCardType);
     return {
       itemType: v.itemType || 'VOCABULARY',
       itemId: Number(rawId),
-      cardType: v.cardType || defaultCardType,
+      cardType,
       lessonId: Number(v.lessonId || lessonId || 1),
       hanzi: v.hanzi || '',
       pinyin: v.pinyin || '',
@@ -3437,12 +3427,15 @@ export class SrsReviewController {
     if (!container) return;
     container.replaceChildren();
 
+    this.totalRequiredCharCount = chars.length;
+
     if (chars.length === 0) {
       const emptyMsg = document.createElement('div');
-      emptyMsg.className = 'text-muted py-3';
+      emptyMsg.className = 'text-muted py-3 text-center';
       emptyMsg.textContent = 'Không có ký tự Hán hợp lệ để luyện viết.';
       container.appendChild(emptyMsg);
-      this.handleWritingItemCompleted();
+      this.hasCompletedWritingForCurrentCard = false;
+      this.isCurrentWritingCompleted = false;
       return;
     }
 
@@ -3455,7 +3448,25 @@ export class SrsReviewController {
         ? `Chữ [${missing[0]}] hiện chưa có dữ liệu nét chi tiết.`
         : `Các chữ [${missing.join(', ')}] hiện chưa có dữ liệu nét chi tiết.`;
       if (this.dom.writingMissingWarning) {
-        this.dom.writingMissingWarning.textContent = msg;
+        this.dom.writingMissingWarning.replaceChildren();
+        const warnText = document.createElement('span');
+        warnText.textContent = `${msg} `;
+        this.dom.writingMissingWarning.appendChild(warnText);
+
+        const retryBtn = document.createElement('button');
+        retryBtn.type = 'button';
+        retryBtn.className = 'btn btn-sm btn-outline-secondary py-0 px-2 ms-2';
+        retryBtn.textContent = '🔄 Thử tải lại';
+        retryBtn.onclick = () => this.renderWritingRoomCard(card);
+        this.dom.writingMissingWarning.appendChild(retryBtn);
+
+        const backBtn = document.createElement('button');
+        backBtn.type = 'button';
+        backBtn.className = 'btn btn-sm btn-outline-secondary py-0 px-2 ms-1';
+        backBtn.textContent = 'Quay lại';
+        backBtn.onclick = () => this.showCatalogSelection();
+        this.dom.writingMissingWarning.appendChild(backBtn);
+
         this.dom.writingMissingWarning.classList.remove('d-none');
       }
     } else {
@@ -3535,8 +3546,9 @@ export class SrsReviewController {
     }
 
     this.writingCharCount = this.writingEngines.length;
-    if (this.writingCharCount === 0) {
-      this.handleWritingItemCompleted();
+    if (this.writingCharCount === 0 || this.writingCharCount < this.totalRequiredCharCount) {
+      this.hasCompletedWritingForCurrentCard = false;
+      this.isCurrentWritingCompleted = false;
     }
   }
 
@@ -3555,8 +3567,12 @@ export class SrsReviewController {
       }
     }
 
-    // If all characters of the current item are completed
-    if (this.completedCharIndices.size >= this.writingCharCount && this.writingCharCount > 0) {
+    // Only mark item completed if ALL required characters are loaded and completed
+    if (
+      this.totalRequiredCharCount > 0 &&
+      this.writingEngines.length === this.totalRequiredCharCount &&
+      this.completedCharIndices.size >= this.totalRequiredCharCount
+    ) {
       this.handleWritingItemCompleted();
     }
   }
@@ -3701,42 +3717,82 @@ export class SrsReviewController {
    * Saves progress independently under HOC_HAN_NGU_WRITING_PROGRESS.
    */
   async nextWritingItem() {
-    this.cleanupTimer();
-    const elapsedSeconds = calculateReviewTime(this.cardStartTime, Date.now());
+    if (this.isSubmittingWriting) return;
+    if (this.isSubmitting) return;
 
-    // Record progress and SRS review if in normal mode
-    if (!this.isReviewMode) {
-      const nextIndex = this.currentIndex + 1;
-      this.persistProgress('writing', nextIndex);
-
-      if (authManager.isAuthenticated() && this.sessionQueue[this.currentIndex]?.card) {
-        const card = this.sessionQueue[this.currentIndex].card;
-        const payload = buildReviewPayload({
-          itemType: card.itemType || 'VOCABULARY',
-          itemId: card.itemId,
-          cardType: 'WRITING',
-          rating: 3,
-          reviewTimeSeconds: elapsedSeconds
-        });
-
-        await apiClient('/srs/review', {
-          method: 'POST',
-          body: payload
-        }).catch(err => {
-          console.warn('[SRS Writing Review] Non-fatal API submission warning:', err);
-        });
-      }
+    // Check completion condition: only allow next if user actually completed writing for this card
+    if (this.dom?.btnWritingNext && this.hasCompletedWritingForCurrentCard === false) {
+      showToast({
+        type: 'warning',
+        title: 'Chưa hoàn thành',
+        message: 'Vui lòng hoàn thành viết trước khi chuyển sang từ tiếp theo.'
+      });
+      return;
     }
 
-    this.stats.totalReviewed++;
-    this.stats.totalTimeSeconds += elapsedSeconds;
-    this.stats.goodEasyCount++;
+    this.isSubmittingWriting = true;
+    if (this.dom?.btnWritingNext) {
+      this.dom.btnWritingNext.disabled = true;
+      this.dom.btnWritingNext.setAttribute('aria-busy', 'true');
+    }
 
-    this.currentIndex++;
-    if (this.currentIndex >= this.sessionQueue.length) {
-      this.showCompletedState();
-    } else {
-      this.renderCurrentCard();
+    try {
+      this.cleanupTimer();
+      const elapsedSeconds = calculateReviewTime(this.cardStartTime, Date.now());
+
+      // Record progress and SRS review if in normal mode
+      if (!this.isReviewMode) {
+        if (authManager.isAuthenticated() && this.sessionQueue[this.currentIndex]?.card) {
+          const card = this.sessionQueue[this.currentIndex].card;
+          const payload = buildReviewPayload({
+            itemType: card.itemType || 'VOCABULARY',
+            itemId: card.itemId,
+            cardType: 'WRITING',
+            rating: 3,
+            reviewTimeSeconds: elapsedSeconds
+          });
+
+          try {
+            await apiClient('/srs/review', {
+              method: 'POST',
+              body: payload
+            });
+          } catch (apiErr) {
+            console.error('[SRS Writing Review] API submission failed:', apiErr);
+            const errMsg = apiErr?.message || 'Không thể lưu kết quả luyện viết lên máy chủ.';
+            showToast({
+              type: 'error',
+              title: 'Lỗi đồng bộ SRS',
+              message: `${errMsg} Vui lòng thử lại.`
+            });
+            if (this.dom?.writingCompletionNotice) {
+              this.dom.writingCompletionNotice.textContent = `⚠️ Lỗi lưu kết quả (${errMsg}). Vui lòng bấm [Sang từ tiếp theo] để thử lại.`;
+              this.dom.writingCompletionNotice.classList.remove('d-none');
+            }
+            return;
+          }
+        }
+
+        const nextIndex = this.currentIndex + 1;
+        this.persistProgress('writing', nextIndex);
+      }
+
+      this.stats.totalReviewed++;
+      this.stats.totalTimeSeconds += elapsedSeconds;
+      this.stats.goodEasyCount++;
+
+      this.currentIndex++;
+      if (this.currentIndex >= this.sessionQueue.length) {
+        this.showCompletedState();
+      } else {
+        this.renderCurrentCard();
+      }
+    } finally {
+      this.isSubmittingWriting = false;
+      if (this.dom?.btnWritingNext) {
+        this.dom.btnWritingNext.disabled = false;
+        this.dom.btnWritingNext.removeAttribute('aria-busy');
+      }
     }
   }
 
@@ -3860,8 +3916,6 @@ export class SrsReviewController {
         await apiClient('/srs/review', {
           method: 'POST',
           body: payload
-        }).catch(err => {
-          console.warn('[SRS Review] Non-fatal API submission warning:', err);
         });
       }
 
@@ -3900,7 +3954,36 @@ export class SrsReviewController {
       this.setRatingButtonsEnabled(true);
 
       const msg = err.message || 'Không thể gửi đánh giá thẻ.';
-      if (this.dom.ratingFeedback) this.dom.ratingFeedback.textContent = msg;
+      if (this.dom.ratingFeedback) {
+        this.dom.ratingFeedback.replaceChildren();
+        const wrapper = document.createElement('div');
+        wrapper.className = 'srs-error-feedback';
+        wrapper.style.display = 'flex';
+        wrapper.style.alignItems = 'center';
+        wrapper.style.justifyContent = 'center';
+        wrapper.style.gap = '8px';
+        wrapper.style.color = 'var(--color-cinnabar, #dc2626)';
+        wrapper.style.marginTop = '6px';
+
+        const span = document.createElement('span');
+        span.textContent = `Lỗi đồng bộ: ${msg}`;
+        wrapper.appendChild(span);
+
+        const retryBtn = document.createElement('button');
+        retryBtn.type = 'button';
+        retryBtn.className = 'btn btn-sm btn-outline-danger';
+        retryBtn.id = 'btn-retry-rating';
+        retryBtn.textContent = 'Thử lại';
+        retryBtn.onclick = () => this.submitRating(numRating);
+        wrapper.appendChild(retryBtn);
+
+        this.dom.ratingFeedback.appendChild(wrapper);
+      }
+      showToast({
+        type: 'error',
+        title: 'Lỗi ghi nhận',
+        message: 'Không thể gửi đánh giá thẻ. Vui lòng thử lại.'
+      });
     }
   }
 
@@ -3921,6 +4004,10 @@ export class SrsReviewController {
       const topicKey = `topic_${this.lessonId}`;
       updates[this.activeGroup][topicKey] = nextIndex;
       updates[this.activeGroup].lastLessonId = this.lessonId;
+    } else if (this.currentChapterIdx != null) {
+      const chapKey = `chapter_${this.currentChapterIdx}`;
+      updates[this.activeGroup][chapKey] = nextIndex;
+      updates[this.activeGroup].lastChapterIdx = this.currentChapterIdx;
     } else {
       updates[this.activeGroup].lastIndex = nextIndex;
     }
