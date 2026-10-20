@@ -68,7 +68,18 @@ public class VocabularyDetailResponse {
         }
 
         List<RadicalResponse> radicalResponses = Collections.emptyList();
-        if (vocabulary.getRadicals() != null && !vocabulary.getRadicals().isEmpty()) {
+        if (vocabulary.getVocabRadicals() != null && !vocabulary.getVocabRadicals().isEmpty()) {
+            radicalResponses = vocabulary.getVocabRadicals().stream()
+                    .map(vr -> {
+                        RadicalResponse rr = RadicalResponse.fromEntity(vr.getRadical());
+                        if (rr != null) {
+                            rr.setHanziChar(vr.getHanziChar());
+                        }
+                        return rr;
+                    })
+                    .sorted(Comparator.comparing(RadicalResponse::getRadicalId))
+                    .toList();
+        } else if (vocabulary.getRadicals() != null && !vocabulary.getRadicals().isEmpty()) {
             radicalResponses = vocabulary.getRadicals().stream()
                     .map(RadicalResponse::fromEntity)
                     .sorted(Comparator.comparing(RadicalResponse::getRadicalId))

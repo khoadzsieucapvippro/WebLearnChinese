@@ -19,6 +19,7 @@ public class RadicalResponse {
     private String videoWritingUrl;
     private String explanationVi;
     private Integer commonRank;
+    private String hanziChar;
 
     public RadicalResponse() {
     }
@@ -132,6 +133,14 @@ public class RadicalResponse {
 
     public void setCommonRank(Integer commonRank) {
         this.commonRank = commonRank;
+    }
+
+    public String getHanziChar() {
+        return hanziChar;
+    }
+
+    public void setHanziChar(String hanziChar) {
+        this.hanziChar = hanziChar;
     }
 
     @Override

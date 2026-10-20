@@ -89,12 +89,12 @@ async function probeUrl(targetUrl) {
       return false;
     }
 
-    // Verify /vocabulary.html contains 'vocabGroupBanner' marker of current repo
+    // Verify /vocabulary.html contains 'vocabSearchInput' marker of current repo
     const vocabCheckUrl = new URL('/vocabulary.html', targetUrl);
     const vocabRes = await fetch(vocabCheckUrl.href, { signal: AbortSignal.timeout(1000) });
     if (!vocabRes.ok) return false;
     const vocabText = await vocabRes.text();
-    if (!vocabText.includes('vocabGroupBanner')) {
+    if (!vocabText.includes('vocabSearchInput')) {
       return false;
     }
 

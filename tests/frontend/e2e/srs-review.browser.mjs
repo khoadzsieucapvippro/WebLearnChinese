@@ -91,6 +91,51 @@ async function setupAuthenticatedSession(page) {
       })
     });
   });
+
+  await page.route('**/api/v1/vocabulary/*', async (route) => {
+    const url = route.request().url();
+    const idMatch = url.match(/\/vocabulary\/(\d+)/);
+    const id = idMatch ? Number(idMatch[1]) : 0;
+    const mockMap = {
+      101: {
+        vocabId: 101,
+        hanzi: '学',
+        pinyin: 'xué',
+        meaningHanViet: 'Học',
+        meaningVi: 'Học tập, nghiên cứu',
+        radicals: [
+          { radicalId: 39, character: '子', meaningHanViet: 'Tử', hanziChar: '学' }
+        ]
+      },
+      102: {
+        vocabId: 102,
+        hanzi: '书',
+        pinyin: 'shū',
+        meaningHanViet: 'Thư',
+        meaningVi: 'Sách, vở',
+        radicals: [
+          { radicalId: 6, character: '亅', meaningHanViet: 'Quyết', hanziChar: '书' }
+        ]
+      }
+    };
+    const data = mockMap[id] || {
+      vocabId: id,
+      hanzi: '字',
+      pinyin: 'zì',
+      meaningHanViet: 'Tự',
+      meaningVi: 'Chữ',
+      radicals: []
+    };
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        code: 'SUCCESS',
+        message: 'OK',
+        data
+      })
+    });
+  });
 }
 
 describe('Browser E2E: Interactive SRS Flashcard Review Session (9C.3)', () => {
@@ -1140,6 +1185,128 @@ describe('Browser E2E: Interactive SRS Flashcard Review Session (9C.3)', () => {
         return JSON.parse(localStorage.getItem('srs_radical_notes') || '{}');
       });
       assert.strictEqual(storedRadicals['1']?.content, 'Mẹo nhớ số 1 sửa đổi', 'srs_radical_notes must persist edited note');
+
+      assert.strictEqual(getRuntimeErrors().length, 0, 'Zero unexpected runtime errors');
+    } finally {
+      await context.close();
+    }
+  });
+
+  // SR-14: Constituent Radicals on Card Back (shows for vocabulary, hides for radicals)
+  test('SR-14: Constituent Radicals on Card Back (shows for vocabulary, hides for radicals)', async () => {
+    const { context, page, getRuntimeErrors } = await createMonitoredPage(browser);
+
+    try {
+      await setupAuthenticatedSession(page);
+
+      const mixedCards = [
+        {
+          itemType: 'VOCABULARY',
+          itemId: 101,
+          hanzi: '学',
+          pinyin: 'xué',
+          meaningHanViet: 'Học',
+          meaningVi: 'Học tập, nghiên cứu',
+          exampleSentence: '我在大学学中文。',
+          exampleTranslation: 'Tôi học tiếng Trung ở trường đại học.',
+          strokeCount: null,
+          repetitions: 1,
+          easeFactor: 2.50,
+          intervalDays: 1,
+          nextReviewAt: '2026-09-14T10:00:00',
+          isNew: false
+        },
+        {
+          itemType: 'RADICAL',
+          itemId: 1,
+          hanzi: '一',
+          pinyin: 'yī',
+          meaningHanViet: 'Nhất',
+          meaningVi: 'Một, số một',
+          exampleSentence: null,
+          exampleTranslation: null,
+          strokeCount: 1,
+          repetitions: 1,
+          easeFactor: 2.50,
+          intervalDays: 1,
+          nextReviewAt: '2026-09-14T10:00:00',
+          isNew: false
+        }
+      ];
+
+      await page.route('**/api/v1/srs/due*', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            code: 'SUCCESS',
+            message: 'OK',
+            data: mixedCards
+          })
+        });
+      });
+
+      await page.route('**/api/v1/srs/review*', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            code: 'SUCCESS',
+            message: 'OK',
+            data: {
+              cardId: 101,
+              rating: 3,
+              nextReviewAt: '2026-09-17T10:00:00'
+            }
+          })
+        });
+      });
+
+      await page.route('**/api/v1/vocabulary/101', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            code: 'SUCCESS',
+            message: 'OK',
+            data: {
+              vocabId: 101,
+              hanzi: '学',
+              pinyin: 'xué',
+              meaningHanViet: 'Học',
+              meaningVi: 'Học tập, nghiên cứu',
+              radicals: [
+                { radicalId: 39, character: '子', meaningHanViet: 'Tử', hanziChar: '学' }
+              ]
+            }
+          })
+        });
+      });
+
+      await page.goto(`${baseUrl}/srs-review.html`, { waitUntil: 'domcontentloaded' });
+      await page.locator('#srsActiveSession').waitFor({ state: 'visible', timeout: 5000 });
+
+      // Card 1 (Vocab: '学') - flip card
+      await page.locator('#flashcard').click();
+      await page.waitForTimeout(200);
+
+      // Verify constituent radicals row is visible and contains '子 (Tử)'
+      const radicalsRow = page.locator('#cardBackRadicalsRow');
+      await radicalsRow.waitFor({ state: 'visible', timeout: 5000 });
+      const radicalsContent = await page.locator('#cardBackRadicalsContent').textContent();
+      assert.ok(radicalsContent.includes('子 (Tử)'), `Expected radicals to contain '子 (Tử)', got: ${radicalsContent}`);
+
+      // Advance to Card 2 (Radical: '一')
+      await page.locator('#btnRatingGood').click();
+      await page.waitForTimeout(300);
+
+      // Card 2 - flip card
+      await page.locator('#flashcard').click();
+      await page.waitForTimeout(200);
+
+      // Verify constituent radicals row is hidden for radicals
+      const isRadicalsRowHidden = await radicalsRow.evaluate(el => el.classList.contains('d-none') || el.style.display === 'none');
+      assert.strictEqual(isRadicalsRowHidden, true, 'Constituent radicals row must be hidden for radicals');
 
       assert.strictEqual(getRuntimeErrors().length, 0, 'Zero unexpected runtime errors');
     } finally {

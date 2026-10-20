@@ -38,7 +38,8 @@ import {
   buildReviewPayload,
   handleAgainRequeue,
   MAX_AGAIN_REVIEWS_PER_CARD,
-  SrsReviewController
+  SrsReviewController,
+  formatConstituentRadicalsText
 } from '../../../../frontend/js/pages/srs-review-page.js';
 
 describe('Unit: SRS Flashcard Review Session Logic (9C.3)', () => {
@@ -686,6 +687,59 @@ describe('Unit: SRS Flashcard Review Session Logic (9C.3)', () => {
         globalThis.fetch = originalFetch;
         authManager.clearSession();
       }
+    });
+  });
+
+  describe('13. Constituent Radicals Formatting (formatConstituentRadicalsText)', () => {
+    test('returns neutral fallback when radicals is null, undefined, or empty', () => {
+      assert.strictEqual(formatConstituentRadicalsText(null, '学'), 'Chưa có dữ liệu bộ thủ đã xác minh');
+      assert.strictEqual(formatConstituentRadicalsText(undefined, '学'), 'Chưa có dữ liệu bộ thủ đã xác minh');
+      assert.strictEqual(formatConstituentRadicalsText([], '学'), 'Chưa có dữ liệu bộ thủ đã xác minh');
+      assert.strictEqual(formatConstituentRadicalsText([{}]), 'Chưa có dữ liệu bộ thủ đã xác minh');
+    });
+
+    test('formats single-character word with single radical correctly', () => {
+      const radicals = [{ character: '子', meaningHanViet: 'Tử' }];
+      const text = formatConstituentRadicalsText(radicals, '学');
+      assert.strictEqual(text, '子 (Tử)');
+    });
+
+    test('normalizes redundant "Bộ " prefix in meaning', () => {
+      const radicals = [{ character: '子', meaningHanViet: 'Bộ Tử' }];
+      const text = formatConstituentRadicalsText(radicals, '学');
+      assert.strictEqual(text, '子 (Tử)');
+    });
+
+    test('formats multiple constituent radicals for a single-character word', () => {
+      const radicals = [
+        { character: '子', meaningHanViet: 'Tử' },
+        { character: '冖', meaningHanViet: 'Mịch' }
+      ];
+      const text = formatConstituentRadicalsText(radicals, '学');
+      assert.strictEqual(text, '子 (Tử), 冖 (Mịch)');
+    });
+
+    test('formats multi-character word with verified character attribution', () => {
+      const radicals = [
+        { character: '子', meaningHanViet: 'Tử', hanziChar: '学' },
+        { character: '生', meaningHanViet: 'Sinh', hanziChar: '生' }
+      ];
+      const text = formatConstituentRadicalsText(radicals, '学生');
+      assert.strictEqual(text, '学: 子 (Tử), 生: 生 (Sinh)');
+    });
+
+    test('does not fabricate attribution for multi-character words when hanziChar is absent', () => {
+      const radicals = [
+        { character: '子', meaningHanViet: 'Tử' },
+        { character: '生', meaningHanViet: 'Sinh' }
+      ];
+      const text = formatConstituentRadicalsText(radicals, '学生');
+      assert.strictEqual(text, '子 (Tử), 生 (Sinh)');
+    });
+
+    test('handles missing meaning or missing character gracefully', () => {
+      assert.strictEqual(formatConstituentRadicalsText([{ character: '子' }], '学'), '子');
+      assert.strictEqual(formatConstituentRadicalsText([{ meaningHanViet: 'Tử' }], '学'), 'Tử');
     });
   });
 });

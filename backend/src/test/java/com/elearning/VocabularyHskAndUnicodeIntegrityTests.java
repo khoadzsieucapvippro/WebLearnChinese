@@ -85,7 +85,7 @@ class VocabularyHskAndUnicodeIntegrityTests {
                     assertThat(rs.getString("hanzi")).isEqualTo("爸爸");
                     assertThat(rs.getString(2)).isEqualTo("E788B8E788B8");
                     assertThat(rs.getString("pinyin")).isEqualTo("bàba");
-                    assertThat(rs.getString("meaning_vi")).isEqualTo("Cha; ba");
+                    assertThat(rs.getString("meaning_vi")).isEqualTo("Cha, ba");
                 }
 
                 try (ResultSet rs = stmt.executeQuery(

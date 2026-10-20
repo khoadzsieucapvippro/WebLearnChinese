@@ -113,6 +113,52 @@ export function verifyListeningAnswer(inputAnswer, expectedHanzi) {
 }
 
 /**
+ * Formats constituent radicals of a vocabulary word for flashcard back display.
+ * - Neutral fallback when unverified or empty: 'Chưa có dữ liệu bộ thủ đã xác minh'.
+ * - Formats single-character word: e.g. "子 (Tử)" or "子 (Tử), 冖 (Mịch)".
+ * - Formats multi-character word with attribution: e.g. "学: 子 (Tử), 生: 生 (Sinh)".
+ * - If multi-char word has unassigned radicals: formats without false attribution (no data fabrication).
+ * 
+ * @param {Array<Object>|null|undefined} radicals
+ * @param {string|null|undefined} wordHanzi
+ * @returns {string}
+ */
+export function formatConstituentRadicalsText(radicals, wordHanzi) {
+  if (!Array.isArray(radicals) || radicals.length === 0) {
+    return 'Chưa có dữ liệu bộ thủ đã xác minh';
+  }
+
+  const cleanWord = typeof wordHanzi === 'string' ? wordHanzi.trim() : '';
+  const isMultiChar = cleanWord.length > 1;
+
+  const formattedItems = radicals.map(rad => {
+    if (!rad) return '';
+    const char = rad.character || rad.radical || '';
+    const rawMeaning = (rad.meaningHanViet || rad.meaningVi || '').trim();
+    const meaning = rawMeaning.replace(/^Bộ\s+/i, '');
+
+    const label = meaning ? (char ? `${char} (${meaning})` : meaning) : char;
+
+    let hanziChar = rad.hanziChar ? String(rad.hanziChar).trim() : '';
+    if (!hanziChar && cleanWord.length === 1) {
+      hanziChar = cleanWord;
+    }
+
+    if (isMultiChar && hanziChar && cleanWord.includes(hanziChar)) {
+      return `${hanziChar}: ${label}`;
+    }
+
+    return label;
+  }).filter(Boolean);
+
+  if (formattedItems.length === 0) {
+    return 'Chưa có dữ liệu bộ thủ đã xác minh';
+  }
+
+  return formattedItems.join(', ');
+}
+
+/**
  * Reads progress from localStorage for the given mode ('flashcard', 'writing', or 'listening').
  * @param {'flashcard'|'writing'|'listening'} mode
  * @returns {Object}
@@ -849,6 +895,7 @@ export class SrsReviewController {
     // Cache for detail audio URLs & Personal Notes
     this.audioCache = new Map();
     this.notesCache = new Map();
+    this.vocabDetailCache = new Map();
     this.isEditingInlineNote = false;
     this.editingCard = null;
     this.editingNote = null;
@@ -950,6 +997,8 @@ export class SrsReviewController {
       btnAudioPronounceBack: document.getElementById('btnAudioPronounceBack'),
       cardBackMeaningHv: document.getElementById('cardBackMeaningHv'),
       cardBackMeaningVi: document.getElementById('cardBackMeaningVi'),
+      cardBackRadicalsRow: document.getElementById('cardBackRadicalsRow'),
+      cardBackRadicalsContent: document.getElementById('cardBackRadicalsContent'),
       cardBackExampleBox: document.getElementById('cardBackExampleBox'),
       cardBackExampleSentence: document.getElementById('cardBackExampleSentence'),
       cardBackExampleTranslation: document.getElementById('cardBackExampleTranslation'),
@@ -2946,6 +2995,60 @@ export class SrsReviewController {
         this.dom.cardBackStrokeCount.classList.remove('d-none');
       } else {
         this.dom.cardBackStrokeCount.classList.add('d-none');
+      }
+    }
+
+    // Constituent Radicals Row (shown only for VOCABULARY on card back)
+    if (this.dom.cardBackRadicalsRow) {
+      if (!isVocab) {
+        this.dom.cardBackRadicalsRow.classList.add('d-none');
+        if (this.dom.cardBackRadicalsContent) {
+          this.dom.cardBackRadicalsContent.textContent = '';
+        }
+      } else {
+        this.dom.cardBackRadicalsRow.classList.remove('d-none');
+        const vocabId = card.itemId || card.vocabId || card.id;
+
+        if (Array.isArray(card.radicals)) {
+          this.vocabDetailCache.set(vocabId, card.radicals);
+          if (this.dom.cardBackRadicalsContent) {
+            this.dom.cardBackRadicalsContent.textContent = formatConstituentRadicalsText(card.radicals, card.hanzi);
+          }
+        } else if (this.vocabDetailCache.has(vocabId)) {
+          const cachedRadicals = this.vocabDetailCache.get(vocabId);
+          if (this.dom.cardBackRadicalsContent) {
+            this.dom.cardBackRadicalsContent.textContent = formatConstituentRadicalsText(cachedRadicals, card.hanzi);
+          }
+        } else {
+          if (this.dom.cardBackRadicalsContent) {
+            this.dom.cardBackRadicalsContent.textContent = 'Đang tải bộ thủ...';
+          }
+          const currentId = vocabId;
+          const currentWord = card.hanzi;
+          apiClient(`/vocabulary/${currentId}`)
+            .then(detail => {
+              const radicals = Array.isArray(detail?.radicals) ? detail.radicals : [];
+              this.vocabDetailCache.set(currentId, radicals);
+              const currentQueueItem = this.sessionQueue?.[this.currentIndex];
+              if (!currentQueueItem || !currentQueueItem.card) return;
+              const activeId = currentQueueItem.card.itemId || currentQueueItem.card.vocabId || currentQueueItem.card.id;
+              if (activeId !== currentId || (currentQueueItem.card.itemType || '').toUpperCase() !== 'VOCABULARY') {
+                return;
+              }
+              if (this.dom.cardBackRadicalsContent) {
+                this.dom.cardBackRadicalsContent.textContent = formatConstituentRadicalsText(radicals, currentWord);
+              }
+            })
+            .catch(() => {
+              const currentQueueItem = this.sessionQueue?.[this.currentIndex];
+              if (!currentQueueItem || !currentQueueItem.card) return;
+              const activeId = currentQueueItem.card.itemId || currentQueueItem.card.vocabId || currentQueueItem.card.id;
+              if (activeId !== currentId) return;
+              if (this.dom.cardBackRadicalsContent) {
+                this.dom.cardBackRadicalsContent.textContent = 'Chưa có dữ liệu bộ thủ đã xác minh';
+              }
+            });
+        }
       }
     }
 

@@ -784,6 +784,27 @@ describe('Accessibility Verification: WCAG 2.2 AA Aligned', () => {
         });
       });
 
+      await page.route('**/api/v1/vocabulary/*', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            code: 'SUCCESS',
+            message: 'OK',
+            data: {
+              vocabId: 1,
+              hanzi: '学',
+              pinyin: 'xué',
+              meaningHanViet: 'Học',
+              meaningVi: 'Học tập',
+              radicals: [
+                { radicalId: 39, character: '子', meaningHanViet: 'Tử', hanziChar: '学' }
+              ]
+            }
+          })
+        });
+      });
+
       await page.goto(`${baseUrl}/srs-review.html`, { waitUntil: 'domcontentloaded' });
       await page.locator('#srsActiveSession').waitFor({ state: 'visible', timeout: 5000 });
 

@@ -517,7 +517,7 @@ class DemoFallbackEngine {
                     break;
                   }
                 }
-                if (!matchedChar) matchedChar = v.hanzi.charAt(0);
+                if (!matchedChar && v.hanzi.length === 1) matchedChar = v.hanzi;
               }
               constituentRadicals.push({
                 ...rad,

@@ -219,8 +219,12 @@ describe('Browser E2E: SRS Dashboard & Profile Settings Integration', () => {
       await page.locator('#btnGoToReview').click();
       await page.waitForURL('**/srs-review.html');
 
-      // On srs-review.html, click link to return to dashboard
-      const returnLink = page.locator('#linkToSrsDashboard');
+      // On srs-review.html, click link to return to dashboard via account dropdown
+      const accountDropdown = page.locator('#navAccountDropdownTrigger');
+      await accountDropdown.waitFor({ state: 'visible' });
+      await accountDropdown.click();
+
+      const returnLink = page.locator('#navLearningProgressBtn');
       await returnLink.waitFor({ state: 'visible' });
       await returnLink.click();
       await page.waitForURL('**/srs-dashboard.html');
