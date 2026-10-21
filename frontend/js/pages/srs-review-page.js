@@ -13538,6 +13538,7 @@ export class SrsReviewController {
     if (this.dom.readingPrivacyNotice) {
       const isDismissed = typeof localStorage !== 'undefined' && localStorage.getItem('srs_reading_privacy_dismissed') === '1';
       this.dom.readingPrivacyNotice.classList.toggle('d-none', isDismissed);
+      this.dom.readingPrivacyNotice.style.display = 'none';
     }
 
     // Target Hanzi
