@@ -10084,6 +10084,8 @@ export class SrsReviewController {
       readingErrorMessage: document.getElementById('readingErrorMessage'),
       readingErrorAdvice: document.getElementById('readingErrorAdvice'),
       btnReadingTryAgain: document.getElementById('btnReadingTryAgain'),
+      btnReadingSkipOnError: document.getElementById('btnReadingSkipOnError'),
+      readingRecognizedTextContainer: document.getElementById('readingRecognizedTextContainer'),
       readingNextContainer: document.getElementById('readingNextContainer'),
       btnReadingNext: document.getElementById('btnReadingNext'),
 
@@ -10476,6 +10478,12 @@ export class SrsReviewController {
       this.dom.btnReadingTryAgain.addEventListener('click', () => {
         this.cleanUpReadingMedia();
         this.setReadingState('ready');
+      });
+    }
+
+    if (this.dom.btnReadingSkipOnError) {
+      this.dom.btnReadingSkipOnError.addEventListener('click', () => {
+        this.skipReadingCard();
       });
     }
 
@@ -13805,9 +13813,18 @@ export class SrsReviewController {
         this.dom.readingConfidenceBadge.classList.add('d-none'); // Hidden from UI per user request
       }
 
-      // Recognized Text
-      if (this.dom.readingRecognizedText) {
-        this.dom.readingRecognizedText.textContent = response.recognizedText || '(Chưa nhận diện rõ)';
+      // Recognized Text (Only displayed if authoritative text returned)
+      if (this.dom.readingRecognizedTextContainer) {
+        if (response.recognizedText) {
+          if (this.dom.readingRecognizedText) {
+            this.dom.readingRecognizedText.textContent = response.recognizedText;
+          }
+          this.dom.readingRecognizedTextContainer.classList.remove('d-none');
+        } else {
+          this.dom.readingRecognizedTextContainer.classList.add('d-none');
+        }
+      } else if (this.dom.readingRecognizedText) {
+        this.dom.readingRecognizedText.textContent = response.recognizedText || '';
       }
 
       // Summary Vi
@@ -13873,6 +13890,10 @@ export class SrsReviewController {
       } else if (response.status === 'QUOTA_EXCEEDED') {
         title = 'Đã đạt hạn mức miễn phí Google Gemini';
         advice = 'Vui lòng thử lại sau giây lát khi hạn mức được hồi phục.';
+      } else if (response.status === 'engine_unavailable' || response.status === 'ENGINE_UNAVAILABLE') {
+        title = 'Dịch vụ AI Luyện đọc chưa sẵn sàng';
+        message = response.summaryVi || 'Dịch vụ phân tích phát âm cục bộ chưa được khởi chạy (cổng 8000).';
+        advice = 'Bạn có thể bấm "Bỏ qua →" để tiếp tục học từ tiếp theo hoặc khởi chạy speech-service.';
       }
 
       this.showReadingError(title, message, advice);
@@ -13905,11 +13926,42 @@ export class SrsReviewController {
       this.dom.readingPinyinMeaningBox.classList.remove('d-none');
     }
 
+    // Enable skip button so learner is never stuck
+    if (this.dom.btnReadingSkipOnError) {
+      this.dom.btnReadingSkipOnError.disabled = false;
+      this.dom.btnReadingSkipOnError.removeAttribute('aria-hidden');
+    }
+
     // Keep Next button hidden
     if (this.dom.btnReadingNext) {
       this.dom.btnReadingNext.classList.add('writing-next-hidden');
       this.dom.btnReadingNext.setAttribute('aria-hidden', 'true');
       this.dom.btnReadingNext.setAttribute('tabindex', '-1');
+    }
+  }
+
+  /**
+   * Safely skips the current reading card without getting stuck when errors or engine_unavailable occur.
+   */
+  skipReadingCard() {
+    this.cleanUpReadingMedia();
+    this.hasCompletedReadingForCurrentCard = true;
+    showToast({
+      type: 'info',
+      title: 'Đã bỏ qua thẻ',
+      message: 'Đã chuyển sang thẻ tiếp theo trong phiên học.'
+    });
+
+    if (!this.isReviewMode) {
+      const nextIndex = this.currentIndex + 1;
+      this.persistProgress('reading', nextIndex);
+    }
+
+    this.currentIndex++;
+    if (this.currentIndex >= this.sessionQueue.length) {
+      this.showCompletedState();
+    } else {
+      this.renderCurrentCard();
     }
   }
 

@@ -1,0 +1,34 @@
+# Git and IDE
+.git
+.idea
+.vscode
+*.swp
+*.iml
+
+# Build targets
+target/
+
+# Sensitive configuration and local secrets
+*-local.yml
+*-local.yaml
+application-local.yml
+application-local.yaml
+**/*-local.yml
+**/*-local.yaml
+**/application-local.yml
+**/application-local.yaml
+src/main/resources/*-local.yml
+src/main/resources/*-local.yaml
+src/main/resources/application-local.yml
+src/main/resources/application-local.yaml
+.env*
+!.env.example
+*.key
+*.pem
+*.secret
+credentials.json
+secrets.*
+
+# OS files
+.DS_Store
+Thumbs.db

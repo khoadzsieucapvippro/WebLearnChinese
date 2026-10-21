@@ -43,7 +43,7 @@ spring:
     clean-disabled: true
 
 jwt:
-  secret: ${JWT_SECRET:elearning-chinese-platform-secret-key-jwt-256-bits-minimum-length-key!}
+  secret: ${JWT_SECRET:}
   expiration-ms: ${JWT_EXPIRATION_MS:86400000}
   issuer: ${JWT_ISSUER:elearning-backend}
 

@@ -1,13 +1,32 @@
+# Git and IDE
 .git
-node_modules
-frontend
-tests
-docs
 .github
-.devcontainer
-artifacts
-*.md
-target
-backend/target
 .idea
 .vscode
+*.swp
+*.iml
+
+# Node / Frontend
+node_modules/
+.npm/
+
+# Backend build targets
+target/
+backend/target/
+
+# Sensitive configuration and local secrets
+**/*-local.yml
+**/*-local.yaml
+**/application-local.yml
+**/application-local.yaml
+**/.env*
+!**/.env.example
+**/*.key
+**/*.pem
+**/*.secret
+credentials.json
+secrets.*
+
+# OS files
+.DS_Store
+Thumbs.db

@@ -75,10 +75,56 @@ public class ReadingAssessmentServiceImpl implements ReadingAssessmentService {
 
     @Override
     public boolean isGeminiConfigured() {
-        if (localSpeechConfig != null && localSpeechConfig.isEnabled()) {
+        return isServiceAvailable();
+    }
+
+    @Override
+    public boolean isServiceAvailable() {
+        boolean localEnabled = localSpeechConfig != null && localSpeechConfig.isEnabled();
+        if (localEnabled && localSpeechServiceClient != null && localSpeechServiceClient.isAvailable()) {
             return true;
         }
-        return geminiPronunciationService.isConfigured();
+        return geminiPronunciationService != null && geminiPronunciationService.isConfigured();
+    }
+
+    @Override
+    public Map<String, Object> getServiceStatus() {
+        Map<String, Object> status = new java.util.HashMap<>();
+        status.put("audioInputSupported", true);
+
+        boolean localEnabled = localSpeechConfig != null && localSpeechConfig.isEnabled();
+        boolean localHealthy = localEnabled && localSpeechServiceClient != null && localSpeechServiceClient.isAvailable();
+        boolean geminiReady = geminiPronunciationService != null && geminiPronunciationService.isConfigured();
+
+        if (localEnabled) {
+            if (localHealthy) {
+                status.put("configured", true);
+                status.put("available", true);
+                status.put("provider", "speech-service-local");
+                status.put("tier", "local-offline");
+                status.put("model", "Chao-5-Scale Tone Sandhi Engine");
+            } else if (geminiReady) {
+                status.put("configured", true);
+                status.put("available", true);
+                status.put("provider", "Google Gemini API");
+                status.put("tier", "free");
+                status.put("fallback", true);
+                status.put("notice", "Local speech engine unavailable; falling back to cloud Gemini API");
+            } else {
+                status.put("configured", true);
+                status.put("available", false);
+                status.put("provider", "speech-service-local");
+                status.put("tier", "local-offline");
+                status.put("notice", "Dịch vụ AI Luyện đọc cục bộ chưa được khởi chạy (cổng 8000)");
+            }
+        } else {
+            status.put("configured", geminiReady);
+            status.put("available", geminiReady);
+            status.put("provider", "Google Gemini API");
+            status.put("tier", "free");
+        }
+
+        return status;
     }
 
     @Override
@@ -148,14 +194,20 @@ public class ReadingAssessmentServiceImpl implements ReadingAssessmentService {
             throw new BusinessException(ErrorCode.INTERNAL_ERROR, "Không thể đọc dữ liệu âm thanh tải lên");
         }
 
-        if (localSpeechConfig != null && localSpeechConfig.isEnabled()) {
-            return localSpeechServiceClient.assessPronunciation(
+        if (localSpeechConfig != null && localSpeechConfig.isEnabled() && localSpeechServiceClient != null) {
+            PronunciationAssessmentResponse localResp = localSpeechServiceClient.assessPronunciation(
                     audioBytes,
                     contentType,
                     targetHanzi,
                     targetPinyin,
                     meaningHanViet
             );
+            // If local speech engine is down/unavailable, but Gemini AI is configured, fallback smoothly
+            if (!"engine_unavailable".equalsIgnoreCase(localResp.getStatus()) || geminiPronunciationService == null || !geminiPronunciationService.isConfigured()) {
+                return localResp;
+            }
+            log.info("Local speech service unavailable at {}. Falling back to configured Gemini AI for user {}",
+                    localSpeechConfig.getBaseUrl(), currentUser);
         }
 
         return geminiPronunciationService.assessPronunciation(

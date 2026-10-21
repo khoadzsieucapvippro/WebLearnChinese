@@ -1,5 +1,6 @@
 import logging
 from typing import Optional
+import numpy as np
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -14,7 +15,7 @@ logger = logging.getLogger("speech_service")
 
 app = FastAPI(
     title="Local Chinese Speech & Tone Assessment Service",
-    description="100% Offline Mandarin ASR and Tone Evaluation Engine with Tone Sandhi Rules",
+    description="100% Offline Mandarin Tone Assessment & Pitch Contour Engine with Tone Sandhi Rules (Acoustic F0 Analysis, non-ASR)",
     version="1.0.0"
 )
 
@@ -30,9 +31,10 @@ app.add_middleware(
 def health_check():
     return {
         "status": "READY",
-        "engine": "local-acoustic-f0",
+        "engine": "local-acoustic-f0-tone",
         "offline": True,
         "model": "Chao-5-Scale Tone Sandhi Engine",
+        "asr": False,
         "version": "1.0.0"
     }
 
@@ -134,6 +136,21 @@ async def evaluate_reading(
 
     # 4. F0 pitch extraction and Chao normalization
     times, f0, voiced = extract_f0_contour(pcm, sr)
+    if int(np.sum(voiced)) < 3:
+        return JSONResponse(
+            status_code=200,
+            content={
+                "status": "not_scorable",
+                "targetText": text,
+                "targetPinyin": pinyin_str,
+                "overallScore": None,
+                "confidence": "LOW",
+                "summaryVi": "Không phát hiện đủ âm sắc giọng nói (thiếu đường cao độ F0) để đánh giá thanh điệu.",
+                "retryAdvice": "Vui lòng giữ micro và phát âm to rõ ràng, ngân vang trọn vẹn âm tiết.",
+                "limitations": "Số khung hữu thanh F0 dưới ngưỡng tối thiểu (3 khung) để phân tích ngữ điệu."
+            }
+        )
+
     chao = normalize_to_chao_scale(f0, voiced)
     syllable_contours = segment_and_interpolate_syllables(chao, voiced, num_syllables)
 
@@ -142,7 +159,8 @@ async def evaluate_reading(
     for i, syl in enumerate(syllables):
         contour = syllable_contours[i] if i < len(syllable_contours) else syllable_contours[0]
         is_half_third = (syl.get("sandhi_note", "").find("bàn shàng") != -1)
-        res = score_syllable(contour, syl["target_tone"], is_half_third)
+        prev_tone = syllables[i - 1]["target_tone"] if i > 0 else None
+        res = score_syllable(contour, syl["target_tone"], is_half_third, prev_tone=prev_tone)
         
         syl_data = {
             **syl,

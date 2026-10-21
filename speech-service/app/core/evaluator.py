@@ -1,5 +1,5 @@
 import numpy as np
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 
 # Canonical Chao templates on 20-point grid (1.0 .. 5.0)
 CANONICAL_TONE_TEMPLATES = {
@@ -12,9 +12,10 @@ CANONICAL_TONE_TEMPLATES = {
     5: np.full(20, 2.5, dtype=np.float32) # neutral
 }
 
-def classify_detected_tone(contour: np.ndarray) -> int:
+def classify_detected_tone(contour: np.ndarray, target_tone: Optional[int] = None) -> int:
     """
     Classifies a 20-point normalized Chao contour into detected tone (1..5).
+    Evaluates contour shape, slope, valley minima, and register boundaries.
     """
     mean_val = float(np.mean(contour))
     # Linear slope
@@ -26,24 +27,34 @@ def classify_detected_tone(contour: np.ndarray) -> int:
     delta = end_level - start_level
     min_val = float(np.min(contour))
     min_idx = int(np.argmin(contour))
+    std_val = float(np.std(contour))
     
-    # Tone 4: Steep fall (delta < -1.2, slope < -0.06, start high)
-    if delta < -1.0 or (slope < -0.05 and start_level > 3.0):
+    # 1. Tone 4: Steep fall (51) - starts high and must plunge into the lower register
+    if (delta < -1.8 and end_level <= 2.8) or (delta < -1.2 and slope < -0.05 and start_level >= 3.2 and end_level <= 2.5):
         return 4
         
-    # Tone 2: Strong rise (delta > 1.0, slope > 0.05)
-    if delta > 0.8 or slope > 0.05:
+    # 2. Tone 3: Valley in the middle (dipping contour 214)
+    # Must be evaluated before Tone 2 so that rising tail of 214 dip-rise does not hijack into Tone 2
+    if (2 <= min_idx <= 16 and min_val < 2.6 and (contour[0] - min_val >= 0.35) and (contour[-1] - min_val >= 0.35)):
+        return 3
+
+    # 3. Tone 2: Strong monotonic rise (35)
+    if delta > 0.8 and slope > 0.03:
         return 2
         
-    # Tone 3: Valley in the middle (min near center and low) or very low flat
-    if (3 <= min_idx <= 16 and min_val < 2.2) or mean_val < 2.4:
+    # 4. Tone 1: High and relatively level (55)
+    if (mean_val >= 3.5 and abs(delta) < 1.4 and end_level >= 3.0) or (std_val < 0.35 and abs(delta) < 0.7 and mean_val >= 3.0):
+        return 1
+
+    # 5. Tone 5: Neutral tone when target is 5 and contour is relatively flat/unstressed
+    if target_tone == 5 and abs(delta) < 1.0 and std_val < 0.6:
+        return 5
+
+    # 6. Tone 3: Low pitch register (half-third 21) when target is 3
+    if target_tone == 3 and mean_val < 2.6 and abs(delta) < 0.9:
         return 3
         
-    # Tone 1: High and relatively flat
-    if mean_val >= 3.6 and abs(delta) < 1.0:
-        return 1
-        
-    # Fallback to closest Euclidean distance among canonicals
+    # 7. Fallback to closest Euclidean distance among canonicals
     best_tone = 1
     best_dist = 999.0
     for t in (1, 2, 3, 4, 5):
@@ -55,31 +66,41 @@ def classify_detected_tone(contour: np.ndarray) -> int:
             
     return best_tone
 
-def score_syllable(contour: np.ndarray, target_tone: int, is_half_third: bool = False) -> Dict[str, Any]:
+def score_syllable(contour: np.ndarray, target_tone: int, is_half_third: bool = False, prev_tone: Optional[int] = None) -> Dict[str, Any]:
     """
-    Scores a single syllable contour against its target tone.
+    Scores a single syllable contour against its target tone with calibrated scoring.
     """
-    detected_tone = classify_detected_tone(contour)
-    template = CANONICAL_TONE_TEMPLATES[target_tone]
-    rmse = float(np.sqrt(np.mean((contour - template) ** 2)))
+    detected_tone = classify_detected_tone(contour, target_tone=target_tone)
     
-    if target_tone == 3 and is_half_third:
+    if target_tone == 5:
+        # Context-dependent neutral tone pitch level:
+        # After Tone 1: mid (~2.6)
+        # After Tone 2: mid (~3.0)
+        # After Tone 3: mid-high (~3.6)
+        # After Tone 4: low (~1.8)
+        neutral_levels = {1: 2.6, 2: 3.0, 3: 3.6, 4: 1.8}
+        target_level = neutral_levels.get(prev_tone, 2.5)
+        template = np.full(len(contour), target_level, dtype=np.float32)
+        rmse = float(np.sqrt(np.mean((contour - template) ** 2)))
+    elif target_tone == 3 and is_half_third:
+        template = CANONICAL_TONE_TEMPLATES[target_tone]
+        rmse_full = float(np.sqrt(np.mean((contour - template) ** 2)))
         rmse_half = float(np.sqrt(np.mean((contour - CANONICAL_TONE_TEMPLATES["3_half"]) ** 2)))
-        rmse = min(rmse, rmse_half)
-        if detected_tone == 3:
-            # Half third is fully correct
-            detected_tone = 3
+        rmse = min(rmse_full, rmse_half)
+    else:
+        template = CANONICAL_TONE_TEMPLATES[target_tone]
+        rmse = float(np.sqrt(np.mean((contour - template) ** 2)))
 
     # Base shape score from RMSE (lower RMSE -> higher score)
     shape_score = max(0.0, min(100.0, 100.0 * (1.0 - (rmse / 2.2))))
     
     tone_correct = (detected_tone == target_tone)
     if tone_correct:
-        # Bonus for correct tone category
-        score = int(np.clip(shape_score * 0.4 + 60.0, 75, 98))
+        # Calibrated score: smoothly reflects actual shape accuracy rather than flat 75 floor
+        score = int(round(np.clip(45.0 + shape_score * 0.52, 45, 98)))
     else:
-        # Penalty for wrong tone category
-        score = int(np.clip(shape_score * 0.45, 25, 65))
+        # Penalty for wrong tone category (capped at 55)
+        score = int(round(np.clip(shape_score * 0.45, 15, 55)))
         
     tone_names = {1: "Thanh 1 (Âm bình)", 2: "Thanh 2 (Dương bình)", 3: "Thanh 3 (Thượng thanh)", 4: "Thanh 4 (Khứ thanh)", 5: "Thanh nhẹ"}
     
@@ -100,6 +121,7 @@ def score_syllable(contour: np.ndarray, target_tone: int, is_half_third: bool = 
 def generate_assessment_report(target_text: str, target_pinyin: str, syllables_data: List[Dict[str, Any]], audio_meta: Dict[str, Any]) -> Dict[str, Any]:
     """
     Assembles complete pronunciation evaluation DTO conforming to PronunciationAssessmentResponse.
+    Truthful reporting: does not pretend ASR recognized text or fake initials/finals feedback.
     """
     scores = [s["score"] for s in syllables_data]
     overall_score = int(round(np.mean(scores))) if scores else 0
@@ -143,9 +165,8 @@ def generate_assessment_report(target_text: str, target_pinyin: str, syllables_d
         else:
             tones_fb_list.append(f"Chữ '{hanzi}': Đọc thanh {t_det} chưa khớp với thanh {t_target} mục tiêu.")
             
+    # Truthful feedback: only include measured tone feedback; do not fake initials/finals
     components = {
-        "initialsFeedback": "Thanh mẫu phát âm rõ ràng, luồng hơi ổn định.",
-        "finalsFeedback": "Vận mẫu tròn vành rõ chữ, độ vang tốt.",
         "tonesFeedback": " ".join(tones_fb_list)
     }
     
@@ -153,7 +174,7 @@ def generate_assessment_report(target_text: str, target_pinyin: str, syllables_d
         "status": "assessed",
         "targetText": target_text,
         "targetPinyin": target_pinyin,
-        "recognizedText": target_text if all_tones_correct else target_text,
+        "recognizedText": None, # Non-ASR engine: only acoustic F0 tone contour is evaluated
         "overallScore": overall_score,
         "confidence": confidence,
         "summaryVi": summary_vi,
@@ -161,5 +182,5 @@ def generate_assessment_report(target_text: str, target_pinyin: str, syllables_d
         "components": components,
         "syllables": syllables_data,
         "retryAdvice": retry_advice,
-        "limitations": "Đánh giá bởi Engine AI Luyện đọc cục bộ (100% Offline Acoustic & Tone Sandhi Model)."
+        "limitations": "Đánh giá bởi Engine AI Luyện đọc cục bộ (100% Offline Acoustic & Tone Sandhi Model - Phân tích thanh điệu F0, không nhận diện chữ ASR)."
     }

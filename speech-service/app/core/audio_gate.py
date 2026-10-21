@@ -9,7 +9,8 @@ TARGET_SAMPLE_RATE = 16000
 MIN_DURATION_SEC = 0.35
 MIN_RMS_THRESHOLD = 0.006  # roughly -44 dBFS
 MAX_CLIPPING_RATIO = 0.02   # 2% clipping
-MIN_SNR_DB = 8.0
+MIN_DYNAMIC_RANGE_DB = 8.0  # Heuristic RMS dynamic range (p90 / p10 energy contrast)
+MIN_SNR_DB = MIN_DYNAMIC_RANGE_DB  # Backwards compatibility alias
 
 def decode_audio_to_mono_16k(audio_bytes: bytes) -> Tuple[np.ndarray, int]:
     """
@@ -103,7 +104,8 @@ def inspect_audio_quality(pcm: np.ndarray, sr: int = TARGET_SAMPLE_RATE) -> Dict
             "retry_advice": "Vui lòng kiểm tra quyền micro và đọc to, rõ ràng hơn."
         }
 
-    # Frame-level energy and SNR estimation
+    # Frame-level RMS energy and Dynamic Range heuristic (energy contrast between 90th and 10th percentiles)
+    # Note: This is an empirical dynamic-range / contrast gate, not a standard ITU-T calibrated true SNR measurement.
     frame_len = int(0.025 * sr) # 25ms
     hop_len = int(0.010 * sr)   # 10ms
     frames = []
@@ -114,22 +116,24 @@ def inspect_audio_quality(pcm: np.ndarray, sr: int = TARGET_SAMPLE_RATE) -> Dict
     
     if len(frames) > 0:
         frames = np.array(frames)
-        # 10th percentile as noise floor, 90th percentile as signal
+        # 10th percentile as estimated background floor proxy, 90th percentile as speech energy proxy
         noise_floor = float(np.percentile(frames, 10)) + 1e-6
         signal_peak = float(np.percentile(frames, 90)) + 1e-6
-        snr_db = 20.0 * math.log10(signal_peak / noise_floor)
+        dynamic_range_db = 20.0 * math.log10(signal_peak / noise_floor)
+        snr_db = dynamic_range_db  # Backwards compatibility alias
         
         # Check voiced ratio (frames with energy > 2.5x noise floor)
         voiced_frames = np.sum(frames > (noise_floor * 2.5))
         voiced_ratio = float(voiced_frames) / float(len(frames))
         
-        if snr_db < MIN_SNR_DB:
+        if dynamic_range_db < MIN_DYNAMIC_RANGE_DB:
             return {
                 "scorable": False,
                 "status": "not_scorable",
                 "duration": duration,
                 "snr_db": snr_db,
-                "reason": f"Tạp âm môi trường quá lớn (SNR {snr_db:.1f} dB < {MIN_SNR_DB} dB).",
+                "dynamic_range_db": dynamic_range_db,
+                "reason": f"Độ tương phản dải động / Dynamic Range không đạt chuẩn (ước tính: {dynamic_range_db:.1f} dB < {MIN_DYNAMIC_RANGE_DB} dB).",
                 "retry_advice": "Vui lòng di chuyển đến không gian yên tĩnh hơn để luyện đọc."
             }
             
@@ -139,6 +143,8 @@ def inspect_audio_quality(pcm: np.ndarray, sr: int = TARGET_SAMPLE_RATE) -> Dict
                 "status": "not_scorable",
                 "duration": duration,
                 "voiced_ratio": voiced_ratio,
+                "snr_db": snr_db,
+                "dynamic_range_db": snr_db,
                 "reason": "Thời lượng phát âm hữu thanh quá ít so với khoảng lặng.",
                 "retry_advice": "Vui lòng phát âm rõ ràng, liền mạch."
             }
@@ -153,5 +159,6 @@ def inspect_audio_quality(pcm: np.ndarray, sr: int = TARGET_SAMPLE_RATE) -> Dict
         "rms": rms,
         "clipping_ratio": clipping_ratio,
         "snr_db": snr_db,
+        "dynamic_range_db": snr_db,
         "voiced_ratio": voiced_ratio
     }

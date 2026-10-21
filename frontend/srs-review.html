@@ -678,7 +678,7 @@
             <div id="readingStateAnalyzing" class="reading-state-box w-100 py-4 d-none" role="status" aria-live="polite">
               <div class="state-spinner mx-auto mb-2" aria-hidden="true"></div>
               <div class="fw-semibold text-dark">Đang phân tích phát âm...</div>
-              <div class="text-secondary small mt-1">Đang đánh giá thanh mẫu, vận mẫu, thanh điệu và đối chiếu văn bản</div>
+              <div class="text-secondary small mt-1">Đang phân tích đường cao độ F0 và đánh giá thanh điệu theo thang chuẩn Chao</div>
             </div>
 
             <!-- State D: Kết quả (Result) -->
@@ -689,9 +689,14 @@
                 <span id="readingConfidenceBadge" class="badge bg-secondary-subtle text-secondary border d-none">Tin cậy cao</span>
               </div>
               
-
-              <!-- Recognized Text -->
+              <!-- Scope Notice -->
               <div class="small mb-2 p-2 bg-light rounded border text-start">
+                <span class="text-primary fw-semibold">🎯 Đánh giá thanh điệu (Tone Evaluation): </span>
+                <span class="text-muted" style="font-size: 0.8rem;">Phân tích đường cao độ F0 theo thang chuẩn Chao (không nhận diện chữ ASR).</span>
+              </div>
+
+              <!-- Recognized Text (Only shown if ASR recognized text is available) -->
+              <div id="readingRecognizedTextContainer" class="small mb-2 p-2 bg-light rounded border text-start d-none">
                 <span class="text-secondary fw-semibold">Nhận diện được: </span>
                 <span id="readingRecognizedText" class="font-hanzi fw-bold text-dark"></span>
               </div>
@@ -701,7 +706,7 @@
 
               <!-- Component Details (Initials, Finals, Tones) -->
               <div id="readingComponentsWrapper" class="p-2 rounded bg-light border text-start small mb-2 d-none">
-                <div class="fw-semibold text-secondary mb-1">Chi tiết ngữ âm:</div>
+                <div class="fw-semibold text-secondary mb-1">Chi tiết thanh điệu ngữ âm:</div>
                 <div id="readingInitialsFeedback" class="mb-1 text-secondary"></div>
                 <div id="readingFinalsFeedback" class="mb-1 text-secondary"></div>
                 <div id="readingTonesFeedback" class="text-secondary"></div>
@@ -731,9 +736,14 @@
                 <div id="readingErrorMessage" class="mb-1"></div>
                 <div id="readingErrorAdvice" class="text-muted"></div>
               </div>
-              <button type="button" id="btnReadingTryAgain" class="btn btn-chinese-primary btn-sm py-2 px-4 fw-bold">
-                Thử đọc lại
-              </button>
+              <div class="d-flex justify-content-center align-items-center gap-2 flex-wrap">
+                <button type="button" id="btnReadingTryAgain" class="btn btn-chinese-primary btn-sm py-2 px-4 fw-bold">
+                  Thử đọc lại
+                </button>
+                <button type="button" id="btnReadingSkipOnError" class="btn btn-outline-secondary btn-sm py-2 px-4 fw-bold">
+                  Bỏ qua &rarr;
+                </button>
+              </div>
             </div>
 
           </div>

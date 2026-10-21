@@ -8,6 +8,7 @@ RUN mvn dependency:go-offline -B
 
 # Copy backend source code and compile application package
 COPY src ./src
+RUN rm -f ./src/main/resources/application-local.yml ./src/main/resources/*-local.yml
 RUN mvn clean package -DskipTests -B
 
 # Stage 2: Runtime

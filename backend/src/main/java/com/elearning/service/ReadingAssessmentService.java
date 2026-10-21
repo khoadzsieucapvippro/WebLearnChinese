@@ -21,6 +21,20 @@ public interface ReadingAssessmentService {
 
     /**
      * Checks if the Gemini AI evaluation engine is configured and operational.
+     * @deprecated Use {@link #isServiceAvailable()} for provider-neutral check.
      */
+    @Deprecated
     boolean isGeminiConfigured();
+
+    /**
+     * Checks if any reading assessment engine (local speech service or cloud Gemini) is available.
+     */
+    default boolean isServiceAvailable() {
+        return isGeminiConfigured();
+    }
+
+    /**
+     * Retrieves runtime status metadata describing provider and availability.
+     */
+    java.util.Map<String, Object> getServiceStatus();
 }

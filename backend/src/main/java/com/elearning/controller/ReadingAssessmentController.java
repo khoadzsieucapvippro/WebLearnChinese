@@ -15,7 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.Map;
 
 /**
- * REST Controller for Speech / Reading Pronunciation Assessment powered by Gemini AI.
+ * REST Controller for Speech / Reading Pronunciation Assessment (Local Speech Engine or Gemini AI).
  * Base path: /api/v1/srs/reading
  * Protected by Spring Security: Requires authenticated learner.
  */
@@ -48,20 +48,15 @@ public class ReadingAssessmentController {
     }
 
     /**
-     * Retrieves runtime status of the Gemini Reading AI service.
-     * Enables frontend to gracefully adapt when GEMINI_API_KEY is not yet configured.
+     * Retrieves runtime status of the Reading AI assessment service.
+     * Accurately reflects provider (Local Speech Service or Cloud Gemini AI),
+     * live health check status, and offline capability.
      *
-     * @return ApiResponse wrapping configuration status and free-tier metadata
+     * @return ApiResponse wrapping configuration status and provider metadata
      */
     @GetMapping("/status")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getReadingStatus() {
-        boolean configured = readingAssessmentService.isGeminiConfigured();
-        Map<String, Object> data = Map.of(
-                "configured", configured,
-                "tier", "free",
-                "provider", "Google Gemini API",
-                "audioInputSupported", true
-        );
+        Map<String, Object> data = readingAssessmentService.getServiceStatus();
         return ResponseEntity.ok(ApiResponse.success(data));
     }
 }

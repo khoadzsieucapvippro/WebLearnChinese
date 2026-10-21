@@ -49,7 +49,14 @@ class ReadingAssessmentControllerTests {
     @Test
     @DisplayName("GET /api/v1/srs/reading/status returns operational status and free-tier metadata")
     void testGetReadingStatus() throws Exception {
-        when(readingAssessmentService.isGeminiConfigured()).thenReturn(true);
+        java.util.Map<String, Object> statusData = java.util.Map.of(
+                "configured", true,
+                "available", true,
+                "tier", "free",
+                "provider", "Google Gemini API",
+                "audioInputSupported", true
+        );
+        when(readingAssessmentService.getServiceStatus()).thenReturn(statusData);
 
         mockMvc.perform(get("/api/v1/srs/reading/status"))
                 .andExpect(status().isOk())

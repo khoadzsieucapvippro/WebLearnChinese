@@ -8,6 +8,7 @@ RUN mvn -f ./backend/pom.xml dependency:go-offline -B
 
 # Copy backend source code and compile application package
 COPY backend/src ./backend/src
+RUN rm -f ./backend/src/main/resources/application-local.yml ./backend/src/main/resources/*-local.yml
 RUN mvn -f ./backend/pom.xml clean package -DskipTests -B
 
 # Stage 2: Runtime
