@@ -603,10 +603,10 @@
           <div class="srs-writing-card srs-reading-card">
 
             <!-- Free-tier AI Privacy Notice -->
-            <div id="readingPrivacyNotice" class="alert alert-info py-2 px-3 small mx-auto w-100 mb-3 text-start d-flex align-items-center justify-content-between" role="region" aria-label="Thông báo quyền riêng tư AI">
+            <div id="readingPrivacyNotice" class="alert alert-info py-2 px-3 small mx-auto w-100 mb-3 text-start d-flex align-items-center justify-content-between d-none" role="region" aria-label="Thông báo quyền riêng tư">
               <div>
-                <span class="fw-bold">ℹ️ Thông báo Gemini AI (Gói miễn phí):</span>
-                <span> Bản ghi âm của bạn được gửi tới Google Gemini để phân tích phát âm theo điều khoản miễn phí hiện hành. Dữ liệu âm thanh không lưu trên hệ thống.</span>
+                <span class="fw-bold">ℹ️ Thông báo Luyện đọc nội bộ:</span>
+                <span> Bản ghi âm của bạn được phân tích trực tiếp trên máy cục bộ (Offline Engine). Dữ liệu âm thanh không gửi ra ngoài Internet.</span>
               </div>
               <button type="button" id="btnDismissPrivacyNotice" class="btn-close ms-2 flex-shrink-0" aria-label="Đóng thông báo quyền riêng tư"></button>
             </div>
@@ -615,7 +615,7 @@
             <div class="w-100 mb-2">
               <div class="d-flex justify-content-between align-items-center w-100 mb-2">
                 <span id="readingCardTypeBadge" class="badge bg-light text-secondary border">Từ vựng</span>
-                <span class="badge bg-danger-subtle text-danger border">📖 Luyện đọc AI</span>
+                <span class="badge bg-danger-subtle text-danger border">📖 Luyện đọc</span>
               </div>
 
               <!-- Main Target Hanzi -->
@@ -684,7 +684,7 @@
             <!-- State C: Đang phân tích (Analyzing) -->
             <div id="readingStateAnalyzing" class="reading-state-box w-100 py-4 d-none" role="status" aria-live="polite">
               <div class="state-spinner mx-auto mb-2" aria-hidden="true"></div>
-              <div class="fw-semibold text-dark">Đang phân tích phát âm qua Gemini AI...</div>
+              <div class="fw-semibold text-dark">Đang phân tích phát âm...</div>
               <div class="text-secondary small mt-1">Đang đánh giá thanh mẫu, vận mẫu, thanh điệu và đối chiếu văn bản</div>
             </div>
 
@@ -693,13 +693,13 @@
               <!-- Score Badge Header -->
               <div class="d-flex justify-content-center align-items-center gap-2 mb-2 flex-wrap">
                 <span id="readingOverallScoreBadge" class="reading-score-badge bg-success-subtle text-success border border-success-subtle fw-bold px-3 py-1 rounded-pill fs-5">--</span>
-                <span id="readingConfidenceBadge" class="badge bg-secondary-subtle text-secondary border">Tin cậy cao</span>
+                <span id="readingConfidenceBadge" class="badge bg-secondary-subtle text-secondary border d-none">Tin cậy cao</span>
               </div>
-              <div class="small text-muted fst-italic mb-2">Điểm ước lượng tham khảo từ Gemini AI (Gói miễn phí)</div>
+              
 
               <!-- Recognized Text -->
               <div class="small mb-2 p-2 bg-light rounded border text-start">
-                <span class="text-secondary fw-semibold">AI nhận diện được: </span>
+                <span class="text-secondary fw-semibold">Nhận diện được: </span>
                 <span id="readingRecognizedText" class="font-hanzi fw-bold text-dark"></span>
               </div>
 

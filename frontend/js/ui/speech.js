@@ -68,6 +68,12 @@ export class SpeechController {
      */
     this._activeAudio = null;
 
+    /** @type {Function|null} Active promise resolver for HTMLAudioElement playback */
+    this._activeAudioSettle = null;
+
+    /** @type {Function|null} Active promise resolver for Web Speech playback */
+    this._activeSpeechSettle = null;
+
     /** @type {number|null} */
     this._safetyTimer = null;
 
@@ -76,6 +82,66 @@ export class SpeechController {
 
     /** @type {number} Minimum cooldown between toasts (ms) */
     this._toastCooldownMs = toastCooldownMs;
+
+    /** @type {Array} Cached voices from speechSynthesis */
+    this._cachedVoices = [];
+
+    /** @type {boolean} Whether voiceschanged listener has been attached */
+    this._voiceListenerInitialized = false;
+
+    /** @type {number} Timestamp of last cancel() call to debounce rapid successive clicks */
+    this._lastCancelTimestamp = 0;
+  }
+
+  /**
+   * Initializes voice listener to handle asynchronous voice loading in Chromium/Safari.
+   * @private
+   */
+  _initVoiceListener() {
+    if (typeof window === 'undefined' || !window.speechSynthesis || this._voiceListenerInitialized) {
+      return;
+    }
+    this._voiceListenerInitialized = true;
+    const updateVoices = () => {
+      try {
+        const v = window.speechSynthesis.getVoices?.();
+        if (Array.isArray(v) && v.length > 0) {
+          this._cachedVoices = v;
+        }
+      } catch (_) {}
+    };
+    updateVoices();
+    try {
+      if (typeof window.speechSynthesis.addEventListener === 'function') {
+        window.speechSynthesis.addEventListener('voiceschanged', updateVoices);
+      } else {
+        window.speechSynthesis.onvoiceschanged = updateVoices;
+      }
+    } catch (_) {}
+  }
+
+  /**
+   * Selects an optimal Chinese voice (zh-CN / zh) from Web Speech API.
+   * @returns {SpeechSynthesisVoice|null}
+   * @private
+   */
+  _getChineseVoice() {
+    if (!isSpeechSynthesisAvailable()) return null;
+    this._initVoiceListener();
+    let voices = [];
+    try {
+      voices = window.speechSynthesis.getVoices?.() || [];
+    } catch (_) {}
+    if ((!voices || voices.length === 0) && this._cachedVoices.length > 0) {
+      voices = this._cachedVoices;
+    }
+    if (!Array.isArray(voices) || voices.length === 0) return null;
+
+    // Preference: zh-CN -> cmn-Hans-CN -> zh-TW -> general zh/cmn
+    return voices.find(v => v && v.lang && (v.lang === 'zh-CN' || v.lang === 'zh_CN')) ||
+      voices.find(v => v && v.lang && v.lang.toLowerCase().startsWith('zh-cn')) ||
+      voices.find(v => v && v.lang && (v.lang.startsWith('zh') || v.lang.startsWith('cmn'))) ||
+      null;
   }
 
   /**
@@ -138,6 +204,20 @@ export class SpeechController {
   }
 
   /**
+   * Locks the trigger button synchronously with ARIA attributes and styling.
+   * @private
+   */
+  _lockButton(button) {
+    if (!button) return;
+    this._currentButton = button;
+    try {
+      button.disabled = true;
+      button.setAttribute('aria-busy', 'true');
+      button.classList.add('is-speaking');
+    } catch (_) {}
+  }
+
+  /**
    * Releases button lock and clears active speech state safely.
    *
    * @param {boolean} [isError=false]
@@ -151,16 +231,21 @@ export class SpeechController {
     if (this._activeAudio) {
       try {
         this._activeAudio.pause();
+        this._activeAudio.currentTime = 0;
       } catch (_) {}
       this._activeAudio.onended = null;
       this._activeAudio.onerror = null;
+      this._activeAudio.onplay = null;
+      this._activeAudio.onplaying = null;
       this._activeAudio = null;
     }
 
     if (this._currentButton) {
-      this._currentButton.disabled = false;
-      this._currentButton.removeAttribute('aria-busy');
-      this._currentButton.classList.remove('is-speaking');
+      try {
+        this._currentButton.disabled = false;
+        this._currentButton.removeAttribute('aria-busy');
+        this._currentButton.classList.remove('is-speaking');
+      } catch (_) {}
       this._currentButton = null;
     }
 
@@ -179,23 +264,74 @@ export class SpeechController {
    * Cancels any active speech or audio playback, cleans up listeners, and resets button state.
    */
   cancel() {
+    this._lastCancelTimestamp = Date.now();
     if (this._activeAudio) {
       try {
         this._activeAudio.pause();
+        this._activeAudio.currentTime = 0;
       } catch (_) {}
       this._activeAudio.onended = null;
       this._activeAudio.onerror = null;
+      this._activeAudio.onplay = null;
+      this._activeAudio.onplaying = null;
       this._activeAudio = null;
+    }
+
+    if (this._activeAudioSettle) {
+      const settle = this._activeAudioSettle;
+      this._activeAudioSettle = null;
+      try {
+        settle({
+          success: false,
+          method: 'audio_file',
+          message: 'Playback canceled'
+        });
+      } catch (_) {}
     }
 
     if (isSpeechSynthesisAvailable()) {
       try {
+        if (window.speechSynthesis.paused) {
+          window.speechSynthesis.resume();
+        }
         window.speechSynthesis.cancel();
       } catch (err) {
         console.warn('[SpeechController] cancel() failed:', err);
       }
     }
+
+    if (this._activeSpeechSettle) {
+      const settle = this._activeSpeechSettle;
+      this._activeSpeechSettle = null;
+      try {
+        settle({
+          success: false,
+          method: 'web_speech',
+          message: 'Speech canceled'
+        });
+      } catch (_) {}
+    }
+
     this._cleanup(false);
+  }
+
+  /**
+   * Arms a safety timer that unlocks button state if the browser drops lifecycle events.
+   * @private
+   */
+  _setSafetyTimeout(fn, ms = 5000) {
+    if (this._safetyTimer) {
+      clearTimeout(this._safetyTimer);
+    }
+    this._safetyTimer = setTimeout(() => {
+      this._safetyTimer = null;
+      try {
+        fn();
+      } catch (_) {}
+    }, ms);
+    if (this._safetyTimer && typeof this._safetyTimer.unref === 'function') {
+      this._safetyTimer.unref();
+    }
   }
 
   /**
@@ -212,6 +348,7 @@ export class SpeechController {
    * @param {HTMLElement} [options.button=null] - Triggering button element to lock/unlock
    * @param {string} [options.lang='zh-CN'] - BCP-47 language tag
    * @param {number} [options.rate=0.85] - Speech rate
+   * @param {number} [options.pitch=1.0] - Speech pitch
    * @param {Function} [options.onEnd=null] - Optional completion callback
    * @param {Function} [options.onError=null] - Optional error callback
    * @returns {boolean} true if utterance was dispatched, false if ignored or unsupported
@@ -220,6 +357,7 @@ export class SpeechController {
     button = null,
     lang = 'zh-CN',
     rate = 0.85,
+    pitch = 1.0,
     onEnd = null,
     onError = null
   } = {}) {
@@ -236,6 +374,9 @@ export class SpeechController {
         'Trình duyệt hiện tại không hỗ trợ Web Speech API.',
         'info'
       );
+      if (typeof onError === 'function') {
+        try { onError(new Error('Web Speech API not supported')); } catch (_) {}
+      }
       return false;
     }
 
@@ -253,42 +394,41 @@ export class SpeechController {
       this.cancel();
     }
 
-    return this._speakUtterance(cleanText, { button, lang, rate, onEnd, onError });
+    return this._speakUtterance(cleanText, { button, lang, rate, pitch, onEnd, onError });
   }
 
   /**
    * Dispatches speech utterance after locks and state transitions are established.
-   * 
    * @private
    */
-  _speakUtterance(cleanText, { button = null, lang = 'zh-CN', rate = 0.85, onEnd = null, onError = null } = {}) {
+  _speakUtterance(cleanText, { button = null, lang = 'zh-CN', rate = 0.85, pitch = 1.0, onEnd = null, onError = null } = {}) {
     try {
-      // Lock button and transition state
+      // Lock button and transition state synchronously
       this._state = SpeechState.SPEAKING;
       this._currentButton = button || null;
       this._currentText = cleanText;
 
       if (this._currentButton) {
-        this._currentButton.disabled = true;
-        this._currentButton.setAttribute('aria-busy', 'true');
-        this._currentButton.classList.add('is-speaking');
+        this._lockButton(this._currentButton);
       }
 
       // Create and configure Utterance
-      const UtteranceClass = (typeof window !== 'undefined' && window.SpeechSynthesisUtterance) || (typeof SpeechSynthesisUtterance !== 'undefined' ? SpeechSynthesisUtterance : null);
+      const UtteranceClass = (typeof window !== 'undefined' && window.SpeechSynthesisUtterance) ||
+        (typeof SpeechSynthesisUtterance !== 'undefined' ? SpeechSynthesisUtterance : null);
+      if (!UtteranceClass) {
+        this._cleanup(true);
+        return false;
+      }
+
       const utterance = new UtteranceClass(cleanText);
       utterance.lang = lang;
       utterance.rate = rate;
+      utterance.pitch = pitch;
 
       // Select Chinese voice if available
-      try {
-        const voices = window.speechSynthesis.getVoices?.() || [];
-        const chineseVoice = voices.find(v => v && v.lang && (v.lang.startsWith('zh') || v.lang.startsWith('cmn')));
-        if (chineseVoice) {
-          utterance.voice = chineseVoice;
-        }
-      } catch {
-        // Voice lookup non-fatal
+      const chineseVoice = this._getChineseVoice();
+      if (chineseVoice) {
+        utterance.voice = chineseVoice;
       }
 
       // Lifecycle event listeners
@@ -305,8 +445,9 @@ export class SpeechController {
 
       utterance.onerror = (e) => {
         const errType = e?.error || 'unknown';
+        const isCanceled = (errType === 'canceled' || errType === 'interrupted');
         // 'canceled' and 'interrupted' are natural lifecycle results of intentional cancellation
-        if (errType !== 'canceled' && errType !== 'interrupted') {
+        if (!isCanceled) {
           console.warn('[SpeechController] Utterance error:', errType);
           this._showThrottledToast(
             'Phát âm tự động',
@@ -318,22 +459,25 @@ export class SpeechController {
         if (typeof onError === 'function') {
           try { onError(e); } catch (_) {}
         }
-        this._cleanup(true);
+        this._cleanup(!isCanceled);
       };
 
       // Safety fallback timer: prevents button lock if browser drops end/error events
-      this._safetyTimer = setTimeout(() => {
+      this._setSafetyTimeout(() => {
         if (this._state === SpeechState.SPEAKING) {
           console.warn('[SpeechController] Safety timeout reached, releasing button lock');
           this._cleanup(false);
         }
-      }, 4000);
-      if (this._safetyTimer && typeof this._safetyTimer.unref === 'function') {
-        this._safetyTimer.unref();
-      }
+      }, 5000);
 
       // Retain reference against GC and dispatch speech
       this._activeUtterance = utterance;
+
+      // Resume paused engine to avoid Chromium queue freeze
+      if (window.speechSynthesis.paused) {
+        try { window.speechSynthesis.resume(); } catch (_) {}
+      }
+
       window.speechSynthesis.speak(utterance);
       return true;
 
@@ -344,139 +488,320 @@ export class SpeechController {
         'Không thể khởi động bộ phát âm trên trình duyệt.',
         'warning'
       );
+      if (typeof onError === 'function') {
+        try { onError(err); } catch (_) {}
+      }
       this._cleanup(true);
       return false;
     }
   }
 
   /**
-   * Unified pronunciation player with dedicated audio priority and automatic Web Speech API fallback.
+   * Unified 3-Tier Pronunciation Player:
+   * Tier 1: Dedicated HTMLAudioElement (if audioUrl present and playable).
+   * Tier 2: Web Speech API (window.speechSynthesis with zh-CN voice selection).
+   * Tier 3: Informative UI Toast / notification (never fail silently!).
    *
-   * Behavior:
-   * 1. If audioUrl is provided and valid: attempts HTMLAudioElement playback.
-   * 2. If audio fails, errors, or audioUrl is missing: falls back cleanly to Web Speech API.
-   * 3. Synchronizes button state: locked (.is-speaking, disabled, aria-busy) during playback.
-   * 4. Anti-spam: rapid clicks on the same button/item are safely ignored without queueing.
+   * Executes synchronously to preserve browser Transient User Activation.
    *
-   * @param {Object} options
-   * @param {string} [options.text] - Chinese character(s) to pronounce
-   * @param {string|null} [options.audioUrl=null] - Optional audio media URL
-   * @param {HTMLElement|null} [options.button=null] - Triggering button element
-   * @param {string} [options.lang='zh-CN'] - BCP-47 language tag
-   * @param {number} [options.rate=0.85] - Speech rate
-   * @param {Function} [options.onEnd=null] - Completion callback
-   * @param {Function} [options.onError=null] - Error callback
-   * @returns {boolean} true if audio or speech synthesis was dispatched, false otherwise
+   * @param {Object|string} target - Options object, Card item, or string text to pronounce
+   * @param {Object} [options] - Additional/override options
+   * @returns {Promise<{ success: boolean, method: string, message?: string }>}
    */
-  playPronunciation({
-    text = '',
-    audioUrl = null,
-    button = null,
-    lang = 'zh-CN',
-    rate = 0.85,
-    onEnd = null,
-    onError = null
-  } = {}) {
-    const cleanText = (typeof text === 'string') ? text.trim() : '';
-    const safeAudioUrl = audioUrl ? sanitizeResourceUrl(audioUrl) : null;
+  playPronunciation(target = {}, options = {}) {
+    let rawText = '';
+    let rawAudioUrl = null;
+    let button = null;
+    let lang = 'zh-CN';
+    let rate = 0.85;
+    let pitch = 1.0;
+    let onEnd = null;
+    let onError = null;
+
+    if (typeof target === 'string') {
+      rawText = target;
+      if (options && typeof options === 'object') {
+        rawAudioUrl = options.audioUrl || null;
+        button = options.button || null;
+        lang = options.lang || 'zh-CN';
+        rate = options.rate ?? 0.85;
+        pitch = options.pitch ?? 1.0;
+        onEnd = options.onEnd || null;
+        onError = options.onError || null;
+      }
+    } else if (target && typeof target === 'object') {
+      rawText = target.text || target.hanzi || target.character || '';
+      rawAudioUrl = target.audioUrl || options.audioUrl || null;
+      button = target.button || options.button || null;
+      lang = target.lang || options.lang || 'zh-CN';
+      rate = target.rate ?? options.rate ?? 0.85;
+      pitch = target.pitch ?? options.pitch ?? 1.0;
+      onEnd = target.onEnd || options.onEnd || null;
+      onError = target.onError || options.onError || null;
+    }
+
+    let cleanText = (typeof rawText === 'string') ? rawText.trim() : '';
+    if (cleanText.includes('(') || cleanText.includes('/')) {
+      cleanText = cleanText.split(/[()\/]/)[0].trim();
+    }
+
+    const safeAudioUrl = rawAudioUrl ? sanitizeResourceUrl(rawAudioUrl) : null;
     const hasValidAudio = safeAudioUrl && safeAudioUrl !== 'about:blank';
 
     if (!cleanText && !hasValidAudio) {
-      return false;
+      return this._executeTier3ToastFallback({
+        button,
+        onError,
+        message: 'No text or audio URL provided'
+      });
     }
 
     // 1. Anti-spam Check: If already speaking/playing
     if (this._state === SpeechState.SPEAKING) {
-      // If user clicked the SAME button or same text/audioUrl: ignore
       if (button && this._currentButton === button) {
-        return false;
+        const res = { success: false, method: hasValidAudio ? 'audio_file' : 'web_speech', message: 'Ignored duplicate click' };
+        const prom = Promise.resolve(res);
+        prom.success = false;
+        prom.method = res.method;
+        return prom;
       }
       if (!button && (this._currentText === cleanText || (hasValidAudio && this._currentText === safeAudioUrl))) {
-        return false;
+        const res = { success: false, method: hasValidAudio ? 'audio_file' : 'web_speech', message: 'Ignored duplicate text' };
+        const prom = Promise.resolve(res);
+        prom.success = false;
+        prom.method = res.method;
+        return prom;
       }
-
-      // If user clicked a DIFFERENT button or item: cancel prior audio/speech cleanly
       this.cancel();
     }
 
-    // 2. Try playing dedicated audio file first if URL is valid and Audio constructor exists
-    if (hasValidAudio && typeof window !== 'undefined' && typeof window.Audio !== 'undefined') {
+    // Audio constructor detection
+    const AudioConstructor = (typeof window !== 'undefined' && window.Audio) ? window.Audio : null;
+
+    // TIER 1: Dedicated Audio Element Playback
+    if (hasValidAudio && AudioConstructor) {
+      this._state = SpeechState.SPEAKING;
+      this._currentButton = button || null;
+      this._currentText = cleanText || safeAudioUrl;
+      if (this._currentButton) {
+        this._lockButton(this._currentButton);
+      }
+
+      let audio;
       try {
-        this._state = SpeechState.SPEAKING;
-        this._currentButton = button || null;
-        this._currentText = cleanText || safeAudioUrl;
-
-        if (this._currentButton) {
-          this._currentButton.disabled = true;
-          this._currentButton.setAttribute('aria-busy', 'true');
-          this._currentButton.classList.add('is-speaking');
-        }
-
-        const audio = new window.Audio(safeAudioUrl);
+        audio = new AudioConstructor(safeAudioUrl);
         this._activeAudio = audio;
+      } catch (audioInitErr) {
+        this._activeAudio = null;
+        return this._executeTier2OrTier3({ cleanText, button, lang, rate, pitch, onEnd, onError, reason: audioInitErr?.message });
+      }
 
-        audio.onended = () => {
-          this._activeAudio = null;
-          if (typeof onEnd === 'function') {
-            try { onEnd(); } catch (_) {}
-          }
-          this._cleanup(false);
-        };
+      let promiseResolve;
+      const playPromiseResult = new Promise((resolve) => {
+        promiseResolve = resolve;
+      });
+      playPromiseResult.success = true;
+      playPromiseResult.method = 'audio_file';
 
-        audio.onerror = (e) => {
-          this._activeAudio = null;
-          // Audio playback failed, fallback to Web Speech API
-          if (cleanText) {
-            this._speakUtterance(cleanText, { button, lang, rate, onEnd, onError });
-          } else {
-            if (typeof onError === 'function') {
-              try { onError(e); } catch (_) {}
-            }
-            this._cleanup(true);
-          }
-        };
+      let settled = false;
+      const finish = (result) => {
+        if (settled) return;
+        settled = true;
+        this._activeAudioSettle = null;
+        this._cleanup(!result.success);
+        if (promiseResolve) {
+          promiseResolve(result);
+          promiseResolve = null;
+        }
+      };
 
+      this._activeAudioSettle = (result) => {
+        finish(result);
+      };
+
+      audio.onended = () => {
+        this._activeAudio = null;
+        if (typeof onEnd === 'function') {
+          try { onEnd(); } catch (_) {}
+        }
+        finish({ success: true, method: 'audio_file' });
+      };
+
+      let fallbackInitiated = false;
+      const handleAudioError = (e) => {
+        // Ignore AbortError when playback was intentionally stopped by pause()/cancel()
+        if (e && (e.name === 'AbortError' || (typeof e.message === 'string' && e.message.includes('interrupted by a call to pause')))) {
+          finish({ success: false, method: 'audio_file', message: 'Playback canceled' });
+          return;
+        }
+        if (fallbackInitiated) return;
+        fallbackInitiated = true;
+
+        this._activeAudio = null;
+        this._activeAudioSettle = null;
+        // Fallback to Tier 2 (Web Speech API)
+        this._executeTier2OrTier3({
+          cleanText,
+          button,
+          lang,
+          rate,
+          pitch,
+          onEnd,
+          onError,
+          reason: e?.message || 'Audio playback failed'
+        }).then(finish);
+      };
+
+      audio.onerror = (e) => {
+        handleAudioError(e);
+      };
+
+      try {
         const playPromise = audio.play();
         if (playPromise !== undefined && typeof playPromise.catch === 'function') {
           playPromise.catch((err) => {
-            this._activeAudio = null;
-            // Play rejected (e.g. autoplay policy, 404, or abort) -> fallback to Web Speech
-            if (cleanText) {
-              this._speakUtterance(cleanText, { button, lang, rate, onEnd, onError });
-            } else {
-              if (typeof onError === 'function') {
-                try { onError(err); } catch (_) {}
-              }
-              this._cleanup(true);
+            if (err && (err.name === 'AbortError' || (typeof err.message === 'string' && err.message.includes('interrupted by a call to pause')))) {
+              finish({ success: false, method: 'audio_file', message: 'Playback canceled' });
+              return;
             }
+            handleAudioError(err);
           });
         }
-
-        this._safetyTimer = setTimeout(() => {
-          if (this._state === SpeechState.SPEAKING) {
-            console.warn('[SpeechController] Safety timeout reached, releasing button lock');
-            this.cancel();
-          }
-        }, 4000);
-
-        return true;
       } catch (err) {
-        this._activeAudio = null;
-        if (cleanText) {
-          return this._speakUtterance(cleanText, { button, lang, rate, onEnd, onError });
+        if (err && (err.name === 'AbortError' || (typeof err.message === 'string' && err.message.includes('interrupted by a call to pause')))) {
+          finish({ success: false, method: 'audio_file', message: 'Playback canceled' });
         } else {
-          this._cleanup(true);
-          return false;
+          handleAudioError(err);
         }
       }
+
+      this._setSafetyTimeout(() => {
+        if (this._state === SpeechState.SPEAKING) {
+          console.warn('[SpeechController] Audio safety timeout reached, releasing button lock');
+          this._activeAudioSettle = null;
+          this.cancel();
+          finish({ success: false, method: 'audio_file', message: 'Audio timeout' });
+        }
+      }, 5000);
+
+      return playPromiseResult;
     }
 
-    // 3. Fallback to Web Speech API
-    if (cleanText) {
-      return this.speak(cleanText, { button, lang, rate, onEnd, onError });
+    // TIER 2 & TIER 3: Web Speech API with Informative Fallback
+    return this._executeTier2OrTier3({
+      cleanText,
+      button,
+      lang,
+      rate,
+      pitch,
+      onEnd,
+      onError,
+      reason: hasValidAudio ? 'Audio constructor unavailable' : 'No audioUrl provided'
+    });
+  }
+
+  /**
+   * Dispatches Tier 2 (Web Speech API) or cascades to Tier 3 (Informative Toast).
+   * @private
+   */
+  _executeTier2OrTier3({ cleanText, button, lang, rate, pitch, onEnd, onError, reason }) {
+    if (cleanText && isSpeechSynthesisAvailable()) {
+      let promiseResolve;
+      const prom = new Promise((resolve) => {
+        promiseResolve = resolve;
+      });
+      prom.success = true;
+      prom.method = 'web_speech';
+
+      this._activeSpeechSettle = (result) => {
+        if (promiseResolve) {
+          promiseResolve(result);
+          promiseResolve = null;
+        }
+      };
+
+      const wrappedOnEnd = () => {
+        this._activeSpeechSettle = null;
+        if (typeof onEnd === 'function') {
+          try { onEnd(); } catch (_) {}
+        }
+        if (promiseResolve) {
+          promiseResolve({ success: true, method: 'web_speech' });
+          promiseResolve = null;
+        }
+      };
+
+      const wrappedOnError = (e) => {
+        this._activeSpeechSettle = null;
+        const errType = e?.error || 'unknown';
+        const isCanceled = (errType === 'canceled' || errType === 'interrupted');
+
+        if (typeof onError === 'function') {
+          try { onError(e); } catch (_) {}
+        }
+        // Tier 3 Informative notification on failure (only if NOT canceled or interrupted)
+        if (!isCanceled) {
+          this._showThrottledToast(
+            'Không thể phát âm thanh',
+            'Không thể phát âm thanh trên thiết bị này.',
+            'info'
+          );
+        }
+        if (promiseResolve) {
+          promiseResolve({
+            success: false,
+            method: isCanceled ? 'web_speech' : 'ui_fallback',
+            message: isCanceled ? 'Speech canceled' : (e?.error || 'Speech synthesis error')
+          });
+          promiseResolve = null;
+        }
+      };
+
+      // Synchronous dispatch to Web Speech API to preserve user gesture activation
+      const dispatched = this._speakUtterance(cleanText, {
+        button,
+        lang,
+        rate,
+        pitch,
+        onEnd: wrappedOnEnd,
+        onError: wrappedOnError
+      });
+
+      if (!dispatched) {
+        this._activeSpeechSettle = null;
+        return this._executeTier3ToastFallback({ button, onError, message: 'Web Speech dispatch returned false' });
+      }
+
+      return prom;
     }
 
-    return false;
+    // TIER 3: Informative Toast Fallback (Never fail silently!)
+    return this._executeTier3ToastFallback({ button, onError, message: reason });
+  }
+
+  /**
+   * Tier 3 UI Notification fallback: Displays informative toast and unlocks UI cleanly.
+   * @private
+   */
+  _executeTier3ToastFallback({ button, onError, message = '' }) {
+    this._cleanup(true);
+    this._showThrottledToast(
+      'Không thể phát âm thanh',
+      'Không tìm thấy file phát âm và thiết bị chưa hỗ trợ tổng hợp giọng nói tiếng Trung.',
+      'warning'
+    );
+    if (typeof onError === 'function') {
+      try { onError(new Error(message || 'Audio playback unavailable')); } catch (_) {}
+    }
+    const res = {
+      success: false,
+      method: 'ui_fallback',
+      message: message || 'Audio and Web Speech both unavailable'
+    };
+    const prom = Promise.resolve(res);
+    prom.success = false;
+    prom.method = 'ui_fallback';
+    return prom;
   }
 }
 
@@ -501,26 +826,15 @@ export function speakHanzi(text, { button = null, lang = 'zh-CN', rate = 0.85 } 
 }
 
 /**
- * Plays pronunciation with dedicated audio file priority and Web Speech API fallback.
+ * Plays pronunciation with 3-tier fallback:
+ * Tier 1: Dedicated audio file (if audioUrl present).
+ * Tier 2: Web Speech API (window.speechSynthesis).
+ * Tier 3: Informative UI Toast / notification.
  *
- * @param {Object} options
- * @param {string} [options.text] - Chinese character(s) to pronounce
- * @param {string|null} [options.audioUrl=null] - Audio URL
- * @param {HTMLElement|null} [options.button=null] - Triggering button
- * @param {string} [options.lang='zh-CN'] - Language tag
- * @param {number} [options.rate=0.85] - Speech rate
- * @param {Function} [options.onEnd=null] - Completion callback
- * @param {Function} [options.onError=null] - Error callback
- * @returns {boolean} true if audio or utterance dispatched
+ * @param {Object|string} target - Options object, Card item, or string text to pronounce
+ * @param {Object} [options] - Options overrides
+ * @returns {Promise<{ success: boolean, method: string, message?: string }>}
  */
-export function playPronunciation({
-  text = '',
-  audioUrl = null,
-  button = null,
-  lang = 'zh-CN',
-  rate = 0.85,
-  onEnd = null,
-  onError = null
-} = {}) {
-  return speechController.playPronunciation({ text, audioUrl, button, lang, rate, onEnd, onError });
+export function playPronunciation(target = {}, options = {}) {
+  return speechController.playPronunciation(target, options);
 }

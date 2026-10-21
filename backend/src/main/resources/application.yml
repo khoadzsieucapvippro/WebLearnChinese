@@ -77,3 +77,11 @@ gemini:
   model: ${GEMINI_MODEL:gemini-3.5-flash}
   timeout-seconds: ${GEMINI_TIMEOUT_SECONDS:35}
   max-audio-bytes: ${GEMINI_MAX_AUDIO_BYTES:5242880}
+
+speech:
+  engine:
+    local:
+      enabled: ${SPEECH_ENGINE_LOCAL_ENABLED:true}
+      base-url: ${SPEECH_ENGINE_LOCAL_BASE_URL:http://127.0.0.1:8000}
+      connect-timeout-ms: ${SPEECH_ENGINE_LOCAL_CONNECT_TIMEOUT_MS:2500}
+      read-timeout-ms: ${SPEECH_ENGINE_LOCAL_READ_TIMEOUT_MS:10000}

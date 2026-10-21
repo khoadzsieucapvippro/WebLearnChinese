@@ -199,13 +199,27 @@ export function setComponentState(container, state, options = {}) {
  * @param {string} [options.message=''] - toast body text
  * @param {number} [options.duration=4000] - auto dismiss duration in ms (0 for manual dismiss)
  */
+// Track recent toasts for deduplication and spam prevention
+let _lastToastKey = '';
+let _lastToastTimestamp = 0;
+
 export function showToast({
   type = 'info',
   title = '',
   message = '',
-  duration = 4000
+  duration = 2500
 } = {}) {
   if (typeof document === 'undefined') return;
+
+  // 1. Deduplication guard: ignore identical toast messages within 2.0s
+  const toastKey = `${type}::${title}::${message}`;
+  const now = Date.now();
+  if (toastKey === _lastToastKey && (now - _lastToastTimestamp) < 2000) {
+    return;
+  }
+  _lastToastKey = toastKey;
+  _lastToastTimestamp = now;
+
   let toastContainer = document.getElementById('toastContainer');
   if (!toastContainer) {
     toastContainer = createSafeElement('div', {
@@ -218,6 +232,14 @@ export function showToast({
       }
     });
     document.body.appendChild(toastContainer);
+  }
+
+  // 2. Strict Max Toasts constraint: keep maximum 2 toasts at any time
+  const existingToasts = toastContainer.querySelectorAll('.toast-custom');
+  if (existingToasts.length >= 2) {
+    for (let i = 0; i <= existingToasts.length - 2; i++) {
+      existingToasts[i].remove();
+    }
   }
 
   const typeClass = `toast-${type}`;

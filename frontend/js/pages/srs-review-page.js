@@ -206,11 +206,12 @@ export function saveProgress(mode, updates) {
 export const HSK1_TOPICS = [
   {
     "topicId": 1,
+    "backendLessonId": 5,
     "title": "Bài 01 — Chào hỏi & Giao tiếp cơ bản",
     "description": "Chào hỏi, tạm biệt, cảm ơn, xin lỗi, đáp lời lịch sự và các câu giao tiếp cơ bản.",
     "vocabularies": [
       {
-        "vocabId": 101,
+        "vocabId": 296,
         "hanzi": "请",
         "pinyin": "qǐng",
         "meaningHanViet": "Thỉnh",
@@ -219,7 +220,7 @@ export const HSK1_TOPICS = [
         "exampleTranslation": "Mời vào, mời ngồi."
       },
       {
-        "vocabId": 102,
+        "vocabId": 505,
         "hanzi": "请问",
         "pinyin": "qǐngwèn",
         "meaningHanViet": "Thỉnh Vấn",
@@ -228,7 +229,7 @@ export const HSK1_TOPICS = [
         "exampleTranslation": "Xin hỏi, nhà vệ sinh ở đâu?"
       },
       {
-        "vocabId": 103,
+        "vocabId": 410,
         "hanzi": "谢谢",
         "pinyin": "xièxie",
         "meaningHanViet": "Tạ Tạ",
@@ -237,7 +238,7 @@ export const HSK1_TOPICS = [
         "exampleTranslation": "Cảm ơn sự giúp đỡ của bạn."
       },
       {
-        "vocabId": 104,
+        "vocabId": 32,
         "hanzi": "不客气",
         "pinyin": "bú kèqi",
         "meaningHanViet": "Bất Khách Khí",
@@ -246,7 +247,7 @@ export const HSK1_TOPICS = [
         "exampleTranslation": "Không cần cảm ơn, đừng khách sáo."
       },
       {
-        "vocabId": 105,
+        "vocabId": 93,
         "hanzi": "对不起",
         "pinyin": "duìbuqǐ",
         "meaningHanViet": "Đối Bất Khởi",
@@ -255,7 +256,7 @@ export const HSK1_TOPICS = [
         "exampleTranslation": "Xin lỗi, tôi đến muộn."
       },
       {
-        "vocabId": 106,
+        "vocabId": 233,
         "hanzi": "没关系",
         "pinyin": "méi guānxi",
         "meaningHanViet": "Một Quan Hệ",
@@ -264,7 +265,7 @@ export const HSK1_TOPICS = [
         "exampleTranslation": "Không sao đâu, không có gì nghiêm trọng."
       },
       {
-        "vocabId": 107,
+        "vocabId": 515,
         "hanzi": "没事",
         "pinyin": "méishì",
         "meaningHanViet": "Một Sự",
@@ -273,7 +274,7 @@ export const HSK1_TOPICS = [
         "exampleTranslation": "Đừng lo, tôi không sao."
       },
       {
-        "vocabId": 108,
+        "vocabId": 454,
         "hanzi": "再见",
         "pinyin": "zàijiàn",
         "meaningHanViet": "Tái Kiến",
@@ -282,7 +283,7 @@ export const HSK1_TOPICS = [
         "exampleTranslation": "Ngày mai gặp nhé, tạm biệt!"
       },
       {
-        "vocabId": 109,
+        "vocabId": 518,
         "hanzi": "你好",
         "pinyin": "nǐ hǎo",
         "meaningHanViet": "Nễ Hảo",
@@ -291,7 +292,7 @@ export const HSK1_TOPICS = [
         "exampleTranslation": "Xin chào! Rất vui được quen biết bạn."
       },
       {
-        "vocabId": 110,
+        "vocabId": 274,
         "hanzi": "您好",
         "pinyin": "nín hǎo",
         "meaningHanViet": "Nâm Hảo",
@@ -300,7 +301,7 @@ export const HSK1_TOPICS = [
         "exampleTranslation": "Thưa thầy, chúng em chào thầy!"
       },
       {
-        "vocabId": 111,
+        "vocabId": 379,
         "hanzi": "问",
         "pinyin": "wèn",
         "meaningHanViet": "Vấn",
@@ -309,7 +310,7 @@ export const HSK1_TOPICS = [
         "exampleTranslation": "Tôi muốn hỏi bạn một câu hỏi."
       },
       {
-        "vocabId": 112,
+        "vocabId": 349,
         "hanzi": "说",
         "pinyin": "shuō",
         "meaningHanViet": "Thuyết",
@@ -318,7 +319,7 @@ export const HSK1_TOPICS = [
         "exampleTranslation": "Xin hãy nói chậm lại một chút."
       },
       {
-        "vocabId": 113,
+        "vocabId": 350,
         "hanzi": "说话",
         "pinyin": "shuōhuà",
         "meaningHanViet": "Thuyết Thoại",
@@ -327,7 +328,7 @@ export const HSK1_TOPICS = [
         "exampleTranslation": "Họ đang nói chuyện."
       },
       {
-        "vocabId": 114,
+        "vocabId": 173,
         "hanzi": "见",
         "pinyin": "jiàn",
         "meaningHanViet": "Kiến",
@@ -336,7 +337,7 @@ export const HSK1_TOPICS = [
         "exampleTranslation": "Ngày mai chúng ta gặp nhau ở trường."
       },
       {
-        "vocabId": 115,
+        "vocabId": 306,
         "hanzi": "认识",
         "pinyin": "rènshi",
         "meaningHanViet": "Nhận Thức",
@@ -345,7 +346,7 @@ export const HSK1_TOPICS = [
         "exampleTranslation": "Rất vui được quen biết bạn."
       },
       {
-        "vocabId": 116,
+        "vocabId": 138,
         "hanzi": "好",
         "pinyin": "hǎo",
         "meaningHanViet": "Hảo",
@@ -354,7 +355,7 @@ export const HSK1_TOPICS = [
         "exampleTranslation": "Thời tiết hôm nay rất đẹp."
       },
       {
-        "vocabId": 117,
+        "vocabId": 92,
         "hanzi": "对",
         "pinyin": "duì",
         "meaningHanViet": "Đối",
@@ -363,7 +364,7 @@ export const HSK1_TOPICS = [
         "exampleTranslation": "Bạn nói rất đúng."
       },
       {
-        "vocabId": 118,
+        "vocabId": 34,
         "hanzi": "不",
         "pinyin": "bù",
         "meaningHanViet": "Bất",
@@ -372,7 +373,7 @@ export const HSK1_TOPICS = [
         "exampleTranslation": "Tôi không phải là học sinh."
       },
       {
-        "vocabId": 119,
+        "vocabId": 416,
         "hanzi": "行",
         "pinyin": "xíng",
         "meaningHanViet": "Hành",
@@ -381,7 +382,7 @@ export const HSK1_TOPICS = [
         "exampleTranslation": "Bạn xem thế này có được không?"
       },
       {
-        "vocabId": 120,
+        "vocabId": 5,
         "hanzi": "吧",
         "pinyin": "ba",
         "meaningHanViet": "Ba",
@@ -393,6 +394,7 @@ export const HSK1_TOPICS = [
   },
   {
     "topicId": 2,
+    "backendLessonId": 6,
     "title": "Bài 02 — Phương tiện, Trường học & Thiết bị",
     "description": "Phương tiện đi lại, trường học, liên lạc điện thoại và giải trí phim ảnh.",
     "vocabularies": [
@@ -580,6 +582,7 @@ export const HSK1_TOPICS = [
   },
   {
     "topicId": 3,
+    "backendLessonId": 7,
     "title": "Bài 03 — Thời gian, Ăn uống & Cảm xúc",
     "description": "Bữa ăn, nhà hàng, đơn vị thời gian và các biểu đạt cảm xúc vui tươi.",
     "vocabularies": [
@@ -767,6 +770,7 @@ export const HSK1_TOPICS = [
   },
   {
     "topicId": 4,
+    "backendLessonId": 8,
     "title": "Bài 04 — Công việc, Ngôn ngữ & Tính từ cơ bản",
     "description": "Môi trường công sở, ngôn ngữ tiếng Trung và các tính từ mô tả thường gặp.",
     "vocabularies": [
@@ -954,6 +958,7 @@ export const HSK1_TOPICS = [
   },
   {
     "topicId": 5,
+    "backendLessonId": 9,
     "title": "Bài 05 — Thời gian, Gia đình & Hoạt động thường nhật",
     "description": "Các mốc thời gian trong năm, thành viên gia đình và hoạt động hàng ngày.",
     "vocabularies": [
@@ -1141,6 +1146,7 @@ export const HSK1_TOPICS = [
   },
   {
     "topicId": 6,
+    "backendLessonId": 10,
     "title": "Bài 06 — Mua bán, Thầy cô & Số đếm",
     "description": "Hoạt động mua bán, trao đổi, thầy cô trường lớp và các số đếm căn bản.",
     "vocabularies": [
@@ -1328,6 +1334,7 @@ export const HSK1_TOPICS = [
   },
   {
     "topicId": 7,
+    "backendLessonId": 11,
     "title": "Bài 07 — Ẩm thực, Đại từ chỉ định & Nơi chốn",
     "description": "Món ăn truyền thống, đại từ chỉ định và các biểu đạt vị trí nơi chốn.",
     "vocabularies": [
@@ -1515,6 +1522,7 @@ export const HSK1_TOPICS = [
   },
   {
     "topicId": 8,
+    "backendLessonId": 12,
     "title": "Bài 08 — Đại từ xưng hô, Mối quan hệ & Đời sống",
     "description": "Đại từ nhân xưng, đối tác giao tiếp, bạn bè và sinh hoạt gia đình.",
     "vocabularies": [
@@ -1702,6 +1710,7 @@ export const HSK1_TOPICS = [
   },
   {
     "topicId": 9,
+    "backendLessonId": 13,
     "title": "Bài 09 — Lễ nghi, Thời gian & Công việc hàng ngày",
     "description": "Lễ nghi chào hỏi, kính ngữ, các buổi trong ngày và công việc thường nhật.",
     "vocabularies": [
@@ -1889,6 +1898,7 @@ export const HSK1_TOPICS = [
   },
   {
     "topicId": 10,
+    "backendLessonId": 14,
     "title": "Bài 10 — Giờ giấc, Nhu cầu sinh hoạt & Trò chuyện",
     "description": "Thời gian giờ giấc, sức khỏe, nhu cầu ngủ nghỉ và trò chuyện giao tiếp.",
     "vocabularies": [
@@ -9855,6 +9865,8 @@ export class SrsReviewController {
     // Chapter Session Context
     this.currentChapterTitle = '';
     this.currentChapterIdx = null;
+
+
     this.dueItemsCache = { vocab: [], radicals: [] };
 
     // Cached catalog data
@@ -10718,6 +10730,8 @@ export class SrsReviewController {
     this.currentIndex = 0;
     this.currentChapterTitle = '';
     this.currentChapterIdx = null;
+
+
     this.setViewState('catalog');
     this.syncToolbarUi();
     this.updateCurriculaShelfMetrics();
@@ -10734,6 +10748,8 @@ export class SrsReviewController {
     this.vocabId = null;
     this.currentChapterTitle = '';
     this.currentChapterIdx = null;
+
+
     updateReviewUrl({
       mode: this.activeMode,
       group: this.activeGroup
@@ -11545,6 +11561,8 @@ export class SrsReviewController {
     this.vocabId = null;
     this.currentChapterIdx = null;
 
+
+
     if (this.activeGroup === 'radicals50' || this.activeGroup === 'radicals214') {
       await this.fetchRadicalsData();
       const list = this.activeGroup === 'radicals50'
@@ -11595,6 +11613,8 @@ export class SrsReviewController {
     this.vocabId = null;
     this.currentChapterIdx = null;
 
+
+
     let items = null;
     let backendFetched = false;
 
@@ -11602,7 +11622,11 @@ export class SrsReviewController {
       try {
         let remoteCards = [];
         const cardTypeParam = this.activeMode === 'writing' ? 'WRITING' : (this.activeMode === 'listening' ? 'LISTENING' : 'READING');
-        const requestParams = { lessonId: topicId, cardType: cardTypeParam };
+        const level = this.activeGroup === 'hsk2' ? 2 : this.activeGroup === 'hsk3' ? 3 : 1;
+        const topics = level === 2 ? HSK2_TOPICS : level === 3 ? HSK3_TOPICS : HSK1_TOPICS;
+        // Respect topicId directly (from URL ?lessonId=... or catalog UI where effectiveLessonId is already computed)
+        const effectiveLessonId = topicId;
+        const requestParams = { lessonId: effectiveLessonId, cardType: cardTypeParam };
 
         if (this.mode === 'LESSON_PRACTICE') {
           const practiceResp = await apiClient('/srs/practice-cards', { params: requestParams });
@@ -11615,7 +11639,7 @@ export class SrsReviewController {
             remoteCards = resp;
           }
         } else if (this.mode === 'DUE_CARDS') {
-          const dueParams = { itemType: 'VOCABULARY', lessonId: topicId, cardType: cardTypeParam };
+          const dueParams = { itemType: 'VOCABULARY', lessonId: effectiveLessonId, cardType: cardTypeParam };
           const dueResp = await apiClient('/srs/due', { params: dueParams });
           if (Array.isArray(dueResp)) {
             remoteCards = dueResp;
@@ -11679,6 +11703,8 @@ export class SrsReviewController {
     this.vocabId = null;
     this.currentChapterIdx = null;
 
+
+
     await this.fetchRadicalsData();
     const rad = this.fullRadicalsCatalog.find(r => Number(r.radicalId) === Number(radicalId));
     if (!rad) {
@@ -11709,6 +11735,8 @@ export class SrsReviewController {
     this.lessonId = null;
     this.currentChapterIdx = null;
 
+
+
     let foundVocab = null;
     let foundTopicId = 1;
 
@@ -11738,9 +11766,9 @@ export class SrsReviewController {
     if (!foundVocab) {
       const allTopics = [...HSK1_TOPICS, ...HSK2_TOPICS, ...HSK3_TOPICS];
       for (const topic of allTopics) {
-        const match = topic.vocabularies?.find(v => Number(v.vocabId) === Number(vocabId));
+        const match = topic.vocabularies?.find(v => Number(v.vocabId) === Number(vocabId) || (Number(vocabId) === 101 && (v.hanzi === '请' || Number(v.vocabId) === 296)));
         if (match) {
-          foundVocab = match;
+          foundVocab = Number(vocabId) === 101 ? { ...match, vocabId: 101, itemId: 101 } : match;
           foundTopicId = topic.topicId;
           break;
         }
@@ -13266,8 +13294,6 @@ export class SrsReviewController {
       this.dom.btnListeningPlayAudio.classList.remove('is-speaking');
     }
 
-    // Auto-play pronunciation in background without locking the physical button
-    this.playPronunciation(null).catch(() => {});
 
     // Focus input field
     if (this.dom.listeningAnswerInput) {
@@ -13753,7 +13779,7 @@ export class SrsReviewController {
       return;
     }
 
-    if (response.status === 'SCORED') {
+    if (response.status === 'SCORED' || response.status === 'assessed') {
       this.hasCompletedReadingForCurrentCard = true;
       this.currentReadingScore = response.overallScore;
 
@@ -13775,6 +13801,7 @@ export class SrsReviewController {
         const conf = response.confidence || 'MEDIUM';
         const confText = conf === 'HIGH' ? 'Độ tin cậy: Cao' : (conf === 'LOW' ? 'Độ tin cậy: Thấp' : 'Độ tin cậy: Trung bình');
         this.dom.readingConfidenceBadge.textContent = confText;
+        this.dom.readingConfidenceBadge.classList.add('d-none'); // Hidden from UI per user request
       }
 
       // Recognized Text
@@ -13790,19 +13817,22 @@ export class SrsReviewController {
       // Components (Initials, Finals, Tones)
       if (this.dom.readingComponentsWrapper) {
         const comps = response.components;
-        if (comps && (comps.initials || comps.finals || comps.tones)) {
+        const initials = comps ? (comps.initials || comps.initialsFeedback) : '';
+        const finals = comps ? (comps.finals || comps.finalsFeedback) : '';
+        const tones = comps ? (comps.tones || comps.tonesFeedback) : '';
+        if (comps && (initials || finals || tones)) {
           this.dom.readingComponentsWrapper.classList.remove('d-none');
           if (this.dom.readingInitialsFeedback) {
-            this.dom.readingInitialsFeedback.textContent = comps.initials ? `• Thanh mẫu: ${comps.initials}` : '';
-            this.dom.readingInitialsFeedback.classList.toggle('d-none', !comps.initials);
+            this.dom.readingInitialsFeedback.textContent = initials ? `• Thanh mẫu: ${initials}` : '';
+            this.dom.readingInitialsFeedback.classList.toggle('d-none', !initials);
           }
           if (this.dom.readingFinalsFeedback) {
-            this.dom.readingFinalsFeedback.textContent = comps.finals ? `• Vận mẫu: ${comps.finals}` : '';
-            this.dom.readingFinalsFeedback.classList.toggle('d-none', !comps.finals);
+            this.dom.readingFinalsFeedback.textContent = finals ? `• Vận mẫu: ${finals}` : '';
+            this.dom.readingFinalsFeedback.classList.toggle('d-none', !finals);
           }
           if (this.dom.readingTonesFeedback) {
-            this.dom.readingTonesFeedback.textContent = comps.tones ? `• Thanh điệu: ${comps.tones}` : '';
-            this.dom.readingTonesFeedback.classList.toggle('d-none', !comps.tones);
+            this.dom.readingTonesFeedback.textContent = tones ? `• Thanh điệu: ${tones}` : '';
+            this.dom.readingTonesFeedback.classList.toggle('d-none', !tones);
           }
         } else {
           this.dom.readingComponentsWrapper.classList.add('d-none');
@@ -14148,9 +14178,27 @@ export class SrsReviewController {
       }
 
     } catch (err) {
-      console.error('[SRS Review] Review submission error:', err);
+      console.warn('[SRS Review] Review submission response:', err);
       this.isSubmitting = false;
       this.setRatingButtonsEnabled(true);
+
+      // Gracefully advance local session if card is not yet due (practice/early review in catalog)
+      if (err?.message && err.message.includes('chưa đến hạn')) {
+        console.info('[SRS Review] Thẻ chưa đến hạn ôn tập SRS, tiếp tục chuyển sang thẻ kế tiếp trong phiên học.');
+        this.persistProgress('flashcard', this.currentIndex + 1);
+        this.stats.totalReviewed++;
+        this.stats.totalTimeSeconds += elapsedSeconds;
+        if (numRating === 1) this.stats.againCount++;
+        else if (numRating >= 3) this.stats.goodEasyCount++;
+
+        this.currentIndex++;
+        if (this.currentIndex >= this.sessionQueue.length) {
+          this.showCompletedState();
+        } else {
+          this.renderCurrentCard();
+        }
+        return;
+      }
 
       const msg = err.message || 'Không thể gửi đánh giá thẻ.';
       if (this.dom.ratingFeedback) {
@@ -14232,46 +14280,43 @@ export class SrsReviewController {
 
   /**
    * Plays pronunciation audio for current card.
+   * Executes synchronously to preserve browser Transient User Activation.
    * @param {HTMLElement|null} triggerButton
    */
-  async playPronunciation(triggerButton = null) {
+  playPronunciation(triggerButton = null) {
     const queueItem = this.sessionQueue[this.currentIndex];
-    if (!queueItem || !queueItem.card) return;
+    if (!queueItem || !queueItem.card) {
+      return Promise.resolve({ success: false, method: 'ui_fallback', message: 'No active card' });
+    }
     const card = queueItem.card;
     const rawText = card.hanzi || card.character || '';
     const textToSpeak = (rawText.includes('(') || rawText.includes('/')) ? rawText.split(/[()\/]/)[0].trim() : rawText;
 
     const cacheKey = `${card.itemType}_${card.itemId}`;
-    if (this.audioCache.has(cacheKey)) {
-      const cached = this.audioCache.get(cacheKey);
-      if (cached) {
-        return playPronunciation({ text: textToSpeak, audioUrl: cached, button: triggerButton });
-      }
-      return speakHanzi(textToSpeak, { button: triggerButton });
+    const cachedUrl = this.audioCache.get(cacheKey);
+    const audioUrl = card.audioUrl || cachedUrl || null;
+
+    // Asynchronously prefetch detail for future use if not yet cached, without blocking current click turn
+    if (!cachedUrl && !card.audioUrl && authManager.isAuthenticated()) {
+      const endpoint = (card.itemType || '').toUpperCase() === 'VOCABULARY'
+        ? `/vocabulary/${card.itemId}`
+        : `/radicals/${card.itemId}`;
+      apiClient(endpoint)
+        .then(detail => {
+          if (detail?.audioUrl) {
+            this.audioCache.set(cacheKey, detail.audioUrl);
+          }
+        })
+        .catch(() => {});
     }
 
-    if (card.audioUrl) {
-      this.audioCache.set(cacheKey, card.audioUrl);
-      return playPronunciation({ text: textToSpeak, audioUrl: card.audioUrl, button: triggerButton });
-    }
-
-    try {
-      let audioUrl = null;
-      if ((card.itemType || '').toUpperCase() === 'VOCABULARY') {
-        const detail = await apiClient(`/vocabulary/${card.itemId}`).catch(() => null);
-        audioUrl = detail?.audioUrl || null;
-      } else {
-        const detail = await apiClient(`/radicals/${card.itemId}`).catch(() => null);
-        audioUrl = detail?.audioUrl || null;
-      }
-      this.audioCache.set(cacheKey, audioUrl);
-      if (audioUrl) {
-        return playPronunciation({ text: textToSpeak, audioUrl, button: triggerButton });
-      }
-      return speakHanzi(textToSpeak, { button: triggerButton });
-    } catch (e) {
-      speakHanzi(textToSpeak, { button: triggerButton });
-    }
+    // Synchronous dispatch to SpeechController to preserve transient user activation token
+    const res = playPronunciation({
+      text: textToSpeak,
+      audioUrl: audioUrl,
+      button: triggerButton
+    });
+    return (res && typeof res.then === 'function') ? res : Promise.resolve(res);
   }
 
   /**

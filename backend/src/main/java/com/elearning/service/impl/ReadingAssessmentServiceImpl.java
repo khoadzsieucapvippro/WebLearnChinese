@@ -2,6 +2,7 @@ package com.elearning.service.impl;
 
 import com.elearning.common.ErrorCode;
 import com.elearning.config.GeminiConfig;
+import com.elearning.config.LocalSpeechConfig;
 import com.elearning.dto.response.PronunciationAssessmentResponse;
 import com.elearning.entity.Radical;
 import com.elearning.entity.Vocabulary;
@@ -9,6 +10,7 @@ import com.elearning.exception.BusinessException;
 import com.elearning.repository.RadicalRepository;
 import com.elearning.repository.VocabularyRepository;
 import com.elearning.service.GeminiPronunciationService;
+import com.elearning.service.LocalSpeechServiceClient;
 import com.elearning.service.ReadingAssessmentService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,9 +40,11 @@ public class ReadingAssessmentServiceImpl implements ReadingAssessmentService {
     private static final long ONE_MINUTE_MS = 60_000L;
 
     private final GeminiPronunciationService geminiPronunciationService;
+    private final LocalSpeechServiceClient localSpeechServiceClient;
     private final VocabularyRepository vocabularyRepository;
     private final RadicalRepository radicalRepository;
     private final GeminiConfig geminiConfig;
+    private final LocalSpeechConfig localSpeechConfig;
 
     // In-memory sliding window rate limiter per user account
     private final Map<String, UserRateWindow> rateLimiterMap = new ConcurrentHashMap<>();
@@ -50,14 +54,30 @@ public class ReadingAssessmentServiceImpl implements ReadingAssessmentService {
             VocabularyRepository vocabularyRepository,
             RadicalRepository radicalRepository,
             GeminiConfig geminiConfig) {
+        this(geminiPronunciationService, null, vocabularyRepository, radicalRepository, geminiConfig, null);
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public ReadingAssessmentServiceImpl(
+            GeminiPronunciationService geminiPronunciationService,
+            LocalSpeechServiceClient localSpeechServiceClient,
+            VocabularyRepository vocabularyRepository,
+            RadicalRepository radicalRepository,
+            GeminiConfig geminiConfig,
+            LocalSpeechConfig localSpeechConfig) {
         this.geminiPronunciationService = geminiPronunciationService;
+        this.localSpeechServiceClient = localSpeechServiceClient;
         this.vocabularyRepository = vocabularyRepository;
         this.radicalRepository = radicalRepository;
         this.geminiConfig = geminiConfig;
+        this.localSpeechConfig = localSpeechConfig;
     }
 
     @Override
     public boolean isGeminiConfigured() {
+        if (localSpeechConfig != null && localSpeechConfig.isEnabled()) {
+            return true;
+        }
         return geminiPronunciationService.isConfigured();
     }
 
@@ -126,6 +146,16 @@ public class ReadingAssessmentServiceImpl implements ReadingAssessmentService {
         } catch (IOException e) {
             log.warn("Could not read audio upload bytes for user {}: {}", currentUser, e.getMessage());
             throw new BusinessException(ErrorCode.INTERNAL_ERROR, "Không thể đọc dữ liệu âm thanh tải lên");
+        }
+
+        if (localSpeechConfig != null && localSpeechConfig.isEnabled()) {
+            return localSpeechServiceClient.assessPronunciation(
+                    audioBytes,
+                    contentType,
+                    targetHanzi,
+                    targetPinyin,
+                    meaningHanViet
+            );
         }
 
         return geminiPronunciationService.assessPronunciation(

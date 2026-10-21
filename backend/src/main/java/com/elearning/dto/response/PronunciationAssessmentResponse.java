@@ -53,6 +53,19 @@ public class PronunciationAssessmentResponse {
         return res;
     }
 
+    public static PronunciationAssessmentResponse engineUnavailable(String targetText, String targetPinyin) {
+        PronunciationAssessmentResponse res = new PronunciationAssessmentResponse();
+        res.setStatus("engine_unavailable");
+        res.setTargetText(targetText);
+        res.setTargetPinyin(targetPinyin);
+        res.setConfidence("LOW");
+        res.setOverallScore(null);
+        res.setSummaryVi("Dịch vụ AI Luyện đọc Local chưa được khởi chạy hoặc không thể kết nối (cổng 8000).");
+        res.setRetryAdvice("Quản trị viên vui lòng chạy lệnh: python run_service.py để kích hoạt engine.");
+        res.setLimitations("Dịch vụ AI cục bộ chưa sẵn sàng.");
+        return res;
+    }
+
     public static PronunciationAssessmentResponse error(String targetText, String targetPinyin, String errorMessage) {
         PronunciationAssessmentResponse res = new PronunciationAssessmentResponse();
         res.setStatus("error");

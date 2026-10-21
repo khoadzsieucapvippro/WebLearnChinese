@@ -28,7 +28,13 @@ const MIME_TYPES = {
   '.ico': 'image/x-icon',
   '.woff': 'font/woff',
   '.woff2': 'font/woff2',
-  '.ttf': 'font/ttf'
+  '.ttf': 'font/ttf',
+  '.mp3': 'audio/mpeg',
+  '.wav': 'audio/wav',
+  '.ogg': 'audio/ogg',
+  '.webm': 'audio/webm',
+  '.m4a': 'audio/mp4',
+  '.aac': 'audio/aac'
 };
 
 /**
@@ -211,7 +217,8 @@ function createEphemeralServer(preferredPort = 3000) {
         'ETag': etag,
         'Last-Modified': lastModified,
         'Access-Control-Allow-Origin': '*',
-        'X-Content-Type-Options': 'nosniff'
+        'X-Content-Type-Options': 'nosniff',
+        'Accept-Ranges': 'bytes'
       };
 
       if (ext === '.html') {

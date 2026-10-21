@@ -1,78 +1,122 @@
-# Project: Hán Ngữ & 214 Bộ Thủ Khang Hy & HSK 1-3 1000 Từ Vựng Standardization (HSK 3.0 Nov 2025)
+# Project: E-Learning Chinese Speech & SRS Platform
 
 ## Architecture
-- **Backend**: Spring Boot 3.3.5 (Java 17/21), Spring Data JPA, Flyway Database Migrations (MySQL 8.4+).
-- **Frontend**: Vanilla JS (ES6 modules), CSS3, HTML5, zero-build client-side architecture with fallback demo seed data (`frontend/js/api/demo-seed-data.js`).
-- **Data Pipeline**: Python audit/export scripts (`scripts/export_audit_dataset.py`, `scripts/build_full_hsk_dataset.py`, `scripts/test_radical_resolver.py`).
-- **Verification Layer**:
-  - Automated Python E2E harness (`scripts/verify_hsk_radical_standardization.py`): 27/27 PASS.
-  - Backend JUnit tests (`ChineseDomainDataAuditTests`, `VocabularyHskAndUnicodeIntegrityTests`, `VocabularyIntegrationTests`, `RadicalIntegrationTests`, `RadicalServiceTests`, `VocabularyDtoTests`): 63/63 PASS.
-  - Frontend node test runner (`tests/frontend/runner.mjs`): 864/864 PASS (fast tier) / 1067 PASS (full tier).
-  - Root export files (`data_kiem_tra_all.json`, `data_kiem_tra_tom_tat.txt`, `bo_thu_214.csv`, `tu_vung_1000.csv`, `data_kiem_tra_all.zip`): 100% synchronized.
+The system consists of 4 main tiers:
+1. **Frontend (Vanilla JS SPA & Modules)**:
+   - Zero-build modular architecture (`frontend/js/ui/speech.js`, `frontend/js/pages/srs-review-page.js`, `reading-room`, etc.).
+   - Communicates with Backend via REST API (`/api/v1/...`).
+   - Audio playback engine with 3-tier fallback (Pre-recorded static audio -> Web Speech API with voice acquisition -> Informative UI fallback).
+   - Audio recording & reading evaluation controller for `#srsReadingRoom` with strict keyboard shortcut isolation.
+2. **Backend (Spring Boot 3.3.5, Java 17)**:
+   - REST API Controllers (`ReadingAssessmentController`, `VocabularyController`, `LessonController`, `SrsReviewController`).
+   - Local AI Service Client (`LocalSpeechServiceClient`) using Spring RestClient calling local FastAPI microservice.
+   - JPA/Hibernate persistence, Flyway database migration baseline.
+3. **Local Speech & Tone Evaluation Service (FastAPI / Python 3.11)**:
+   - Microservice running on `http://127.0.0.1:8000` (zero external/cloud API calls).
+   - Physical F0 Pitch Contour analysis (Praat Parselmouth/SciPy) mapped to Chao 5-level scale (1..5).
+   - Tone Sandhi Engine (3+3 -> 2+3, 不 bù, 一 yī, half 3rd tone).
+   - Quality Gate: Automatic detection of silence, noise, clipping, or duration < 0.35s returning `not_scorable` (no fake scores).
+4. **Database (MySQL 8.4+)**:
+   - 214 Kangxi Radicals (`RADICAL`).
+   - 1,068 Vocabulary records (`VOCABULARY`): 300 HSK 1, 200 HSK 2, 500 HSK 3, 68 HSK 0.
+   - Relational mapping (`VOCABULARY_RADICAL`).
+   - SRS Curriculum & User History: `lesson`, `lesson_words`, `user_vocabulary_progress`, `review_log`.
+
+---
 
 ## Feature Inventory
 | # | Feature | Description | Milestone | Source |
 |---|---------|-------------|-----------|--------|
-| 1 | Radical #69 斤 Fix | Sửa âm Hán-Việt Bộ #69 từ "Cẩn" thành chuẩn "Cân" | M1 | R1 |
-| 2 | Radical Character Variants | Đồng bộ biến thể/giản thể cho #96 玉(王/玊), #187 馬(马), #197 鹵(卤), #205 黽(黾) | M1 | R1 |
-| 3 | Radical #71 无 Pedagogical Update | Rà soát và cập nhật explanationVi Bộ #71 (bỏ ví dụ 抚, dùng chữ thuộc bộ chính hoặc chú thích rõ) | M1 | R1 |
-| 4 | Test Invariant Update (Radical Count) | Cập nhật `ChineseDomainDataAuditTests.java` compoundDisplayCount (43 -> 47) và unifiedIdeographCount (171 -> 167) | M1 | Survey |
-| 5 | Visual Radical Decomposition Rules | Chỉ gán bộ thủ thực sự xuất hiện; bộ thủ độc lập (#42, #110, #173, #238, #426, #871) chỉ ánh xạ tới chính nó | M2 | R2 |
-| 6 | Visual Component Corrections (14 chars) | Sửa 14 chữ bị lỗi gán bộ thủ: 干, 后, 右, 左, 习, 买, 卫, 丢, 节, 爬, 声, 书, 喝/渴, 游泳 | M2 | R2 |
-| 7 | 阝 Phụ #170 vs Ấp #163 Distinction | Phân biệt chính xác 阝 trái (#170 阜) và 阝 phải (#163 邑) trên toàn bộ chữ chứa 阝 (邮, 邻, 郊, 都, 部, 那, 哪, 帮, 院, 阳, 阴, 附, 除, 阿, 队, 阶...) | M2 | R2 |
-| 8 | Remove Phonetic Secondary Radicals | Bỏ ép gán bộ thủ phụ cho thành phần biểu âm (爸爸, 吧, 杯, 坏, 病, 还) | M2 | R2 |
-| 9 | Han-Viet Phonology Standardization | Sửa 17+ nhóm lỗi Âm Hán-Việt (打, 听, 喝, 冷, 觉得/睡觉, 重/重要, 长, 儿子, 几, 正/正在, 丢, 爬, 胖, 啤酒, 爸爸/妈妈, 什么/怎么, 上, 哪, 场) | M3 | R3 |
-| 10 | Contextual Meaning & Example Sentences | Sửa 18+ nhóm nghĩa tiếng Việt và câu ví dụ: tách riêng 地 (de vs dì), 干 (gān vs gàn), 还 (hái vs huán); sửa dịch máy 告诉, 后天, 机场, 考, 累, 没事儿, 米饭, 奶奶, 男, 您, 上车/下车, 西, 页, 重, 子; bỏ nghĩa họ/cổ | M3 | R3 |
-| 11 | HSK 3.0 Level Alignment | Cập nhật cấp độ HSK 2025: 爱好, 班, 本子 (HSK 2); 别的, 别人, 病人 (HSK 3); giữ Bạch 白 là HSK 0 | M4 | R4 |
-| 12 | Homograph Indexing Integrity | Định danh chính xác 5 cặp từ đồng hình (点, 花, 会, 站, 过去) theo `hsk_source_id` và `homograph_index` | M4 | R4 |
-| 13 | Foreign Key & SRS Lesson Preservation | Bảo toàn toàn bộ 1.068 vocab_id, không DELETE/TRUNCATE; bảo toàn 10 bài học SRS trong V17 (`lesson_vocabulary`), `card_progress`, `review_log` | M4 | R4 |
-| 14 | Flyway Migration V26 | Viết migration mới `V26__standardize_radicals_and_hsk1_to_3_vocab_2025.sql` áp dụng toàn bộ DDL/DML an toàn | M5 | R5 |
-| 15 | Demo Seed Data Fallback Sync | Đồng bộ toàn bộ dữ liệu chuẩn hóa vào `frontend/js/api/demo-seed-data.js` | M5 | R5 |
-| 16 | Export Script & Root Files Sync | Chạy script export để cập nhật `data_kiem_tra_all.json`, `data_kiem_tra_tom_tat.txt`, `bo_thu_214.csv`, `tu_vung_1000.csv`, `data_kiem_tra_all.zip` | M5 | R5 |
-| 17 | E2E Automated Verification Suite | Viết và chạy script automated Python validation kiểm tra 100% các tiêu chí R1-R5 (27/27 PASS) | M6 | R6 |
-| 18 | Backend & Frontend Test Suite Pass | Chạy toàn bộ test suites backend và frontend runner.mjs pass 100% | M6 | R6 |
-| 19 | Forensic Integrity Audit & Veto Check | Kiểm tra độc lập tính chân thực (anti-cheat, no hardcoding, no facades) bởi teamwork_preview_auditor (CLEAN) | M6 | Verification |
-| 20 | Acceptance Report in Vietnamese | Báo cáo nghiệm thu hoàn chỉnh bằng Tiếng Việt kèm bảng đối chiếu Trước vs Sau và trích dẫn học thuật | M6 | Acceptance |
+| 1 | Audio Trigger & Transient Activation | Keep user gesture token synchronously without dropping it via unneeded pre-fetch await in `playPronunciation` | M1 | Survey Audio |
+| 2 | Audio Fallback & Lifecycle Management | 3-tier audio playback (Audio URL -> Web Speech with voice acquisition -> Toast alert), prevent race conditions & overlapping sounds | M1 | Survey Audio |
+| 3 | Static Server Audio MIME Types | Configure `.mp3`, `.wav`, `.ogg`, `.webm` MIME headers in `scripts/serve.mjs` and test runners | M1 | Survey Audio |
+| 4 | Offline Speech Microservice Scaffold | FastAPI microservice in `ai-service/` or `speech-service/` running locally on port 8000 with `/health` and `/evaluate-reading` | M2 | Survey Speech |
+| 5 | Physical F0 & Tone Assessment Engine | Praat-Parselmouth/SciPy F0 pitch analysis, Chao scale mapping, tone sandhi rules (3+3, 不, 一) | M2 | Survey Speech |
+| 6 | Non-Scorable Audio Quality Gate | Rejection of silence (RMS < 0.006), noise, clipping (>2%), and short audio (<0.35s) without generating fake scores | M2 | Survey Speech |
+| 7 | Backend Spring Boot Speech Proxy | RestClient proxying `/api/v1/reading-assessment/evaluate` to local FastAPI service, standard DTO handling | M2 | Survey Speech |
+| 8 | Frontend #srsReadingRoom Integration | Audio recording, state machine (Ready, Recording, Analyzing, Result, Error), lock SRS shortcuts [1]-[4] | M2 | Survey Speech |
+| 9 | Flyway V28 Migration for Data Consistency | Correct corrupted words from V26/V27 in MySQL, restore `出租车` radical relation, align vocab IDs | M3 | Survey Data |
+| 10 | Frontend Demo Seed & Export Data Sync | Align `demo-seed-data.js` and root audit files (`data_kiem_tra_all.json`, `tu_vung_1000.csv`) with exact MySQL IDs | M3 | Survey Data |
+| 11 | SRS Lesson ID & Review Alignment | Fix frontend `srs-review-page.js` lesson IDs to map to real DB `lesson_id` 5..14, preserving all card progress and review logs | M3 | Survey Data |
+| 12 | E2E Test Suite & Test Runner | Comprehensive test suite (Tiers 1-4) covering audio playback, speech evaluation, data consistency, and full-stack flows | E2E | Dual Track |
+| 13 | Full-Stack Live Run & Browser Acceptance | Concurrent live launch of Frontend, Spring Boot, MySQL, and FastAPI service, verified via Antigravity browser testing | M4 | Survey All |
+
+---
 
 ## Milestones
 | # | Name | Scope | Dependencies | Status |
 |---|------|-------|-------------|--------|
-| M1 | Radicals 214 Standardization | Chuẩn hóa bảng `RADICAL`, sửa #69 斤, cập nhật biến thể #96, #187, #197, #205, sửa #71, cập nhật test invariant | none | **DONE** |
-| M2 | Radical Composition & Visual Rules | Chuẩn hóa `VOCAB_RADICAL` / `radicalIds` cho 656+ chữ, 4 nhóm lỗi hệ thống, 阝 trái vs phải, standalone radicals, phonetic components | M1 | **DONE** |
-| M3 | Han-Viet & Vietnamese Semantics | Sửa 17+ nhóm âm Hán-Việt, 18+ nhóm nghĩa tiếng Việt và câu ví dụ, tách polysemy (地, 干, 还) | none | **DONE** |
-| M4 | HSK 2025 Alignment & FK Preservation | Cập nhật HSK 2/3 (爱好, 班, 本子, 别的, 别人, 病人), bảo toàn 10 bài học SRS và 1.068 vocab_id, định danh 5 cặp đồng hình | M3 | **DONE** |
-| M5 | Migration V26 & System Sync | Tạo `V26__standardize_radicals_and_hsk1_to_3_vocab_2025.sql`, cập nhật `demo-seed-data.js`, chạy export script tạo 4 file root | M1, M2, M3, M4 | **DONE** |
-| M6 | Final Verification, Audit & Acceptance | Script Python kiểm tra 100% (27/27 PASS), chạy backend/frontend test suites, Forensic Audit (CLEAN), Báo cáo nghiệm thu Tiếng Việt | M5 | **DONE** |
+| E2E | E2E Testing Track | Design & implement comprehensive automated test suite (Tiers 1-4) & TEST_READY.md | none | DONE (20/20 PASS) |
+| M1 | Audio Playback Fix (R1) | Fix audio URL mapping, event lifecycle, transient activation, MIME types, and fallback notifications | none | DONE (1083 tests PASS, 19/19 stress PASS, Auditor CLEAN) |
+| M2 | Local Speech & Tone Engine (R2) | Implement FastAPI microservice, F0 pitch & tone sandhi engine, Spring Boot proxy, #srsReadingRoom UI | none | PLANNED |
+| M3 | Data Consistency & Curriculum Audit (R3) | Create Flyway V28, fix corrupted records, sync demo seed data & root files, align SRS lesson IDs | none | PLANNED |
+| M4 | Full-Stack Live Run & Acceptance (R4) | Live launch of all 4 services, run 100% of E2E test suite (Tiers 1-4), execute Tier 5 hardening, produce 5-part Vietnamese report | M1, M2, M3, E2E | PLANNED |
+
+---
 
 ## Interface Contracts
-### Database Schema ↔ Application Layer
-- `RADICAL`:
-  - `radical_id`: INT UNSIGNED (1..214) PRIMARY KEY.
-  - `character`: VARCHAR(10) NOT NULL UNIQUE (includes canonical character and optional parentheses variants, e.g. `玉(王/玊)`).
-  - `meaning_han_viet`: VARCHAR(100) NOT NULL (e.g. `Cân` for #69).
-  - `explanation_vi`: VARCHAR(1000) NOT NULL.
-- `VOCABULARY`:
-  - `vocab_id`: BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY. Strictly preserved.
-  - `hanzi`: VARCHAR(100) NOT NULL.
-  - `pinyin`: VARCHAR(150) NOT NULL.
-  - `meaning_han_viet`: VARCHAR(255) NOT NULL.
-  - `meaning_vi`: VARCHAR(500) NOT NULL.
-  - `hsk_level`: TINYINT UNSIGNED NOT NULL (0, 1, 2, 3).
-  - `hsk_source_id`: INT UNSIGNED (1..1000 for official HSK, NULL for supplementary).
-  - `homograph_index`: TINYINT UNSIGNED (1 or 2 for homographs, 1 default).
-- `VOCAB_RADICAL`:
-  - Composite PK: `(vocab_id, radical_id, hanzi_char)`.
-  - `component_type`: ENUM('kangxi_radical', 'structural_component') DEFAULT 'kangxi_radical'.
-  - `verification_status`: ENUM('unverified', 'verified', 'disputed') DEFAULT 'verified'.
-- `LESSON_VOCABULARY`:
-  - Foreign key: `vocab_id` references `VOCABULARY(vocab_id)` ON DELETE RESTRICT.
-  - Exactly 200 links across 10 lessons in V17 remain strictly intact.
+
+### 1. Local AI Service ↔ Spring Boot Backend
+- **Endpoint**: `POST http://127.0.0.1:8000/evaluate-reading`
+- **Request**: Multipart Form Data:
+  - `audio`: binary file (`audio/wav`, `audio/webm`)
+  - `targetText`: string (e.g. `你好`)
+  - `expectedPinyin`: string (e.g. `nǐ hǎo`)
+- **Response** (JSON):
+```json
+{
+  "status": "assessed", // "assessed" | "not_scorable" | "engine_unavailable" | "overloaded" | "error"
+  "overallScore": 88.5, // null if status != "assessed"
+  "toneScore": 90.0,
+  "fluencyScore": 85.0,
+  "syllables": [
+    {
+      "character": "你",
+      "expectedPinyin": "nǐ",
+      "expectedTone": 3,
+      "sandhiTone": 2,
+      "detectedTone": 2,
+      "toneCorrect": true,
+      "score": 92.0,
+      "feedback": "Biến điệu thanh 3 thành thanh 2 chuẩn xác"
+    },
+    {
+      "character": "好",
+      "expectedPinyin": "hǎo",
+      "expectedTone": 3,
+      "sandhiTone": 3,
+      "detectedTone": 3,
+      "toneCorrect": true,
+      "score": 85.0,
+      "feedback": "Thanh 3 phát âm tốt"
+    }
+  ],
+  "reason": null,
+  "guidance": null
+}
+```
+
+### 2. Spring Boot Backend ↔ Frontend Client
+- **Endpoint**: `POST /api/v1/reading-assessment/evaluate`
+- **Request**: Multipart Form Data:
+  - `audio`: audio blob
+  - `targetText`: string
+  - `expectedPinyin`: string
+  - `targetType`: `VOCABULARY` | `RADICAL`
+  - `targetId`: integer
+- **Response**: Maps exactly to the standardized ReadingAssessmentResponse DTO with backwards compatibility for `overallScore`, `toneScore`, `fluencyScore`, `status`.
+
+### 3. Audio Playback Controller API Contract
+- `SpeechController.playPronunciation(cardOrItem, options)`:
+  - Never throws uncaught promise rejection.
+  - Returns `{ success: boolean, method: 'audio_file' | 'web_speech' | 'ui_fallback', message?: string }`.
+  - Disables button only while loading/playing, resets cleanly on complete or error.
+
+---
 
 ## Code Layout
-- Backend Migrations: `backend/src/main/resources/db/migration/`
-- Backend Domain Entities: `backend/src/main/java/com/elearning/entity/`
-- Backend Test Suites: `backend/src/test/java/com/elearning/`
-- Frontend Seed Data: `frontend/js/api/demo-seed-data.js`
-- Frontend Test Runner: `tests/frontend/runner.mjs`
-- Export Script: `scripts/export_audit_dataset.py`
-- Root Audit Deliverables: `data_kiem_tra_all.json`, `data_kiem_tra_tom_tat.txt`, `bo_thu_214.csv`, `tu_vung_1000.csv`, `data_kiem_tra_all.zip`
+- Frontend: `frontend/js/ui/speech.js`, `frontend/js/pages/srs-review-page.js`, `frontend/js/api/demo-seed-data.js`
+- Backend: `backend/src/main/java/com/elearning/.../reading/`, `backend/src/main/java/com/elearning/.../vocabulary/`
+- AI Microservice: `speech-service/` (FastAPI app, tone assessment engine, requirements.txt)
+- Database: `backend/src/main/resources/db/migration/V28__fix_v26_v27_discrepancies_and_sync_ids.sql`
+- Tests: `tests/frontend/`, `tests/e2e/`, `backend/src/test/java/com/elearning/...`
