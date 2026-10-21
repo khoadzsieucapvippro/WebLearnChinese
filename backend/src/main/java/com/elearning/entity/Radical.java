@@ -58,6 +58,9 @@ public class Radical {
     @Column(name = "common_rank", columnDefinition = "TINYINT UNSIGNED")
     private Integer commonRank;
 
+    @Column(name = "stroke_count", columnDefinition = "TINYINT UNSIGNED", nullable = false)
+    private Integer strokeCount = 1;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -71,11 +74,16 @@ public class Radical {
     }
 
     public Radical(Integer radicalId, String character, String pinyin, String meaningHanViet, String meaningVi) {
+        this(radicalId, character, pinyin, meaningHanViet, meaningVi, null);
+    }
+
+    public Radical(Integer radicalId, String character, String pinyin, String meaningHanViet, String meaningVi, Integer strokeCount) {
         this.radicalId = radicalId;
         this.character = character;
         this.pinyin = pinyin;
         this.meaningHanViet = meaningHanViet;
         this.meaningVi = meaningVi;
+        this.strokeCount = strokeCount != null ? strokeCount : 1;
     }
 
     @PrePersist
@@ -86,6 +94,9 @@ public class Radical {
         }
         if (this.updatedAt == null) {
             this.updatedAt = now;
+        }
+        if (this.strokeCount == null) {
+            this.strokeCount = 1;
         }
     }
 
@@ -164,6 +175,14 @@ public class Radical {
 
     public void setCommonRank(Integer commonRank) {
         this.commonRank = commonRank;
+    }
+
+    public Integer getStrokeCount() {
+        return strokeCount;
+    }
+
+    public void setStrokeCount(Integer strokeCount) {
+        this.strokeCount = strokeCount;
     }
 
     public LocalDateTime getCreatedAt() {

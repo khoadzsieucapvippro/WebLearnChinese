@@ -27,7 +27,7 @@ import java.util.Set;
  */
 @Entity
 @Table(name = "vocabulary", uniqueConstraints = {
-        @UniqueConstraint(name = "uk_vocab_hanzi_pinyin_raw", columnNames = {"hanzi", "pinyin_raw"})
+        @UniqueConstraint(name = "uk_vocab_hsk_source", columnNames = {"hsk_source_id"})
 })
 public class Vocabulary {
 
@@ -54,8 +54,26 @@ public class Vocabulary {
     @Column(name = "hsk_level", columnDefinition = "TINYINT UNSIGNED")
     private Integer hskLevel;
 
-    @Column(name = "hsk_standard", length = 20)
+    @Column(name = "hsk_standard", length = 50)
     private String hskStandard = "HSK 3.0";
+
+    @Column(name = "hsk_source_id")
+    private Integer hskSourceId;
+
+    @Column(name = "hsk_source_label", length = 50)
+    private String hskSourceLabel;
+
+    @Column(name = "hsk_edition", length = 50)
+    private String hskEdition = "2025";
+
+    @Column(name = "part_of_speech", length = 50)
+    private String partOfSpeech;
+
+    @Column(name = "homograph_index")
+    private Integer homographIndex;
+
+    @Column(name = "source_pdf_page")
+    private Integer sourcePdfPage;
 
     @Column(name = "audio_url", length = 500)
     private String audioUrl;
@@ -106,20 +124,18 @@ public class Vocabulary {
     }
 
     public void addRadical(Radical radical) {
-        addRadical(radical, this.hanzi != null && this.hanzi.length() == 1 ? this.hanzi : null);
+        addRadical(radical, this.hanzi != null && this.hanzi.length() == 1 ? this.hanzi : "");
     }
 
     public void addRadical(Radical radical, String hanziChar) {
         if (radical != null) {
+            String cleanChar = hanziChar != null ? hanziChar : (this.hanzi != null && this.hanzi.length() == 1 ? this.hanzi : "");
             for (VocabRadical existingVr : this.vocabRadicals) {
-                if (Objects.equals(existingVr.getRadical(), radical)) {
-                    if (hanziChar != null) {
-                        existingVr.setHanziChar(hanziChar);
-                    }
+                if (Objects.equals(existingVr.getRadical(), radical) && Objects.equals(existingVr.getHanziChar(), cleanChar)) {
                     return;
                 }
             }
-            VocabRadical vr = new VocabRadical(this, radical, hanziChar);
+            VocabRadical vr = new VocabRadical(this, radical, cleanChar);
             this.vocabRadicals.add(vr);
             if (radical.getVocabRadicals() != null) {
                 radical.getVocabRadicals().add(vr);
@@ -216,6 +232,54 @@ public class Vocabulary {
         this.hskStandard = hskStandard;
     }
 
+    public Integer getHskSourceId() {
+        return hskSourceId;
+    }
+
+    public void setHskSourceId(Integer hskSourceId) {
+        this.hskSourceId = hskSourceId;
+    }
+
+    public String getHskSourceLabel() {
+        return hskSourceLabel;
+    }
+
+    public void setHskSourceLabel(String hskSourceLabel) {
+        this.hskSourceLabel = hskSourceLabel;
+    }
+
+    public String getHskEdition() {
+        return hskEdition;
+    }
+
+    public void setHskEdition(String hskEdition) {
+        this.hskEdition = hskEdition;
+    }
+
+    public String getPartOfSpeech() {
+        return partOfSpeech;
+    }
+
+    public void setPartOfSpeech(String partOfSpeech) {
+        this.partOfSpeech = partOfSpeech;
+    }
+
+    public Integer getHomographIndex() {
+        return homographIndex;
+    }
+
+    public void setHomographIndex(Integer homographIndex) {
+        this.homographIndex = homographIndex;
+    }
+
+    public Integer getSourcePdfPage() {
+        return sourcePdfPage;
+    }
+
+    public void setSourcePdfPage(Integer sourcePdfPage) {
+        this.sourcePdfPage = sourcePdfPage;
+    }
+
     public String getAudioUrl() {
         return audioUrl;
     }
@@ -283,8 +347,16 @@ public class Vocabulary {
         return new AbstractSet<Radical>() {
             @Override
             public Iterator<Radical> iterator() {
-                Iterator<VocabRadical> it = vocabRadicals.iterator();
+                Set<Radical> distinct = new HashSet<>();
+                for (VocabRadical vr : vocabRadicals) {
+                    if (vr.getRadical() != null) {
+                        distinct.add(vr.getRadical());
+                    }
+                }
+                Iterator<Radical> it = distinct.iterator();
                 return new Iterator<Radical>() {
+                    private Radical current;
+
                     @Override
                     public boolean hasNext() {
                         return it.hasNext();
@@ -292,19 +364,28 @@ public class Vocabulary {
 
                     @Override
                     public Radical next() {
-                        return it.next().getRadical();
+                        current = it.next();
+                        return current;
                     }
 
                     @Override
                     public void remove() {
-                        it.remove();
+                        if (current != null) {
+                            Vocabulary.this.removeRadical(current);
+                        }
                     }
                 };
             }
 
             @Override
             public int size() {
-                return vocabRadicals.size();
+                Set<Radical> distinct = new HashSet<>();
+                for (VocabRadical vr : vocabRadicals) {
+                    if (vr.getRadical() != null) {
+                        distinct.add(vr.getRadical());
+                    }
+                }
+                return distinct.size();
             }
 
             @Override

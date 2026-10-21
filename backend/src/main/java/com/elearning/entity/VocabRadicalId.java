@@ -19,12 +19,20 @@ public class VocabRadicalId implements Serializable {
     @Column(name = "radical_id")
     private Integer radicalId;
 
+    @Column(name = "hanzi_char", length = 10)
+    private String hanziChar = "";
+
     public VocabRadicalId() {
     }
 
     public VocabRadicalId(Long vocabId, Integer radicalId) {
+        this(vocabId, radicalId, "");
+    }
+
+    public VocabRadicalId(Long vocabId, Integer radicalId, String hanziChar) {
         this.vocabId = vocabId;
         this.radicalId = radicalId;
+        this.hanziChar = hanziChar != null ? hanziChar : "";
     }
 
     public Long getVocabId() {
@@ -43,15 +51,25 @@ public class VocabRadicalId implements Serializable {
         this.radicalId = radicalId;
     }
 
+    public String getHanziChar() {
+        return hanziChar;
+    }
+
+    public void setHanziChar(String hanziChar) {
+        this.hanziChar = hanziChar != null ? hanziChar : "";
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof VocabRadicalId that)) return false;
-        return Objects.equals(vocabId, that.vocabId) && Objects.equals(radicalId, that.radicalId);
+        return Objects.equals(vocabId, that.vocabId) &&
+               Objects.equals(radicalId, that.radicalId) &&
+               Objects.equals(hanziChar, that.hanziChar);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(vocabId, radicalId);
+        return Objects.hash(vocabId, radicalId, hanziChar);
     }
 }

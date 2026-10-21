@@ -19,7 +19,10 @@ public class RadicalResponse {
     private String videoWritingUrl;
     private String explanationVi;
     private Integer commonRank;
+    private Integer strokeCount;
     private String hanziChar;
+    private String componentType;
+    private String verificationStatus;
 
     public RadicalResponse() {
     }
@@ -45,6 +48,14 @@ public class RadicalResponse {
         this.commonRank = commonRank;
     }
 
+    public RadicalResponse(Integer radicalId, String character, String pinyin,
+                           String meaningHanViet, String meaningVi,
+                           String audioUrl, String videoWritingUrl,
+                           String explanationVi, Integer commonRank, Integer strokeCount) {
+        this(radicalId, character, pinyin, meaningHanViet, meaningVi, audioUrl, videoWritingUrl, explanationVi, commonRank);
+        this.strokeCount = strokeCount;
+    }
+
     public static RadicalResponse fromEntity(Radical radical) {
         if (radical == null) {
             return null;
@@ -60,6 +71,7 @@ public class RadicalResponse {
         );
         response.setExplanationVi(radical.getExplanationVi());
         response.setCommonRank(radical.getCommonRank());
+        response.setStrokeCount(radical.getStrokeCount());
         return response;
     }
 
@@ -135,12 +147,36 @@ public class RadicalResponse {
         this.commonRank = commonRank;
     }
 
+    public Integer getStrokeCount() {
+        return strokeCount;
+    }
+
+    public void setStrokeCount(Integer strokeCount) {
+        this.strokeCount = strokeCount;
+    }
+
     public String getHanziChar() {
         return hanziChar;
     }
 
     public void setHanziChar(String hanziChar) {
         this.hanziChar = hanziChar;
+    }
+
+    public String getComponentType() {
+        return componentType;
+    }
+
+    public void setComponentType(String componentType) {
+        this.componentType = componentType;
+    }
+
+    public String getVerificationStatus() {
+        return verificationStatus;
+    }
+
+    public void setVerificationStatus(String verificationStatus) {
+        this.verificationStatus = verificationStatus;
     }
 
     @Override

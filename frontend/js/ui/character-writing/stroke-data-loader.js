@@ -170,7 +170,8 @@ export function isValidStrokeData(data) {
     Array.isArray(data.strokes) &&
     data.strokes.length > 0 &&
     Array.isArray(data.medians) &&
-    data.medians.length > 0
+    data.medians.length > 0 &&
+    data.strokes.length === data.medians.length
   );
 }
 

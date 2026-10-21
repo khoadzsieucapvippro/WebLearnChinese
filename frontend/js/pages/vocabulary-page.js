@@ -1131,7 +1131,7 @@ export class VocabularyPageController {
       }
 
       // Check if user hasn't closed modal or switched to another item
-      if (!this.currentModalVocab || this.currentModalVocab.vocabId !== vocabId) {
+      if (!this.currentModalVocab || String(this.currentModalVocab.vocabId) !== String(vocabId)) {
         return;
       }
 
@@ -1145,7 +1145,7 @@ export class VocabularyPageController {
         this.setupAudioPlayer(detail.audioUrl);
       }
 
-      // Render constituent Kangxi Radicals
+      // Render constituent Kangxi Radicals & Structural Components
       this.renderConstituentRadicals(detail.radicals);
 
     } catch (err) {
@@ -1167,6 +1167,7 @@ export class VocabularyPageController {
 
   /**
    * Renders constituent radical badges in the detail modal.
+   * Differentiates between authoritative Kangxi lookup radicals and structural components.
    * Disaggregates constituent radicals per Hanzi character with preview & SRS review link.
    * 
    * @param {Array<Object>} radicals 
@@ -1176,9 +1177,18 @@ export class VocabularyPageController {
     clearContainer(this.elements.modalRadicalsList);
 
     const radicalList = Array.isArray(radicals) ? radicals.filter(r => r && (r.character || r.radicalId)) : [];
+    const isKangxiComponent = (r) => !r.componentType || String(r.componentType).toLowerCase() === 'kangxi_radical';
+    const kangxiCount = radicalList.filter(isKangxiComponent).length;
+    const structCount = radicalList.length - kangxiCount;
 
     if (this.elements.modalRadicalsCount) {
-      this.elements.modalRadicalsCount.textContent = `${radicalList.length} bộ thủ`;
+      if (structCount === 0) {
+        this.elements.modalRadicalsCount.textContent = `${kangxiCount} bộ thủ`;
+      } else if (kangxiCount === 0) {
+        this.elements.modalRadicalsCount.textContent = `${structCount} thành phần`;
+      } else {
+        this.elements.modalRadicalsCount.textContent = `${kangxiCount} bộ thủ · ${structCount} thành phần`;
+      }
     }
 
     if (radicalList.length === 0) {
@@ -1214,15 +1224,20 @@ export class VocabularyPageController {
         }
       }
 
+      const isKangxi = isKangxiComponent(rad);
       const name = (rad.meaningHanViet || rad.meaningVi || '').trim();
-      const boName = name ? (name.startsWith('Bộ ') ? name : `Bộ ${name}`) : '';
-      const textLabel = `(${rad.character || ''}${boName ? ` · ${boName}` : ''})`;
+      const compLabel = isKangxi
+        ? (name ? (name.startsWith('Bộ ') ? name : `Bộ ${name}`) : '')
+        : (name ? `Thành phần ${name}` : 'Thành phần cấu tạo');
+      const textLabel = `(${rad.character || ''}${compLabel ? ` · ${compLabel}` : ''})`;
 
       const badge = createSafeElement('button', {
         className: 'vocab-radical-badge border-0 bg-transparent p-0 d-inline-flex align-items-center',
         attrs: {
           type: 'button',
-          'aria-label': `Xem thông tin bộ thủ ${rad.character || ''} (${name})`
+          'aria-label': isKangxi
+            ? `Xem thông tin bộ thủ ${rad.character || ''} (${name})`
+            : `Xem thành phần cấu tạo ${rad.character || ''} (${name})`
         },
         children: [
           createSafeElement('span', {
@@ -1272,9 +1287,15 @@ export class VocabularyPageController {
     clearContainer(this.elements.modalRadicalPreview);
     this.elements.modalRadicalPreview.classList.remove('d-none');
 
+    const isKangxi = !radical.componentType || String(radical.componentType).toLowerCase() === 'kangxi_radical';
     const radicalTargetUrl = radical.radicalId
       ? `radicals.html?id=${encodeURIComponent(radical.radicalId)}`
       : `radicals.html?search=${encodeURIComponent(radical.character || '')}`;
+
+    const fallbackMeaning = isKangxi
+      ? 'Chưa có giải nghĩa chi tiết cho bộ thủ này.'
+      : 'Thành phần cấu tạo hình thể của chữ Hán.';
+    const buttonText = isKangxi ? 'Xem trong 214 Bộ Thủ ↗' : 'Tra cứu trong Bộ Thủ ↗';
 
     const preview = createSafeElement('div', {
       className: 'd-flex align-items-center justify-content-between flex-wrap gap-3',
@@ -1293,12 +1314,18 @@ export class VocabularyPageController {
                 createSafeElement('span', {
                   className: 'fw-semibold text-danger',
                   text: radical.pinyin || ''
-                })
+                }),
+                ...(charInWord ? [
+                  createSafeElement('span', {
+                    className: 'badge bg-light text-secondary border small ms-1',
+                    text: `Chữ ${charInWord}`
+                  })
+                ] : [])
               ]
             }),
             createSafeElement('div', {
               className: 'small text-secondary',
-              text: formatVocabMeaning(radical.meaningVi) || 'Chưa có giải nghĩa chi tiết cho bộ thủ này.'
+              text: formatVocabMeaning(radical.meaningVi) || fallbackMeaning
             })
           ]
         }),
@@ -1307,7 +1334,7 @@ export class VocabularyPageController {
           attrs: {
             href: sanitizeNavigationUrl(radicalTargetUrl)
           },
-          text: 'Xem trong 214 Bộ Thủ ↗'
+          text: buttonText
         })
       ]
     });

@@ -61,6 +61,7 @@ class RadicalServiceTests {
         sampleRadical1.setMeaningVi("Một, thứ nhất");
         sampleRadical1.setAudioUrl("https://cdn.example.com/audio/radicals/1.mp3");
         sampleRadical1.setVideoWritingUrl("https://cdn.example.com/video/radicals/1.mp4");
+        sampleRadical1.setStrokeCount(1);
         sampleRadical1.setCreatedAt(LocalDateTime.of(2026, 1, 1, 10, 0));
         sampleRadical1.setUpdatedAt(LocalDateTime.of(2026, 1, 2, 12, 0));
 
@@ -70,6 +71,7 @@ class RadicalServiceTests {
         sampleRadical2.setPinyin("gǔn");
         sampleRadical2.setMeaningHanViet("Cổn");
         sampleRadical2.setMeaningVi("Nét sổ thẳng");
+        sampleRadical2.setStrokeCount(1);
         sampleRadical2.setCreatedAt(LocalDateTime.of(2026, 1, 1, 10, 0));
         sampleRadical2.setUpdatedAt(LocalDateTime.of(2026, 1, 1, 10, 0));
     }
@@ -92,6 +94,7 @@ class RadicalServiceTests {
             assertThat(result.get(0).getPinyin()).isEqualTo("yī");
             assertThat(result.get(0).getMeaningHanViet()).isEqualTo("Nhất");
             assertThat(result.get(0).getMeaningVi()).isEqualTo("Một, thứ nhất");
+            assertThat(result.get(0).getStrokeCount()).isEqualTo(1);
             assertThat(result.get(0).getAudioUrl()).isEqualTo("https://cdn.example.com/audio/radicals/1.mp3");
             assertThat(result.get(0).getVideoWritingUrl()).isEqualTo("https://cdn.example.com/video/radicals/1.mp4");
 

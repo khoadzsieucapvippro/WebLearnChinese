@@ -89,6 +89,14 @@ describe('Character Writing: Stroke Data Loader & Normalization', () => {
       assert.strictEqual(isValidStrokeData({ strokes: ['M 0 0'], medians: [] }), false);
     });
 
+    test('rejects stroke data where strokes and medians length mismatch', () => {
+      const mismatchedData = {
+        strokes: ['M 0 0 L 100 100', 'M 100 0 L 0 100'],
+        medians: [[[0, 0], [100, 100]]] // only 1 median for 2 strokes
+      };
+      assert.strictEqual(isValidStrokeData(mismatchedData), false);
+    });
+
     test('rejects primitives, null, and empty objects', () => {
       assert.strictEqual(isValidStrokeData(null), false);
       assert.strictEqual(isValidStrokeData(undefined), false);

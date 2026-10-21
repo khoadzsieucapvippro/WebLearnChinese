@@ -23,12 +23,12 @@ function discoverExecutablePath() {
   // 2. Playwright cached chromium binary
   const localAppData = process.env.LOCALAPPDATA || path.join(process.env.USERPROFILE || '', 'AppData', 'Local');
   const candidates = [
+    'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
+    'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe',
     path.join(localAppData, 'ms-playwright', 'chromium-1200', 'chrome-win', 'chrome.exe'),
     path.join(localAppData, 'ms-playwright', 'chromium_headless_shell-1200', 'chrome-win', 'headless_shell.exe'),
     'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
-    'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
-    'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
-    'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe'
+    'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe'
   ];
 
   for (const candidate of candidates) {

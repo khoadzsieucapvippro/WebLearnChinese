@@ -400,6 +400,37 @@ describe('Unit: Chinese Vocabulary Catalog & Logic Engine', () => {
       assert.strictEqual(fallbackText, 'Từ này chưa có dữ liệu bộ thủ xác minh.');
       assert.ok(!fallbackText.includes('Nhất'), 'Must never assign default radical 一 to unverified words');
     });
+
+    test('formats label as "Bộ " for kangxi_radical and "Thành phần " for structural_component', () => {
+      const components = [
+        { radicalId: 40, character: '宀', meaningHanViet: 'Miên', componentType: 'kangxi_radical', hanziChar: '客' },
+        { radicalId: 30, character: '口', meaningHanViet: 'Khẩu', componentType: 'structural_component', hanziChar: '客' },
+        { radicalId: 35, character: '夂', meaningHanViet: 'Truy', componentType: 'structural_component', hanziChar: '客' }
+      ];
+
+      function formatComponentBadge(rad) {
+        const isKangxi = rad.componentType !== 'structural_component';
+        const typeLabel = isKangxi ? 'Bộ ' : 'Thành phần ';
+        const name = (rad.meaningHanViet || rad.meaningVi || '').trim();
+        const formattedName = name ? (name.startsWith(typeLabel) ? name : `${typeLabel}${name}`) : '';
+        return `(${rad.character || ''}${formattedName ? ` · ${formattedName}` : ''})`;
+      }
+
+      function formatComponentCount(radList) {
+        const kangxiCount = radList.filter(r => r.componentType !== 'structural_component').length;
+        const compCount = radList.filter(r => r.componentType === 'structural_component').length;
+        const parts = [];
+        if (kangxiCount > 0) parts.push(`${kangxiCount} bộ thủ`);
+        if (compCount > 0) parts.push(`${compCount} thành phần`);
+        return parts.join(' · ') || '0 bộ thủ';
+      }
+
+      assert.strictEqual(formatComponentBadge(components[0]), '(宀 · Bộ Miên)');
+      assert.strictEqual(formatComponentBadge(components[1]), '(口 · Thành phần Khẩu)');
+      assert.strictEqual(formatComponentBadge(components[2]), '(夂 · Thành phần Truy)');
+
+      assert.strictEqual(formatComponentCount(components), '1 bộ thủ · 2 thành phần');
+    });
   });
 
   describe('11. Vocabulary Detail Writing Orchestration Contract (Requirement 1 & 2)', () => {

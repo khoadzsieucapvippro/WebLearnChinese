@@ -81,7 +81,7 @@ public class DueCardResponse {
         response.setMeaningHanViet(radical.getMeaningHanViet());
         response.setExampleSentence(null);
         response.setExampleTranslation(null);
-        response.setStrokeCount(null);
+        response.setStrokeCount(radical != null ? radical.getStrokeCount() : null);
 
         if (progress != null) {
             response.setRepetitions(progress.getRepetitions());

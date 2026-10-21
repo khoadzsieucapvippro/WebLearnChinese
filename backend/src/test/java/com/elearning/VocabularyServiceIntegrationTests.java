@@ -131,7 +131,7 @@ class VocabularyServiceIntegrationTests {
         VocabularySearchCriteria criteria = new VocabularySearchCriteria();
         criteria.setRadicalId(9);
 
-        Page<VocabularyResponse> result = vocabularyService.searchVocabularies(criteria, PageRequest.of(0, 50));
+        Page<VocabularyResponse> result = vocabularyService.searchVocabularies(criteria, PageRequest.of(0, 200));
 
         assertThat(result.getTotalElements()).isGreaterThanOrEqualTo(1);
         assertThat(result.getContent()).extracting(VocabularyResponse::getHanzi).contains("休");

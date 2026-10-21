@@ -76,9 +76,13 @@ Thumbs.db
 # Secrets & Environment variables
 .env
 .env.*
+!.env.example
 *.env
 *.env.local
 *.env.*.local
+*-local.yml
+*-local.yaml
+application-local.yml
 *.secret
 *.pem
 *.key
@@ -129,6 +133,11 @@ playwright-report/
 /tests/visual-review-*.mjs
 # Playwright CLI output (may contain credentials)
 .playwright-cli/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
 
 # Local artifacts & repo dumps
 /artifacts/

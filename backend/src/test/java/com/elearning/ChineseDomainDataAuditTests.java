@@ -88,10 +88,10 @@ class ChineseDomainDataAuditTests {
             }
 
             // Verify empirical findings:
-            // Exactly 43 radicals in the seed data use compound display strings with parentheses e.g. 人(亻), 刀(刂)
-            // The remaining 171 are single CJK Unified Ideographs (43 + 171 = 214)
-            assertThat(compoundDisplayCount).isEqualTo(43);
-            assertThat(unifiedIdeographCount).isEqualTo(171);
+            // Exactly 47 radicals in the seed data use compound display strings with parentheses e.g. 人(亻), 刀(刂)
+            // The remaining 167 are single CJK Unified Ideographs (47 + 167 = 214)
+            assertThat(compoundDisplayCount).isEqualTo(47);
+            assertThat(unifiedIdeographCount).isEqualTo(167);
             assertThat(compoundDisplayCount + unifiedIdeographCount).isEqualTo(214);
         }
 

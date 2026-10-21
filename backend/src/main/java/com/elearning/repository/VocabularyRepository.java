@@ -20,14 +20,21 @@ import java.util.Optional;
 public interface VocabularyRepository extends JpaRepository<Vocabulary, Long>, JpaSpecificationExecutor<Vocabulary> {
 
     /**
-     * Finds a vocabulary by its unique composite business key (hanzi + pinyin_raw).
-     * Matches the physical UNIQUE constraint uk_vocab_hanzi_pinyin_raw.
+     * Finds a vocabulary by business key (hanzi + pinyin_raw).
+     * Uses deterministic LIMIT 1 to prevent NonUniqueResultException on homographs.
      *
      * @param hanzi Chinese word characters
      * @param pinyinRaw raw toneless pinyin
      * @return Optional containing found Vocabulary or empty if not found
      */
-    Optional<Vocabulary> findByHanziAndPinyinRaw(String hanzi, String pinyinRaw);
+    @Query(value = "SELECT * FROM `VOCABULARY` WHERE hanzi = :hanzi AND pinyin_raw = :pinyinRaw ORDER BY vocab_id ASC LIMIT 1", nativeQuery = true)
+    Optional<Vocabulary> findByHanziAndPinyinRaw(@Param("hanzi") String hanzi, @Param("pinyinRaw") String pinyinRaw);
+
+    Optional<Vocabulary> findFirstByHanziAndPinyinRaw(String hanzi, String pinyinRaw);
+
+    java.util.List<Vocabulary> findAllByHanziAndPinyinRaw(String hanzi, String pinyinRaw);
+
+    Optional<Vocabulary> findByHskSourceId(Integer hskSourceId);
 
     /**
      * Finds vocabularies by exact Chinese word characters with pagination.

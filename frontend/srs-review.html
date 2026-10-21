@@ -144,7 +144,7 @@
                 <span class="srs-deck-title flex-grow-1 text-truncate" title="Từ Vựng HSK 1">Từ Vựng HSK 1</span>
                 <span class="badge bg-danger text-white srs-deck-due-badge flex-shrink-0 ms-1 d-none" id="deckDueBadge_hsk1">⚡0</span>
               </div>
-              <div class="srs-deck-meta" id="deckMeta_hsk1">10 Bài • Đã học 0/200</div>
+              <div class="srs-deck-meta" id="deckMeta_hsk1">15 Bài • Đã học 0/300</div>
               <div class="srs-deck-progress mini-progress" id="deckProgress_hsk1" aria-hidden="true">
                 <div class="srs-deck-progress-bar" id="deckProgressBar_hsk1" style="width: 0%;"></div>
               </div>
@@ -156,7 +156,7 @@
                 <span class="srs-deck-title flex-grow-1 text-truncate" title="Từ Vựng HSK 2">Từ Vựng HSK 2</span>
                 <span class="badge bg-danger text-white srs-deck-due-badge flex-shrink-0 ms-1 d-none" id="deckDueBadge_hsk2">⚡0</span>
               </div>
-              <div class="srs-deck-meta" id="deckMeta_hsk2">10 Bài • Đã học 0/150</div>
+              <div class="srs-deck-meta" id="deckMeta_hsk2">10 Bài • Đã học 0/200</div>
               <div class="srs-deck-progress mini-progress" id="deckProgress_hsk2" aria-hidden="true">
                 <div class="srs-deck-progress-bar" id="deckProgressBar_hsk2" style="width: 0%;"></div>
               </div>
@@ -168,7 +168,7 @@
                 <span class="srs-deck-title flex-grow-1 text-truncate" title="Từ Vựng HSK 3">Từ Vựng HSK 3</span>
                 <span class="badge bg-danger text-white srs-deck-due-badge flex-shrink-0 ms-1 d-none" id="deckDueBadge_hsk3">⚡0</span>
               </div>
-              <div class="srs-deck-meta" id="deckMeta_hsk3">10 Bài • Đã học 0/300</div>
+              <div class="srs-deck-meta" id="deckMeta_hsk3">25 Bài • Đã học 0/500</div>
               <div class="srs-deck-progress mini-progress" id="deckProgress_hsk3" aria-hidden="true">
                 <div class="srs-deck-progress-bar" id="deckProgressBar_hsk3" style="width: 0%;"></div>
               </div>
@@ -594,56 +594,160 @@
           </div>
         </div>
 
-        <!-- Dedicated Reading Session Room (Requirement 3: Hanzi shown, Pinyin/Meaning hidden initially) -->
-        <div id="srsReadingRoom" class="d-none text-center py-2 srs-skill-room">
-          <div class="srs-skill-prompt-box">
-            <div class="d-flex justify-content-between align-items-center w-100 mb-3">
-              <span id="readingRoomBadge" class="badge bg-secondary-subtle text-secondary border">Từ vựng</span>
-              <span class="badge bg-danger-subtle text-danger border">📖 Luyện đọc</span>
+        <!-- Dedicated Reading Session Room: Unified Single Large Card Layout (Matching Writing & Listening) -->
+        <div id="srsReadingRoom" class="d-none text-center">
+          <!-- Hidden compatibility badge -->
+          <span id="readingRoomBadge" class="badge bg-secondary-subtle text-secondary border d-none">Từ vựng</span>
+
+          <!-- Unified Single Large Reading Card -->
+          <div class="srs-writing-card srs-reading-card">
+
+            <!-- Free-tier AI Privacy Notice -->
+            <div id="readingPrivacyNotice" class="alert alert-info py-2 px-3 small mx-auto w-100 mb-3 text-start d-flex align-items-center justify-content-between" role="region" aria-label="Thông báo quyền riêng tư AI">
+              <div>
+                <span class="fw-bold">ℹ️ Thông báo Gemini AI (Gói miễn phí):</span>
+                <span> Bản ghi âm của bạn được gửi tới Google Gemini để phân tích phát âm theo điều khoản miễn phí hiện hành. Dữ liệu âm thanh không lưu trên hệ thống.</span>
+              </div>
+              <button type="button" id="btnDismissPrivacyNotice" class="btn-close ms-2 flex-shrink-0" aria-label="Đóng thông báo quyền riêng tư"></button>
             </div>
 
-            <!-- Prompt Hanzi Face -->
-            <div class="my-2 text-center w-100">
-              <div id="readingPromptHanzi" class="flashcard-hanzi mb-2" lang="zh-CN"></div>
-              <div class="text-secondary small">Nhìn chữ Hán, tự nhớ phiên âm Pinyin và ngữ nghĩa</div>
-            </div>
+            <!-- Header: Badge & Target Hanzi -->
+            <div class="w-100 mb-2">
+              <div class="d-flex justify-content-between align-items-center w-100 mb-2">
+                <span id="readingCardTypeBadge" class="badge bg-light text-secondary border">Từ vựng</span>
+                <span class="badge bg-danger-subtle text-danger border">📖 Luyện đọc AI</span>
+              </div>
 
-            <!-- Pre-reveal placeholder -->
-            <div id="readingHiddenPlaceholder" class="p-3 bg-light rounded-2 border border-dashed w-100 mt-2">
-              <span class="text-muted fst-italic">Pinyin và ngữ nghĩa đang được ẩn. Nhấn "Hiện đáp án" để kiểm tra!</span>
-            </div>
-
-            <!-- Revealed Answer Area -->
-            <div id="readingAnswerArea" class="d-none p-3 bg-light rounded-3 border w-100 mt-2">
-              <div class="d-flex justify-content-center align-items-center gap-2 mb-1">
-                <div id="readingAnswerPinyin" class="fs-4 fw-bold text-dark"></div>
-                <!-- Speaker only shown after reveal to verify pronunciation -->
+              <!-- Main Target Hanzi -->
+              <div class="d-flex align-items-center justify-content-center gap-3 my-2">
+                <div id="readingPromptHanzi" class="flashcard-hanzi font-hanzi my-0" lang="zh-CN" style="font-size: clamp(2.8rem, 8vw, 4rem);"></div>
                 <button 
                   type="button" 
-                  id="btnReadingAudio" 
+                  id="btnReadingSampleAudio" 
                   class="vocab-speech-btn" 
-                  aria-label="Phát âm đối chiếu" 
-                  title="Nghe phát âm đối chiếu"
+                  aria-label="Phát âm mẫu chuẩn" 
+                  title="Nghe phát âm chuẩn (Web Speech API)"
                 >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
                     <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
                   </svg>
                 </button>
               </div>
-              <div>
-                <span id="readingAnswerHv" class="badge bg-secondary-subtle text-secondary me-2"></span>
-                <span id="readingAnswerMeaning" class="fw-medium text-secondary"></span>
+
+              <!-- Pinyin and Meaning (Initially hidden, revealed on click or post-assessment) -->
+              <div id="readingAnswerRevealArea" class="reading-reveal-area mb-2">
+                <button type="button" id="btnReadingTogglePinyin" class="btn btn-sm btn-link text-decoration-none text-muted py-0 small">
+                  👁️ Xem trước phiên âm &amp; nghĩa
+                </button>
+                <div id="readingPinyinMeaningBox" class="d-none mt-1">
+                  <div id="readingPromptPinyin" class="flashcard-pinyin mb-0" style="font-size: 1.25rem;"></div>
+                  <div>
+                    <span id="readingPromptHanViet" class="badge bg-secondary-subtle text-secondary me-2"></span>
+                    <span id="readingPromptMeaning" class="fw-medium text-secondary small"></span>
+                  </div>
+                </div>
               </div>
             </div>
+
+            <!-- State A: Sẵn sàng (Ready) -->
+            <div id="readingStateReady" class="reading-state-box w-100 py-3">
+              <button type="button" id="btnReadingStartRecord" class="btn btn-chinese-primary reading-record-btn py-3 px-4 fw-bold shadow rounded-pill d-inline-flex align-items-center gap-2">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                  <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                  <line x1="12" y1="19" x2="12" y2="23"></line>
+                  <line x1="8" y1="23" x2="16" y2="23"></line>
+                </svg>
+                <span>Bắt đầu đọc</span>
+              </button>
+              <div class="text-secondary small mt-2">Nhấn nút micro và đọc rõ ràng theo chữ Hán trên</div>
+            </div>
+
+            <!-- State B: Đang ghi âm (Recording) -->
+            <div id="readingStateRecording" class="reading-state-box w-100 py-3 d-none">
+              <div class="d-flex align-items-center justify-content-center gap-2 mb-3">
+                <span class="reading-record-pulse" aria-hidden="true"></span>
+                <span class="fw-bold text-danger">Đang ghi âm...</span>
+                <span id="readingRecordDuration" class="badge bg-danger text-white rounded-pill px-3 py-1">00:00</span>
+              </div>
+              <div class="d-flex justify-content-center gap-2">
+                <button type="button" id="btnReadingStopRecord" class="btn btn-chinese-primary py-2 px-4 fw-bold shadow-sm">
+                  ⏹ Dừng &amp; Chấm điểm
+                </button>
+                <button type="button" id="btnReadingCancelRecord" class="btn btn-outline-secondary py-2 px-3">
+                  ✕ Hủy
+                </button>
+              </div>
+            </div>
+
+            <!-- State C: Đang phân tích (Analyzing) -->
+            <div id="readingStateAnalyzing" class="reading-state-box w-100 py-4 d-none" role="status" aria-live="polite">
+              <div class="state-spinner mx-auto mb-2" aria-hidden="true"></div>
+              <div class="fw-semibold text-dark">Đang phân tích phát âm qua Gemini AI...</div>
+              <div class="text-secondary small mt-1">Đang đánh giá thanh mẫu, vận mẫu, thanh điệu và đối chiếu văn bản</div>
+            </div>
+
+            <!-- State D: Kết quả (Result) -->
+            <div id="readingStateResult" class="reading-state-box w-100 py-2 d-none" role="region" aria-label="Kết quả đánh giá phát âm">
+              <!-- Score Badge Header -->
+              <div class="d-flex justify-content-center align-items-center gap-2 mb-2 flex-wrap">
+                <span id="readingOverallScoreBadge" class="reading-score-badge bg-success-subtle text-success border border-success-subtle fw-bold px-3 py-1 rounded-pill fs-5">--</span>
+                <span id="readingConfidenceBadge" class="badge bg-secondary-subtle text-secondary border">Tin cậy cao</span>
+              </div>
+              <div class="small text-muted fst-italic mb-2">Điểm ước lượng tham khảo từ Gemini AI (Gói miễn phí)</div>
+
+              <!-- Recognized Text -->
+              <div class="small mb-2 p-2 bg-light rounded border text-start">
+                <span class="text-secondary fw-semibold">AI nhận diện được: </span>
+                <span id="readingRecognizedText" class="font-hanzi fw-bold text-dark"></span>
+              </div>
+
+              <!-- Summary Feedback Vi -->
+              <div id="readingResultSummary" class="p-2 rounded bg-light border text-start small mb-2 text-dark"></div>
+
+              <!-- Component Details (Initials, Finals, Tones) -->
+              <div id="readingComponentsWrapper" class="p-2 rounded bg-light border text-start small mb-2 d-none">
+                <div class="fw-semibold text-secondary mb-1">Chi tiết ngữ âm:</div>
+                <div id="readingInitialsFeedback" class="mb-1 text-secondary"></div>
+                <div id="readingFinalsFeedback" class="mb-1 text-secondary"></div>
+                <div id="readingTonesFeedback" class="text-secondary"></div>
+              </div>
+
+              <!-- Retry Advice -->
+              <div id="readingRetryAdvice" class="small text-muted mb-3 text-start"></div>
+
+              <!-- Audio Controls: Replay User Audio / Sample / Re-record -->
+              <div class="d-flex justify-content-center align-items-center gap-2 flex-wrap mt-2 pt-2 border-top">
+                <button type="button" id="btnReadingPlayUserAudio" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1">
+                  🔊 Nghe lại giọng bạn
+                </button>
+                <button type="button" id="btnReadingPlaySampleAgain" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1">
+                  🎵 Nghe mẫu chuẩn
+                </button>
+                <button type="button" id="btnReadingRecordAgain" class="btn btn-sm btn-outline-danger d-inline-flex align-items-center gap-1">
+                  🔄 Đọc lại
+                </button>
+              </div>
+            </div>
+
+            <!-- State E: Không thể chấm / Lỗi (Not Scorable / Error) -->
+            <div id="readingStateError" class="reading-state-box w-100 py-3 d-none" role="alert">
+              <div class="alert alert-warning py-2 px-3 small mx-auto text-start w-100 mb-3">
+                <div class="fw-bold mb-1" id="readingErrorTitle">Không thể đánh giá lượt đọc</div>
+                <div id="readingErrorMessage" class="mb-1"></div>
+                <div id="readingErrorAdvice" class="text-muted"></div>
+              </div>
+              <button type="button" id="btnReadingTryAgain" class="btn btn-chinese-primary btn-sm py-2 px-4 fw-bold">
+                Thử đọc lại
+              </button>
+            </div>
+
           </div>
 
-          <!-- Controls: Reveal or Next -->
-          <div class="mt-2">
-            <button type="button" id="btnReadingReveal" class="btn btn-chinese-primary py-2 px-4 fw-semibold shadow-sm">
-              👁️ Hiện đáp án [Space]
-            </button>
-            <button type="button" id="btnReadingNext" class="btn btn-chinese-primary py-2 px-5 fw-bold shadow-sm fs-6 d-none">
+          <!-- Next Action Button (Outside card, matching Writing and Listening) -->
+          <div id="readingNextContainer" class="writing-next-container mt-3">
+            <button type="button" id="btnReadingNext" class="btn btn-chinese-primary py-2 px-5 fw-bold shadow-sm fs-6 writing-next-hidden">
               Sang từ tiếp theo &rarr;
             </button>
           </div>
@@ -728,6 +832,6 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 
   <!-- Page Application Entry Point (Module) -->
-  <script type="module" src="js/pages/srs-review-page.js"></script>
+  <script type="module" src="js/pages/srs-review-page.js?v=9"></script>
 </body>
 </html>

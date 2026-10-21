@@ -40,7 +40,7 @@ import { authManager } from '../auth/auth-state.js';
 import { ApiError } from './api.js';
 
 const STORAGE_KEY = 'ELEARNING_DEMO_DATA';
-const CURRENT_DATASET_VERSION = 4;
+const CURRENT_DATASET_VERSION = 9;
 
 /**
  * Encodes string or object into Base64URL string compliant with JWT standards.
@@ -120,6 +120,17 @@ class DemoFallbackEngine {
     if (saved && saved.schemaVersion === CURRENT_DATASET_VERSION && Array.isArray(saved.radicals) && saved.radicals.length === 214) {
       this._data = saved;
     } else {
+      const preservedCards = (saved && Array.isArray(saved.srsCards)) ? saved.srsCards : JSON.parse(JSON.stringify(SEED_SRS_CARDS));
+      const preservedReviews = (saved && Array.isArray(saved.srsReviews)) ? saved.srsReviews : [];
+      const preservedNotes = (saved && Array.isArray(saved.notes)) ? saved.notes : [
+        {
+          noteId: 1,
+          vocabId: 1,
+          content: 'Bộ thủ chữ Ái (爱): móng vuốt (爫) ở trên, khăn trùm (冖), ở giữa là con tim (心) và dưới cùng là bước chân chậm (夂).',
+          createdAt: '2026-08-01T10:00:00Z',
+          updatedAt: '2026-08-01T10:00:00Z'
+        }
+      ];
       this._data = {
         schemaVersion: CURRENT_DATASET_VERSION,
         accounts: JSON.parse(JSON.stringify(SEED_ACCOUNTS)),
@@ -127,8 +138,8 @@ class DemoFallbackEngine {
         vocabulary: JSON.parse(JSON.stringify(SEED_VOCABULARY)),
         lessons: JSON.parse(JSON.stringify(SEED_LESSONS)),
         srsSettings: { ...SEED_SRS_SETTINGS },
-        srsCards: JSON.parse(JSON.stringify(SEED_SRS_CARDS)),
-        srsReviews: [],
+        srsCards: preservedCards,
+        srsReviews: preservedReviews,
         notes: [
           {
             noteId: 1,
@@ -422,7 +433,7 @@ class DemoFallbackEngine {
         commonRank: body.commonRank ? parseInt(body.commonRank, 10) : null,
         explanationVi: body.explanationVi || null,
         videoLessonUrl: body.videoLessonUrl || null,
-        strokeCount: body.strokeCount ? parseInt(body.strokeCount, 10) : 1
+        strokeCount: body.strokeCount ? parseInt(body.strokeCount, 10) : null
       };
       data.radicals.push(newRad);
       this.saveData();
@@ -498,31 +509,40 @@ class DemoFallbackEngine {
 
       // Automatically map constituent radicals accurately based on canonical Kangxi Radicals
       let constituentRadicals = [];
-      const seenRadicalIds = new Set();
+      const seenRadicalKeys = new Set();
 
       if (Array.isArray(v.radicalIds) && v.radicalIds.length > 0) {
         // If explicitly assigned (e.g. via Admin API or audited seed dataset)
+        const charRadicalUsed = new Set();
         for (const rid of v.radicalIds) {
           const numId = Number(rid);
-          if (numId > 0 && !seenRadicalIds.has(numId)) {
-            seenRadicalIds.add(numId);
+          if (numId > 0) {
             const rad = data.radicals.find(r => r.radicalId === numId);
             if (rad) {
               let matchedChar = '';
               if (v.hanzi) {
                 for (const ch of v.hanzi) {
                   const chRads = (typeof CHAR_TO_RADICALS_MAP !== 'undefined' && CHAR_TO_RADICALS_MAP[ch]) || (CHAR_TO_RADICAL_MAP && CHAR_TO_RADICAL_MAP[ch] ? [CHAR_TO_RADICAL_MAP[ch]] : []);
-                  if (chRads.includes(numId)) {
+                  const pairKey = `${numId}_${ch}`;
+                  if (chRads.includes(numId) && !charRadicalUsed.has(pairKey)) {
                     matchedChar = ch;
+                    charRadicalUsed.add(pairKey);
                     break;
                   }
                 }
                 if (!matchedChar && v.hanzi.length === 1) matchedChar = v.hanzi;
               }
-              constituentRadicals.push({
-                ...rad,
-                hanziChar: matchedChar
-              });
+              const dedupeKey = `${numId}_${matchedChar}`;
+              if (!seenRadicalKeys.has(dedupeKey)) {
+                seenRadicalKeys.add(dedupeKey);
+                const isKangxi = (typeof CHAR_TO_RADICAL_MAP !== 'undefined' && CHAR_TO_RADICAL_MAP[matchedChar] === numId);
+                constituentRadicals.push({
+                  ...rad,
+                  hanziChar: matchedChar,
+                  componentType: isKangxi ? 'kangxi_radical' : 'structural_component',
+                  verificationStatus: 'verified'
+                });
+              }
             }
           }
         }
@@ -531,13 +551,18 @@ class DemoFallbackEngine {
         for (const char of v.hanzi) {
           const radIds = (typeof CHAR_TO_RADICALS_MAP !== 'undefined' && CHAR_TO_RADICALS_MAP[char]) || (CHAR_TO_RADICAL_MAP && CHAR_TO_RADICAL_MAP[char] ? [CHAR_TO_RADICAL_MAP[char]] : []);
           for (const radId of radIds) {
-            if (radId && !seenRadicalIds.has(radId)) {
-              seenRadicalIds.add(radId);
-              const rad = data.radicals.find(r => r.radicalId === radId);
+            const numId = Number(radId);
+            const dedupeKey = `${numId}_${char}`;
+            if (numId > 0 && !seenRadicalKeys.has(dedupeKey)) {
+              seenRadicalKeys.add(dedupeKey);
+              const rad = data.radicals.find(r => r.radicalId === numId);
               if (rad) {
+                const isKangxi = (typeof CHAR_TO_RADICAL_MAP !== 'undefined' && CHAR_TO_RADICAL_MAP[char] === numId);
                 constituentRadicals.push({
                   ...rad,
-                  hanziChar: char
+                  hanziChar: char,
+                  componentType: isKangxi ? 'kangxi_radical' : 'structural_component',
+                  verificationStatus: 'verified'
                 });
               }
             }
@@ -1049,7 +1074,7 @@ class DemoFallbackEngine {
             pinyin: r.pinyin,
             meaningVi: r.meaningVi,
             meaningHanViet: r.meaningHanViet,
-            strokeCount: r.strokeCount || 1,
+            strokeCount: (Number.isFinite(Number(r.strokeCount)) && Number(r.strokeCount) > 0) ? Number(r.strokeCount) : null,
             repetitions: 1,
             easeFactor: 2.5,
             intervalDays: 1,
@@ -1127,7 +1152,7 @@ class DemoFallbackEngine {
             pinyin: r?.pinyin || '',
             meaningVi: r?.meaningVi || '',
             meaningHanViet: r?.meaningHanViet || '',
-            strokeCount: r?.strokeCount || 1,
+            strokeCount: (Number.isFinite(Number(r?.strokeCount)) && Number(r?.strokeCount) > 0) ? Number(r.strokeCount) : null,
             repetitions: 0,
             easeFactor: 2.5,
             intervalDays: 0,

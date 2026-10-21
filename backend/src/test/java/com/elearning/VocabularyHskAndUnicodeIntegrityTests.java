@@ -49,19 +49,54 @@ class VocabularyHskAndUnicodeIntegrityTests {
     class DatabaseDataIntegrityTests {
 
         @Test
-        @DisplayName("GIVEN seeded database WHEN querying HSK 1 count THEN exactly 500 records exist with zero corruption")
+        @DisplayName("GIVEN seeded database WHEN querying HSK 1-3 counts THEN exactly 300 L1, 200 L2, 500 L3, 68 supplementary exist with zero corruption")
         void testHsk1ExactCountAndZeroCorruption() throws Exception {
             try (Connection conn = dataSource.getConnection();
                  Statement stmt = conn.createStatement()) {
 
-                // 1. Verify HSK 1 count in test database
+                // 1. Verify HSK 1 count: exactly 300
                 try (ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM `vocabulary` WHERE `hsk_level` = 1")) {
                     assertThat(rs.next()).isTrue();
                     int hsk1Count = rs.getInt(1);
-                    assertThat(hsk1Count).isEqualTo(500);
+                    assertThat(hsk1Count).isEqualTo(300);
                 }
 
-                // 2. Verify NO record contains literal ASCII '?' corruption in hanzi or pinyin
+                // 2. Verify HSK 2 count: exactly 200
+                try (ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM `vocabulary` WHERE `hsk_level` = 2")) {
+                    assertThat(rs.next()).isTrue();
+                    int hsk2Count = rs.getInt(1);
+                    assertThat(hsk2Count).isEqualTo(200);
+                }
+
+                // 3. Verify HSK 3 count: exactly 500
+                try (ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM `vocabulary` WHERE `hsk_level` = 3")) {
+                    assertThat(rs.next()).isTrue();
+                    int hsk3Count = rs.getInt(1);
+                    assertThat(hsk3Count).isEqualTo(500);
+                }
+
+                // 4. Verify Total Official HSK 1-3: exactly 1000
+                try (ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM `vocabulary` WHERE `hsk_level` IN (1, 2, 3)")) {
+                    assertThat(rs.next()).isTrue();
+                    int officialCount = rs.getInt(1);
+                    assertThat(officialCount).isEqualTo(1000);
+                }
+
+                // 5. Verify Curriculum Supplementary: exactly 68
+                try (ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM `vocabulary` WHERE `hsk_level` = 0 AND `hsk_standard` = 'Curriculum Supplementary'")) {
+                    assertThat(rs.next()).isTrue();
+                    int suppCount = rs.getInt(1);
+                    assertThat(suppCount).isEqualTo(68);
+                }
+
+                // 6. Verify Total Database Records: exactly 1068
+                try (ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM `vocabulary`")) {
+                    assertThat(rs.next()).isTrue();
+                    int totalCount = rs.getInt(1);
+                    assertThat(totalCount).isEqualTo(1068);
+                }
+
+                // 7. Verify NO record contains literal ASCII '?' corruption in hanzi or pinyin
                 try (ResultSet rs = stmt.executeQuery(
                         "SELECT COUNT(*) FROM `vocabulary` WHERE `hanzi` LIKE '%?%' OR `pinyin` LIKE '%?%'")) {
                     assertThat(rs.next()).isTrue();
@@ -69,31 +104,139 @@ class VocabularyHskAndUnicodeIntegrityTests {
                     assertThat(corruptedCount).isZero();
                 }
 
-                // 3. Verify specific sample records for authentic UTF-8 Chinese characters and tonal Pinyin
-                try (ResultSet rs = stmt.executeQuery(
-                        "SELECT `hanzi`, HEX(`hanzi`), `pinyin`, `meaning_vi` FROM `vocabulary` WHERE `hanzi` = '爱'")) {
+                // 8. Verify ALL 1,000 official source IDs exist with ZERO missing or orphaned
+                try (ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM `vocabulary` WHERE `hsk_source_id` IS NOT NULL")) {
                     assertThat(rs.next()).isTrue();
-                    assertThat(rs.getString("hanzi")).isEqualTo("爱");
-                    assertThat(rs.getString(2)).isEqualTo("E788B1");
-                    assertThat(rs.getString("pinyin")).isEqualTo("ài");
-                    assertThat(rs.getString("meaning_vi")).contains("Yêu");
+                    assertThat(rs.getInt(1)).as("Total records with official hsk_source_id must be exactly 1,000").isEqualTo(1000);
                 }
 
-                try (ResultSet rs = stmt.executeQuery(
-                        "SELECT `hanzi`, HEX(`hanzi`), `pinyin`, `meaning_vi` FROM `vocabulary` WHERE `hanzi` = '爸爸'")) {
+                try (ResultSet rs = stmt.executeQuery("SELECT COUNT(DISTINCT `hsk_source_id`) FROM `vocabulary` WHERE `hsk_source_id` IS NOT NULL")) {
                     assertThat(rs.next()).isTrue();
-                    assertThat(rs.getString("hanzi")).isEqualTo("爸爸");
-                    assertThat(rs.getString(2)).isEqualTo("E788B8E788B8");
-                    assertThat(rs.getString("pinyin")).isEqualTo("bàba");
-                    assertThat(rs.getString("meaning_vi")).isEqualTo("Cha, ba");
+                    assertThat(rs.getInt(1)).as("Distinct official hsk_source_id count must be exactly 1,000").isEqualTo(1000);
                 }
 
-                try (ResultSet rs = stmt.executeQuery(
-                        "SELECT `hanzi`, HEX(`hanzi`), `pinyin` FROM `vocabulary` WHERE `hanzi` = '书'")) {
+                try (ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM `vocabulary` WHERE `hsk_source_id` BETWEEN 1 AND 300 AND `hsk_level` = 1")) {
                     assertThat(rs.next()).isTrue();
-                    assertThat(rs.getString("hanzi")).isEqualTo("书");
-                    assertThat(rs.getString(2)).isEqualTo("E4B9A6");
-                    assertThat(rs.getString("pinyin")).isEqualTo("shū");
+                    assertThat(rs.getInt(1)).as("HSK 1 source IDs 1..300 must match hsk_level = 1").isEqualTo(300);
+                }
+
+                try (ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM `vocabulary` WHERE `hsk_source_id` BETWEEN 301 AND 500 AND `hsk_level` = 2")) {
+                    assertThat(rs.next()).isTrue();
+                    assertThat(rs.getInt(1)).as("HSK 2 source IDs 301..500 must match hsk_level = 2").isEqualTo(200);
+                }
+
+                try (ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM `vocabulary` WHERE `hsk_source_id` BETWEEN 501 AND 1000 AND `hsk_level` = 3")) {
+                    assertThat(rs.next()).isTrue();
+                    assertThat(rs.getInt(1)).as("HSK 3 source IDs 501..1000 must match hsk_level = 3").isEqualTo(500);
+                }
+
+                try (ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM `vocabulary` WHERE `hsk_source_id` IS NULL AND `hsk_level` > 0")) {
+                    assertThat(rs.next()).isTrue();
+                    assertThat(rs.getInt(1)).as("No non-supplementary records should have NULL hsk_source_id").isZero();
+                }
+
+                // 9. Verify specific required word standardizations
+                // 女儿: source ID 153, Han-Viet Nữ Nhi, pinyin_raw nuer
+                try (ResultSet rs = stmt.executeQuery(
+                        "SELECT `hanzi`, `pinyin`, `pinyin_raw`, `meaning_han_viet`, `meaning_vi`, `hsk_source_id`, `hsk_level` FROM `vocabulary` WHERE `hanzi` = '女儿'")) {
+                    assertThat(rs.next()).isTrue();
+                    assertThat(rs.getString("pinyin_raw")).isEqualTo("nuer");
+                    assertThat(rs.getString("meaning_han_viet")).isEqualTo("Nữ Nhi");
+                    assertThat(rs.getInt("hsk_source_id")).isEqualTo(153);
+                    assertThat(rs.getInt("hsk_level")).isEqualTo(1);
+                }
+
+                // 爱好: HSK 2, source ID 302
+                try (ResultSet rs = stmt.executeQuery("SELECT `hsk_level`, `hsk_source_id` FROM `vocabulary` WHERE `hanzi` = '爱好'")) {
+                    assertThat(rs.next()).isTrue();
+                    assertThat(rs.getInt("hsk_level")).isEqualTo(2);
+                    assertThat(rs.getInt("hsk_source_id")).isEqualTo(302);
+                }
+
+                // 班: HSK 2, source ID 304
+                try (ResultSet rs = stmt.executeQuery("SELECT `hsk_level`, `hsk_source_id` FROM `vocabulary` WHERE `hanzi` = '班'")) {
+                    assertThat(rs.next()).isTrue();
+                    assertThat(rs.getInt("hsk_level")).isEqualTo(2);
+                    assertThat(rs.getInt("hsk_source_id")).isEqualTo(304);
+                }
+
+                // 本子: HSK 2, source ID 308, natural meaning
+                try (ResultSet rs = stmt.executeQuery("SELECT `hsk_level`, `hsk_source_id`, `meaning_vi` FROM `vocabulary` WHERE `hanzi` = '本子'")) {
+                    assertThat(rs.next()).isTrue();
+                    assertThat(rs.getInt("hsk_level")).isEqualTo(2);
+                    assertThat(rs.getInt("hsk_source_id")).isEqualTo(308);
+                    assertThat(rs.getString("meaning_vi")).contains("Vở");
+                }
+
+                // 白: preserved as Curriculum Supplementary (hsk_level = 0, hsk_source_id IS NULL)
+                try (ResultSet rs = stmt.executeQuery("SELECT `hsk_level`, `hsk_standard`, `hsk_source_id` FROM `vocabulary` WHERE `hanzi` = '白'")) {
+                    assertThat(rs.next()).isTrue();
+                    assertThat(rs.getInt("hsk_level")).isZero();
+                    assertThat(rs.getString("hsk_standard")).isEqualTo("Curriculum Supplementary");
+                    assertThat(rs.getObject("hsk_source_id")).isNull();
+                }
+
+                // 别的, 别人, 病人: HSK 3
+                try (ResultSet rs = stmt.executeQuery("SELECT `hsk_level` FROM `vocabulary` WHERE `hanzi` IN ('别的', '别人', '病人')")) {
+                    int count = 0;
+                    while (rs.next()) {
+                        assertThat(rs.getInt("hsk_level")).isEqualTo(3);
+                        count++;
+                    }
+                    assertThat(count).isEqualTo(3);
+                }
+
+                // 10. Verify clean Vietnamese definitions (zero dictionary scraping artifacts)
+                try (ResultSet rs = stmt.executeQuery("SELECT `meaning_vi` FROM `vocabulary` WHERE `hanzi` = '东西' AND `pinyin_raw` = 'dongxi'")) {
+                    assertThat(rs.next()).isTrue();
+                    assertThat(rs.getString("meaning_vi")).doesNotContain("Đông và tây").contains("Đồ vật");
+                }
+
+                try (ResultSet rs = stmt.executeQuery("SELECT `meaning_vi` FROM `vocabulary` WHERE `hanzi` = '大学'")) {
+                    assertThat(rs.next()).isTrue();
+                    assertThat(rs.getString("meaning_vi")).doesNotContain("Tứ thư").contains("đại học");
+                }
+
+                try (ResultSet rs = stmt.executeQuery("SELECT `meaning_vi` FROM `vocabulary` WHERE `hanzi` = '从'")) {
+                    assertThat(rs.next()).isTrue();
+                    assertThat(rs.getString("meaning_vi")).doesNotContain("Biến thể").contains("Từ");
+                }
+
+                // 11. Verify homographs coexisting safely with distinct hsk_source_id
+                // 过: 347 (level 2, verb) vs 351 (level 2, particle)
+                try (ResultSet rs = stmt.executeQuery("SELECT `hsk_source_id`, `hsk_level`, `part_of_speech` FROM `vocabulary` WHERE `hanzi` = '过' ORDER BY `hsk_source_id`")) {
+                    assertThat(rs.next()).isTrue();
+                    assertThat(rs.getInt("hsk_source_id")).isEqualTo(347);
+                    assertThat(rs.next()).isTrue();
+                    assertThat(rs.getInt("hsk_source_id")).isEqualTo(351);
+                }
+
+                // 会: 82 (level 1, verb) vs 683 (level 3, noun)
+                try (ResultSet rs = stmt.executeQuery("SELECT `hsk_source_id`, `hsk_level` FROM `vocabulary` WHERE `hanzi` = '会' ORDER BY `hsk_source_id`")) {
+                    assertThat(rs.next()).isTrue();
+                    assertThat(rs.getInt("hsk_source_id")).isEqualTo(82);
+                    assertThat(rs.getInt("hsk_level")).isEqualTo(1);
+                    assertThat(rs.next()).isTrue();
+                    assertThat(rs.getInt("hsk_source_id")).isEqualTo(683);
+                    assertThat(rs.getInt("hsk_level")).isEqualTo(3);
+                }
+
+                // 花: 357 (level 2, verb) vs 358 (level 2, noun)
+                try (ResultSet rs = stmt.executeQuery("SELECT `hsk_source_id` FROM `vocabulary` WHERE `hanzi` = '花' ORDER BY `hsk_source_id`")) {
+                    assertThat(rs.next()).isTrue();
+                    assertThat(rs.getInt("hsk_source_id")).isEqualTo(357);
+                    assertThat(rs.next()).isTrue();
+                    assertThat(rs.getInt("hsk_source_id")).isEqualTo(358);
+                }
+
+                // 站: 486 (level 2, noun) vs 966 (level 3, verb)
+                try (ResultSet rs = stmt.executeQuery("SELECT `hsk_source_id`, `hsk_level` FROM `vocabulary` WHERE `hanzi` = '站' ORDER BY `hsk_source_id`")) {
+                    assertThat(rs.next()).isTrue();
+                    assertThat(rs.getInt("hsk_source_id")).isEqualTo(486);
+                    assertThat(rs.getInt("hsk_level")).isEqualTo(2);
+                    assertThat(rs.next()).isTrue();
+                    assertThat(rs.getInt("hsk_source_id")).isEqualTo(966);
+                    assertThat(rs.getInt("hsk_level")).isEqualTo(3);
                 }
             }
         }
@@ -104,7 +247,7 @@ class VocabularyHskAndUnicodeIntegrityTests {
     class ApiFilterAndUnicodeTests {
 
         @Test
-        @DisplayName("GIVEN GET /api/v1/vocabulary?hsk=1 WHEN requested THEN returns 200 OK with exactly 500 totalElements and authentic UTF-8")
+        @DisplayName("GIVEN GET /api/v1/vocabulary?hsk=1 WHEN requested THEN returns 200 OK with exactly 300 totalElements and authentic UTF-8")
         void testHsk1EndpointReturnsCorrectTotalAndUnicode() throws Exception {
             MvcResult result = mockMvc.perform(get("/api/v1/vocabulary")
                             .param("page", "0")
@@ -113,7 +256,7 @@ class VocabularyHskAndUnicodeIntegrityTests {
                             .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("SUCCESS"))
-                    .andExpect(jsonPath("$.data.totalElements").value(500))
+                    .andExpect(jsonPath("$.data.totalElements").value(300))
                     .andExpect(jsonPath("$.data.items").isArray())
                     .andReturn();
 
@@ -138,6 +281,32 @@ class VocabularyHskAndUnicodeIntegrityTests {
         }
 
         @Test
+        @DisplayName("GIVEN GET /api/v1/vocabulary?hsk=2 WHEN requested THEN returns 200 OK with exactly 200 totalElements")
+        void testHsk2EndpointReturnsCorrectTotal() throws Exception {
+            mockMvc.perform(get("/api/v1/vocabulary")
+                            .param("page", "0")
+                            .param("size", "20")
+                            .param("hsk", "2")
+                            .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("SUCCESS"))
+                    .andExpect(jsonPath("$.data.totalElements").value(200));
+        }
+
+        @Test
+        @DisplayName("GIVEN GET /api/v1/vocabulary?hsk=3 WHEN requested THEN returns 200 OK with exactly 500 totalElements")
+        void testHsk3EndpointReturnsCorrectTotal() throws Exception {
+            mockMvc.perform(get("/api/v1/vocabulary")
+                            .param("page", "0")
+                            .param("size", "20")
+                            .param("hsk", "3")
+                            .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("SUCCESS"))
+                    .andExpect(jsonPath("$.data.totalElements").value(500));
+        }
+
+        @Test
         @DisplayName("GIVEN records with hsk_level IS NULL WHEN filtering by hsk=1 THEN NULL records are STRICTLY EXCLUDED")
         void testHskFilterStrictSemanticsExcludesNullHskLevel() throws Exception {
             // Create a temporary vocabulary with hsk_level = null
@@ -146,14 +315,14 @@ class VocabularyHskAndUnicodeIntegrityTests {
             legacyNullVocab = vocabularyRepository.save(legacyNullVocab);
 
             try {
-                // When querying HSK 1, totalElements must remain 500 and must NOT include the null record
+                // When querying HSK 1, totalElements must remain 300 and must NOT include the null record
                 MvcResult result = mockMvc.perform(get("/api/v1/vocabulary")
                                 .param("hsk", "1")
                                 .param("page", "0")
                                 .param("size", "10")
                                 .accept(MediaType.APPLICATION_JSON))
                         .andExpect(status().isOk())
-                        .andExpect(jsonPath("$.data.totalElements").value(500))
+                        .andExpect(jsonPath("$.data.totalElements").value(300))
                         .andReturn();
 
                 String json = result.getResponse().getContentAsString(StandardCharsets.UTF_8);

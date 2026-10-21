@@ -5,6 +5,9 @@ server:
 spring:
   application:
     name: elearning-backend
+  config:
+    import:
+      - optional:classpath:application-local.yml
 
   servlet:
     multipart:
@@ -69,4 +72,8 @@ management:
     health:
       show-details: never
 
-
+gemini:
+  api-key: ${GEMINI_API_KEY:${GOOGLE_API_KEY:}}
+  model: ${GEMINI_MODEL:gemini-3.5-flash}
+  timeout-seconds: ${GEMINI_TIMEOUT_SECONDS:35}
+  max-audio-bytes: ${GEMINI_MAX_AUDIO_BYTES:5242880}

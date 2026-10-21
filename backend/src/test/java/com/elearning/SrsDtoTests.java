@@ -140,7 +140,7 @@ class SrsDtoTests {
         @Test
         @DisplayName("fromRadical mapping with null progress (new card)")
         void testFromRadical_nullProgress() {
-            Radical radical = new Radical(1, "一", "yī", "Nhất", "Số một");
+            Radical radical = new Radical(1, "一", "yī", "Nhất", "Số một", 1);
 
             DueCardResponse response = DueCardResponse.fromRadical(radical, null);
 
@@ -150,7 +150,7 @@ class SrsDtoTests {
             assertThat(response.getPinyin()).isEqualTo("yī");
             assertThat(response.getMeaningVi()).isEqualTo("Số một");
             assertThat(response.getMeaningHanViet()).isEqualTo("Nhất");
-            assertThat(response.getStrokeCount()).isNull();
+            assertThat(response.getStrokeCount()).isEqualTo(1);
             assertThat(response.getExampleSentence()).isNull();
             assertThat(response.getRepetitions()).isEqualTo(0);
             assertThat(response.getIntervalDays()).isEqualTo(0);

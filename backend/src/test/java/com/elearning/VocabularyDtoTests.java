@@ -1,6 +1,7 @@
 package com.elearning;
 
 import com.elearning.dto.request.VocabularySearchCriteria;
+import com.elearning.dto.response.RadicalResponse;
 import com.elearning.dto.response.VocabularyDetailResponse;
 import com.elearning.dto.response.VocabularyResponse;
 import com.elearning.entity.Radical;
@@ -81,6 +82,7 @@ class VocabularyDtoTests {
             r1.setPinyin("mù");
             r1.setMeaningHanViet("Mộc");
             r1.setMeaningVi("Cây gỗ");
+            r1.setStrokeCount(4);
 
             Radical r2 = new Radical();
             r2.setRadicalId(9);
@@ -88,8 +90,10 @@ class VocabularyDtoTests {
             r2.setPinyin("rén");
             r2.setMeaningHanViet("Nhân");
             r2.setMeaningVi("Người");
+            r2.setStrokeCount(2);
 
-            vocab.setRadicals(Set.of(r1, r2));
+            vocab.addRadical(r1, "休");
+            vocab.addRadical(r2, "休");
 
             VocabularyDetailResponse response = VocabularyDetailResponse.fromEntity(vocab);
 
@@ -103,8 +107,45 @@ class VocabularyDtoTests {
             assertThat(response.getRadicals()).hasSize(2);
             assertThat(response.getRadicals().get(0).getRadicalId()).isEqualTo(9);
             assertThat(response.getRadicals().get(0).getCharacter()).isEqualTo("人");
+            assertThat(response.getRadicals().get(0).getStrokeCount()).isEqualTo(2);
+            assertThat(response.getRadicals().get(0).getHanziChar()).isEqualTo("休");
             assertThat(response.getRadicals().get(1).getRadicalId()).isEqualTo(75);
             assertThat(response.getRadicals().get(1).getCharacter()).isEqualTo("木");
+            assertThat(response.getRadicals().get(1).getStrokeCount()).isEqualTo(4);
+            assertThat(response.getRadicals().get(1).getHanziChar()).isEqualTo("休");
+        }
+
+        @Test
+        @DisplayName("GIVEN Vocabulary with repeated radical across characters WHEN fromEntity THEN preserves both with distinct hanziChar")
+        void testFromEntityWithRepeatedRadicals() {
+            Vocabulary vocab = new Vocabulary();
+            vocab.setVocabId(30L);
+            vocab.setHanzi("游泳");
+            vocab.setPinyin("yóuyǒng");
+            vocab.setPinyinRaw("youyong");
+            vocab.setMeaningHanViet("Du vịnh");
+            vocab.setMeaningVi("Bơi lội");
+
+            Radical radShui = new Radical();
+            radShui.setRadicalId(85);
+            radShui.setCharacter("氵");
+            radShui.setPinyin("shuǐ");
+            radShui.setMeaningHanViet("Thủy");
+            radShui.setMeaningVi("Nước");
+            radShui.setStrokeCount(3);
+
+            vocab.addRadical(radShui, "游");
+            vocab.addRadical(radShui, "泳");
+
+            VocabularyDetailResponse response = VocabularyDetailResponse.fromEntity(vocab);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getRadicals()).hasSize(2);
+            assertThat(response.getRadicals())
+                    .extracting(RadicalResponse::getHanziChar)
+                    .containsExactlyInAnyOrder("游", "泳");
+            assertThat(response.getRadicals())
+                    .allMatch(r -> r.getRadicalId() == 85 && r.getStrokeCount() == 3);
         }
 
         @Test

@@ -32,8 +32,11 @@ public class VocabRadical {
     @JoinColumn(name = "radical_id", nullable = false)
     private Radical radical;
 
-    @Column(name = "hanzi_char", length = 10)
-    private String hanziChar;
+    @Column(name = "component_type", length = 50)
+    private String componentType = "kangxi_radical";
+
+    @Column(name = "verification_status", length = 50)
+    private String verificationStatus = "verified";
 
     public VocabRadical() {
     }
@@ -41,10 +44,11 @@ public class VocabRadical {
     public VocabRadical(Vocabulary vocabulary, Radical radical, String hanziChar) {
         this.vocabulary = vocabulary;
         this.radical = radical;
-        this.hanziChar = hanziChar;
         Long vId = vocabulary != null ? vocabulary.getVocabId() : null;
         Integer rId = radical != null ? radical.getRadicalId() : null;
-        this.id = new VocabRadicalId(vId, rId);
+        this.id = new VocabRadicalId(vId, rId, hanziChar != null ? hanziChar : "");
+        this.componentType = "kangxi_radical";
+        this.verificationStatus = "verified";
     }
 
     public VocabRadicalId getId() {
@@ -87,11 +91,30 @@ public class VocabRadical {
     }
 
     public String getHanziChar() {
-        return hanziChar;
+        return id != null ? id.getHanziChar() : "";
     }
 
     public void setHanziChar(String hanziChar) {
-        this.hanziChar = hanziChar;
+        if (this.id == null) {
+            this.id = new VocabRadicalId();
+        }
+        this.id.setHanziChar(hanziChar != null ? hanziChar : "");
+    }
+
+    public String getComponentType() {
+        return componentType;
+    }
+
+    public void setComponentType(String componentType) {
+        this.componentType = componentType;
+    }
+
+    public String getVerificationStatus() {
+        return verificationStatus;
+    }
+
+    public void setVerificationStatus(String verificationStatus) {
+        this.verificationStatus = verificationStatus;
     }
 
     @Override
@@ -105,11 +128,13 @@ public class VocabRadical {
                 && thisId.getRadicalId() != null && thatId.getRadicalId() != null) {
             return Objects.equals(thisId, thatId);
         }
-        return Objects.equals(this.vocabulary, that.vocabulary) && Objects.equals(this.radical, that.radical);
+        return Objects.equals(this.vocabulary, that.vocabulary) &&
+               Objects.equals(this.radical, that.radical) &&
+               Objects.equals(this.getHanziChar(), that.getHanziChar());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(radical != null ? radical.getRadicalId() : null);
+        return Objects.hash(radical != null ? radical.getRadicalId() : null, getHanziChar());
     }
 }

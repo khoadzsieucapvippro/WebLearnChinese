@@ -202,6 +202,49 @@ For manual Postman execution, import `tests/postman/elearning-api.postman_collec
 
 ---
 
+## 🎙️ Luyện Đọc Phát Âm với Google Gemini AI (Gói Miễn Phí)
+
+Tính năng **Luyện đọc AI** (Reading Mode) trong phiên ôn tập SRS (`srs-review.html?mode=reading`) cho phép người học ghi âm giọng đọc chữ Hán và nhận đánh giá ngữ âm chi tiết:
+
+### 1. Kiến trúc & Công nghệ AI
+- **Mô hình**: Google Gemini `gemini-3.5-flash` (mặc định phản hồi nhanh ~6s) hoặc `gemini-3.8-flash` qua biến môi trường `GEMINI_MODEL`.
+- **SDK**: Thư viện chính thức `com.google.genai:google-genai:1.78.0` cho Java Spring Boot.
+- **Phân tích ngữ âm đa chiều**: Đánh giá điểm tổng quan (0–100), mức tin cậy, văn bản nhận diện, nhận xét tiếng Việt chi tiết cho **thanh mẫu (initials)**, **vận mẫu (finals)**, **thanh điệu (tones)**, và lời khuyên cải thiện cụ thể.
+
+### 2. Chính sách Chi phí & Hạn mức Miễn phí (Free Tier)
+> [!IMPORTANT]
+> - Tính năng được thiết kế hoạt động **hoàn toàn trên hạn mức miễn phí (Free Tier)** của Gemini API.
+> - **Tuyệt đối không phát sinh chi phí**, không yêu cầu bật thanh toán (Billing), không cấu hình fallback sang endpoint trả phí.
+> - **Cảnh báo về chính sách của Google**: Hệ thống phụ thuộc vào hạn mức miễn phí (ví dụ 15 RPM / 1M TPM / 1,500 RPD tại Google AI Studio) và các điều khoản sử dụng của Google. Tính khả dụng của mô hình và chính sách miễn phí có thể thay đổi theo quyết định của Google mà không báo trước.
+> - **Xử lý trung thực**: Khi vượt rate limit (`429`), hết quota, hoặc chưa cấu hình API key, hệ thống trả về thông báo rõ ràng (`QUOTA_EXCEEDED` / `UNCONFIGURED`), tuyệt đối không tạo điểm AI giả.
+> - **Chính sách Zero-Storage Audio**: Bản ghi âm chỉ được gửi trực tiếp lên RAM của server để chuyển tiếp tới Gemini API và giải phóng ngay lập tức sau phân tích, không lưu file âm thanh vào cơ sở dữ liệu hay ổ cứng máy chủ.
+
+### 3. Hướng dẫn Thiết lập Gemini API Key
+Để kích hoạt tính năng Luyện đọc AI trên môi trường thật:
+1. Đăng ký nhận API key miễn phí tại [Google AI Studio](https://aistudio.google.com/app/apikey).
+2. Thiết lập biến môi trường hoặc cấu hình tệp cục bộ (đã được tự động bỏ qua trong `.gitignore`):
+   ```bash
+   # Cách 1: Biến môi trường (Linux / macOS)
+   export GEMINI_API_KEY="AIzaSyYourApiKeyHere"
+   
+   # Cách 1: Biến môi trường (Windows PowerShell)
+   $env:GEMINI_API_KEY="AIzaSyYourApiKeyHere"
+   
+   # Cách 2: Tệp cục bộ backend/src/main/resources/application-local.yml
+   gemini:
+     api-key: "AIzaSyYourApiKeyHere"
+     model: "gemini-3.5-flash"
+   ```
+3. Khởi động lại backend Spring Boot:
+   ```bash
+   cd backend
+   mvn spring-boot:run
+   ```
+4. Kiểm tra trạng thái cấu hình qua endpoint:
+   `GET /api/v1/srs/reading/status` -> trả về `{ "configured": true, "model": "gemini-3.5-flash", "freeTier": true }`.
+
+---
+
 ## Security Architecture
 
 - **Stateless Authentication**: Pure JWT authentication without server sessions. Tokens bind to account status and `authorization_version` for instant session revocation upon role alteration or suspension.

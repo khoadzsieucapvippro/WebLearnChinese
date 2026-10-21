@@ -30,6 +30,12 @@ public class VocabularyDetailResponse {
     private List<RadicalResponse> radicals = new ArrayList<>();
     private Integer hskLevel;
     private String hskStandard;
+    private Integer hskSourceId;
+    private String hskSourceLabel;
+    private String hskEdition;
+    private String partOfSpeech;
+    private Integer homographIndex;
+    private Integer sourcePdfPage;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -74,10 +80,13 @@ public class VocabularyDetailResponse {
                         RadicalResponse rr = RadicalResponse.fromEntity(vr.getRadical());
                         if (rr != null) {
                             rr.setHanziChar(vr.getHanziChar());
+                            rr.setComponentType(vr.getComponentType());
+                            rr.setVerificationStatus(vr.getVerificationStatus());
                         }
                         return rr;
                     })
-                    .sorted(Comparator.comparing(RadicalResponse::getRadicalId))
+                    .sorted(Comparator.comparing(RadicalResponse::getRadicalId)
+                            .thenComparing(rr -> rr.getHanziChar() != null ? rr.getHanziChar() : ""))
                     .toList();
         } else if (vocabulary.getRadicals() != null && !vocabulary.getRadicals().isEmpty()) {
             radicalResponses = vocabulary.getRadicals().stream()
@@ -103,6 +112,12 @@ public class VocabularyDetailResponse {
         );
         response.setHskLevel(vocabulary.getHskLevel());
         response.setHskStandard(vocabulary.getHskStandard());
+        response.setHskSourceId(vocabulary.getHskSourceId());
+        response.setHskSourceLabel(vocabulary.getHskSourceLabel());
+        response.setHskEdition(vocabulary.getHskEdition());
+        response.setPartOfSpeech(vocabulary.getPartOfSpeech());
+        response.setHomographIndex(vocabulary.getHomographIndex());
+        response.setSourcePdfPage(vocabulary.getSourcePdfPage());
         return response;
     }
 
@@ -224,5 +239,53 @@ public class VocabularyDetailResponse {
 
     public void setHskStandard(String hskStandard) {
         this.hskStandard = hskStandard;
+    }
+
+    public Integer getHskSourceId() {
+        return hskSourceId;
+    }
+
+    public void setHskSourceId(Integer hskSourceId) {
+        this.hskSourceId = hskSourceId;
+    }
+
+    public String getHskSourceLabel() {
+        return hskSourceLabel;
+    }
+
+    public void setHskSourceLabel(String hskSourceLabel) {
+        this.hskSourceLabel = hskSourceLabel;
+    }
+
+    public String getHskEdition() {
+        return hskEdition;
+    }
+
+    public void setHskEdition(String hskEdition) {
+        this.hskEdition = hskEdition;
+    }
+
+    public String getPartOfSpeech() {
+        return partOfSpeech;
+    }
+
+    public void setPartOfSpeech(String partOfSpeech) {
+        this.partOfSpeech = partOfSpeech;
+    }
+
+    public Integer getHomographIndex() {
+        return homographIndex;
+    }
+
+    public void setHomographIndex(Integer homographIndex) {
+        this.homographIndex = homographIndex;
+    }
+
+    public Integer getSourcePdfPage() {
+        return sourcePdfPage;
+    }
+
+    public void setSourcePdfPage(Integer sourcePdfPage) {
+        this.sourcePdfPage = sourcePdfPage;
     }
 }
