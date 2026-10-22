@@ -1,6 +1,7 @@
 -- =============================================================================
 -- Manual Rollback Script: U19__revert_skill_independent_srs_card_types_manual.sql
--- Description: 
+-- Location: backend/src/main/resources/db/manual/ (NOT db/migration)
+-- Description:
 --   Manual emergency reversal script for V19 (Flyway Community Edition).
 --   Reverts CARD_PROGRESS and REVIEW_LOG to single-card schema.
 --   CAUTION: Execute only during manual disaster recovery on a verified backup.

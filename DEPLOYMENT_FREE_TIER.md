@@ -74,14 +74,15 @@ TiDB Cloud Serverless cung cấp cơ sở dữ liệu tương thích hoàn toàn
 
 4. **Xây dựng chuỗi JDBC URL chuẩn xác:**
    > ⚠️ **LƯU Ý KỸ THUẬT QUAN TRỌNG:**
-   > TiDB mặc định kích hoạt clustered index cho khóa chính. Flyway migration `V24__add_radical_stroke_count_and_expand_vocab_radical_pk.sql` thực hiện tái cấu trúc khóa chính:
-   > `ALTER TABLE VOCAB_RADICAL DROP PRIMARY KEY, ADD PRIMARY KEY (vocab_id, radical_id, hanzi_char);`
-   > Nếu clustered index được bật, TiDB sẽ báo lỗi: `ERROR 8200 (HY000): Unsupported drop primary key when the table is using clustered index`.
-   > Do đó, bắt buộc phải bổ sung tham số `sessionVariables=tidb_enable_clustered_index=OFF` vào chuỗi kết nối JDBC. Khi đó bảng được tạo với non-clustered primary key, cho phép Flyway V1–V29 thực thi 100% trơn tru không lỗi.
+   > TiDB không hỗ trợ `ALTER TABLE ... DROP PRIMARY KEY` khi khóa chính hiện tại là **clustered index**, và cũng không hỗ trợ chuyển đổi clustered ↔ non-clustered. Vì vậy migration `V24__add_radical_stroke_count_and_expand_vocab_radical_pk.sql` **không còn** chạy `DROP PRIMARY KEY`; migration này tạo bảng mới với khóa chính `(vocab_id, radical_id, hanzi_char) NONCLUSTERED`, copy dữ liệu, rồi hoán đổi bảng bằng `RENAME TABLE` nguyên tử. Cách này hoạt động với cả CSDL mới và CSDL đã bị lỗi một phần.
+   >
+   > Tham số `sessionVariables=tidb_enable_clustered_index=OFF` chỉ có tác dụng với các bảng được tạo **sau đó**; nó không sửa được bảng đã tồn tại. Không cần dùng tham số này nữa.
+   >
+   > Tuy nhiên, schema dùng `utf8mb4_unicode_ci` trong khi MySQL 8 / TiDB mặc định session là `utf8mb4_0900_ai_ci`. Thiếu cấu hình collation, các migration so sánh chuỗi sẽ lỗi `ERROR 1267 (HY000): Illegal mix of collations`. Backend đã tự áp dụng `SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci` qua Hikari `connection-init-sql`, nhưng nên thêm `connectionCollation=utf8mb4_unicode_ci` vào URL để cả công cụ ngoài (Flyway CLI, SQL client) cũng nhất quán.
 
    Chuỗi kết nối JDBC hoàn chỉnh:
    ```
-   jdbc:mysql://<gateway-host>:4000/elearning_db?sslMode=VERIFY_IDENTITY&useSSL=true&requireSSL=true&verifyServerCertificate=true&sessionVariables=tidb_enable_clustered_index=OFF&characterEncoding=UTF-8&serverTimezone=UTC
+   jdbc:mysql://<gateway-host>:4000/elearning_db?sslMode=VERIFY_IDENTITY&useSSL=true&requireSSL=true&verifyServerCertificate=true&connectionCollation=utf8mb4_unicode_ci&characterEncoding=UTF-8&serverTimezone=UTC
    ```
 
 ---

@@ -19,9 +19,14 @@ spring:
     # 1. Local Development (MySQL 8.4+):
     #    jdbc:mysql://localhost:3306/elearning_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&characterEncoding=UTF-8&serverTimezone=UTC
     # 2. TiDB Cloud Serverless Starter (100% Free Tier):
-    #    jdbc:mysql://<gateway-host>:4000/<database>?sslMode=VERIFY_IDENTITY&useSSL=true&requireSSL=true&verifyServerCertificate=true&sessionVariables=tidb_enable_clustered_index=OFF&characterEncoding=UTF-8&serverTimezone=UTC
-    #    NOTE: sessionVariables=tidb_enable_clustered_index=OFF is mandatory for TiDB Cloud Serverless so that
-    #    Flyway migration V24 (ALTER TABLE VOCAB_RADICAL DROP PRIMARY KEY) executes cleanly without clustered index lock.
+    #    jdbc:mysql://<gateway-host>:4000/<database>?sslMode=VERIFY_IDENTITY&useSSL=true&requireSSL=true&verifyServerCertificate=true&connectionCollation=utf8mb4_unicode_ci&characterEncoding=UTF-8&serverTimezone=UTC
+    #    NOTE: connectionCollation=utf8mb4_unicode_ci is required because the schema uses
+    #    utf8mb4_unicode_ci while MySQL 8 / TiDB default the session to utf8mb4_0900_ai_ci.
+    #    The Hikari connection-init-sql below enforces the same collation even when the
+    #    SPRING_DATASOURCE_URL supplied by Render does not include this parameter.
+    #    sessionVariables=tidb_enable_clustered_index=OFF is NOT a fix for existing tables:
+    #    it only affects tables created afterwards. V24 rebuilds VOCAB_RADICAL with an
+    #    explicit NONCLUSTERED primary key instead of dropping a clustered primary key.
     url: ${SPRING_DATASOURCE_URL:jdbc:mysql://${MYSQLHOST:localhost}:${MYSQLPORT:3306}/${MYSQLDATABASE:elearning_db}?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&characterEncoding=UTF-8&serverTimezone=UTC}
     username: ${SPRING_DATASOURCE_USERNAME:${MYSQLUSER:root}}
     password: ${SPRING_DATASOURCE_PASSWORD:${MYSQLPASSWORD:}}
@@ -31,6 +36,12 @@ spring:
       minimum-idle: 2
       idle-timeout: 30000
       connection-timeout: 20000
+      # The schema is uniformly utf8mb4_unicode_ci. MySQL 8 / TiDB default the
+      # session collation to utf8mb4_0900_ai_ci, which makes Flyway migrations
+      # that compare literals with table columns fail with error 1267
+      # (Illegal mix of collations). Pin every pooled connection to the schema
+      # collation so migrations and runtime queries agree.
+      connection-init-sql: SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci
 
   jpa:
     open-in-view: false

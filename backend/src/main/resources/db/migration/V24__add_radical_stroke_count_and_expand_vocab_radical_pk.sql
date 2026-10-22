@@ -1,58 +1,142 @@
 -- =============================================================================
 -- Migration: V24__add_radical_stroke_count_and_expand_vocab_radical_pk.sql
 -- Description:
---   1. Add stroke_count TINYINT UNSIGNED NOT NULL to RADICAL table
---   2. Backfill authoritative Kangxi stroke counts (1..17) for all 214 radicals
---   3. Expand VOCAB_RADICAL schema:
---      - Convert hanzi_char to VARCHAR(10) NOT NULL DEFAULT ''
---      - Add component_type VARCHAR(50) NOT NULL DEFAULT 'kangxi_radical'
---      - Add verification_status VARCHAR(50) NOT NULL DEFAULT 'verified'
---      - Expand composite primary key to (vocab_id, radical_id, hanzi_char) to preserve
---        per-character constituent radical attributions in multi-character words
---   4. Insert missing constituent radical associations previously dropped due to old PK
--- Database: MySQL 8.4+
+--   1. Rebuild RADICAL with stroke_count TINYINT UNSIGNED NOT NULL (1..17)
+--   2. Rebuild VOCAB_RADICAL with the expanded primary key
+--      (vocab_id, radical_id, hanzi_char) and component metadata
+--   3. Insert missing constituent radical associations previously dropped by the
+--      old primary key
+--
+-- IMPORTANT - TiDB Cloud Serverless compatibility:
+--   TiDB does NOT support ALTER TABLE ... DROP PRIMARY KEY when the existing
+--   primary key is CLUSTERED, and it cannot convert CLUSTERED <-> NONCLUSTERED.
+--   The connection parameter `sessionVariables=tidb_enable_clustered_index=OFF`
+--   only affects tables created afterwards; it cannot change an existing table.
+--   Therefore this migration rebuilds both tables with CREATE + INSERT + an
+--   atomic RENAME instead of altering the primary key in place.
+--
+--   The rebuild is restartable and works for:
+--     - a fresh database (V23 schema),
+--     - a database where an older V24 failed after adding some columns,
+--     - MySQL 8.x (the /*T![...]*/ TiDB hint is a normal comment there).
+--   Data is copied before the atomic swap; old tables are dropped only after
+--   the swap succeeds. Leftovers from an interrupted run are removed first.
+-- Database: MySQL 8.4+ / TiDB Cloud Serverless
 -- Charset: utf8mb4, Collation: utf8mb4_unicode_ci
 -- =============================================================================
 
 -- -----------------------------------------------------------------------------
--- Step 1: Add stroke_count to RADICAL table and backfill all 214 radicals
+-- Step 0: Remove leftovers from an interrupted V24 run.
+-- These tables are internal to this migration; the live tables are still intact
+-- until the atomic RENAME below, so dropping the staging tables is safe.
 -- -----------------------------------------------------------------------------
+SET FOREIGN_KEY_CHECKS = 0;
+
+DROP TABLE IF EXISTS `VOCAB_RADICAL_V24_TMP`;
+DROP TABLE IF EXISTS `VOCAB_RADICAL_V24_OLD`;
+DROP TABLE IF EXISTS `RADICAL_V24_TMP`;
+DROP TABLE IF EXISTS `RADICAL_V24_OLD`;
+
+-- -----------------------------------------------------------------------------
+-- Step 1: Rebuild VOCAB_RADICAL with the final schema.
+-- The primary key is explicitly NONCLUSTERED for TiDB so future ALTERs never
+-- hit the "Unsupported drop primary key ... clustered index" error.
+-- -----------------------------------------------------------------------------
+CREATE TABLE `VOCAB_RADICAL_V24_TMP` (
+    `vocab_id` BIGINT UNSIGNED NOT NULL,
+    `radical_id` INT UNSIGNED NOT NULL,
+    `hanzi_char` VARCHAR(10) NOT NULL DEFAULT '',
+    `component_type` VARCHAR(50) NOT NULL DEFAULT 'kangxi_radical',
+    `verification_status` VARCHAR(50) NOT NULL DEFAULT 'verified',
+    PRIMARY KEY (`vocab_id`, `radical_id`, `hanzi_char`) /*T![clustered_index] NONCLUSTERED */,
+    INDEX `idx_vocab_radical_hanzi_char` (`hanzi_char`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO `VOCAB_RADICAL_V24_TMP` (`vocab_id`, `radical_id`, `hanzi_char`)
+SELECT `vocab_id`, `radical_id`, COALESCE(`hanzi_char`, '')
+FROM `VOCAB_RADICAL`;
+
+RENAME TABLE `VOCAB_RADICAL` TO `VOCAB_RADICAL_V24_OLD`,
+             `VOCAB_RADICAL_V24_TMP` TO `VOCAB_RADICAL`;
+
+DROP TABLE `VOCAB_RADICAL_V24_OLD`;
+
+-- -----------------------------------------------------------------------------
+-- Step 2: Rebuild RADICAL with stroke_count and backfill the 214 Kangxi counts.
+-- The CASE expression is equivalent to the previous per-range UPDATEs and also
+-- repairs a RADICAL table where a failed V24 already added stroke_count.
+-- -----------------------------------------------------------------------------
+CREATE TABLE `RADICAL_V24_TMP` (
+    `radical_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `character` VARCHAR(10) NOT NULL,
+    `pinyin` VARCHAR(50) NOT NULL,
+    `meaning_han_viet` VARCHAR(100) NOT NULL,
+    `meaning_vi` VARCHAR(255) NOT NULL,
+    `stroke_count` TINYINT UNSIGNED NOT NULL DEFAULT 1,
+    `explanation_vi` VARCHAR(1000) NULL,
+    `audio_url` VARCHAR(500) NULL,
+    `video_writing_url` VARCHAR(500) NULL,
+    `common_rank` TINYINT UNSIGNED NULL,
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`radical_id`),
+    UNIQUE KEY `uk_radical_character` (`character`),
+    UNIQUE KEY `uk_radical_common_rank` (`common_rank`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO `RADICAL_V24_TMP` (
+    `radical_id`, `character`, `pinyin`, `meaning_han_viet`, `meaning_vi`,
+    `stroke_count`, `explanation_vi`, `audio_url`, `video_writing_url`,
+    `common_rank`, `created_at`, `updated_at`)
+SELECT `radical_id`, `character`, `pinyin`, `meaning_han_viet`, `meaning_vi`,
+    CASE
+        WHEN `radical_id` BETWEEN 1 AND 6 THEN 1
+        WHEN `radical_id` BETWEEN 7 AND 29 THEN 2
+        WHEN `radical_id` BETWEEN 30 AND 60 THEN 3
+        WHEN `radical_id` BETWEEN 61 AND 94 THEN 4
+        WHEN `radical_id` BETWEEN 95 AND 117 THEN 5
+        WHEN `radical_id` BETWEEN 118 AND 146 THEN 6
+        WHEN `radical_id` BETWEEN 147 AND 166 THEN 7
+        WHEN `radical_id` BETWEEN 167 AND 175 THEN 8
+        WHEN `radical_id` BETWEEN 176 AND 186 THEN 9
+        WHEN `radical_id` BETWEEN 187 AND 194 THEN 10
+        WHEN `radical_id` BETWEEN 195 AND 200 THEN 11
+        WHEN `radical_id` BETWEEN 201 AND 204 THEN 12
+        WHEN `radical_id` BETWEEN 205 AND 208 THEN 13
+        WHEN `radical_id` BETWEEN 209 AND 210 THEN 14
+        WHEN `radical_id` = 211 THEN 15
+        WHEN `radical_id` IN (212, 213) THEN 16
+        WHEN `radical_id` = 214 THEN 17
+        ELSE 1
+    END,
+    `explanation_vi`, `audio_url`, `video_writing_url`, `common_rank`,
+    `created_at`, `updated_at`
+FROM `RADICAL`;
+
+RENAME TABLE `RADICAL` TO `RADICAL_V24_OLD`,
+             `RADICAL_V24_TMP` TO `RADICAL`;
+
+DROP TABLE `RADICAL_V24_OLD`;
+
+-- The CHECK constraint name is schema-global in MySQL, so it can only be
+-- created after the old RADICAL table (which still owns the name) is dropped.
 ALTER TABLE `RADICAL`
-    ADD COLUMN `stroke_count` TINYINT UNSIGNED NOT NULL DEFAULT 1 AFTER `meaning_vi`;
-
-UPDATE `RADICAL` SET `stroke_count` = 1 WHERE `radical_id` BETWEEN 1 AND 6;
-UPDATE `RADICAL` SET `stroke_count` = 2 WHERE `radical_id` BETWEEN 7 AND 29;
-UPDATE `RADICAL` SET `stroke_count` = 3 WHERE `radical_id` BETWEEN 30 AND 60;
-UPDATE `RADICAL` SET `stroke_count` = 4 WHERE `radical_id` BETWEEN 61 AND 94;
-UPDATE `RADICAL` SET `stroke_count` = 5 WHERE `radical_id` BETWEEN 95 AND 117;
-UPDATE `RADICAL` SET `stroke_count` = 6 WHERE `radical_id` BETWEEN 118 AND 146;
-UPDATE `RADICAL` SET `stroke_count` = 7 WHERE `radical_id` BETWEEN 147 AND 166;
-UPDATE `RADICAL` SET `stroke_count` = 8 WHERE `radical_id` BETWEEN 167 AND 175;
-UPDATE `RADICAL` SET `stroke_count` = 9 WHERE `radical_id` BETWEEN 176 AND 186;
-UPDATE `RADICAL` SET `stroke_count` = 10 WHERE `radical_id` BETWEEN 187 AND 194;
-UPDATE `RADICAL` SET `stroke_count` = 11 WHERE `radical_id` BETWEEN 195 AND 200;
-UPDATE `RADICAL` SET `stroke_count` = 12 WHERE `radical_id` BETWEEN 201 AND 204;
-UPDATE `RADICAL` SET `stroke_count` = 13 WHERE `radical_id` BETWEEN 205 AND 208;
-UPDATE `RADICAL` SET `stroke_count` = 14 WHERE `radical_id` BETWEEN 209 AND 210;
-UPDATE `RADICAL` SET `stroke_count` = 15 WHERE `radical_id` = 211;
-UPDATE `RADICAL` SET `stroke_count` = 16 WHERE `radical_id` IN (212, 213);
-UPDATE `RADICAL` SET `stroke_count` = 17 WHERE `radical_id` = 214;
+    ADD CONSTRAINT `chk_radical_common_rank`
+        CHECK (`common_rank` IS NULL OR (`common_rank` >= 1 AND `common_rank` <= 50));
 
 -- -----------------------------------------------------------------------------
--- Step 2: Expand VOCAB_RADICAL schema to composite key (vocab_id, radical_id, hanzi_char)
+-- Step 3: Restore the foreign keys on the rebuilt child table.
 -- -----------------------------------------------------------------------------
-UPDATE `VOCAB_RADICAL` SET `hanzi_char` = '' WHERE `hanzi_char` IS NULL;
-
-ALTER TABLE `VOCAB_RADICAL` MODIFY COLUMN `hanzi_char` VARCHAR(10) NOT NULL DEFAULT '';
-ALTER TABLE `VOCAB_RADICAL` ADD COLUMN `component_type` VARCHAR(50) NOT NULL DEFAULT 'kangxi_radical' AFTER `hanzi_char`;
-ALTER TABLE `VOCAB_RADICAL` ADD COLUMN `verification_status` VARCHAR(50) NOT NULL DEFAULT 'verified' AFTER `component_type`;
-
 ALTER TABLE `VOCAB_RADICAL`
-    DROP PRIMARY KEY,
-    ADD PRIMARY KEY (`vocab_id`, `radical_id`, `hanzi_char`);
+    ADD CONSTRAINT `fk_vocab_radical_vocab` FOREIGN KEY (`vocab_id`)
+        REFERENCES `VOCABULARY` (`vocab_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+    ADD CONSTRAINT `fk_vocab_radical_radical` FOREIGN KEY (`radical_id`)
+        REFERENCES `RADICAL` (`radical_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+SET FOREIGN_KEY_CHECKS = 1;
 
 -- -----------------------------------------------------------------------------
--- Step 3: Insert missing constituent radicals for official HSK 1-3 vocabulary
+-- Step 4: Insert missing constituent radicals for official HSK 1-3 vocabulary
 -- -----------------------------------------------------------------------------
 INSERT IGNORE INTO `VOCAB_RADICAL` (`vocab_id`, `radical_id`, `hanzi_char`, `component_type`, `verification_status`)
 SELECT v.`vocab_id`, m.`radical_id`, m.`hanzi_char`, 'kangxi_radical', 'verified'
@@ -182,7 +266,7 @@ FROM (
 JOIN `VOCABULARY` v ON v.`hsk_source_id` = m.`hsk_source_id`;
 
 -- -----------------------------------------------------------------------------
--- Step 4: Insert missing constituent radicals for supplementary curriculum vocabulary
+-- Step 5: Insert missing constituent radicals for supplementary curriculum vocabulary
 -- -----------------------------------------------------------------------------
 INSERT IGNORE INTO `VOCAB_RADICAL` (`vocab_id`, `radical_id`, `hanzi_char`, `component_type`, `verification_status`)
 SELECT v.`vocab_id`, m.`radical_id`, m.`hanzi_char`, 'kangxi_radical', 'verified'
@@ -199,4 +283,6 @@ FROM (
   SELECT '一下儿' AS `hanzi`, 'yixiar' AS `pinyin_raw`, 1 AS `radical_id`, '下' AS `hanzi_char` UNION ALL
   SELECT '知识' AS `hanzi`, 'zhishi' AS `pinyin_raw`, 30 AS `radical_id`, '识' AS `hanzi_char`
 ) m
-JOIN `VOCABULARY` v ON v.`hanzi` = m.`hanzi` AND v.`pinyin_raw` = m.`pinyin_raw`;
+JOIN `VOCABULARY` v
+  ON v.`hanzi` = m.`hanzi` COLLATE utf8mb4_unicode_ci
+ AND v.`pinyin_raw` = m.`pinyin_raw` COLLATE utf8mb4_unicode_ci;
