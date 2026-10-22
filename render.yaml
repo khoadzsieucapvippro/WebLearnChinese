@@ -6,8 +6,7 @@ services:
     plan: free
     healthCheckPath: /actuator/health
     envVars:
-      - key: PORT
-        value: 8080
+      # Do not set PORT: Render injects it and the Dockerfile binds ${PORT:-8080}.
       - key: JAVA_OPTS
         value: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"
       - key: APP_DEMO_SEED_ACCOUNTS
@@ -20,16 +19,13 @@ services:
         value: "https://*.github.io"
       - key: SPEECH_ENGINE_LOCAL_ENABLED
         value: "true"
+      # Must be an absolute https URL: LocalSpeechConfig prefixes https:// to bare
+      # hosts, so a `property: host` value would become https://speech-service-3l49
+      # and fail DNS resolution.
       - key: SPEECH_SERVICE_URL
-        fromService:
-          type: web
-          name: speech-service
-          property: host
+        value: https://speech-service-3l49.onrender.com
       - key: SPEECH_ENGINE_LOCAL_BASE_URL
-        fromService:
-          type: web
-          name: speech-service
-          property: host
+        value: https://speech-service-3l49.onrender.com
       - key: INTERNAL_SPEECH_TOKEN
         generateValue: true
       - key: SPRING_DATASOURCE_URL
