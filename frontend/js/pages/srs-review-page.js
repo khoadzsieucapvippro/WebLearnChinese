@@ -9843,6 +9843,9 @@ export class SrsReviewController {
     this.activeSkill = 'READING';
     this.writingOrchestrator = null;
 
+    // Authoritative lesson IDs resolved from GET /lessons (null = not loaded yet)
+    this.backendLessons = null;
+
     // Session Execution State
     this.sessionQueue = [];
     this.currentIndex = 0;
@@ -10795,7 +10798,9 @@ export class SrsReviewController {
     } else {
       if (this.dom.catalogFilterToolbar) this.dom.catalogFilterToolbar.classList.add('d-none');
       const level = this.activeGroup === 'hsk2' ? 2 : this.activeGroup === 'hsk3' ? 3 : 1;
-      this.renderHskTopics(level);
+      this.renderHskTopics(level).catch((err) => {
+        console.warn('[SRS Review] Could not render HSK topics:', err);
+      });
     }
   }
 
@@ -11201,6 +11206,15 @@ export class SrsReviewController {
     const actionsBox = document.createElement('div');
     actionsBox.className = 'srs-chapter-actions d-flex justify-content-between align-items-center gap-2 mt-auto';
 
+    if (opts.unavailable) {
+      const unavailableBadge = document.createElement('span');
+      unavailableBadge.className = 'badge bg-light text-secondary border';
+      unavailableBadge.textContent = 'Chưa có bài học trên hệ thống';
+      actionsBox.appendChild(unavailableBadge);
+      card.appendChild(actionsBox);
+      return card;
+    }
+
     if (opts.learnedCount === 0) {
       const unlearnedBadge = document.createElement('span');
       unlearnedBadge.className = 'badge bg-light text-secondary border';
@@ -11483,10 +11497,60 @@ export class SrsReviewController {
   }
 
   /**
+   * Loads the authoritative approved lessons from the backend so the catalog can
+   * use real lesson IDs. The static catalog below ships legacy demo IDs that no
+   * longer exist after the curriculum/V28 data remediation; using them makes
+   * /srs/new-cards, /srs/review and /srs/reading/assess return 404.
+   *
+   * @returns {Promise<Array>} approved lessons ordered by lessonId ([] on failure)
+   */
+  async loadBackendLessons() {
+    if (Array.isArray(this.backendLessons)) {
+      return this.backendLessons;
+    }
+    try {
+      const resp = await apiClient('/lessons', { params: { page: 0, size: 100 } });
+      const items = Array.isArray(resp) ? resp : (resp && Array.isArray(resp.items) ? resp.items : []);
+      this.backendLessons = items
+        .filter(l => !l.status || String(l.status).toLowerCase() === 'approved')
+        .slice()
+        .sort((a, b) => (a.lessonId || 0) - (b.lessonId || 0));
+    } catch (err) {
+      console.warn('[SRS Review] Could not load backend lessons:', err);
+      this.backendLessons = [];
+    }
+    return this.backendLessons;
+  }
+
+  /**
+   * Maps a requested lesson ID onto an existing approved backend lesson.
+   * Legacy catalog IDs 5..14 correspond to HSK 1 lessons 01..10 in order.
+   *
+   * @param {number} requestedId
+   * @returns {number} an existing lesson ID when one can be resolved
+   */
+  resolveLessonId(requestedId) {
+    const lessons = Array.isArray(this.backendLessons) ? this.backendLessons : [];
+    if (lessons.length === 0) {
+      return requestedId;
+    }
+    if (lessons.some(l => Number(l.lessonId) === Number(requestedId))) {
+      return Number(requestedId);
+    }
+    if (requestedId >= 5 && requestedId <= 14) {
+      const legacy = lessons[requestedId - 5];
+      if (legacy) {
+        return Number(legacy.lessonId);
+      }
+    }
+    return requestedId;
+  }
+
+  /**
    * Renders 10 Topics for HSK 1, 2, or 3 using standardized stage cards in a 3-column grid.
    * @param {number} level
    */
-  renderHskTopics(level) {
+  async renderHskTopics(level) {
     const container = this.dom.catalogContentContainer;
     if (!container) return;
     container.replaceChildren();
@@ -11495,11 +11559,21 @@ export class SrsReviewController {
     const groupKey = `hsk${level}`;
     const progress = getProgress(this.activeMode)?.[groupKey] || {};
 
+    const lessons = await this.loadBackendLessons();
+    if (this.activeGroup !== groupKey) {
+      return;
+    }
+    const isAuthenticated = authManager.isAuthenticated();
+
     const grid = document.createElement('div');
     grid.className = 'stage-grid srs-chapters-grid';
 
-    topics.forEach((topic) => {
-      const effectiveLessonId = topic.backendLessonId || topic.topicId;
+    topics.forEach((topic, topicIndex) => {
+      // Only HSK 1 lessons currently exist in the backend. When authenticated we
+      // must use the real IDs, otherwise every SRS request 404s.
+      const realLesson = level === 1 ? (lessons[topicIndex] || null) : null;
+      const effectiveLessonId = realLesson ? realLesson.lessonId : (topic.backendLessonId || topic.topicId);
+      const unavailable = isAuthenticated && !realLesson;
       const vocabList = Array.isArray(topic.vocabularies) ? topic.vocabularies : [];
       const vocabCount = vocabList.length > 0 ? vocabList.length : (topic.backendVocabCount || 0);
 
@@ -11515,10 +11589,11 @@ export class SrsReviewController {
       }
 
       const previewWords = vocabList.slice(0, 5).map(v => v.hanzi).join(', ') + (vocabList.length > 5 ? '...' : '');
-      const shouldShowLessonDetailLink = Boolean(topic.backendLessonId) || (level === 1 && !this.backendLessonsLoaded);
+      const shouldShowLessonDetailLink = Boolean(realLesson);
 
       const topicCard = this.createChapterCard({
         isHsk: true,
+        unavailable,
         title: topic.title,
         description: null,
         totalCount: vocabCount,
@@ -11528,28 +11603,28 @@ export class SrsReviewController {
         stoppedIndex: savedIndex > 0 && savedIndex < vocabCount ? savedIndex : null,
         stoppedItemText,
         previewText: previewWords || 'Từ vựng cốt lõi theo chủ đề',
-        onStart: () => {
+        onStart: unavailable ? null : () => {
           this.mode = 'CATALOG_TOPIC';
           this.currentChapterTitle = topic.title;
           this.startTopicSession(effectiveLessonId, 'continue');
         },
-        onContinue: () => {
+        onContinue: unavailable ? null : () => {
           this.mode = 'CATALOG_TOPIC';
           this.currentChapterTitle = topic.title;
           this.startTopicSession(effectiveLessonId, 'continue');
         },
-        onReview: () => {
+        onReview: unavailable ? null : () => {
           this.mode = 'CATALOG_TOPIC';
           this.currentChapterTitle = topic.title;
           this.startTopicSession(effectiveLessonId, 'review');
         },
-        onDue: dueCount > 0 ? () => {
+        onDue: (!unavailable && dueCount > 0) ? () => {
           this.mode = 'CATALOG_TOPIC';
           this.currentChapterTitle = topic.title;
           this.startTopicSession(effectiveLessonId, 'due');
         } : null,
-        extraButtonText: null,
-        extraButtonHref: null
+        extraButtonText: shouldShowLessonDetailLink ? 'Chi tiết bài học' : null,
+        extraButtonHref: shouldShowLessonDetailLink ? `lesson-detail.html?id=${effectiveLessonId}` : null
       });
 
       grid.appendChild(topicCard);
@@ -11592,10 +11667,32 @@ export class SrsReviewController {
       // HSK 1, 2, or 3: Start from all topics combined or first topic
       const level = this.activeGroup === 'hsk2' ? 2 : this.activeGroup === 'hsk3' ? 3 : 1;
       const topics = level === 2 ? HSK2_TOPICS : level === 3 ? HSK3_TOPICS : HSK1_TOPICS;
-      const allWords = topics.flatMap(t => t.vocabularies.map(v => this.normalizeVocabCard(v, t.topicId)));
-
       const progress = getProgress(this.activeMode);
       const savedIndex = action === 'continue' ? (progress[this.activeGroup]?.lastIndex || 0) : 0;
+
+      if (authManager.isAuthenticated()) {
+        try {
+          const cardTypeParam = this.activeMode === 'writing' ? 'WRITING' : (this.activeMode === 'listening' ? 'LISTENING' : 'READING');
+          const due = await apiClient('/srs/due', { params: { itemType: 'VOCABULARY', cardType: cardTypeParam } });
+          const items = (Array.isArray(due) ? due : []).map(v => this.normalizeVocabCard(v, null));
+          updateReviewUrl({
+            mode: this.activeMode,
+            group: this.activeGroup,
+            action
+          });
+          this.initSessionQueue(items, action === 'review', savedIndex);
+          return;
+        } catch (err) {
+          console.warn('[SRS Review] Could not fetch due cards:', err);
+          this.setViewState('error');
+          if (this.dom && this.dom.errorMessage) {
+            this.dom.errorMessage.textContent = 'Không thể tải thẻ ôn tập từ máy chủ. Vui lòng thử lại.';
+          }
+          return;
+        }
+      }
+
+      const allWords = topics.flatMap(t => t.vocabularies.map(v => this.normalizeVocabCard(v, t.topicId)));
 
       updateReviewUrl({
         mode: this.activeMode,
@@ -11625,6 +11722,7 @@ export class SrsReviewController {
 
     let items = null;
     let backendFetched = false;
+    let resolvedLessonId = topicId;
 
     if (authManager.isAuthenticated()) {
       try {
@@ -11632,8 +11730,12 @@ export class SrsReviewController {
         const cardTypeParam = this.activeMode === 'writing' ? 'WRITING' : (this.activeMode === 'listening' ? 'LISTENING' : 'READING');
         const level = this.activeGroup === 'hsk2' ? 2 : this.activeGroup === 'hsk3' ? 3 : 1;
         const topics = level === 2 ? HSK2_TOPICS : level === 3 ? HSK3_TOPICS : HSK1_TOPICS;
-        // Respect topicId directly (from URL ?lessonId=... or catalog UI where effectiveLessonId is already computed)
-        const effectiveLessonId = topicId;
+        // Map legacy demo IDs (5..14) onto the real approved lesson IDs so old
+        // bookmarks and cached links keep working after the data remediation.
+        await this.loadBackendLessons();
+        resolvedLessonId = this.resolveLessonId(topicId);
+        this.lessonId = resolvedLessonId;
+        const effectiveLessonId = resolvedLessonId;
         const requestParams = { lessonId: effectiveLessonId, cardType: cardTypeParam };
 
         if (this.mode === 'LESSON_PRACTICE') {
@@ -11670,7 +11772,18 @@ export class SrsReviewController {
         backendFetched = true;
         items = remoteCards.map(v => this.normalizeVocabCard(v, topicId));
       } catch (err) {
-        console.warn('[SRS Review] Could not fetch cards from backend, falling back to static catalog:', err);
+        console.warn('[SRS Review] Could not fetch cards from backend:', err);
+        if (authManager.isAuthenticated()) {
+          // Never fall back to the static demo catalog for a signed-in learner:
+          // its legacy vocab IDs do not exist in the database, so the card could
+          // be shown but /srs/review would 404 and the card would repeat forever.
+          this.setViewState('error');
+          if (this.dom && this.dom.errorMessage) {
+            this.dom.errorMessage.textContent = 'Không thể tải thẻ ôn tập cho bài học này. Vui lòng thử lại hoặc chọn bài học khác.';
+          }
+          return;
+        }
+        console.warn('[SRS Review] Falling back to static catalog for unauthenticated demo mode.');
       }
     }
 
@@ -11686,13 +11799,13 @@ export class SrsReviewController {
     }
 
     const progress = getProgress(this.activeMode);
-    const topicKey = `topic_${topicId}`;
+    const topicKey = `topic_${resolvedLessonId}`;
     const savedIndex = action === 'continue' ? (progress[this.activeGroup]?.[topicKey] || 0) : 0;
 
     updateReviewUrl({
       mode: this.activeMode,
       group: this.activeGroup,
-      lessonId: topicId,
+      lessonId: resolvedLessonId,
       action
     });
 
