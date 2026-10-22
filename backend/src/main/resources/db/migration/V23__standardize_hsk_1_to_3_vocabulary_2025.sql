@@ -21,22 +21,20 @@ ALTER TABLE `VOCABULARY` MODIFY COLUMN `hsk_standard` VARCHAR(50) NOT NULL DEFAU
 
 -- Drop physical unique index to allow homographs with same pinyin_raw (e.g. 会, 过, 花, 得, 点)
 -- Reorder indexes so composite uk_vocab_hanzi_pinyin_raw precedes single-column indexes for optimizer selection
-ALTER TABLE `VOCABULARY`
-  DROP INDEX `uk_vocab_hanzi_pinyin_raw`,
-  DROP INDEX `idx_vocab_pinyin_raw`,
-  DROP INDEX `idx_vocab_hanzi`,
-  ADD INDEX `uk_vocab_hanzi_pinyin_raw` (`hanzi`, `pinyin_raw`),
-  ADD INDEX `idx_vocab_pinyin_raw` (`pinyin_raw`),
-  ADD INDEX `idx_vocab_hanzi` (`hanzi`);
+ALTER TABLE `VOCABULARY` DROP INDEX `uk_vocab_hanzi_pinyin_raw`;
+ALTER TABLE `VOCABULARY` DROP INDEX `idx_vocab_pinyin_raw`;
+ALTER TABLE `VOCABULARY` DROP INDEX `idx_vocab_hanzi`;
+ALTER TABLE `VOCABULARY` ADD INDEX `uk_vocab_hanzi_pinyin_raw` (`hanzi`, `pinyin_raw`);
+ALTER TABLE `VOCABULARY` ADD INDEX `idx_vocab_pinyin_raw` (`pinyin_raw`);
+ALTER TABLE `VOCABULARY` ADD INDEX `idx_vocab_hanzi` (`hanzi`);
 
 -- Add HSK 2025 syllabus metadata columns
-ALTER TABLE `VOCABULARY`
-  ADD COLUMN `hsk_source_id` INT NULL AFTER `hsk_standard`,
-  ADD COLUMN `hsk_source_label` VARCHAR(50) NULL AFTER `hsk_source_id`,
-  ADD COLUMN `hsk_edition` VARCHAR(50) NOT NULL DEFAULT '2025' AFTER `hsk_source_label`,
-  ADD COLUMN `part_of_speech` VARCHAR(50) NULL AFTER `hsk_edition`,
-  ADD COLUMN `homograph_index` INT NULL AFTER `part_of_speech`,
-  ADD COLUMN `source_pdf_page` INT NULL AFTER `homograph_index`;
+ALTER TABLE `VOCABULARY` ADD COLUMN `hsk_source_id` INT NULL AFTER `hsk_standard`;
+ALTER TABLE `VOCABULARY` ADD COLUMN `hsk_source_label` VARCHAR(50) NULL AFTER `hsk_source_id`;
+ALTER TABLE `VOCABULARY` ADD COLUMN `hsk_edition` VARCHAR(50) NOT NULL DEFAULT '2025' AFTER `hsk_source_label`;
+ALTER TABLE `VOCABULARY` ADD COLUMN `part_of_speech` VARCHAR(50) NULL AFTER `hsk_edition`;
+ALTER TABLE `VOCABULARY` ADD COLUMN `homograph_index` INT NULL AFTER `part_of_speech`;
+ALTER TABLE `VOCABULARY` ADD COLUMN `source_pdf_page` INT NULL AFTER `homograph_index`;
 
 ALTER TABLE `VOCABULARY` ADD CONSTRAINT `uk_vocab_hsk_source` UNIQUE (`hsk_source_id`);
 

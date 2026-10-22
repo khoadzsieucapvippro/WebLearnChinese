@@ -1,19 +1,19 @@
 package com.elearning.config;
 
-import org.flywaydb.core.api.callback.BaseCallback;
-import org.flywaydb.core.api.callback.Context;
-import org.flywaydb.core.api.callback.Event;
+import org.flywaydb.core.Flyway;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.autoconfigure.flyway.FlywayConfigurationCustomizer;
+import org.springframework.boot.autoconfigure.flyway.FlywayMigrationStrategy;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.sql.Statement;
-
 /**
- * Custom Flyway configuration ensuring required prerequisite data
- * (such as system/creator account) is seeded before migrations like V14 or V17 run.
+ * Custom Flyway migration strategy to ensure zero-downtime self-healing
+ * on cloud databases (such as TiDB Cloud Serverless Starter).
+ * 
+ * Automatically runs flyway.repair() prior to flyway.migrate() to remove
+ * any transient failed migration records from flyway_schema_history table
+ * and re-align checksums without requiring manual SQL console interventions.
  */
 @Configuration
 public class FlywayConfig {
@@ -21,31 +21,18 @@ public class FlywayConfig {
     private static final Logger log = LoggerFactory.getLogger(FlywayConfig.class);
 
     @Bean
-    public FlywayConfigurationCustomizer flywayConfigurationCustomizer() {
-        return configuration -> configuration.callbacks(new BaseCallback() {
-            @Override
-            public boolean supports(Event event, Context context) {
-                return event == Event.BEFORE_EACH_MIGRATE;
+    public FlywayMigrationStrategy flywayMigrationStrategy() {
+        return flyway -> {
+            try {
+                log.info("Executing Flyway self-healing repair before migration...");
+                flyway.repair();
+                log.info("Flyway self-healing repair completed successfully.");
+            } catch (Exception e) {
+                log.warn("Flyway self-healing repair encountered non-fatal notice: {}", e.getMessage());
             }
-
-            @Override
-            public void handle(Event event, Context context) {
-                if (event == Event.BEFORE_EACH_MIGRATE && context.getMigrationInfo() != null) {
-                    String version = context.getMigrationInfo().getVersion() != null
-                            ? context.getMigrationInfo().getVersion().getVersion()
-                            : "";
-                    if ("14".equals(version) || "17".equals(version)) {
-                        log.info("Ensuring prerequisite creator account exists before migration V{} executes", version);
-                        try (Statement stmt = context.getConnection().createStatement()) {
-                            stmt.execute("INSERT INTO `account` (`email_or_phone`, `password_hash`, `status`, `created_at`, `updated_at`, `authorization_version`) " +
-                                    "SELECT 'creator@test.com', '$2a$10$UPN3ubt5uNRTKHbXcMsEgOjsd70AqQ.EMiekc6.7ngAuynlOFuFCm', 'Active', NOW(), NOW(), 1 " +
-                                    "WHERE NOT EXISTS (SELECT 1 FROM `account` WHERE `email_or_phone` = 'creator@test.com');");
-                        } catch (Exception e) {
-                            log.warn("Could not insert creator account before V{}: {}", version, e.getMessage());
-                        }
-                    }
-                }
-            }
-        });
+            log.info("Executing Flyway database migration...");
+            flyway.migrate();
+            log.info("Flyway database migration completed successfully.");
+        };
     }
 }

@@ -13,8 +13,12 @@
 -- =============================================================================
 
 ALTER TABLE `RADICAL`
-    ADD COLUMN `explanation_vi` VARCHAR(1000) NULL AFTER `meaning_vi`,
-    ADD COLUMN `video_lesson_url` VARCHAR(500) NULL AFTER `video_writing_url`,
+    ADD COLUMN `explanation_vi` VARCHAR(1000) NULL AFTER `meaning_vi`;
+
+ALTER TABLE `RADICAL`
+    ADD COLUMN `video_lesson_url` VARCHAR(500) NULL AFTER `video_writing_url`;
+
+ALTER TABLE `RADICAL`
     ADD COLUMN `common_rank` TINYINT UNSIGNED NULL AFTER `video_lesson_url`;
 
 ALTER TABLE `RADICAL`

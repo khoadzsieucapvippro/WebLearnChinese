@@ -43,10 +43,9 @@ UPDATE `RADICAL` SET `stroke_count` = 17 WHERE `radical_id` = 214;
 -- -----------------------------------------------------------------------------
 UPDATE `VOCAB_RADICAL` SET `hanzi_char` = '' WHERE `hanzi_char` IS NULL;
 
-ALTER TABLE `VOCAB_RADICAL`
-    MODIFY COLUMN `hanzi_char` VARCHAR(10) NOT NULL DEFAULT '',
-    ADD COLUMN `component_type` VARCHAR(50) NOT NULL DEFAULT 'kangxi_radical' AFTER `hanzi_char`,
-    ADD COLUMN `verification_status` VARCHAR(50) NOT NULL DEFAULT 'verified' AFTER `component_type`;
+ALTER TABLE `VOCAB_RADICAL` MODIFY COLUMN `hanzi_char` VARCHAR(10) NOT NULL DEFAULT '';
+ALTER TABLE `VOCAB_RADICAL` ADD COLUMN `component_type` VARCHAR(50) NOT NULL DEFAULT 'kangxi_radical' AFTER `hanzi_char`;
+ALTER TABLE `VOCAB_RADICAL` ADD COLUMN `verification_status` VARCHAR(50) NOT NULL DEFAULT 'verified' AFTER `component_type`;
 
 ALTER TABLE `VOCAB_RADICAL`
     DROP PRIMARY KEY,
