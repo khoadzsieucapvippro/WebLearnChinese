@@ -15,6 +15,13 @@ spring:
       max-request-size: 10MB
 
   datasource:
+    # Supported Environments:
+    # 1. Local Development (MySQL 8.4+):
+    #    jdbc:mysql://localhost:3306/elearning_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&characterEncoding=UTF-8&serverTimezone=UTC
+    # 2. TiDB Cloud Serverless Starter (100% Free Tier):
+    #    jdbc:mysql://<gateway-host>:4000/<database>?sslMode=VERIFY_IDENTITY&useSSL=true&requireSSL=true&verifyServerCertificate=true&sessionVariables=tidb_enable_clustered_index=OFF&characterEncoding=UTF-8&serverTimezone=UTC
+    #    NOTE: sessionVariables=tidb_enable_clustered_index=OFF is mandatory for TiDB Cloud Serverless so that
+    #    Flyway migration V24 (ALTER TABLE VOCAB_RADICAL DROP PRIMARY KEY) executes cleanly without clustered index lock.
     url: ${SPRING_DATASOURCE_URL:jdbc:mysql://${MYSQLHOST:localhost}:${MYSQLPORT:3306}/${MYSQLDATABASE:elearning_db}?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&characterEncoding=UTF-8&serverTimezone=UTC}
     username: ${SPRING_DATASOURCE_USERNAME:${MYSQLUSER:root}}
     password: ${SPRING_DATASOURCE_PASSWORD:${MYSQLPASSWORD:}}
@@ -50,7 +57,7 @@ jwt:
 app:
   business-timezone: ${APP_BUSINESS_TIMEZONE:Asia/Ho_Chi_Minh}
   cors:
-    allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:${CORS_ALLOWED_ORIGINS:http://localhost:5500,http://127.0.0.1:5500,http://localhost:3000,http://127.0.0.1:3000}}
+    allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:${CORS_ALLOWED_ORIGINS:https://khoadzsieucapvippro.github.io,http://localhost:5500,http://127.0.0.1:5500,http://localhost:3000,http://127.0.0.1:3000}}
     allowed-origin-patterns: ${APP_CORS_ALLOWED_ORIGIN_PATTERNS:${CORS_ALLOWED_ORIGIN_PATTERNS:https://*.github.io}}
     allowed-methods: ${APP_CORS_ALLOWED_METHODS:GET,POST,PUT,PATCH,DELETE,OPTIONS}
     allowed-headers: ${APP_CORS_ALLOWED_HEADERS:Authorization,Content-Type,Accept,Origin,X-Requested-With}
@@ -82,6 +89,7 @@ speech:
   engine:
     local:
       enabled: ${SPEECH_ENGINE_LOCAL_ENABLED:true}
-      base-url: ${SPEECH_ENGINE_LOCAL_BASE_URL:http://127.0.0.1:8000}
-      connect-timeout-ms: ${SPEECH_ENGINE_LOCAL_CONNECT_TIMEOUT_MS:2500}
-      read-timeout-ms: ${SPEECH_ENGINE_LOCAL_READ_TIMEOUT_MS:10000}
+      base-url: ${SPEECH_SERVICE_URL:${SPEECH_ENGINE_LOCAL_BASE_URL:http://127.0.0.1:8000}}
+      internal-token: ${INTERNAL_SPEECH_TOKEN:${SPEECH_SERVICE_TOKEN:}}
+      connect-timeout-ms: ${SPEECH_ENGINE_LOCAL_CONNECT_TIMEOUT_MS:30000}
+      read-timeout-ms: ${SPEECH_ENGINE_LOCAL_READ_TIMEOUT_MS:45000}

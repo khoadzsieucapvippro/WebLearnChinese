@@ -13,6 +13,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.Profiles;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,17 +43,29 @@ public class DemoAccountSeeder implements ApplicationRunner {
     private final UserProfileRepository userProfileRepository;
     private final UserSrsSettingRepository userSrsSettingRepository;
     private final PasswordEncoder passwordEncoder;
+    private final Environment env;
+
+    @Autowired
+    public DemoAccountSeeder(AccountRepository accountRepository,
+                             RoleRepository roleRepository,
+                             UserProfileRepository userProfileRepository,
+                             UserSrsSettingRepository userSrsSettingRepository,
+                             PasswordEncoder passwordEncoder,
+                             @Autowired(required = false) Environment env) {
+        this.accountRepository = accountRepository;
+        this.roleRepository = roleRepository;
+        this.userProfileRepository = userProfileRepository;
+        this.userSrsSettingRepository = userSrsSettingRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.env = env;
+    }
 
     public DemoAccountSeeder(AccountRepository accountRepository,
                              RoleRepository roleRepository,
                              UserProfileRepository userProfileRepository,
                              UserSrsSettingRepository userSrsSettingRepository,
                              PasswordEncoder passwordEncoder) {
-        this.accountRepository = accountRepository;
-        this.roleRepository = roleRepository;
-        this.userProfileRepository = userProfileRepository;
-        this.userSrsSettingRepository = userSrsSettingRepository;
-        this.passwordEncoder = passwordEncoder;
+        this(accountRepository, roleRepository, userProfileRepository, userSrsSettingRepository, passwordEncoder, null);
     }
 
     private record DemoAccountSpec(String emailOrPhone, String fullName, Set<Role> roles) {}
@@ -58,6 +73,19 @@ public class DemoAccountSeeder implements ApplicationRunner {
     @Override
     @Transactional
     public void run(ApplicationArguments args) {
+        if (isProductionProfile()) {
+            log.warn("Demo account seeding is strictly forbidden in production profile. Skipping.");
+            return;
+        }
+
+        if (env != null) {
+            String seedProperty = env.getProperty("app.demo.seed-accounts", "false");
+            if (!"true".equalsIgnoreCase(seedProperty)) {
+                log.info("app.demo.seed-accounts is not explicitly true; skipping demo account seeding.");
+                return;
+            }
+        }
+
         log.info("Starting demo accounts seeding (app.demo.seed-accounts=true)...");
 
         Role learnerRole = getOrCreateRole(1, "Learner");
@@ -141,5 +169,26 @@ public class DemoAccountSeeder implements ApplicationRunner {
             UserSrsSetting srsSetting = new UserSrsSetting(userProfile, 20, 100);
             userSrsSettingRepository.save(srsSetting);
         }
+    }
+
+    private boolean isProductionProfile() {
+        if (env == null) {
+            return false;
+        }
+        if (env.acceptsProfiles(Profiles.of("prod", "production"))) {
+            return true;
+        }
+        String[] activeProfiles = env.getActiveProfiles();
+        if (activeProfiles != null) {
+            for (String profile : activeProfiles) {
+                if (profile != null) {
+                    String p = profile.trim().toLowerCase();
+                    if ("prod".equals(p) || "production".equals(p)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 }

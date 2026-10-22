@@ -13,6 +13,10 @@ import com.elearning.repository.RadicalRepository;
 import com.elearning.repository.VocabularyRepository;
 import com.elearning.service.VocabularyService;
 import com.elearning.specification.VocabularySpecification;
+import com.elearning.common.AuditActionType;
+import com.elearning.common.AuditResourceType;
+import com.elearning.service.ManagementAuditService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -41,6 +45,24 @@ public class VocabularyServiceImpl implements VocabularyService {
     private final com.elearning.repository.PersonalNoteRepository personalNoteRepository;
     private final com.elearning.repository.CardProgressRepository cardProgressRepository;
     private final com.elearning.repository.ReviewLogRepository reviewLogRepository;
+    private final ManagementAuditService managementAuditService;
+
+    @Autowired
+    public VocabularyServiceImpl(VocabularyRepository vocabularyRepository,
+                                 RadicalRepository radicalRepository,
+                                 com.elearning.repository.LessonVocabularyRepository lessonVocabularyRepository,
+                                 com.elearning.repository.PersonalNoteRepository personalNoteRepository,
+                                 com.elearning.repository.CardProgressRepository cardProgressRepository,
+                                 com.elearning.repository.ReviewLogRepository reviewLogRepository,
+                                 ManagementAuditService managementAuditService) {
+        this.vocabularyRepository = vocabularyRepository;
+        this.radicalRepository = radicalRepository;
+        this.lessonVocabularyRepository = lessonVocabularyRepository;
+        this.personalNoteRepository = personalNoteRepository;
+        this.cardProgressRepository = cardProgressRepository;
+        this.reviewLogRepository = reviewLogRepository;
+        this.managementAuditService = managementAuditService;
+    }
 
     public VocabularyServiceImpl(VocabularyRepository vocabularyRepository,
                                  RadicalRepository radicalRepository,
@@ -48,12 +70,7 @@ public class VocabularyServiceImpl implements VocabularyService {
                                  com.elearning.repository.PersonalNoteRepository personalNoteRepository,
                                  com.elearning.repository.CardProgressRepository cardProgressRepository,
                                  com.elearning.repository.ReviewLogRepository reviewLogRepository) {
-        this.vocabularyRepository = vocabularyRepository;
-        this.radicalRepository = radicalRepository;
-        this.lessonVocabularyRepository = lessonVocabularyRepository;
-        this.personalNoteRepository = personalNoteRepository;
-        this.cardProgressRepository = cardProgressRepository;
-        this.reviewLogRepository = reviewLogRepository;
+        this(vocabularyRepository, radicalRepository, lessonVocabularyRepository, personalNoteRepository, cardProgressRepository, reviewLogRepository, null);
     }
 
     @Override
@@ -128,7 +145,21 @@ public class VocabularyServiceImpl implements VocabularyService {
         }
 
         Vocabulary saved = vocabularyRepository.save(vocabulary);
-        return VocabularyDetailResponse.fromEntity(saved);
+        VocabularyDetailResponse response = VocabularyDetailResponse.fromEntity(saved);
+
+        if (managementAuditService != null) {
+            String details = String.format("Thêm từ vựng mới: %s (%s)", saved.getHanzi(), saved.getPinyin());
+            managementAuditService.logSuccess(
+                    AuditActionType.VOCABULARY_CREATE,
+                    AuditResourceType.VOCABULARY,
+                    String.valueOf(saved.getVocabId()),
+                    details,
+                    null,
+                    response
+            );
+        }
+
+        return response;
     }
 
     @Override
@@ -143,6 +174,8 @@ public class VocabularyServiceImpl implements VocabularyService {
 
         Vocabulary vocabulary = vocabularyRepository.findByIdWithLock(vocabId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "Không tìm thấy từ vựng với ID: " + vocabId));
+
+        VocabularyDetailResponse beforeSnapshot = VocabularyDetailResponse.fromEntity(vocabulary);
 
         String rawPinyin = request.getPinyinRaw() != null && !request.getPinyinRaw().isBlank()
                 ? ExcelParserServiceImpl.toPinyinRaw(request.getPinyinRaw())
@@ -184,7 +217,21 @@ public class VocabularyServiceImpl implements VocabularyService {
         }
 
         Vocabulary updated = vocabularyRepository.save(vocabulary);
-        return VocabularyDetailResponse.fromEntity(updated);
+        VocabularyDetailResponse response = VocabularyDetailResponse.fromEntity(updated);
+
+        if (managementAuditService != null) {
+            String details = String.format("Cập nhật từ vựng #%d: %s (%s)", updated.getVocabId(), updated.getHanzi(), updated.getPinyin());
+            managementAuditService.logSuccess(
+                    AuditActionType.VOCABULARY_UPDATE,
+                    AuditResourceType.VOCABULARY,
+                    String.valueOf(updated.getVocabId()),
+                    details,
+                    beforeSnapshot,
+                    response
+            );
+        }
+
+        return response;
     }
 
     @Override
@@ -196,6 +243,8 @@ public class VocabularyServiceImpl implements VocabularyService {
 
         Vocabulary vocabulary = vocabularyRepository.findByIdWithLock(vocabId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "Không tìm thấy từ vựng với ID: " + vocabId));
+
+        VocabularyDetailResponse beforeSnapshot = VocabularyDetailResponse.fromEntity(vocabulary);
 
         // 1. Guard against breaking Curriculum / Lesson relationships (R3.1)
         if (lessonVocabularyRepository != null && lessonVocabularyRepository.existsByVocabulary_VocabId(vocabId)) {
@@ -224,6 +273,18 @@ public class VocabularyServiceImpl implements VocabularyService {
         try {
             vocabularyRepository.delete(vocabulary);
             vocabularyRepository.flush();
+
+            if (managementAuditService != null) {
+                String details = String.format("Xóa từ vựng #%d: %s (%s)", vocabId, vocabulary.getHanzi(), vocabulary.getPinyin());
+                managementAuditService.logSuccess(
+                        AuditActionType.VOCABULARY_DELETE,
+                        AuditResourceType.VOCABULARY,
+                        String.valueOf(vocabId),
+                        details,
+                        beforeSnapshot,
+                        null
+                );
+            }
         } catch (DataIntegrityViolationException ex) {
             throw new BusinessException(ErrorCode.CONFLICT,
                     "Không thể xóa từ vựng đang được liên kết với bài học hoặc dữ liệu khác trong hệ thống");

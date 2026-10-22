@@ -419,16 +419,10 @@ describe('Authentication Form Validation & Business Constraints', () => {
       assert.strictEqual(roleBadge.textContent, 'Kiểm duyệt', 'Badge must display Kiểm duyệt for multi-role Moderator');
       assert.ok(roleBadge.className.includes('badge-status-active'));
 
-      const modBtn = container.querySelector('#navModeratorBtn');
-      assert.ok(modBtn, 'Moderator queue button must exist');
-      assert.strictEqual(modBtn.textContent, 'Kiểm duyệt');
-      assert.ok(modBtn.getAttribute('href').includes('moderator-queue.html'));
-
-      // Moderator does not have Creator or Admin
-      const studioBtn = container.querySelector('#navCreatorStudioBtn');
-      assert.strictEqual(studioBtn, null, 'Studio button must not exist for non-Creator Moderator');
-      const adminBtn = container.querySelector('#navAdminBtn');
-      assert.strictEqual(adminBtn, null, 'Admin button must not exist for non-Admin Moderator');
+      const mgmtBtn = container.querySelector('#navManagementBtn');
+      assert.ok(mgmtBtn, 'Management button must exist');
+      assert.strictEqual(mgmtBtn.textContent, 'Khu vực quản lý');
+      assert.ok(mgmtBtn.getAttribute('href').includes('management.html'));
     });
 
     test('renderNavbarAuth renders Admin, Moderator, and Studio buttons for Admin session', () => {
@@ -448,18 +442,10 @@ describe('Authentication Form Validation & Business Constraints', () => {
       assert.strictEqual(roleBadge.textContent, 'Quản trị', 'Badge must display Quản trị for Admin');
       assert.ok(roleBadge.className.includes('badge-status-approved'));
 
-      const adminBtn = container.querySelector('#navAdminBtn');
-      assert.ok(adminBtn, 'Admin button must exist');
-      assert.strictEqual(adminBtn.textContent, 'Quản trị');
-      assert.ok(adminBtn.getAttribute('href').includes('admin-lessons.html'));
-
-      const modBtn = container.querySelector('#navModeratorBtn');
-      assert.ok(modBtn, 'Admin can also access Moderator Queue');
-      assert.ok(modBtn.getAttribute('href').includes('moderator-queue.html'));
-
-      const studioBtn = container.querySelector('#navCreatorStudioBtn');
-      assert.ok(studioBtn, 'Admin can also access Creator Studio');
-      assert.ok(studioBtn.getAttribute('href').includes('creator-lessons.html'));
+      const mgmtBtn = container.querySelector('#navManagementBtn');
+      assert.ok(mgmtBtn, 'Management button must exist');
+      assert.strictEqual(mgmtBtn.textContent, 'Khu vực quản lý');
+      assert.ok(mgmtBtn.getAttribute('href').includes('management.html'));
     });
   });
 

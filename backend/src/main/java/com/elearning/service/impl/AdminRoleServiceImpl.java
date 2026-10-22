@@ -10,6 +10,10 @@ import com.elearning.exception.BusinessException;
 import com.elearning.repository.AccountRepository;
 import com.elearning.repository.RoleRepository;
 import com.elearning.service.AdminRoleService;
+import com.elearning.common.AuditActionType;
+import com.elearning.common.AuditResourceType;
+import com.elearning.service.ManagementAuditService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,10 +33,19 @@ public class AdminRoleServiceImpl implements AdminRoleService {
 
     private final RoleRepository roleRepository;
     private final AccountRepository accountRepository;
+    private final ManagementAuditService managementAuditService;
 
-    public AdminRoleServiceImpl(RoleRepository roleRepository, AccountRepository accountRepository) {
+    @Autowired
+    public AdminRoleServiceImpl(RoleRepository roleRepository,
+                                AccountRepository accountRepository,
+                                ManagementAuditService managementAuditService) {
         this.roleRepository = roleRepository;
         this.accountRepository = accountRepository;
+        this.managementAuditService = managementAuditService;
+    }
+
+    public AdminRoleServiceImpl(RoleRepository roleRepository, AccountRepository accountRepository) {
+        this(roleRepository, accountRepository, null);
     }
 
     @Override
@@ -88,12 +101,27 @@ public class AdminRoleServiceImpl implements AdminRoleService {
 
         // 4. Self-demotion protection (POL-8D-02)
         boolean isModifyingSelf = currentAdminEmail != null && currentAdminEmail.equalsIgnoreCase(account.getEmailOrPhone());
-        boolean hasAdminRole = resolvedRoles.stream().anyMatch(r -> "Admin".equalsIgnoreCase(r.getRoleName()));
+        boolean hasAdminRole = resolvedRoles.stream().anyMatch(r -> "Admin".equalsIgnoreCase(r.getRoleName()) || "ROLE_ADMIN".equalsIgnoreCase(r.getRoleName()));
         if (isModifyingSelf && !hasAdminRole) {
             throw new BusinessException(
                     ErrorCode.BAD_REQUEST,
                     "Không thể tự tước quyền Quản trị viên (Admin) của chính mình"
             );
+        }
+
+        // 5. Last Active Admin Invariant: prevent demoting the last active administrator
+        boolean currentIsActiveAdmin = "Active".equalsIgnoreCase(account.getStatus()) &&
+                account.getRoles().stream().anyMatch(r -> "Admin".equalsIgnoreCase(r.getRoleName()) || "ROLE_ADMIN".equalsIgnoreCase(r.getRoleName()));
+        if (currentIsActiveAdmin && !hasAdminRole) {
+            // Demoting an active admin: acquire pessimistic write lock on Admin role row to ensure concurrency safety
+            roleRepository.findByRoleNameForUpdate("Admin");
+            long activeAdmins = accountRepository.countActiveAdmins();
+            if (activeAdmins <= 1) {
+                throw new BusinessException(
+                        ErrorCode.BAD_REQUEST,
+                        "Không thể hạ quyền hoặc vô hiệu hóa quản trị viên hoạt động cuối cùng của hệ thống"
+                );
+            }
         }
 
         // 5. Check if effective roles changed
@@ -104,11 +132,34 @@ public class AdminRoleServiceImpl implements AdminRoleService {
                 .map(Role::getRoleId)
                 .collect(Collectors.toSet());
 
+        List<String> oldRoles = account.getRoles().stream()
+                .map(Role::getRoleName)
+                .sorted()
+                .toList();
+
         if (!currentRoleIds.equals(newRoleIds)) {
             account.getRoles().clear();
             account.getRoles().addAll(resolvedRoles);
             account.incrementAuthorizationVersion();
             accountRepository.save(account);
+        }
+
+        List<String> newRoles = resolvedRoles.stream()
+                .map(Role::getRoleName)
+                .sorted()
+                .toList();
+
+        if (managementAuditService != null) {
+            String details = String.format("Cập nhật phân quyền tài khoản %s (#%d): từ %s thành %s",
+                    account.getEmailOrPhone(), accountId, oldRoles, newRoles);
+            managementAuditService.logSuccess(
+                    AuditActionType.USER_ROLE_UPDATE,
+                    AuditResourceType.USER,
+                    String.valueOf(accountId),
+                    details,
+                    oldRoles,
+                    newRoles
+            );
         }
 
         return AccountResponse.fromEntity(account);

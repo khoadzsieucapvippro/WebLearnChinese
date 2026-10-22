@@ -420,9 +420,26 @@ export class SpeechController {
         return false;
       }
 
+      // Resolve effective speech rate from options or localStorage preference
+      let effectiveRate = rate;
+      if (rate === 0.85) {
+        try {
+          if (typeof localStorage !== 'undefined') {
+            const rawAudioSettings = localStorage.getItem('HOC_HAN_NGU_AUDIO_SETTINGS');
+            if (rawAudioSettings) {
+              const parsed = JSON.parse(rawAudioSettings);
+              const customRate = parseFloat(parsed?.speechRate);
+              if (!isNaN(customRate) && customRate > 0) {
+                effectiveRate = customRate;
+              }
+            }
+          }
+        } catch (_) {}
+      }
+
       const utterance = new UtteranceClass(cleanText);
       utterance.lang = lang;
-      utterance.rate = rate;
+      utterance.rate = effectiveRate;
       utterance.pitch = pitch;
 
       // Select Chinese voice if available

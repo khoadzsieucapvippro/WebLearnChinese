@@ -374,7 +374,19 @@ function initLoginForm() {
 
       // Handle safe redirect
       const urlParams = new URLSearchParams(window.location.search);
-      const target = validateInternalRedirect(urlParams.get('redirect'));
+      // Handle safe redirect based on role context & query parameters
+      const userRoles = Array.isArray(authData?.roles) ? authData.roles : authManager.getRoles();
+      const isStaffUser = userRoles.some(r => ['Admin', 'Creator', 'Moderator'].includes(r));
+      const redirectParam = urlParams.get('redirect');
+      let target;
+      if (redirectParam) {
+        target = validateInternalRedirect(redirectParam);
+        if ((target === 'index.html' || target === 'login.html') && isStaffUser) {
+          target = 'management.html';
+        }
+      } else {
+        target = isStaffUser ? 'management.html' : 'index.html';
+      }
       window.location.href = target;
 
     } catch (err) {
@@ -517,6 +529,23 @@ function initRegisterForm() {
 
 if (typeof document !== 'undefined' && typeof document.addEventListener === 'function') {
   document.addEventListener('DOMContentLoaded', () => {
+    if (authManager.isAuthenticated()) {
+      const userRoles = authManager.getRoles();
+      const isStaffUser = userRoles.some(r => ['Admin', 'Creator', 'Moderator'].includes(r));
+      const urlParams = new URLSearchParams(window.location.search);
+      const redirectParam = urlParams.get('redirect');
+      let target;
+      if (redirectParam) {
+        target = validateInternalRedirect(redirectParam);
+        if ((target === 'index.html' || target === 'login.html') && isStaffUser) {
+          target = 'management.html';
+        }
+      } else {
+        target = isStaffUser ? 'management.html' : 'index.html';
+      }
+      window.location.href = target;
+      return;
+    }
     initNavbarAuth('navAuthContainer');
     initLoginForm();
     initRegisterForm();

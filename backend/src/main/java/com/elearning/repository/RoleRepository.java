@@ -20,4 +20,15 @@ public interface RoleRepository extends JpaRepository<Role, Integer> {
      * @return Optional containing found Role or empty if not found
      */
     Optional<Role> findByRoleName(String roleName);
+
+    /**
+     * Finds a role by its unique role name using a pessimistic write lock (SELECT ... FOR UPDATE).
+     * Used to serialize concurrent administrative role modifications and prevent demoting the last active administrator.
+     *
+     * @param roleName name of the role (e.g. Admin, ROLE_ADMIN)
+     * @return Optional containing locked Role or empty if not found
+     */
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @org.springframework.data.jpa.repository.Query("SELECT r FROM Role r WHERE LOWER(r.roleName) = LOWER(:roleName) OR LOWER(r.roleName) = LOWER(CONCAT('ROLE_', :roleName))")
+    Optional<Role> findByRoleNameForUpdate(@org.springframework.data.repository.query.Param("roleName") String roleName);
 }

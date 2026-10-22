@@ -365,6 +365,25 @@ class ModerationServiceTests {
 
             verify(moderationLogRepository, never()).save(any());
         }
+
+        @Test
+        @DisplayName("Throws FORBIDDEN (403) when moderator attempts to self-approve their own created lesson")
+        void testApproveLesson_whenModeratorIsLessonCreator_throwsForbidden() {
+            creatorAccount.setAccountId(1L);
+            when(accountRepository.findByEmailOrPhone("moderator@example.com")).thenReturn(Optional.of(moderatorAccount));
+            when(lessonRepository.findById(100L)).thenReturn(Optional.of(pendingLesson));
+
+            assertThatThrownBy(() -> moderationService.approveLesson(100L, new ApproveLessonRequest()))
+                    .isInstanceOf(BusinessException.class)
+                    .satisfies(ex -> {
+                        BusinessException be = (BusinessException) ex;
+                        assertThat(be.getErrorCode()).isEqualTo(ErrorCode.FORBIDDEN);
+                        assertThat(be.getMessage()).contains("không thể tự kiểm duyệt");
+                    });
+
+            verify(lessonRepository, never()).save(any());
+            verify(moderationLogRepository, never()).save(any());
+        }
     }
 
     @Nested
@@ -497,6 +516,26 @@ class ModerationServiceTests {
                         assertThat(be.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
                     });
 
+            verify(moderationLogRepository, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("Throws FORBIDDEN (403) when moderator attempts to self-reject their own created lesson")
+        void testRejectLesson_whenModeratorIsLessonCreator_throwsForbidden() {
+            creatorAccount.setAccountId(1L);
+            when(accountRepository.findByEmailOrPhone("moderator@example.com")).thenReturn(Optional.of(moderatorAccount));
+            when(lessonRepository.findById(100L)).thenReturn(Optional.of(pendingLesson));
+
+            RejectLessonRequest request = new RejectLessonRequest("Lý do tự từ chối");
+            assertThatThrownBy(() -> moderationService.rejectLesson(100L, request))
+                    .isInstanceOf(BusinessException.class)
+                    .satisfies(ex -> {
+                        BusinessException be = (BusinessException) ex;
+                        assertThat(be.getErrorCode()).isEqualTo(ErrorCode.FORBIDDEN);
+                        assertThat(be.getMessage()).contains("không thể tự kiểm duyệt");
+                    });
+
+            verify(lessonRepository, never()).save(any());
             verify(moderationLogRepository, never()).save(any());
         }
     }

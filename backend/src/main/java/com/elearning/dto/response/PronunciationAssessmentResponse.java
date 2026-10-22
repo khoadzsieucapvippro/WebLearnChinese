@@ -66,6 +66,19 @@ public class PronunciationAssessmentResponse {
         return res;
     }
 
+    public static PronunciationAssessmentResponse coldStartWakingUp(String targetText, String targetPinyin) {
+        PronunciationAssessmentResponse res = new PronunciationAssessmentResponse();
+        res.setStatus("engine_unavailable");
+        res.setTargetText(targetText);
+        res.setTargetPinyin(targetPinyin);
+        res.setConfidence("LOW");
+        res.setOverallScore(null);
+        res.setSummaryVi("Dịch vụ AI Luyện đọc đang khởi động từ trạng thái nghỉ (Render Free Tier spin-up ~30-50s).");
+        res.setRetryAdvice("Máy chủ AI miễn phí cần khoảng 30-50 giây để khởi động lại sau thời gian không sử dụng. Vui lòng bấm thử lại sau giây lát.");
+        res.setLimitations("Dịch vụ AI speech service đang được đánh thức từ chế độ ngủ miễn phí.");
+        return res;
+    }
+
     public static PronunciationAssessmentResponse error(String targetText, String targetPinyin, String errorMessage) {
         PronunciationAssessmentResponse res = new PronunciationAssessmentResponse();
         res.setStatus("error");

@@ -1,122 +1,124 @@
-# Project: E-Learning Chinese Speech & SRS Platform
+# Project: WebLearnChinese Management Decoupling, Settings Completion & Production Security
 
 ## Architecture
-The system consists of 4 main tiers:
-1. **Frontend (Vanilla JS SPA & Modules)**:
-   - Zero-build modular architecture (`frontend/js/ui/speech.js`, `frontend/js/pages/srs-review-page.js`, `reading-room`, etc.).
-   - Communicates with Backend via REST API (`/api/v1/...`).
-   - Audio playback engine with 3-tier fallback (Pre-recorded static audio -> Web Speech API with voice acquisition -> Informative UI fallback).
-   - Audio recording & reading evaluation controller for `#srsReadingRoom` with strict keyboard shortcut isolation.
-2. **Backend (Spring Boot 3.3.5, Java 17)**:
-   - REST API Controllers (`ReadingAssessmentController`, `VocabularyController`, `LessonController`, `SrsReviewController`).
-   - Local AI Service Client (`LocalSpeechServiceClient`) using Spring RestClient calling local FastAPI microservice.
-   - JPA/Hibernate persistence, Flyway database migration baseline.
-3. **Local Speech & Tone Evaluation Service (FastAPI / Python 3.11)**:
-   - Microservice running on `http://127.0.0.1:8000` (zero external/cloud API calls).
-   - Physical F0 Pitch Contour analysis (Praat Parselmouth/SciPy) mapped to Chao 5-level scale (1..5).
-   - Tone Sandhi Engine (3+3 -> 2+3, 不 bù, 一 yī, half 3rd tone).
-   - Quality Gate: Automatic detection of silence, noise, clipping, or duration < 0.35s returning `not_scorable` (no fake scores).
-4. **Database (MySQL 8.4+)**:
-   - 214 Kangxi Radicals (`RADICAL`).
-   - 1,068 Vocabulary records (`VOCABULARY`): 300 HSK 1, 200 HSK 2, 500 HSK 3, 68 HSK 0.
-   - Relational mapping (`VOCABULARY_RADICAL`).
-   - SRS Curriculum & User History: `lesson`, `lesson_words`, `user_vocabulary_progress`, `review_log`.
+WebLearnChinese is a full-stack Chinese learning platform with:
+- **Backend**: Spring Boot 3.3.5 (Java 17/21), Spring Security (stateless JWT RBAC with Learner, Creator, Moderator, Admin), Spring Data JPA, Flyway migrations (baseline V1..V28 -> V29).
+- **Frontend**: Modular Vanilla JS (ES Modules, Zero-Build), semantic HTML5, CSS custom properties, strict CSP, and SRI hash checking.
+- **Data Flow**:
+  - Learners use public & study endpoints (`/api/v1/lessons`, `/api/v1/srs`, `/api/v1/auth`, etc.).
+  - Creators use studio endpoints (`/api/v1/creator/*`).
+  - Moderators review lessons (`/api/v1/moderation/*`).
+  - Admins manage users, roles, system resources, and audit logs (`/api/v1/admin/*`).
+- **Management Area Decoupling**: Central hub `frontend/management.html` aggregates management tasks per role; profile settings remain focused purely on learner preferences.
+- **Production Security**: Strict fail-fast on insecure JWT secrets, demo accounts disabled by default in production configurations, and explicit demo fallback simulation indicators.
+- **Audit Logging**: Comprehensive, non-destructive audit log table (`MANAGEMENT_AUDIT_LOG`) recording all administrative and moderation actions with actor attribution and sanitized payloads.
 
 ---
 
 ## Feature Inventory
 | # | Feature | Description | Milestone | Source |
 |---|---------|-------------|-----------|--------|
-| 1 | Audio Trigger & Transient Activation | Keep user gesture token synchronously without dropping it via unneeded pre-fetch await in `playPronunciation` | M1 | Survey Audio |
-| 2 | Audio Fallback & Lifecycle Management | 3-tier audio playback (Audio URL -> Web Speech with voice acquisition -> Toast alert), prevent race conditions & overlapping sounds | M1 | Survey Audio |
-| 3 | Static Server Audio MIME Types | Configure `.mp3`, `.wav`, `.ogg`, `.webm` MIME headers in `scripts/serve.mjs` and test runners | M1 | Survey Audio |
-| 4 | Offline Speech Microservice Scaffold | FastAPI microservice in `ai-service/` or `speech-service/` running locally on port 8000 with `/health` and `/evaluate-reading` | M2 | Survey Speech |
-| 5 | Physical F0 & Tone Assessment Engine | Praat-Parselmouth/SciPy F0 pitch analysis, Chao scale mapping, tone sandhi rules (3+3, 不, 一) | M2 | Survey Speech |
-| 6 | Non-Scorable Audio Quality Gate | Rejection of silence (RMS < 0.006), noise, clipping (>2%), and short audio (<0.35s) without generating fake scores | M2 | Survey Speech |
-| 7 | Backend Spring Boot Speech Proxy | RestClient proxying `/api/v1/reading-assessment/evaluate` to local FastAPI service, standard DTO handling | M2 | Survey Speech |
-| 8 | Frontend #srsReadingRoom Integration | Audio recording, state machine (Ready, Recording, Analyzing, Result, Error), lock SRS shortcuts [1]-[4] | M2 | Survey Speech |
-| 9 | Flyway V28 Migration for Data Consistency | Correct corrupted words from V26/V27 in MySQL, restore `出租车` radical relation, align vocab IDs | M3 | Survey Data |
-| 10 | Frontend Demo Seed & Export Data Sync | Align `demo-seed-data.js` and root audit files (`data_kiem_tra_all.json`, `tu_vung_1000.csv`) with exact MySQL IDs | M3 | Survey Data |
-| 11 | SRS Lesson ID & Review Alignment | Fix frontend `srs-review-page.js` lesson IDs to map to real DB `lesson_id` 5..14, preserving all card progress and review logs | M3 | Survey Data |
-| 12 | E2E Test Suite & Test Runner | Comprehensive test suite (Tiers 1-4) covering audio playback, speech evaluation, data consistency, and full-stack flows | E2E | Dual Track |
-| 13 | Full-Stack Live Run & Browser Acceptance | Concurrent live launch of Frontend, Spring Boot, MySQL, and FastAPI service, verified via Antigravity browser testing | M4 | Survey All |
+| F1 | Disable Demo Seed in Prod | Set `APP_DEMO_SEED_ACCOUNTS=false` in Dockerfile, backend/Dockerfile, render.yaml & add profile guard in `DemoAccountSeeder` | M1 | ORIGINAL_REQUEST §R2 |
+| F2 | JWT Secret Fail-Fast | Enforce >=32-byte non-blank JWT secret; fail startup if missing on production/non-dev profiles; allow fallback only on local/dev | M1 | ORIGINAL_REQUEST §R2 |
+| F3 | Demo Fallback Simulation Alert | Render prominent `🟡 Dữ liệu mô phỏng` badge when demo mode active; forbid silent downgrade from real backend errors to simulated auth | M1 | ORIGINAL_REQUEST §R2 |
+| F4 | Prevent Moderation Self-Review | In `ModerationServiceImpl`, reject approval/rejection if creator ID equals moderator ID (HTTP 403 / FORBIDDEN) | M2 | ORIGINAL_REQUEST §R4 |
+| F5 | Enforce Last Active Admin Invariant | In `AdminRoleServiceImpl` / `AdminAccountServiceImpl`, prevent removing Admin role or deactivating/locking last active admin with pessimistic locking | M2 | ORIGINAL_REQUEST §R4 |
+| F6 | SRS Card Limit Bounds | Add `@Max(100)` validation on `newCardsPerDay` in DTO, enforce bounds in service and frontend with validation message | M2 | ORIGINAL_REQUEST §R4 |
+| F7 | SRS Button Standardization | Standardize "Khôi phục" button to "Hoàn tác thay đổi" and update status text/revert behavior | M2 | ORIGINAL_REQUEST §R4 |
+| F8 | Audit Log Flyway Migration | Create `V29__create_management_audit_log.sql` non-destructive table with indexes for actor, action, resource, timestamp | M3 | ORIGINAL_REQUEST §R5 |
+| F9 | Audit Log JPA Entity & Repository | Implement `ManagementAuditLog`, enums (`AuditActionType`, `AuditResourceType`, `AuditStatus`), and Spring Data JPA repository | M3 | ORIGINAL_REQUEST §R5 |
+| F10 | Audit Service & Data Sanitizer | Implement `ManagementAuditService` with `AuditDataSanitizer` redacting passwords, JWT, tokens, and secrets from JSON details | M3 | ORIGINAL_REQUEST §R5 |
+| F11 | Audit Logging Hooks | Instrument role change, lock/unlock, lesson/vocab/radical updates, and moderation actions with audit log calls | M3 | ORIGINAL_REQUEST §R5 |
+| F12 | Admin Audit Log REST API | Implement `GET /api/v1/admin/audit-logs` (Admin-only, paginated, filtered) and detail endpoint | M3 | ORIGINAL_REQUEST §R5 |
+| F13 | Admin Audit Log UI | Implement `frontend/admin-audit-logs.html` and `admin-audit-logs-page.js` with filter bar, table, pagination, detail modal | M3 | ORIGINAL_REQUEST §R5 |
+| F14 | Management Central Hub | Create `frontend/management.html` & `management-page.js` with role-based card sections (Creator, Moderator, Admin) and "Quay lại học" | M4 | ORIGINAL_REQUEST §R1 |
+| F15 | Unified Navigation Entry | Update `frontend/js/ui/nav.js` to replace scattered links with single "Khu vực quản lý" for Creator/Moderator/Admin; hide from Learner | M4 | ORIGINAL_REQUEST §R1 |
+| F16 | Profile Decoupling | Remove `profileRoleWorkspacesSection` and admin nav buttons from `frontend/profile.html` and `profile-page.js` | M4 | ORIGINAL_REQUEST §R1 |
+| F17 | Consistent Management Sub-nav | Add consistent management navigation bar with "Quay lại học" across `creator-*.html`, `moderator-*.html`, `admin-*.html` | M4 | ORIGINAL_REQUEST §R1 |
+| F18 | Audio/Writing Settings Integration | Wire supported settings to speech/writing/srs modules; add explicit `localStorage` disclaimer banner on profile | M4 | ORIGINAL_REQUEST §R3 |
+| F19 | Password Change UI | Build Account Security form in Profile calling `POST /api/v1/auth/change-password` with validation & feedback (zero Web Storage exposure) | M4 | ORIGINAL_REQUEST §R3 |
+| F20 | Regression & Contract Test Suite Updates | Update `authenticated-links-regression.test.mjs` and add unit/integration tests for management nav and security contracts | M4 | ORIGINAL_REQUEST §R1, R3 |
+| F21 | E2E & Adversarial Verification | Execute full test suites (`mvn test`, `npm run verify:frontend:fast`), verify 100% pass across all tiers, and perform forensic integrity audit | M5 | ORIGINAL_REQUEST Acceptance Criteria |
 
 ---
 
 ## Milestones
 | # | Name | Scope | Dependencies | Status |
 |---|------|-------|-------------|--------|
-| E2E | E2E Testing Track | Design & implement comprehensive automated test suite (Tiers 1-4) & TEST_READY.md | none | DONE (20/20 PASS) |
-| M1 | Audio Playback Fix (R1) | Fix audio URL mapping, event lifecycle, transient activation, MIME types, and fallback notifications | none | DONE (1083 tests PASS, 19/19 stress PASS, Auditor CLEAN) |
-| M2 | Local Speech & Tone Engine (R2) | Implement FastAPI microservice, F0 pitch & tone sandhi engine, Spring Boot proxy, #srsReadingRoom UI | none | PLANNED |
-| M3 | Data Consistency & Curriculum Audit (R3) | Create Flyway V28, fix corrupted records, sync demo seed data & root files, align SRS lesson IDs | none | PLANNED |
-| M4 | Full-Stack Live Run & Acceptance (R4) | Live launch of all 4 services, run 100% of E2E test suite (Tiers 1-4), execute Tier 5 hardening, produce 5-part Vietnamese report | M1, M2, M3, E2E | PLANNED |
+| M1 | Backend Configuration & Production Security Hardening | F1, F2, F3 (Dockerfile, render.yaml, JWT fail-fast, demo fallback alert) | none | DONE |
+| M2 | Management Business Invariants & SRS Constraints | F4, F5, F6, F7 (Self-review check, last admin invariant, SRS card limits, SRS button standardization) | none | DONE |
+| M3 | Centralized Management Audit Log System | F8, F9, F10, F11, F12, F13 (V29 Flyway migration, JPA entity/repo, AuditService, hooks, API & UI) | M2 | DONE |
+| M4 | Management Area Decoupling, Navigation & Settings Completion | F14, F15, F16, F17, F18, F19, F20 (management.html, nav.js, profile decoupling, sub-nav, audio/writing settings, password change UI) | M1, M3 | DONE |
+| M5 | E2E Integration Verification & Hardening | F21 (Full backend mvn test, frontend verify:frontend:fast, adversarial coverage hardening & audit clean) | M1, M2, M3, M4 | DONE |
 
 ---
 
 ## Interface Contracts
 
-### 1. Local AI Service ↔ Spring Boot Backend
-- **Endpoint**: `POST http://127.0.0.1:8000/evaluate-reading`
-- **Request**: Multipart Form Data:
-  - `audio`: binary file (`audio/wav`, `audio/webm`)
-  - `targetText`: string (e.g. `你好`)
-  - `expectedPinyin`: string (e.g. `nǐ hǎo`)
-- **Response** (JSON):
-```json
-{
-  "status": "assessed", // "assessed" | "not_scorable" | "engine_unavailable" | "overloaded" | "error"
-  "overallScore": 88.5, // null if status != "assessed"
-  "toneScore": 90.0,
-  "fluencyScore": 85.0,
-  "syllables": [
-    {
-      "character": "你",
-      "expectedPinyin": "nǐ",
-      "expectedTone": 3,
-      "sandhiTone": 2,
-      "detectedTone": 2,
-      "toneCorrect": true,
-      "score": 92.0,
-      "feedback": "Biến điệu thanh 3 thành thanh 2 chuẩn xác"
-    },
-    {
-      "character": "好",
-      "expectedPinyin": "hǎo",
-      "expectedTone": 3,
-      "sandhiTone": 3,
-      "detectedTone": 3,
-      "toneCorrect": true,
-      "score": 85.0,
-      "feedback": "Thanh 3 phát âm tốt"
-    }
-  ],
-  "reason": null,
-  "guidance": null
-}
-```
+### 1. Password Change API
+- Endpoint: `POST /api/v1/auth/change-password`
+- Headers: `Authorization: Bearer <jwt>`, `Content-Type: application/json`
+- Request Body (`ChangePasswordRequest`):
+  ```json
+  {
+    "currentPassword": "...",
+    "newPassword": "..."
+  }
+  ```
+- Responses:
+  - `200 OK`: `{"status": 200, "message": "Đổi mật khẩu thành công", "data": null}`
+  - `400 BAD REQUEST`: validation failure (e.g. blank, length < 6, current equals new)
+  - `401 UNAUTHORIZED`: invalid current password
 
-### 2. Spring Boot Backend ↔ Frontend Client
-- **Endpoint**: `POST /api/v1/reading-assessment/evaluate`
-- **Request**: Multipart Form Data:
-  - `audio`: audio blob
-  - `targetText`: string
-  - `expectedPinyin`: string
-  - `targetType`: `VOCABULARY` | `RADICAL`
-  - `targetId`: integer
-- **Response**: Maps exactly to the standardized ReadingAssessmentResponse DTO with backwards compatibility for `overallScore`, `toneScore`, `fluencyScore`, `status`.
+### 2. Admin Audit Log API
+- Endpoint: `GET /api/v1/admin/audit-logs`
+- Headers: `Authorization: Bearer <jwt>` (Requires `ROLE_ADMIN`)
+- Query Parameters:
+  - `page`: integer (0-based, default 0)
+  - `size`: integer (default 20, max 100)
+  - `sort`: string (default "timestamp,desc")
+  - `actionType`: optional string (enum `AuditActionType`)
+  - `resourceType`: optional string (enum `AuditResourceType`)
+  - `actor`: optional string (username search)
+  - `startDate`: optional ISO-8601 string
+  - `endDate`: optional ISO-8601 string
+  - `status`: optional string (`SUCCESS`, `FAILURE`)
+- Response: Page of `AuditLogResponse` (id, actorId, actorUsername, actionType, resourceType, resourceId, timestamp, status, detailsSummary, ipAddress)
+- Endpoint: `GET /api/v1/admin/audit-logs/{id}`
+  - Returns full `AuditLogDetailResponse` with formatted before/after payloads (sanitized).
 
-### 3. Audio Playback Controller API Contract
-- `SpeechController.playPronunciation(cardOrItem, options)`:
-  - Never throws uncaught promise rejection.
-  - Returns `{ success: boolean, method: 'audio_file' | 'web_speech' | 'ui_fallback', message?: string }`.
-  - Disables button only while loading/playing, resets cleanly on complete or error.
+### 3. Navigation Contract (`nav.js`)
+- Learner: shows standard learning items; "Khu vực quản lý" hidden.
+- Creator / Moderator / Admin: shows "Khu vực quản lý" (`#navManagementBtn`) pointing to `management.html`.
+- Demo Mode: When active, persistent badge `<span class="badge badge-warning">🟡 Dữ liệu mô phỏng</span>` displayed in top navigation.
+
+### 4. Self-Review Invariant (`ModerationServiceImpl`)
+- When `lesson.getCreatedBy().getAccountId().equals(currentModerator.getAccountId())`:
+  - Throws `AppException(ErrorCode.FORBIDDEN, "Bạn không thể tự kiểm duyệt nội dung do chính mình tạo ra")`.
+
+### 5. Last Admin Invariant (`AdminRoleServiceImpl` & `AdminAccountServiceImpl`)
+- Before modifying or revoking `ROLE_ADMIN` or locking an Admin account:
+  - Obtain pessimistic lock on Admin role record (`SELECT ... FOR UPDATE`).
+  - Count active Admin users (`WHERE role = 'ROLE_ADMIN' AND status = 'ACTIVE'`).
+  - If count <= 1 and target is an active admin: throw `AppException(ErrorCode.BAD_REQUEST, "Không thể hạ quyền hoặc vô hiệu hóa quản trị viên hoạt động cuối cùng của hệ thống")`.
 
 ---
 
 ## Code Layout
-- Frontend: `frontend/js/ui/speech.js`, `frontend/js/pages/srs-review-page.js`, `frontend/js/api/demo-seed-data.js`
-- Backend: `backend/src/main/java/com/elearning/.../reading/`, `backend/src/main/java/com/elearning/.../vocabulary/`
-- AI Microservice: `speech-service/` (FastAPI app, tone assessment engine, requirements.txt)
-- Database: `backend/src/main/resources/db/migration/V28__fix_v26_v27_discrepancies_and_sync_ids.sql`
-- Tests: `tests/frontend/`, `tests/e2e/`, `backend/src/test/java/com/elearning/...`
+- `backend/src/main/resources/db/migration/V29__create_management_audit_log.sql`
+- `backend/src/main/java/com/weblearnchinese/model/`
+  - `ManagementAuditLog.java`, `enums/AuditActionType.java`, `enums/AuditResourceType.java`, `enums/AuditStatus.java`
+- `backend/src/main/java/com/weblearnchinese/repository/ManagementAuditLogRepository.java`
+- `backend/src/main/java/com/weblearnchinese/service/`
+  - `ManagementAuditService.java`, `impl/ManagementAuditServiceImpl.java`
+  - `impl/ModerationServiceImpl.java` (self-review check & audit log)
+  - `impl/AdminRoleServiceImpl.java` & `impl/AdminAccountServiceImpl.java` (last admin lock & audit log)
+- `backend/src/main/java/com/weblearnchinese/controller/AdminAuditLogController.java`
+- `backend/src/main/java/com/weblearnchinese/util/JwtUtil.java` & `config/SecurityConfig.java` (fail-fast validation)
+- `frontend/management.html` & `frontend/js/pages/management-page.js`
+- `frontend/admin-audit-logs.html` & `frontend/js/pages/admin-audit-logs-page.js`
+- `frontend/profile.html` & `frontend/js/pages/profile-page.js`
+- `frontend/js/ui/nav.js`
+- `frontend/js/api/demo-fallback-engine.js` & `frontend/js/api/api.js`
+- `tests/frontend/unit/auth/authenticated-links-regression.test.mjs`
+- `Dockerfile`, `backend/Dockerfile`, `render.yaml`

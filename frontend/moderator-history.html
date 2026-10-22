@@ -24,64 +24,74 @@
   <!-- Accessible Skip Link (WCAG 2.2 SC 2.4.1) -->
   <a href="#mainContent" class="skip-link">Chuyển đến nội dung chính</a>
 
-  <!-- Global Header & Navigation Landmark -->
-  <header class="site-header">
-    <div class="container-xl">
-      <nav class="navbar navbar-expand-lg py-2" aria-label="Điều hướng chính của trang">
-        <!-- Brand identity -->
-        <a class="navbar-brand-custom" href="index.html">
-          <span class="brand-seal-mark" aria-hidden="true">字</span>
-          <span>Hán Ngữ &amp; Bộ Thủ</span>
-        </a>
+  <!-- Global Management Workspace Header Landmark -->
+  <header class="management-header sticky-top">
+    <div class="container-fluid px-3 px-lg-4">
+      <div class="d-flex align-items-center justify-content-between py-2">
+        <!-- Brand & Mobile Toggle Cluster -->
+        <div class="d-flex align-items-center gap-2 gap-lg-3">
+          <!-- Mobile Sidebar Toggle -->
+          <button class="btn btn-sm btn-chinese-outline d-lg-none" type="button" id="managementSidebarToggle" aria-label="Mở danh mục quản lý" aria-expanded="false" aria-controls="managementSidebar">
+            <span class="navbar-toggler-icon d-inline-block" style="width: 1.25em; height: 1.25em; vertical-align: middle;"></span>
+          </button>
 
-        <!-- Mobile Navigation Toggle -->
-        <button class="navbar-toggler border-0 p-2" type="button" data-bs-toggle="collapse" data-bs-target="#primaryNavMenu" aria-controls="primaryNavMenu" aria-expanded="false" aria-label="Mở menu điều hướng">
-          <span class="navbar-toggler-icon"></span>
-        </button>
+          <!-- Management Brand Identity (Directs to management.html) -->
+          <a class="management-brand d-flex align-items-center gap-2 text-decoration-none" href="management.html">
+            <span class="chinese-seal-icon" aria-hidden="true">管</span>
+            <div class="d-flex flex-column">
+              <span class="fw-bold fs-5 text-chinese-red lh-1">Hán Ngữ</span>
+              <span class="fs-7 text-secondary tracking-wide">QUẢN LÝ &amp; TÁC NGHIỆP</span>
+            </div>
+            <span class="management-brand-badge d-none d-sm-inline-block">Lịch sử duyệt</span>
+          </a>
+        </div>
 
-        <!-- Navigation Links -->
-        <div class="collapse navbar-collapse" id="primaryNavMenu">
-          <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-3 gap-1">
-            <li class="nav-item">
-              <a class="nav-link-custom" href="index.html">Trang chủ</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link-custom" href="radicals.html">Bộ thủ</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link-custom" href="vocabulary.html">Từ vựng</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link-custom" href="srs-review.html">Ôn tập</a>
-            </li>
-          </ul>
+        <!-- Management User & Learner Gateway Cluster -->
+        <div class="d-flex align-items-center gap-2">
 
-          <!-- User Session / Navigation Actions (Authoritatively rendered by nav.js) -->
-          <div id="navAuthContainer" class="d-flex align-items-center gap-2 mt-3 mt-lg-0">
+          <!-- Session State Container (Auth cluster rendered authoritatively by nav.js) -->
+          <div id="navAuthContainer" class="d-flex align-items-center gap-2">
             <a href="login.html" class="btn-chinese-secondary py-2 px-3 text-decoration-none">
               Đăng nhập
             </a>
-            <a href="register.html" class="btn-chinese-primary py-2 px-3 text-decoration-none">
-              Đăng ký
-            </a>
           </div>
         </div>
-      </nav>
+      </div>
     </div>
   </header>
 
-  <!-- Main Content Landmark -->
-  <main id="mainContent" class="py-4 py-md-5">
-    <div class="container-xl creator-studio-wrapper">
-
-      <!-- Breadcrumbs Landmark -->
-      <nav aria-label="Đường dẫn điều hướng" class="mb-3">
-        <ol class="breadcrumb mb-0 small">
-          <li class="breadcrumb-item"><a href="index.html" class="text-decoration-none">Trang chủ</a></li>
-          <li class="breadcrumb-item"><a href="moderator-queue.html" class="text-decoration-none">Kiểm duyệt bài học</a></li>
-          <li class="breadcrumb-item active" aria-current="page">Lịch sử kiểm duyệt</li>
-        </ol>
+  <!-- Management Workspace Outer Layout Wrapper -->
+  <div class="management-layout">
+    <!-- Management Sidebar Landmark -->
+    <aside id="managementSidebar" class="management-sidebar" aria-label="Điều hướng quản lý">
+      <div class="d-flex align-items-center justify-content-between p-3 border-bottom d-lg-none">
+        <span class="fw-bold small text-secondary">DANH MỤC QUẢN LÝ</span>
+        <button type="button" class="btn-close" id="managementSidebarClose" aria-label="Đóng menu quản lý"></button>
+      </div>
+      <nav class="management-sidebar-inner" aria-label="Danh mục chức năng quản lý">
+        <div id="managementSidebarNav">
+          <!-- Populated authoritatively by management-layout.js based on authenticated role -->
+        </div>
       </nav>
+    </aside>
+
+    <!-- Mobile Drawer Backdrop -->
+    <div id="managementSidebarBackdrop" class="management-sidebar-backdrop" aria-hidden="true"></div>
+
+    <!-- Main Content Landmark -->
+    <main id="mainContent" class="management-main-content">
+      <div class="container-xl creator-studio-wrapper">
+
+        <!-- Management Sub-navigation Breadcrumb -->
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+          <nav aria-label="Đường dẫn điều hướng">
+            <ol class="breadcrumb mb-0 small">
+              <li class="breadcrumb-item"><a href="management.html" class="text-decoration-none">Trung tâm quản lý</a></li>
+              <li class="breadcrumb-item"><a href="moderator-queue.html" class="text-decoration-none">Kiểm duyệt</a></li>
+              <li class="breadcrumb-item active" aria-current="page">Lịch sử kiểm duyệt</li>
+            </ol>
+          </nav>
+        </div>
 
       <!-- Moderator Section Sub-navigation Tabs -->
       <nav class="moderator-nav-tabs" aria-label="Phân khu kiểm duyệt bài học">
@@ -175,6 +185,7 @@
 
     </div>
   </main>
+  </div>
 
   <!-- Global Footer Landmark -->
   <footer class="site-footer mt-auto py-4">
@@ -184,6 +195,9 @@
       </p>
     </div>
   </footer>
+
+  <!-- Management Workspace Layout & Sidebar Component -->
+  <script type="module" src="js/ui/management-layout.js"></script>
 
   <!-- Page Initialization Entrypoint -->
   <script type="module" src="js/pages/moderator-history-page.js"></script>

@@ -96,4 +96,13 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
             @Param("status") String status,
             @Param("search") String search,
             org.springframework.data.domain.Pageable pageable);
+
+    /**
+     * Counts active accounts that possess the Administrator role.
+     * Enforces the business invariant that at least one active administrator must remain in the system.
+     *
+     * @return count of active administrators
+     */
+    @Query("SELECT COUNT(DISTINCT a) FROM Account a JOIN a.roles r WHERE (LOWER(r.roleName) = 'admin' OR LOWER(r.roleName) = 'role_admin') AND LOWER(a.status) = 'active'")
+    long countActiveAdmins();
 }

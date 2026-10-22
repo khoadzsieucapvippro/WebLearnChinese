@@ -305,6 +305,12 @@
                   </div>
                 </div>
 
+                <!-- Ghi chú lưu trữ cục bộ cho cài đặt âm thanh và luyện viết -->
+                <div class="alert alert-info py-2 px-3 small d-flex align-items-center gap-2 mb-3" role="note" id="localSettingsNotice">
+                  <span aria-hidden="true">ℹ️</span>
+                  <span>Lưu ý: Các tùy chọn Âm thanh và Hiển thị &amp; Luyện viết được lưu trữ cục bộ trong trình duyệt hiện tại (localStorage) và áp dụng trên thiết bị này.</span>
+                </div>
+
                 <!-- Nhóm 2: Âm thanh & Phát âm -->
                 <div class="settings-group-card" id="audio-settings-card">
                   <div class="d-flex align-items-center gap-2 mb-3">
@@ -427,11 +433,56 @@
                     </div>
                   </div>
 
-                  <!-- Role Workspaces Section (Dynamic based on elevated roles) -->
-                  <section id="profileRoleWorkspacesSection" class="p-3 bg-light rounded border d-none" aria-labelledby="profileWorkspacesHeading">
-                    <h4 id="profileWorkspacesHeading" class="h6 fw-bold text-dark mb-2">Không Gian Làm Việc Chuyên Biệt</h4>
-                    <div id="profileWorkspacesContainer" class="d-flex flex-wrap gap-2"></div>
-                  </section>
+                </div>
+
+                <!-- Group 5: Bảo Mật Tài Khoản -->
+                <div class="settings-group-card" id="account-security-card">
+                  <div class="d-flex align-items-center gap-2 mb-3">
+                    <span class="brand-seal-mark" aria-hidden="true" style="width: 26px; height: 26px; font-size: 0.85rem;">密</span>
+                    <div>
+                      <h3 class="h6 fw-bold text-dark mb-0">Bảo Mật Tài Khoản</h3>
+                      <div class="text-secondary small">Đổi mật khẩu định kỳ để nâng cao tính an toàn cho tài khoản</div>
+                    </div>
+                  </div>
+
+                  <form id="changePasswordForm" novalidate>
+                    <div id="changePasswordGlobalAlert" class="mb-3 d-none" role="alert" aria-live="assertive"></div>
+
+                    <div class="mb-3">
+                      <label for="currentPasswordInput" class="form-label fw-semibold text-dark">
+                        Mật khẩu hiện tại <span class="text-danger">*</span>
+                      </label>
+                      <input type="password" class="form-control" id="currentPasswordInput" name="currentPassword" autocomplete="current-password" required placeholder="Nhập mật khẩu hiện tại">
+                      <div class="invalid-feedback" id="currentPasswordFeedback"></div>
+                    </div>
+
+                    <div class="mb-3">
+                      <label for="newPasswordInput" class="form-label fw-semibold text-dark">
+                        Mật khẩu mới <span class="text-danger">*</span>
+                      </label>
+                      <input type="password" class="form-control" id="newPasswordInput" name="newPassword" autocomplete="new-password" minlength="6" maxlength="100" required placeholder="Tối thiểu 6 ký tự">
+                      <div class="form-text text-secondary small">Mật khẩu mới phải từ 6 đến 100 ký tự và không được trùng với mật khẩu hiện tại.</div>
+                      <div class="invalid-feedback" id="newPasswordFeedback"></div>
+                    </div>
+
+                    <div class="mb-3">
+                      <label for="confirmNewPasswordInput" class="form-label fw-semibold text-dark">
+                        Xác nhận mật khẩu mới <span class="text-danger">*</span>
+                      </label>
+                      <input type="password" class="form-control" id="confirmNewPasswordInput" name="confirmNewPassword" autocomplete="new-password" minlength="6" maxlength="100" required placeholder="Nhập lại mật khẩu mới">
+                      <div class="invalid-feedback" id="confirmNewPasswordFeedback"></div>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-3 flex-wrap pt-2">
+                      <button type="submit" id="btnChangePassword" class="btn-chinese-primary py-2 px-4 d-inline-flex align-items-center gap-2">
+                        <span class="btn-text">Đổi mật khẩu</span>
+                        <span class="spinner-border spinner-border-sm d-none" aria-hidden="true"></span>
+                      </button>
+                      <button type="button" id="btnResetPasswordForm" class="btn-chinese-outline py-2 px-3">
+                        Làm lại
+                      </button>
+                    </div>
+                  </form>
                 </div>
 
               </div>

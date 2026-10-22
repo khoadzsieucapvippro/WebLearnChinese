@@ -23,6 +23,7 @@ import {
   getWritingSettings,
   saveWritingSettings,
   loadUserProfileAndSettings,
+  validateChangePasswordForm,
   AUDIO_SETTINGS_STORAGE_KEY,
   WRITING_SETTINGS_STORAGE_KEY
 } from '../../../../frontend/js/pages/profile-page.js';
@@ -289,14 +290,76 @@ describe('Profile & Learning Settings Unit Tests', () => {
     });
   });
 
-  describe('6. Module Exports & Contract Invariants', () => {
-    test('exports loadUserProfileAndSettings as an async function', () => {
-      assert.strictEqual(typeof loadUserProfileAndSettings, 'function');
+  describe('7. Account Security: Password Change Validation (validateChangePasswordForm)', () => {
+    test('accepts valid password change payload', () => {
+      const res = validateChangePasswordForm({
+        currentPassword: 'CurrentPass123',
+        newPassword: 'BrandNewSecurePass456',
+        confirmNewPassword: 'BrandNewSecurePass456'
+      });
+      assert.strictEqual(res.isValid, true);
+      assert.deepStrictEqual(res.errors, {});
     });
 
-    test('storage keys conform to canonical HOC_HAN_NGU naming convention', () => {
-      assert.strictEqual(AUDIO_SETTINGS_STORAGE_KEY, 'HOC_HAN_NGU_AUDIO_SETTINGS');
-      assert.strictEqual(WRITING_SETTINGS_STORAGE_KEY, 'HOC_HAN_NGU_WRITING_SETTINGS');
+    test('rejects empty or whitespace current password', () => {
+      const res = validateChangePasswordForm({
+        currentPassword: '   ',
+        newPassword: 'BrandNewSecurePass456',
+        confirmNewPassword: 'BrandNewSecurePass456'
+      });
+      assert.strictEqual(res.isValid, false);
+      assert.strictEqual(res.errors.currentPassword, 'Mật khẩu hiện tại không được để trống');
+    });
+
+    test('rejects empty or whitespace new password', () => {
+      const res = validateChangePasswordForm({
+        currentPassword: 'CurrentPass123',
+        newPassword: '',
+        confirmNewPassword: ''
+      });
+      assert.strictEqual(res.isValid, false);
+      assert.strictEqual(res.errors.newPassword, 'Mật khẩu mới không được để trống');
+    });
+
+    test('rejects new password shorter than 6 characters', () => {
+      const res = validateChangePasswordForm({
+        currentPassword: 'CurrentPass123',
+        newPassword: '12345',
+        confirmNewPassword: '12345'
+      });
+      assert.strictEqual(res.isValid, false);
+      assert.strictEqual(res.errors.newPassword, 'Mật khẩu mới phải có ít nhất 6 ký tự');
+    });
+
+    test('rejects new password longer than 100 characters', () => {
+      const longPass = 'a'.repeat(101);
+      const res = validateChangePasswordForm({
+        currentPassword: 'CurrentPass123',
+        newPassword: longPass,
+        confirmNewPassword: longPass
+      });
+      assert.strictEqual(res.isValid, false);
+      assert.strictEqual(res.errors.newPassword, 'Mật khẩu mới không được vượt quá 100 ký tự');
+    });
+
+    test('rejects new password identical to current password', () => {
+      const res = validateChangePasswordForm({
+        currentPassword: 'SamePassword123',
+        newPassword: 'SamePassword123',
+        confirmNewPassword: 'SamePassword123'
+      });
+      assert.strictEqual(res.isValid, false);
+      assert.strictEqual(res.errors.newPassword, 'Mật khẩu mới không được trùng với mật khẩu hiện tại');
+    });
+
+    test('rejects mismatched confirm password', () => {
+      const res = validateChangePasswordForm({
+        currentPassword: 'CurrentPass123',
+        newPassword: 'NewPassword123',
+        confirmNewPassword: 'DifferentPassword456'
+      });
+      assert.strictEqual(res.isValid, false);
+      assert.strictEqual(res.errors.confirmNewPassword, 'Xác nhận mật khẩu mới không trùng khớp');
     });
   });
 

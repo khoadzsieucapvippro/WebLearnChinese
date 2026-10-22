@@ -4713,4 +4713,229 @@ dialog:not([open]) {
   }
 }
 
+/* =============================================================================
+ * 24. MANAGEMENT WORKSPACE & SIDEBAR NAVIGATION
+ * ============================================================================= */
+
+.management-header {
+  background-color: var(--color-bg-surface);
+  border-bottom: 1px solid var(--color-border);
+  box-shadow: var(--shadow-xs);
+  position: sticky;
+  top: 0;
+  z-index: 1020;
+}
+
+.management-brand {
+  color: var(--color-text-primary);
+}
+
+.management-brand-badge {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  background-color: var(--color-primitive-cinnabar-50, #fdf2f0);
+  color: var(--color-accent-primary);
+  border: 1px solid var(--color-primitive-cinnabar-200, #f7c5bd);
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--radius-sm);
+  vertical-align: middle;
+}
+
+.management-layout {
+  display: flex;
+  min-height: calc(100vh - 65px);
+  width: 100%;
+  position: relative;
+}
+
+.management-sidebar {
+  width: 270px;
+  flex-shrink: 0;
+  background-color: var(--color-bg-surface);
+  border-right: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.25s ease;
+  z-index: 1030;
+}
+
+.management-sidebar-inner {
+  padding: var(--space-3) var(--space-2);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.management-nav-group {
+  margin-bottom: var(--space-3);
+}
+
+.management-nav-heading {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+  padding: var(--space-1) var(--space-3);
+  margin-bottom: var(--space-1);
+}
+
+.management-nav-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.management-nav-link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  color: var(--color-text-primary);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  border-radius: var(--radius-md);
+  border-left: 3px solid transparent;
+  transition: background-color 0.15s ease, color 0.15s ease, border-left-color 0.15s ease;
+}
+
+.management-nav-link:hover,
+.management-nav-link:focus-visible {
+  background-color: var(--color-bg-subtle, #f5f2eb);
+  color: var(--color-accent-primary);
+  outline: none;
+}
+
+.management-nav-link.active,
+.management-nav-link[aria-current="page"] {
+  background-color: var(--color-primitive-cinnabar-50, #fdf2f0);
+  color: var(--color-accent-primary);
+  font-weight: 600;
+  border-left-color: var(--color-accent-primary);
+}
+
+.management-nav-icon {
+  width: 20px;
+  text-align: center;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.management-main-content {
+  flex: 1 1 0%;
+  min-width: 0;
+  background-color: var(--color-bg-canvas);
+  padding: var(--space-4) var(--space-3);
+}
+
+@media (min-width: 768px) {
+  .management-main-content {
+    padding: var(--space-4) var(--space-4);
+  }
+}
+
+@media (min-width: 1200px) {
+  .management-main-content {
+    padding: var(--space-5) var(--space-5);
+  }
+}
+
+@media (max-width: 991.98px) {
+  .management-sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    transform: translateX(-100%);
+    box-shadow: none;
+  }
+
+  .management-sidebar.show {
+    transform: translateX(0);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  }
+
+  .management-sidebar-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(26, 23, 21, 0.5);
+    z-index: 1025;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+
+  .management-sidebar-backdrop.show {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .management-sidebar {
+    transition: none !important;
+  }
+  .management-sidebar-backdrop {
+    transition: none !important;
+  }
+  .management-nav-link {
+    transition: none !important;
+  }
+}
+
+/* Management Header Responsive Adaptation (Prevents horizontal overflow on small viewports) */
+.management-header .nav-account-cluster {
+  flex-wrap: nowrap;
+  width: auto;
+}
+
+.management-header .nav-account-dropdown-wrapper {
+  width: auto;
+}
+
+.management-header .nav-account-trigger {
+  width: auto;
+  justify-content: flex-start;
+}
+
+@media (max-width: 575.98px) {
+  .management-header .container-fluid {
+    padding-left: var(--space-2) !important;
+    padding-right: var(--space-2) !important;
+  }
+  .management-header .nav-user-name {
+    display: none;
+  }
+  .management-header #navRoleBadge {
+    display: none !important;
+  }
+  .management-header .management-brand span.fs-7 {
+    font-size: 0.65rem !important;
+  }
+  .management-header #managementSidebarToggle {
+    padding: 0.25rem 0.45rem !important;
+  }
+  .management-header #btnBackToLearning {
+    padding: 0.25rem 0.45rem !important;
+  }
+  .management-header #navLogoutBtn {
+    padding-left: 0.45rem !important;
+    padding-right: 0.45rem !important;
+  }
+  .management-header .gap-2 {
+    gap: 0.35rem !important;
+  }
+}
+
+
+
 

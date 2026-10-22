@@ -61,6 +61,22 @@ export function getBaseUrl() {
 }
 
 /**
+ * Detects whether an external API base URL is explicitly configured.
+ * When API_BASE_URL is configured, the application is targeting a real backend;
+ * therefore, genuine backend errors (HTTP 401, 404, 500, network errors) must
+ * NEVER be silently downgraded to simulated demo auth or mock data.
+ * 
+ * @returns {boolean}
+ */
+export function isApiConfigured() {
+  if (typeof window !== 'undefined' && window.__ENV__?.API_BASE_URL) {
+    const raw = String(window.__ENV__.API_BASE_URL).trim();
+    return raw.length > 0;
+  }
+  return false;
+}
+
+/**
  * Detects whether execution is occurring on GitHub Pages (*.github.io).
  * @returns {boolean}
  */
@@ -349,7 +365,7 @@ export async function apiClient(endpoint, options = {}) {
     if (response.status === 401) {
       const authContentType = response.headers.get('content-type') || '';
       const isAuthJson = authContentType.includes('application/json');
-      if (!isAuthJson && endpoint.includes('/auth/login') && (isGitHubPagesEnvironment() || isDemoFallbackActive())) {
+      if (!isApiConfigured() && !isAuthJson && endpoint.includes('/auth/login') && (isGitHubPagesEnvironment() || isDemoFallbackActive())) {
         try {
           return await demoFallbackEngine.handleRequest(endpoint, options);
         } catch (fallbackErr) {
@@ -416,7 +432,7 @@ export async function apiClient(endpoint, options = {}) {
 
     // Smart Cloud Fallback on not OK (404, 405 Method Not Allowed on static pages, 502, 503, etc.)
     // Invariant: If response is JSON from a real backend, DO NOT swallow errors with mock data!
-    if (!response.ok && !isJson && (isGitHubPagesEnvironment() || isDemoFallbackActive())) {
+    if (!isApiConfigured() && !response.ok && !isJson && (isGitHubPagesEnvironment() || isDemoFallbackActive())) {
       try {
         return await demoFallbackEngine.handleRequest(endpoint, options);
       } catch (fallbackErr) {
@@ -437,7 +453,7 @@ export async function apiClient(endpoint, options = {}) {
     try {
       envelope = await response.json();
     } catch (jsonErr) {
-      if (!response.ok && (isGitHubPagesEnvironment() || isDemoFallbackActive())) {
+      if (!isApiConfigured() && !response.ok && (isGitHubPagesEnvironment() || isDemoFallbackActive())) {
         try {
           return await demoFallbackEngine.handleRequest(endpoint, options);
         } catch (fallbackErr) {
@@ -476,7 +492,7 @@ export async function apiClient(endpoint, options = {}) {
     }
 
     if (err instanceof TypeError || err.name === 'TypeError') {
-      if (isDemoFallbackActive()) {
+      if (!isApiConfigured() && isDemoFallbackActive()) {
         try {
           return await demoFallbackEngine.handleRequest(endpoint, options);
         } catch (fallbackErr) {

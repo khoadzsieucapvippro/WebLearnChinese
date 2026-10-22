@@ -22,7 +22,12 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.elearning.common.AuditActionType;
+import com.elearning.common.AuditResourceType;
+import com.elearning.service.ManagementAuditService;
+
 import java.util.List;
+import java.util.Map;
 
 /**
  * Implementation of {@link ModerationService} managing Content Moderation workflow.
@@ -37,15 +42,26 @@ public class ModerationServiceImpl implements ModerationService {
     private final LessonVocabularyRepository lessonVocabularyRepository;
     private final AccountRepository accountRepository;
     private final ModerationLogRepository moderationLogRepository;
+    private final ManagementAuditService managementAuditService;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public ModerationServiceImpl(LessonRepository lessonRepository,
+                                 LessonVocabularyRepository lessonVocabularyRepository,
+                                 AccountRepository accountRepository,
+                                 ModerationLogRepository moderationLogRepository,
+                                 ManagementAuditService managementAuditService) {
+        this.lessonRepository = lessonRepository;
+        this.lessonVocabularyRepository = lessonVocabularyRepository;
+        this.accountRepository = accountRepository;
+        this.moderationLogRepository = moderationLogRepository;
+        this.managementAuditService = managementAuditService;
+    }
 
     public ModerationServiceImpl(LessonRepository lessonRepository,
                                  LessonVocabularyRepository lessonVocabularyRepository,
                                  AccountRepository accountRepository,
                                  ModerationLogRepository moderationLogRepository) {
-        this.lessonRepository = lessonRepository;
-        this.lessonVocabularyRepository = lessonVocabularyRepository;
-        this.accountRepository = accountRepository;
-        this.moderationLogRepository = moderationLogRepository;
+        this(lessonRepository, lessonVocabularyRepository, accountRepository, moderationLogRepository, null);
     }
 
     @Override
@@ -78,6 +94,15 @@ public class ModerationServiceImpl implements ModerationService {
         Lesson lesson = lessonRepository.findById(lessonId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "Không tìm thấy bài học với ID: " + lessonId));
 
+        // Prevent self-review in moderation (invariant: moderator cannot review their own created lesson)
+        if (lesson.getCreatedBy() != null && moderator.getAccountId() != null
+                && lesson.getCreatedBy().getAccountId().equals(moderator.getAccountId())) {
+            throw new BusinessException(
+                    ErrorCode.FORBIDDEN,
+                    "Bạn không thể tự kiểm duyệt nội dung do chính mình tạo ra"
+            );
+        }
+
         String currentStatus = lesson.getStatus();
         if ("Approved".equalsIgnoreCase(currentStatus)) {
             throw new BusinessException(ErrorCode.CONFLICT, "Bài học đã được phê duyệt trước đó");
@@ -92,6 +117,18 @@ public class ModerationServiceImpl implements ModerationService {
         // Record immutable audit trail in MODERATION_LOG
         ModerationLog log = new ModerationLog(lesson, moderator, "Approve", null, null);
         moderationLogRepository.save(log);
+
+        if (managementAuditService != null) {
+            String details = String.format("Phê duyệt bài học #%d (%s)", lesson.getLessonId(), lesson.getTitle());
+            managementAuditService.logSuccess(
+                    AuditActionType.LESSON_APPROVE,
+                    AuditResourceType.LESSON,
+                    String.valueOf(lessonId),
+                    details,
+                    Map.of("status", currentStatus, "lessonId", lessonId),
+                    Map.of("status", "Approved", "lessonId", lessonId)
+            );
+        }
 
         List<LessonVocabulary> links = lessonVocabularyRepository.findByLessonIdWithVocabularyOrderAsc(lessonId);
         return LessonDetailResponse.fromEntity(lesson, links);
@@ -109,6 +146,15 @@ public class ModerationServiceImpl implements ModerationService {
         Lesson lesson = lessonRepository.findById(lessonId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "Không tìm thấy bài học với ID: " + lessonId));
 
+        // Prevent self-review in moderation (invariant: moderator cannot review their own created lesson)
+        if (lesson.getCreatedBy() != null && moderator.getAccountId() != null
+                && lesson.getCreatedBy().getAccountId().equals(moderator.getAccountId())) {
+            throw new BusinessException(
+                    ErrorCode.FORBIDDEN,
+                    "Bạn không thể tự kiểm duyệt nội dung do chính mình tạo ra"
+            );
+        }
+
         String currentStatus = lesson.getStatus();
         if ("Rejected".equalsIgnoreCase(currentStatus)) {
             throw new BusinessException(ErrorCode.CONFLICT, "Bài học đã ở trạng thái Rejected");
@@ -123,6 +169,20 @@ public class ModerationServiceImpl implements ModerationService {
         // Record immutable audit trail in MODERATION_LOG
         ModerationLog log = new ModerationLog(lesson, moderator, "Reject", request.getRejectionReason(), request.getFlaggedFields());
         moderationLogRepository.save(log);
+
+        if (managementAuditService != null) {
+            String details = String.format("Từ chối bài học #%d (%s): %s",
+                    lesson.getLessonId(), lesson.getTitle(), request.getRejectionReason());
+            managementAuditService.logSuccess(
+                    AuditActionType.LESSON_REJECT,
+                    AuditResourceType.LESSON,
+                    String.valueOf(lessonId),
+                    details,
+                    Map.of("status", currentStatus, "lessonId", lessonId),
+                    Map.of("status", "Rejected", "lessonId", lessonId, "rejectionReason", request.getRejectionReason(),
+                            "flaggedFields", request.getFlaggedFields() != null ? request.getFlaggedFields() : "")
+            );
+        }
 
         List<LessonVocabulary> links = lessonVocabularyRepository.findByLessonIdWithVocabularyOrderAsc(lessonId);
         return LessonDetailResponse.fromEntity(lesson, links);

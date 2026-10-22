@@ -156,6 +156,20 @@ class UserSrsSettingServiceTests {
         }
 
         @Test
+        @DisplayName("newCardsPerDay exceeding 100 throws VALIDATION_ERROR")
+        void testUpdateSettings_newCardsGreaterThan100_throwsValidationError() {
+            UpdateSrsSettingRequest request = new UpdateSrsSettingRequest(101, 100);
+
+            assertThatThrownBy(() -> userSrsSettingService.updateCurrentUserSettings(request))
+                    .isInstanceOf(BusinessException.class)
+                    .satisfies(ex -> {
+                        BusinessException be = (BusinessException) ex;
+                        assertThat(be.getErrorCode()).isEqualTo(ErrorCode.VALIDATION_ERROR);
+                        assertThat(be.getMessage()).contains("không được vượt quá 100");
+                    });
+        }
+
+        @Test
         @DisplayName("Non-positive maxReviewPerDay (<= 0) throws VALIDATION_ERROR")
         void testUpdateSettings_zeroMaxReview_throwsValidationError() {
             UpdateSrsSettingRequest request = new UpdateSrsSettingRequest(20, 0);

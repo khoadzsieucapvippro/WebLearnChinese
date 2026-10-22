@@ -40,6 +40,9 @@ class AdminAccountServiceTests {
     @Mock
     private AccountRepository accountRepository;
 
+    @Mock
+    private com.elearning.repository.RoleRepository roleRepository;
+
     @InjectMocks
     private AdminAccountServiceImpl adminAccountService;
 
@@ -148,6 +151,45 @@ class AdminAccountServiceTests {
             assertThatThrownBy(() -> adminAccountService.updateAccountStatus(999L, request, "admin@example.com"))
                     .isInstanceOf(BusinessException.class)
                     .hasFieldOrPropertyWithValue("errorCode", ErrorCode.NOT_FOUND);
+        }
+
+        @Test
+        @DisplayName("GIVEN deactivating last active admin attempt WHEN count <= 1 THEN throws BAD_REQUEST")
+        void testUpdateAccountStatus_deactivatingLastActiveAdmin_throwsBadRequest() {
+            testAccount.getRoles().clear();
+            testAccount.addRole(new Role(4, "Admin"));
+            testAccount.setStatus("Active");
+
+            when(accountRepository.findByIdForUpdate(10L)).thenReturn(Optional.of(testAccount));
+            when(roleRepository.findByRoleNameForUpdate("Admin")).thenReturn(Optional.of(new Role(4, "Admin")));
+            when(accountRepository.countActiveAdmins()).thenReturn(1L);
+
+            UpdateAccountStatusRequest request = new UpdateAccountStatusRequest("Inactive");
+
+            assertThatThrownBy(() -> adminAccountService.updateAccountStatus(10L, request, "other_admin@example.com"))
+                    .isInstanceOf(BusinessException.class)
+                    .hasFieldOrPropertyWithValue("errorCode", ErrorCode.BAD_REQUEST)
+                    .hasMessage("Không thể hạ quyền hoặc vô hiệu hóa quản trị viên hoạt động cuối cùng của hệ thống");
+        }
+
+        @Test
+        @DisplayName("GIVEN deactivating active admin WHEN multiple active admins exist (> 1) THEN succeeds")
+        void testUpdateAccountStatus_deactivatingActiveAdminWhenMultipleAdminsExist_success() {
+            testAccount.getRoles().clear();
+            testAccount.addRole(new Role(4, "Admin"));
+            testAccount.setStatus("Active");
+
+            when(accountRepository.findByIdForUpdate(10L)).thenReturn(Optional.of(testAccount));
+            when(roleRepository.findByRoleNameForUpdate("Admin")).thenReturn(Optional.of(new Role(4, "Admin")));
+            when(accountRepository.countActiveAdmins()).thenReturn(2L);
+            when(accountRepository.save(any(Account.class))).thenAnswer(i -> i.getArgument(0));
+
+            UpdateAccountStatusRequest request = new UpdateAccountStatusRequest("Inactive");
+            AccountResponse response = adminAccountService.updateAccountStatus(10L, request, "other_admin@example.com");
+
+            assertThat(response).isNotNull();
+            assertThat(response.getStatus()).isEqualTo("Inactive");
+            assertThat(testAccount.getAuthorizationVersion()).isEqualTo(2L);
         }
     }
 }

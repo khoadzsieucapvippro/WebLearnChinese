@@ -63,6 +63,9 @@ public class UserSrsSettingServiceImpl implements UserSrsSettingService {
         if (request.getNewCardsPerDay() == null || request.getNewCardsPerDay() <= 0) {
             throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Số thẻ mới mỗi ngày phải là số nguyên dương lớn hơn 0");
         }
+        if (request.getNewCardsPerDay() > 100) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Số thẻ mới mỗi ngày không được vượt quá 100");
+        }
         if (request.getMaxReviewPerDay() != null && request.getMaxReviewPerDay() <= 0) {
             throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Số thẻ ôn tập tối đa mỗi ngày phải là số nguyên dương lớn hơn 0");
         }

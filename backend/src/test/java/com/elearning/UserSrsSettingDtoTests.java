@@ -50,6 +50,23 @@ class UserSrsSettingDtoTests {
         }
 
         @Test
+        @DisplayName("Valid upper boundary value (100, 100) passes @Max(100) validation")
+        void testMaximumNewCardsValue_passes() {
+            UpdateSrsSettingRequest request = new UpdateSrsSettingRequest(100, 100);
+            Set<ConstraintViolation<UpdateSrsSettingRequest>> violations = validator.validate(request);
+            assertThat(violations).isEmpty();
+        }
+
+        @Test
+        @DisplayName("newCardsPerDay exceeding 100 fails @Max validation")
+        void testNewCardsGreaterThan100_fails() {
+            UpdateSrsSettingRequest request = new UpdateSrsSettingRequest(101, 100);
+            Set<ConstraintViolation<UpdateSrsSettingRequest>> violations = validator.validate(request);
+            assertThat(violations).hasSize(1);
+            assertThat(violations.iterator().next().getPropertyPath().toString()).isEqualTo("newCardsPerDay");
+        }
+
+        @Test
         @DisplayName("Zero newCardsPerDay fails @Positive validation")
         void testZeroNewCards_fails() {
             UpdateSrsSettingRequest request = new UpdateSrsSettingRequest(0, 100);

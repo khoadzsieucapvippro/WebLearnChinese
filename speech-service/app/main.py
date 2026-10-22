@@ -1,7 +1,9 @@
+import hmac
 import logging
+import os
 from typing import Optional
 import numpy as np
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException
+from fastapi import FastAPI, UploadFile, File, Form, Header, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
@@ -27,6 +29,21 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+def get_expected_internal_token() -> str:
+    token = os.getenv("INTERNAL_SPEECH_TOKEN")
+    if token is None or not token.strip():
+        token = os.getenv("SPEECH_SERVICE_TOKEN", "")
+    return token.strip() if token else ""
+
+def verify_internal_token(x_internal_token: Optional[str] = Header(None, alias="X-Internal-Token")):
+    expected_token = get_expected_internal_token()
+    if expected_token:
+        if not x_internal_token or not hmac.compare_digest(x_internal_token.strip(), expected_token):
+            raise HTTPException(
+                status_code=401,
+                detail="Unauthorized: Missing or invalid X-Internal-Token"
+            )
+
 @app.get("/health")
 def health_check():
     return {
@@ -38,8 +55,8 @@ def health_check():
         "version": "1.0.0"
     }
 
-@app.post("/evaluate-reading")
-@app.post("/v1/assess")
+@app.post("/evaluate-reading", dependencies=[Depends(verify_internal_token)])
+@app.post("/v1/assess", dependencies=[Depends(verify_internal_token)])
 async def evaluate_reading(
     audio: UploadFile = File(...),
     targetText: Optional[str] = Form(None),

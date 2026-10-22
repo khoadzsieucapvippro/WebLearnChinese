@@ -155,13 +155,14 @@ describe('Regression: Authenticated Links, Relative Paths & Data Isolation', () 
       const progressIdx = dropdownLinksContainer.children.indexOf(learningProgressLink);
       assert.strictEqual(progressIdx, profileIdx + 1, '#navLearningProgressBtn must appear immediately below #navProfileBtn');
 
-      // Verify privileged links are absent for Learner
+      // Verify privileged management link is absent for Learner (Feature F15)
+      assert.strictEqual(findElementByAttr(container, 'id', 'navManagementBtn'), null, 'Management link must NOT exist for Learner');
       assert.strictEqual(findElementByAttr(container, 'id', 'navCreatorStudioBtn'), null);
       assert.strictEqual(findElementByAttr(container, 'id', 'navModeratorBtn'), null);
       assert.strictEqual(findElementByAttr(container, 'id', 'navAdminBtn'), null);
     });
 
-    test('Authenticated Creator: renders relative creator-lessons.html', () => {
+    test('Authenticated Creator: renders relative management.html entry', () => {
       authManager.setSession({
         token: 'mock-creator-token',
         accountId: 2,
@@ -176,12 +177,13 @@ describe('Regression: Authenticated Links, Relative Paths & Data Isolation', () 
       const profileLink = findElementByAttr(container, 'id', 'navProfileBtn');
       assert.strictEqual(profileLink.getAttribute('href'), 'profile.html');
 
-      const studioLink = findElementByAttr(container, 'id', 'navCreatorStudioBtn');
-      assert.ok(studioLink, 'Studio link must be present for Creator');
-      assert.strictEqual(studioLink.getAttribute('href'), 'creator-lessons.html');
+      const mgmtLink = findElementByAttr(container, 'id', 'navManagementBtn');
+      assert.ok(mgmtLink, 'Management link must be present for Creator');
+      assert.strictEqual(mgmtLink.getAttribute('href'), 'management.html');
+      assert.strictEqual(mgmtLink.textContent, 'Khu vực quản lý');
     });
 
-    test('Authenticated Moderator: renders relative moderator-queue.html', () => {
+    test('Authenticated Moderator: renders relative management.html entry', () => {
       authManager.setSession({
         token: 'mock-mod-token',
         accountId: 3,
@@ -193,12 +195,13 @@ describe('Regression: Authenticated Links, Relative Paths & Data Isolation', () 
       const container = new MockElement('div');
       renderNavbarAuth(container);
 
-      const modLink = findElementByAttr(container, 'id', 'navModeratorBtn');
-      assert.ok(modLink, 'Moderator queue link must be present for Moderator');
-      assert.strictEqual(modLink.getAttribute('href'), 'moderator-queue.html');
+      const mgmtLink = findElementByAttr(container, 'id', 'navManagementBtn');
+      assert.ok(mgmtLink, 'Management link must be present for Moderator');
+      assert.strictEqual(mgmtLink.getAttribute('href'), 'management.html');
+      assert.strictEqual(mgmtLink.textContent, 'Khu vực quản lý');
     });
 
-    test('Authenticated Admin: renders Studio, Moderator, and Admin relative links', () => {
+    test('Authenticated Admin: renders relative management.html entry', () => {
       authManager.setSession({
         token: 'mock-admin-token',
         accountId: 4,
@@ -210,16 +213,10 @@ describe('Regression: Authenticated Links, Relative Paths & Data Isolation', () 
       const container = new MockElement('div');
       renderNavbarAuth(container);
 
-      const studioLink = findElementByAttr(container, 'id', 'navCreatorStudioBtn');
-      const modLink = findElementByAttr(container, 'id', 'navModeratorBtn');
-      const adminLink = findElementByAttr(container, 'id', 'navAdminBtn');
-
-      assert.ok(studioLink);
-      assert.strictEqual(studioLink.getAttribute('href'), 'creator-lessons.html');
-      assert.ok(modLink);
-      assert.strictEqual(modLink.getAttribute('href'), 'moderator-queue.html');
-      assert.ok(adminLink);
-      assert.strictEqual(adminLink.getAttribute('href'), 'admin-lessons.html');
+      const mgmtLink = findElementByAttr(container, 'id', 'navManagementBtn');
+      assert.ok(mgmtLink, 'Management link must be present for Admin');
+      assert.strictEqual(mgmtLink.getAttribute('href'), 'management.html');
+      assert.strictEqual(mgmtLink.textContent, 'Khu vực quản lý');
     });
 
     test('Lesson detail link in createSafeElement maintains document-relative path', () => {

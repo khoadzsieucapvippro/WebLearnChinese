@@ -12132,6 +12132,19 @@ export class SrsReviewController {
       this.dom.btnAudioPronounceBack.setAttribute('aria-label', speechLabel);
     }
 
+    // Auto-pronounce if enabled in audio settings (Feature F18)
+    try {
+      if (typeof localStorage !== 'undefined') {
+        const rawAudioSettings = localStorage.getItem('HOC_HAN_NGU_AUDIO_SETTINGS');
+        if (rawAudioSettings) {
+          const parsed = JSON.parse(rawAudioSettings);
+          if (parsed && (parsed.autoPronounce === true || parsed.autoPronounce === 'true')) {
+            this.playPronunciation(this.dom.btnAudioPronounceFront);
+          }
+        }
+      }
+    } catch (_) {}
+
     // Back Face
     // Ẩn nhãn loại thẻ ở góc trên bên trái per Requirement 1 & 2
     if (this.dom.cardTypeBack) {

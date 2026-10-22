@@ -1,0 +1,41 @@
+# Dependency and build output
+node_modules/
+target/
+dist/
+build/
+.git/
+.kilo/
+.agents/
+.gemini/
+.playwright/
+artifacts/
+scratch/
+
+# Environment files and credentials
+.env
+.env.*
+*.env
+*.key
+*.pem
+*.pfx
+
+# Large data archives and dump files
+repomix-output.*
+*.zip
+*.tar.gz
+*.rar
+*.jar
+*.war
+data_kiem_tra_all.json
+data_kiem_tra_tom_tat.txt
+
+# Media and binary files
+*.mp3
+*.wav
+*.mp4
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.ico
+*.pdf

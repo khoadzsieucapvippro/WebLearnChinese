@@ -390,6 +390,39 @@ export class VocabWritingOrchestrator {
   }
 
   /**
+   * Retrieves user writing preferences from localStorage (Feature F18).
+   * @private
+   * @returns {{ gridPixelSize: number, showOutline: boolean, autoReplayStrokes: boolean }}
+   */
+  _getWritingPreferences() {
+    let gridPixelSize = 170;
+    let showOutline = true;
+    let autoReplayStrokes = false;
+    try {
+      if (typeof localStorage !== 'undefined') {
+        const raw = localStorage.getItem('HOC_HAN_NGU_WRITING_SETTINGS');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed?.gridSize === 'large' || parsed?.gridPixelSize === 200) {
+            gridPixelSize = 200;
+          }
+          if (typeof parsed?.showOutline === 'boolean') {
+            showOutline = parsed.showOutline;
+          } else if (parsed?.showOutline === 'false') {
+            showOutline = false;
+          }
+          if (typeof parsed?.autoReplayStrokes === 'boolean') {
+            autoReplayStrokes = parsed.autoReplayStrokes;
+          } else if (parsed?.autoReplayStrokes === 'true') {
+            autoReplayStrokes = true;
+          }
+        }
+      }
+    } catch (_) {}
+    return { gridPixelSize, showOutline, autoReplayStrokes };
+  }
+
+  /**
    * Mounts a single rice-grid canvas box for a specific character index.
    *
    * @private
@@ -399,6 +432,9 @@ export class VocabWritingOrchestrator {
    */
   async mountCanvasBox(charIndex, character) {
     if (this.isDestroyed) return false;
+
+    const writingPrefs = this._getWritingPreferences();
+    const pixelSize = writingPrefs.gridPixelSize;
 
     const boxWrapper = document.createElement('div');
     boxWrapper.className = 'd-flex flex-column align-items-center';
@@ -414,12 +450,12 @@ export class VocabWritingOrchestrator {
     // Calligraphy Canvas Box with Rice Grid
     const canvasBox = document.createElement('div');
     canvasBox.className = 'writing-rice-grid-box position-relative rounded-2 border shadow-sm';
-    canvasBox.style.width = '170px';
-    canvasBox.style.height = '170px';
+    canvasBox.style.width = `${pixelSize}px`;
+    canvasBox.style.height = `${pixelSize}px`;
     canvasBox.style.touchAction = 'none';
 
     // Rice grid SVG background
-    const gridSvg = createRiceGridSvg(170);
+    const gridSvg = createRiceGridSvg(pixelSize);
     canvasBox.appendChild(gridSvg);
 
     // Target mount div for HanziWriter
@@ -472,8 +508,8 @@ export class VocabWritingOrchestrator {
     // Instantiate CharacterWritingEngine
     const engine = new CharacterWritingEngine({
       targetElement: targetMount,
-      width: 170,
-      height: 170,
+      width: pixelSize,
+      height: pixelSize,
       strokeColor: '#1976D2',
       radicalColor: '#C83C23',
       outlineColor: '#D1D5DB',
@@ -507,6 +543,14 @@ export class VocabWritingOrchestrator {
       fallbackMsg.appendChild(noteSpan);
       targetMount.appendChild(fallbackMsg);
       return false;
+    }
+
+    if (writingPrefs.autoReplayStrokes && this.demoOnly) {
+      setTimeout(() => {
+        if (!this.isDestroyed && engine) {
+          engine.replay();
+        }
+      }, 300);
     }
 
     return true;

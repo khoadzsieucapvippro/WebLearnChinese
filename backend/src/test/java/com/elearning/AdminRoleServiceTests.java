@@ -173,5 +173,46 @@ class AdminRoleServiceTests {
                     .hasFieldOrPropertyWithValue("errorCode", ErrorCode.BAD_REQUEST)
                     .hasMessage("Không thể tự tước quyền Quản trị viên (Admin) của chính mình");
         }
+
+        @Test
+        @DisplayName("GIVEN last active admin demotion attempt WHEN count <= 1 THEN throws BAD_REQUEST")
+        void testUpdateAccountRoles_demotingLastActiveAdmin_throwsBadRequest() {
+            testAccount.getRoles().clear();
+            testAccount.addRole(roleAdmin);
+            testAccount.setStatus("Active");
+
+            when(roleRepository.findAll()).thenReturn(List.of(roleLearner, roleCreator, roleModerator, roleAdmin));
+            when(accountRepository.findByIdForUpdate(5L)).thenReturn(Optional.of(testAccount));
+            when(roleRepository.findByRoleNameForUpdate("Admin")).thenReturn(Optional.of(roleAdmin));
+            when(accountRepository.countActiveAdmins()).thenReturn(1L);
+
+            UpdateAccountRolesRequest request = new UpdateAccountRolesRequest(List.of("Learner"));
+
+            assertThatThrownBy(() -> adminRoleService.updateAccountRoles(5L, request, "other_admin@example.com"))
+                    .isInstanceOf(BusinessException.class)
+                    .hasFieldOrPropertyWithValue("errorCode", ErrorCode.BAD_REQUEST)
+                    .hasMessage("Không thể hạ quyền hoặc vô hiệu hóa quản trị viên hoạt động cuối cùng của hệ thống");
+        }
+
+        @Test
+        @DisplayName("GIVEN active admin demotion WHEN multiple active admins exist (> 1) THEN succeeds")
+        void testUpdateAccountRoles_demotingActiveAdminWhenMultipleAdminsExist_success() {
+            testAccount.getRoles().clear();
+            testAccount.addRole(roleAdmin);
+            testAccount.setStatus("Active");
+
+            when(roleRepository.findAll()).thenReturn(List.of(roleLearner, roleCreator, roleModerator, roleAdmin));
+            when(accountRepository.findByIdForUpdate(5L)).thenReturn(Optional.of(testAccount));
+            when(roleRepository.findByRoleNameForUpdate("Admin")).thenReturn(Optional.of(roleAdmin));
+            when(accountRepository.countActiveAdmins()).thenReturn(2L);
+            when(accountRepository.save(any(Account.class))).thenAnswer(i -> i.getArgument(0));
+
+            UpdateAccountRolesRequest request = new UpdateAccountRolesRequest(List.of("Learner"));
+            AccountResponse response = adminRoleService.updateAccountRoles(5L, request, "other_admin@example.com");
+
+            assertThat(response).isNotNull();
+            assertThat(response.getRoles()).containsExactly("Learner");
+            assertThat(testAccount.getAuthorizationVersion()).isEqualTo(2L);
+        }
     }
 }

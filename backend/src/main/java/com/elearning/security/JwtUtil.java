@@ -9,6 +9,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.Profiles;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -30,6 +32,7 @@ public class JwtUtil {
 
     public static final String DEFAULT_ISSUER = "elearning-backend";
     public static final String CLAIM_AUTH_VER = "auth_ver";
+    public static final String DEFAULT_DEV_FALLBACK_SECRET = "dev-local-jwt-secret-key-minimum-256-bits-length-for-development-only!";
 
     private final SecretKey signingKey;
     private final long expirationMs;
@@ -40,14 +43,29 @@ public class JwtUtil {
         this(secret, expirationMs, DEFAULT_ISSUER);
     }
 
+    public JwtUtil(String secret, long expirationMs, String issuer) {
+        this(secret, expirationMs, issuer, null);
+    }
+
     @Autowired
     public JwtUtil(
-            @Value("${jwt.secret}") String secret,
+            @Value("${jwt.secret:}") String secret,
             @Value("${jwt.expiration-ms:86400000}") long expirationMs,
-            @Value("${jwt.issuer:elearning-backend}") String issuer) {
+            @Value("${jwt.issuer:elearning-backend}") String issuer,
+            @Autowired(required = false) Environment env) {
+
+        boolean isDevOrLocal = isDevOrLocalProfile(env);
+        boolean isProduction = isProductionProfile(env);
 
         if (secret == null || secret.isBlank()) {
-            throw new IllegalArgumentException("JWT secret cannot be null or blank");
+            if (isDevOrLocal) {
+                log.warn("Active profile indicates development/local environment. Using built-in fallback JWT secret. DO NOT USE IN PRODUCTION!");
+                secret = DEFAULT_DEV_FALLBACK_SECRET;
+            } else {
+                throw new IllegalArgumentException("JWT secret cannot be null or blank (missing property: jwt.secret). Please configure JWT_SECRET environment variable.");
+            }
+        } else if (isProduction && secret.equals(DEFAULT_DEV_FALLBACK_SECRET)) {
+            throw new IllegalStateException("FATAL: Insecure development fallback secret cannot be used in production environment. Application startup halted.");
         }
 
         byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
@@ -66,6 +84,45 @@ public class JwtUtil {
                 .requireIssuer(this.issuer)
                 .verifyWith(this.signingKey)
                 .build();
+    }
+
+    private static boolean isDevOrLocalProfile(Environment env) {
+        if (env == null) {
+            return false;
+        }
+        String[] activeProfiles = env.getActiveProfiles();
+        if (activeProfiles != null) {
+            for (String profile : activeProfiles) {
+                if (profile != null) {
+                    String p = profile.trim().toLowerCase();
+                    if (p.contains("local") || p.contains("dev")) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    private static boolean isProductionProfile(Environment env) {
+        if (env == null) {
+            return false;
+        }
+        if (env.acceptsProfiles(Profiles.of("prod", "production"))) {
+            return true;
+        }
+        String[] activeProfiles = env.getActiveProfiles();
+        if (activeProfiles != null) {
+            for (String profile : activeProfiles) {
+                if (profile != null) {
+                    String p = profile.trim().toLowerCase();
+                    if ("prod".equals(p) || "production".equals(p)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     /**

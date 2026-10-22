@@ -193,60 +193,7 @@ function renderProfileData(profile) {
     roleBadge.setAttribute('aria-label', `Vai trò tài khoản: ${getRoleLabel(primaryRole)}`);
   }
 
-  // Render role workspaces if user has elevated privileges
-  const workspacesSection = document.getElementById('profileRoleWorkspacesSection');
-  const workspacesContainer = document.getElementById('profileWorkspacesContainer');
-  if (workspacesSection && workspacesContainer) {
-    clearContainer(workspacesContainer);
-    const workspaceLinks = [];
 
-    if (roles.includes('Admin')) {
-      workspaceLinks.push(
-        createSafeElement('a', {
-          className: 'btn-chinese-primary py-1 px-3 btn-sm text-decoration-none d-inline-flex align-items-center gap-1',
-          text: 'Quản trị hệ thống',
-          attrs: { href: 'admin-lessons.html', id: 'profileWorkspaceAdmin' }
-        })
-      );
-    }
-
-    if (roles.includes('Moderator') || roles.includes('Admin')) {
-      workspaceLinks.push(
-        createSafeElement('a', {
-          className: 'btn-chinese-secondary py-1 px-3 btn-sm text-decoration-none d-inline-flex align-items-center gap-1',
-          text: 'Hàng đợi kiểm duyệt',
-          attrs: { href: 'moderator-queue.html', id: 'profileWorkspaceModerator' }
-        }),
-        createSafeElement('a', {
-          className: 'btn-chinese-outline py-1 px-3 btn-sm text-decoration-none d-inline-flex align-items-center gap-1',
-          text: 'Lịch sử kiểm duyệt',
-          attrs: { href: 'moderator-history.html', id: 'profileWorkspaceHistory' }
-        })
-      );
-    }
-
-    if (roles.includes('Creator') || roles.includes('Admin')) {
-      workspaceLinks.push(
-        createSafeElement('a', {
-          className: 'btn-chinese-secondary py-1 px-3 btn-sm text-decoration-none d-inline-flex align-items-center gap-1',
-          text: 'Creator Studio',
-          attrs: { href: 'creator-lessons.html', id: 'profileWorkspaceCreator' }
-        }),
-        createSafeElement('a', {
-          className: 'btn-chinese-outline py-1 px-3 btn-sm text-decoration-none d-inline-flex align-items-center gap-1',
-          text: 'Nhập từ Excel',
-          attrs: { href: 'creator-import.html', id: 'profileWorkspaceImport' }
-        })
-      );
-    }
-
-    if (workspaceLinks.length > 0) {
-      workspaceLinks.forEach(link => workspacesContainer.appendChild(link));
-      workspacesSection.classList.remove('d-none');
-    } else {
-      workspacesSection.classList.add('d-none');
-    }
-  }
 
   if (avatarImg) {
     setSafeAvatarSrc(avatarImg, profile?.avatarUrl);
@@ -698,8 +645,12 @@ export function initProfileTabs() {
 
   tabSettings.addEventListener('click', () => {
     activateSettingsTab();
-    loadSrsSettings();
-    initDisplayAndAudioSettings();
+    const roles = authManager.getRoles();
+    const isStaff = roles.includes('Admin') || roles.includes('Creator') || roles.includes('Moderator');
+    if (!isStaff) {
+      loadSrsSettings();
+      initDisplayAndAudioSettings();
+    }
     if (typeof history !== 'undefined' && history.replaceState) {
       history.replaceState(null, '', '#settings');
     }
@@ -707,18 +658,22 @@ export function initProfileTabs() {
 
   function checkHash() {
     const hash = (typeof window !== 'undefined' && window.location.hash) || '';
-    if (hash === '#srs-settings' || hash === '#settings') {
+    if (hash === '#srs-settings' || hash === '#settings' || hash === '#security') {
       activateSettingsTab();
-      loadSrsSettings();
-      initDisplayAndAudioSettings();
-      if (hash === '#srs-settings') {
-        const srsCard = document.getElementById('srs-settings-card');
-        const srsInput = document.getElementById('srsNewCardsPerDayInput');
-        if (srsCard && typeof srsCard.scrollIntoView === 'function') {
-          srsCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }
-        if (srsInput && typeof srsInput.focus === 'function') {
-          srsInput.focus();
+      const roles = authManager.getRoles();
+      const isStaff = roles.includes('Admin') || roles.includes('Creator') || roles.includes('Moderator');
+      if (!isStaff) {
+        loadSrsSettings();
+        initDisplayAndAudioSettings();
+        if (hash === '#srs-settings') {
+          const srsCard = document.getElementById('srs-settings-card');
+          const srsInput = document.getElementById('srsNewCardsPerDayInput');
+          if (srsCard && typeof srsCard.scrollIntoView === 'function') {
+            srsCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
+          if (srsInput && typeof srsInput.focus === 'function') {
+            srsInput.focus();
+          }
         }
       }
     } else if (hash === '#personal-info') {
@@ -960,6 +915,283 @@ export function initDisplayAndAudioSettings() {
 }
 
 /**
+ * Validates password change form inputs (Task R3 / Feature F19).
+ * Contract:
+ * - currentPassword: string, non-blank
+ * - newPassword: string, length 6-100, !== currentPassword
+ * - confirmNewPassword: string, === newPassword
+ *
+ * @param {Object} payload
+ * @param {string} payload.currentPassword
+ * @param {string} payload.newPassword
+ * @param {string} [payload.confirmNewPassword]
+ * @returns {{ isValid: boolean, errors: Record<string, string> }}
+ */
+export function validateChangePasswordForm(payload = {}) {
+  const errors = {};
+  const currentPassword = typeof payload.currentPassword === 'string' ? payload.currentPassword.trim() : '';
+  const newPassword = typeof payload.newPassword === 'string' ? payload.newPassword.trim() : '';
+  const confirmNewPassword = typeof payload.confirmNewPassword === 'string' ? payload.confirmNewPassword.trim() : '';
+
+  if (!currentPassword) {
+    errors.currentPassword = 'Mật khẩu hiện tại không được để trống';
+  }
+
+  if (!newPassword) {
+    errors.newPassword = 'Mật khẩu mới không được để trống';
+  } else if (newPassword.length < 6) {
+    errors.newPassword = 'Mật khẩu mới phải có ít nhất 6 ký tự';
+  } else if (newPassword.length > 100) {
+    errors.newPassword = 'Mật khẩu mới không được vượt quá 100 ký tự';
+  } else if (currentPassword && newPassword === currentPassword) {
+    errors.newPassword = 'Mật khẩu mới không được trùng với mật khẩu hiện tại';
+  }
+
+  if (payload.confirmNewPassword !== undefined) {
+    if (!confirmNewPassword) {
+      errors.confirmNewPassword = 'Vui lòng xác nhận mật khẩu mới';
+    } else if (newPassword && confirmNewPassword !== newPassword) {
+      errors.confirmNewPassword = 'Xác nhận mật khẩu mới không trùng khớp';
+    }
+  }
+
+  return {
+    isValid: Object.keys(errors).length === 0,
+    errors
+  };
+}
+
+/**
+ * Initializes the Account Security / Change Password form.
+ * Calls POST /api/v1/auth/change-password.
+ * Strictly adheres to Zero Web Storage Exposure: never stores passwords in storage.
+ */
+export function initAccountSecurity() {
+  if (typeof document === 'undefined') return;
+
+  const form = document.getElementById('changePasswordForm');
+  if (!form) return;
+
+  const currentInput = document.getElementById('currentPasswordInput');
+  const newInput = document.getElementById('newPasswordInput');
+  const confirmInput = document.getElementById('confirmNewPasswordInput');
+  const submitBtn = document.getElementById('btnChangePassword');
+  const resetBtn = document.getElementById('btnResetPasswordForm');
+  const globalAlert = document.getElementById('changePasswordGlobalAlert');
+  const currentFeedback = document.getElementById('currentPasswordFeedback');
+  const newFeedback = document.getElementById('newPasswordFeedback');
+  const confirmFeedback = document.getElementById('confirmNewPasswordFeedback');
+
+  function clearFieldErrors() {
+    [currentInput, newInput, confirmInput].forEach(inp => {
+      if (inp) {
+        inp.classList.remove('is-invalid');
+        inp.classList.remove('is-valid');
+      }
+    });
+    [currentFeedback, newFeedback, confirmFeedback].forEach(fb => {
+      if (fb) fb.textContent = '';
+    });
+    if (globalAlert) {
+      globalAlert.classList.add('d-none');
+      globalAlert.textContent = '';
+      globalAlert.className = 'mb-3 d-none';
+    }
+  }
+
+  function showGlobalAlert(message, type = 'danger') {
+    if (!globalAlert) return;
+    globalAlert.className = `alert alert-${type} py-2 px-3 small mb-3`;
+    globalAlert.textContent = message;
+    globalAlert.classList.remove('d-none');
+  }
+
+  if (resetBtn) {
+    resetBtn.addEventListener('click', () => {
+      form.reset();
+      clearFieldErrors();
+    });
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    clearFieldErrors();
+
+    const currentPassword = currentInput ? currentInput.value : '';
+    const newPassword = newInput ? newInput.value : '';
+    const confirmNewPassword = confirmInput ? confirmInput.value : '';
+
+    const validation = validateChangePasswordForm({
+      currentPassword,
+      newPassword,
+      confirmNewPassword
+    });
+
+    if (!validation.isValid) {
+      if (validation.errors.currentPassword && currentInput && currentFeedback) {
+        currentInput.classList.add('is-invalid');
+        currentFeedback.textContent = validation.errors.currentPassword;
+      }
+      if (validation.errors.newPassword && newInput && newFeedback) {
+        newInput.classList.add('is-invalid');
+        newFeedback.textContent = validation.errors.newPassword;
+      }
+      if (validation.errors.confirmNewPassword && confirmInput && confirmFeedback) {
+        confirmInput.classList.add('is-invalid');
+        confirmFeedback.textContent = validation.errors.confirmNewPassword;
+      }
+      return;
+    }
+
+    // Set loading state
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      const spinner = submitBtn.querySelector('.spinner-border');
+      if (spinner) spinner.classList.remove('d-none');
+    }
+
+    try {
+      await apiClient('/auth/change-password', {
+        method: 'POST',
+        body: JSON.stringify({
+          currentPassword,
+          newPassword
+        })
+      });
+
+      // Reset form and clear password variables immediately (Zero Web Storage Exposure)
+      form.reset();
+      clearFieldErrors();
+
+      showGlobalAlert('✓ Đổi mật khẩu thành công! Vui lòng ghi nhớ mật khẩu mới cho các lần đăng nhập tiếp theo.', 'success');
+      showToast({
+        type: 'success',
+        title: 'Bảo mật tài khoản',
+        message: 'Đổi mật khẩu thành công.'
+      });
+    } catch (err) {
+      const message = err.message || 'Đổi mật khẩu thất bại. Vui lòng kiểm tra lại thông tin.';
+      if (err.status === 401 || (err.status === 400 && message.toLowerCase().includes('mật khẩu hiện tại'))) {
+        if (currentInput && currentFeedback) {
+          currentInput.classList.add('is-invalid');
+          currentFeedback.textContent = message;
+        }
+      }
+      showGlobalAlert(message, 'danger');
+      showToast({
+        type: 'error',
+        title: 'Lỗi đổi mật khẩu',
+        message: message
+      });
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        const spinner = submitBtn.querySelector('.spinner-border');
+        if (spinner) spinner.classList.add('d-none');
+      }
+    }
+  });
+}
+
+/**
+ * Adapts header layout for staff members (Admin, Creator, Moderator).
+ * Ensures zero student navigation links and brand links directly to management hub.
+ */
+export function adaptHeaderForManagement() {
+  const headerEl = document.querySelector('header.site-header');
+  if (!headerEl) return;
+
+  headerEl.className = 'management-header sticky-top';
+
+  const brandLink = createSafeElement('a', {
+    className: 'management-brand d-flex align-items-center gap-2 text-decoration-none',
+    attrs: { href: 'management.html' },
+    children: [
+      createSafeElement('span', { className: 'chinese-seal-icon', text: '管', attrs: { 'aria-hidden': 'true' } }),
+      createSafeElement('div', {
+        className: 'd-flex flex-column',
+        children: [
+          createSafeElement('span', { className: 'fw-bold fs-5 text-chinese-red lh-1', text: 'Hán Ngữ' }),
+          createSafeElement('span', { className: 'fs-7 text-secondary tracking-wide', text: 'QUẢN LÝ & TÁC NGHIỆP' })
+        ]
+      }),
+      createSafeElement('span', { className: 'management-brand-badge d-none d-sm-inline-block', text: 'Hồ sơ tài khoản' })
+    ]
+  });
+
+  const authContainer = createSafeElement('div', {
+    className: 'd-flex align-items-center gap-2',
+    attrs: { id: 'navAuthContainer' }
+  });
+
+  const leftBox = createSafeElement('div', {
+    className: 'd-flex align-items-center gap-2 gap-lg-3',
+    children: [brandLink]
+  });
+
+  const rightBox = createSafeElement('div', {
+    className: 'd-flex align-items-center gap-2',
+    children: [authContainer]
+  });
+
+  const row = createSafeElement('div', {
+    className: 'd-flex align-items-center justify-content-between py-2',
+    children: [leftBox, rightBox]
+  });
+
+  const containerFluid = createSafeElement('div', {
+    className: 'container-fluid px-3 px-lg-4',
+    children: [row]
+  });
+
+  headerEl.replaceChildren(containerFluid);
+  initNavbarAuth('navAuthContainer');
+}
+
+/**
+ * Applies contextual separation of learning settings for management staff.
+ * - For staff: removes learning/SRS widgets, updates tab label to "Bảo mật & Cài đặt".
+ * - For learner: preserves standard learner experience and initializes study settings.
+ */
+export function applyProfileContext() {
+  const roles = authManager.getRoles();
+  const hasManagementRole = roles.includes('Admin') || roles.includes('Creator') || roles.includes('Moderator');
+
+  if (hasManagementRole) {
+    adaptHeaderForManagement();
+
+    const srsCard = document.getElementById('srs-settings-card');
+    if (srsCard && typeof srsCard.remove === 'function') srsCard.remove();
+
+    const localNotice = document.getElementById('localSettingsNotice');
+    if (localNotice && typeof localNotice.remove === 'function') localNotice.remove();
+
+    const audioCard = document.getElementById('audio-settings-card');
+    if (audioCard && typeof audioCard.remove === 'function') audioCard.remove();
+
+    const writingCard = document.getElementById('writing-settings-card');
+    if (writingCard && typeof writingCard.remove === 'function') writingCard.remove();
+
+    const tabSettings = document.getElementById('tabLearningSettings');
+    if (tabSettings) {
+      const labelSpan = tabSettings.querySelector('span > span:last-child');
+      if (labelSpan) labelSpan.textContent = 'Bảo mật & Cài đặt';
+    }
+    const paneHeading = document.querySelector('#paneLearningSettings h2');
+    if (paneHeading) {
+      paneHeading.textContent = 'Cài Đặt Tài Khoản & Bảo Mật';
+    }
+    const paneSubtext = document.querySelector('#paneLearningSettings h2 + p');
+    if (paneSubtext) {
+      paneSubtext.textContent = 'Quản lý thông tin định danh và bảo mật tài khoản tác nghiệp.';
+    }
+  } else {
+    initProfileSrsSettingsForm();
+    initDisplayAndAudioSettings();
+  }
+}
+
+/**
  * Loads both user profile and SRS settings, and synchronizes local audio/writing settings.
  */
 export async function loadUserProfileAndSettings() {
@@ -968,6 +1200,7 @@ export async function loadUserProfileAndSettings() {
     loadSrsSettings()
   ]);
   initDisplayAndAudioSettings();
+  initAccountSecurity();
 }
 
 if (typeof document !== 'undefined' && typeof document.addEventListener === 'function') {
@@ -983,11 +1216,11 @@ if (typeof document !== 'undefined' && typeof document.addEventListener === 'fun
     // 2. Initialize shared navbar auth watcher
     initNavbarAuth('navAuthContainer');
 
-    // 3. Initialize tabs and form controls
+    // 3. Initialize tabs, form controls, and apply contextual separation
     initProfileTabs();
     initProfileEditForm();
-    initProfileSrsSettingsForm();
-    initDisplayAndAudioSettings();
+    applyProfileContext();
+    initAccountSecurity();
     loadProfile();
   });
 }

@@ -208,6 +208,10 @@ class DemoFallbackEngine {
    * @returns {Promise<any>} Unpacked response payload
    */
   async handleRequest(endpoint, options = {}) {
+    if (typeof window !== 'undefined' && window.__ENV__?.API_BASE_URL && !options?.forceDemo) {
+      console.warn(`[DemoFallbackEngine] Warning: Real API_BASE_URL is configured (${window.__ENV__.API_BASE_URL}). Fallback request intercepted for endpoint: ${endpoint}`);
+    }
+
     const data = this.getData();
     const method = (options.method || 'GET').toUpperCase();
     

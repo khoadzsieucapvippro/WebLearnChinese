@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' https://cdn.jsdelivr.net; style-src-elem 'self' https://cdn.jsdelivr.net; style-src-attr 'unsafe-inline'; font-src 'self'; img-src 'self' data: https:; media-src 'self' blob: https:; connect-src 'self' http://localhost:8080 http://127.0.0.1:8080 https://*.up.railway.app https://*.onrender.com https://*.koyeb.app; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'self' https://www.youtube-nocookie.com">
+  <title>Nhật Ký Kiểm Toán Quản Trị | Hán Ngữ &amp; Bộ Thủ</title>
+  <meta name="description" content="Khu vực tra cứu nhật ký kiểm toán quản trị tập trung dành cho Quản trị viên (Admin): Theo dõi, lọc đa tiêu chí, phân trang và xem chi tiết snapshot trước/sau của các hành động nhạy cảm.">
+
+  <!-- Verified Bootstrap 5.3.3 CSS via CDN with Authenticated Subresource Integrity (SRI) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+
+  <!-- Scholarly Brand Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>志</text></svg>">
+
+  <!-- Core Design Tokens & Custom Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- Runtime Environment Configuration -->
+  <script src="js/config.js"></script>
+</head>
+<body>
+
+  <!-- Accessible Skip Link (WCAG 2.2 SC 2.4.1) -->
+  <a href="#mainContent" class="skip-link">Chuyển đến nội dung chính</a>
+
+    <!-- Management Workspace Header -->
+  <header class="management-header sticky-top">
+    <div class="container-fluid px-3 px-lg-4">
+      <div class="d-flex align-items-center justify-content-between py-2">
+        <div class="d-flex align-items-center gap-2 gap-lg-3">
+          <!-- Mobile Sidebar Toggle -->
+          <button class="btn btn-sm btn-chinese-outline d-lg-none" type="button" id="managementSidebarToggle" aria-label="Mở danh mục quản lý" aria-expanded="false" aria-controls="managementSidebar">
+            <span class="navbar-toggler-icon d-inline-block" style="width: 1.25em; height: 1.25em; vertical-align: middle;"></span>
+          </button>
+          <!-- Brand Logo & Management Context Badge -->
+          <a class="management-brand d-flex align-items-center gap-2 text-decoration-none" href="management.html">
+            <span class="chinese-seal-icon" aria-hidden="true">管</span>
+            <div class="d-flex flex-column">
+              <span class="fw-bold fs-5 text-chinese-red lh-1">Hán Ngữ</span>
+              <span class="fs-7 text-secondary tracking-wide">QUẢN LÝ &amp; TÁC NGHIỆP</span>
+            </div>
+            <span class="management-brand-badge d-none d-sm-inline-block">Nhật ký kiểm toán</span>
+          </a>
+        </div>
+
+        <!-- Session / Return to Learning Actions -->
+        <div class="d-flex align-items-center gap-2">
+          <div id="navAuthContainer" class="d-flex align-items-center gap-2">
+            <a href="login.html" class="btn-chinese-secondary py-2 px-3 text-decoration-none">
+              Đăng nhập
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+    <!-- Management Workspace Outer Layout Wrapper -->
+  <div class="management-layout">
+    <!-- Management Sidebar Landmark -->
+    <aside id="managementSidebar" class="management-sidebar" aria-label="Điều hướng quản lý">
+      <div class="d-flex align-items-center justify-content-between p-3 border-bottom d-lg-none">
+        <span class="fw-bold small text-secondary">DANH MỤC QUẢN LÝ</span>
+        <button type="button" class="btn-close" id="managementSidebarClose" aria-label="Đóng menu quản lý"></button>
+      </div>
+      <nav class="management-sidebar-inner" aria-label="Danh mục chức năng quản lý">
+        <div id="managementSidebarNav">
+          <!-- Populated authoritatively by management-layout.js based on authenticated role -->
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Mobile Drawer Backdrop -->
+    <div id="managementSidebarBackdrop" class="management-sidebar-backdrop" aria-hidden="true"></div>
+
+    <!-- Main Content Landmark -->
+    <main id="mainContent" class="management-main-content">
+    <div class="container-xl creator-studio-wrapper">
+
+              <!-- Management Sub-navigation Breadcrumb -->
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+          <nav aria-label="Đường dẫn điều hướng">
+            <ol class="breadcrumb mb-0 small">
+              <li class="breadcrumb-item"><a href="management.html" class="text-decoration-none">Trung tâm quản lý</a></li>
+              <li class="breadcrumb-item active" aria-current="page">Nhật ký kiểm toán</li>
+            </ol>
+          </nav>
+        </div>
+
+      <!-- Admin Section Sub-navigation Tabs -->
+      <nav class="moderator-nav-tabs" aria-label="Phân khu quản trị hệ thống">
+        <a href="admin-accounts.html" class="moderator-nav-tab" id="tabAdminAccounts">
+          Quản trị tài khoản
+        </a>
+        <a href="admin-roles.html" class="moderator-nav-tab" id="tabAdminRoles">
+          Phân quyền vai trò
+        </a>
+        <a href="admin-radicals.html" class="moderator-nav-tab" id="tabAdminRadicals">
+          Quản trị bộ thủ
+        </a>
+        <a href="admin-vocabulary.html" class="moderator-nav-tab" id="tabAdminVocabulary">
+          Quản trị từ vựng
+        </a>
+        <a href="admin-lessons.html" class="moderator-nav-tab" id="tabAdminLessons">
+          Giám sát bài học
+        </a>
+        <a href="admin-audit-logs.html" class="moderator-nav-tab active" id="tabAdminAuditLogs" aria-current="page">
+          Nhật ký kiểm toán
+        </a>
+      </nav>
+
+      <!-- Role Guard Message Container (Shown if unauthorized) -->
+      <div id="adminAuthGuardContainer" class="d-none mb-4">
+        <div class="creator-panel-card text-center py-5">
+          <div class="state-error-icon mx-auto mb-3" aria-hidden="true">&#9888;</div>
+          <h2 class="h5 fw-bold text-dark mb-2">Yêu Cầu Quyền Quản Trị Viên (Admin)</h2>
+          <p class="text-secondary small mb-4" id="adminAuthGuardMessage">
+            Bạn cần đăng nhập với vai trò Quản trị viên (Admin) để tra cứu nhật ký kiểm toán hệ thống.
+          </p>
+          <a href="login.html?redirect=admin-audit-logs.html" class="btn-chinese-primary">Đăng nhập tài khoản Admin</a>
+        </div>
+      </div>
+
+      <!-- Admin Audit Logs Workspace Section -->
+      <section id="adminAuditLogsWorkspaceSection" aria-labelledby="auditLogsHeading">
+        <!-- Page Header & Actions Bar -->
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+          <div>
+            <h1 id="auditLogsHeading" class="h3 fw-bold text-dark mb-1">Nhật Ký Kiểm Toán Quản Trị</h1>
+            <p class="text-secondary small mb-0" id="auditLogsSubHeading">
+              Theo dõi, truy vết toàn bộ hoạt động thay đổi phân quyền, trạng thái tài khoản, kiểm duyệt nội dung và danh mục từ điển Hán ngữ.
+            </p>
+          </div>
+
+          <!-- Controls: Result Count Badge -->
+          <div class="d-flex align-items-center flex-wrap gap-2">
+            <span id="auditLogCountBadge" class="badge bg-secondary">0 bản ghi</span>
+          </div>
+        </div>
+
+        <!-- Filter Toolbar Panel Card -->
+        <div class="creator-panel-card mb-4 p-3">
+          <div class="row g-3">
+            <div class="col-12 col-sm-6 col-md-3">
+              <label for="actionTypeFilter" class="form-label small fw-semibold text-dark mb-1">Loại hành vi</label>
+              <select id="actionTypeFilter" class="form-select form-select-sm">
+                <option value="">-- Tất cả hành vi --</option>
+                <option value="USER_ROLE_UPDATE">Phân quyền vai trò (USER_ROLE_UPDATE)</option>
+                <option value="ACCOUNT_STATUS_UPDATE">Trạng thái tài khoản (ACCOUNT_STATUS_UPDATE)</option>
+                <option value="LESSON_APPROVE">Duyệt bài học (LESSON_APPROVE)</option>
+                <option value="LESSON_REJECT">Từ chối bài học (LESSON_REJECT)</option>
+                <option value="VOCABULARY_CREATE">Thêm từ vựng (VOCABULARY_CREATE)</option>
+                <option value="VOCABULARY_UPDATE">Sửa từ vựng (VOCABULARY_UPDATE)</option>
+                <option value="VOCABULARY_DELETE">Xóa từ vựng (VOCABULARY_DELETE)</option>
+                <option value="RADICAL_CREATE">Thêm bộ thủ (RADICAL_CREATE)</option>
+                <option value="RADICAL_UPDATE">Sửa bộ thủ (RADICAL_UPDATE)</option>
+                <option value="RADICAL_DELETE">Xóa bộ thủ (RADICAL_DELETE)</option>
+              </select>
+            </div>
+
+            <div class="col-12 col-sm-6 col-md-2">
+              <label for="resourceTypeFilter" class="form-label small fw-semibold text-dark mb-1">Loại tài nguyên</label>
+              <select id="resourceTypeFilter" class="form-select form-select-sm">
+                <option value="">-- Tất cả --</option>
+                <option value="USER">Người dùng (USER)</option>
+                <option value="ROLE">Vai trò (ROLE)</option>
+                <option value="LESSON">Bài học (LESSON)</option>
+                <option value="VOCABULARY">Từ vựng (VOCABULARY)</option>
+                <option value="RADICAL">Bộ thủ (RADICAL)</option>
+                <option value="SYSTEM_SETTING">Cài đặt hệ thống</option>
+              </select>
+            </div>
+
+            <div class="col-12 col-sm-6 col-md-2">
+              <label for="statusFilter" class="form-label small fw-semibold text-dark mb-1">Kết quả</label>
+              <select id="statusFilter" class="form-select form-select-sm">
+                <option value="">-- Tất cả --</option>
+                <option value="SUCCESS">Thành công (SUCCESS)</option>
+                <option value="FAILED">Thất bại (FAILED)</option>
+              </select>
+            </div>
+
+            <div class="col-12 col-sm-6 col-md-3">
+              <label for="actorSearchInput" class="form-label small fw-semibold text-dark mb-1">Người thực hiện</label>
+              <input type="text" id="actorSearchInput" class="form-control form-control-sm" placeholder="Email, SĐT hoặc ID...">
+            </div>
+
+            <div class="col-12 col-sm-6 col-md-2 d-flex align-items-end gap-2">
+              <button type="button" id="btnApplyFilter" class="btn-chinese-primary btn-sm flex-fill">
+                Lọc dữ liệu
+              </button>
+              <button type="button" id="btnResetFilter" class="btn-chinese-secondary btn-sm" title="Đặt lại bộ lọc">
+                Đặt lại
+              </button>
+            </div>
+          </div>
+
+          <div class="row g-3 mt-1">
+            <div class="col-12 col-sm-6 col-md-3">
+              <label for="startDateInput" class="form-label small fw-semibold text-dark mb-1">Từ ngày</label>
+              <input type="date" id="startDateInput" class="form-control form-control-sm">
+            </div>
+            <div class="col-12 col-sm-6 col-md-3">
+              <label for="endDateInput" class="form-label small fw-semibold text-dark mb-1">Đến ngày</label>
+              <input type="date" id="endDateInput" class="form-control form-control-sm">
+            </div>
+          </div>
+        </div>
+
+        <!-- Table Container & Three-State Engine -->
+        <div class="creator-panel-card p-0 overflow-hidden mb-4">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="auditLogsTable" aria-label="Bảng nhật ký kiểm toán quản trị">
+              <thead class="table-light">
+                <tr>
+                  <th scope="col" style="width: 140px;">Thời gian</th>
+                  <th scope="col" style="width: 160px;">Người thực hiện</th>
+                  <th scope="col" style="width: 160px;">Hành vi</th>
+                  <th scope="col" style="width: 110px;">Tài nguyên</th>
+                  <th scope="col" style="width: 80px;">Mã ĐD</th>
+                  <th scope="col" style="width: 90px;">Kết quả</th>
+                  <th scope="col">Chi tiết</th>
+                  <th scope="col" class="text-end" style="width: 110px;">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody id="auditLogsTableBody">
+                <!-- Dynamically rendered by admin-audit-logs-page.js via safe DOM manipulation -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Three-State UI State Container (Loading / Empty / Error) -->
+          <div id="auditLogsStateContainer" class="p-4"></div>
+        </div>
+
+        <!-- Accessible Pagination Bar -->
+        <nav id="auditPaginationNav" class="d-flex flex-wrap align-items-center justify-content-between gap-3" aria-label="Phân trang danh sách nhật ký">
+          <div class="text-secondary small" id="paginationSummary">
+            Trang 1 / 1
+          </div>
+          <div class="btn-group" role="group" aria-label="Điều hướng trang">
+            <button type="button" id="btnFirstPage" class="btn btn-outline-secondary btn-sm" disabled aria-label="Trang đầu">
+              &laquo; Đầu
+            </button>
+            <button type="button" id="btnPrevPage" class="btn btn-outline-secondary btn-sm" disabled aria-label="Trang trước">
+              &lsaquo; Trước
+            </button>
+            <span class="btn btn-outline-secondary btn-sm disabled fw-semibold" id="pageIndicator" aria-current="page">
+              1
+            </span>
+            <button type="button" id="btnNextPage" class="btn btn-outline-secondary btn-sm" disabled aria-label="Trang tiếp">
+              Tiếp &rsaquo;
+            </button>
+            <button type="button" id="btnLastPage" class="btn btn-outline-secondary btn-sm" disabled aria-label="Trang cuối">
+              Cuối &raquo;
+            </button>
+          </div>
+        </nav>
+      </section>
+    </div>
+      </main>
+  </div>
+
+  <!-- Native <dialog> Modal for Audit Log Details & Diff Snapshot (WCAG 2.2 Compliant) -->
+  <dialog id="auditDetailDialog" class="creator-modal-dialog">
+    <div class="creator-modal-content">
+      <div class="p-3 border-bottom d-flex align-items-center justify-content-between bg-light">
+        <h2 class="h6 fw-bold text-dark mb-0">
+          Chi Tiết Nhật Ký Kiểm Toán #<span id="detailLogId"></span>
+        </h2>
+        <button type="button" id="btnCloseDetailModalX" class="btn-close" aria-label="Đóng cửa sổ"></button>
+      </div>
+
+      <div class="p-3">
+        <!-- Metadata Summary Grid -->
+        <div class="row g-2 small mb-3">
+          <div class="col-sm-6">
+            <span class="text-secondary">Người thực hiện:</span>
+            <strong id="detailActorUsername" class="text-dark d-block"></strong>
+          </div>
+          <div class="col-sm-6">
+            <span class="text-secondary">Vai trò tại thời điểm:</span>
+            <span id="detailActorRoles" class="d-block"></span>
+          </div>
+          <div class="col-sm-6">
+            <span class="text-secondary">Hành vi:</span>
+            <span id="detailActionType" class="d-block fw-semibold"></span>
+          </div>
+          <div class="col-sm-6">
+            <span class="text-secondary">Tài nguyên tác động:</span>
+            <span id="detailResourceInfo" class="d-block"></span>
+          </div>
+          <div class="col-sm-6">
+            <span class="text-secondary">Trạng thái:</span>
+            <span id="detailStatus" class="d-block"></span>
+          </div>
+          <div class="col-sm-6">
+            <span class="text-secondary">Thời gian:</span>
+            <span id="detailCreatedAt" class="d-block"></span>
+          </div>
+          <div class="col-sm-6">
+            <span class="text-secondary">Địa chỉ IP:</span>
+            <span id="detailIpAddress" class="d-block font-monospace"></span>
+          </div>
+          <div class="col-sm-6">
+            <span class="text-secondary">User Agent:</span>
+            <span id="detailUserAgent" class="d-block text-truncate small" title=""></span>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <span class="text-secondary small d-block mb-1">Nội dung chi tiết:</span>
+          <div id="detailDescription" class="p-2 bg-light rounded small text-dark"></div>
+        </div>
+
+        <div id="detailErrorMessageContainer" class="alert alert-danger py-2 px-3 small mb-3 d-none">
+          <strong>Thông báo lỗi:</strong> <span id="detailErrorMessage"></span>
+        </div>
+
+        <!-- Before / After Diff Monospace Containers -->
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label small fw-semibold text-secondary mb-1">Dữ liệu trước (Before Snapshot)</label>
+            <pre id="detailPayloadBefore" class="p-2 bg-light border rounded small font-monospace" style="max-height: 220px; overflow-y: auto; white-space: pre-wrap; word-break: break-all;"></pre>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label small fw-semibold text-secondary mb-1">Dữ liệu sau (After Snapshot)</label>
+            <pre id="detailPayloadAfter" class="p-2 bg-light border rounded small font-monospace" style="max-height: 220px; overflow-y: auto; white-space: pre-wrap; word-break: break-all;"></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-3 border-top bg-light d-flex align-items-center justify-content-end gap-2">
+        <button type="button" id="btnCloseDetailModal" class="btn-chinese-secondary btn-sm">
+          Đóng
+        </button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Global Toast Notification Container (WCAG 2.2 SC 4.1.3) -->
+  <div id="toastContainer" class="toast-container-custom" role="status" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- Global Footer Landmark -->
+  <footer class="site-footer mt-auto py-4">
+    <div class="container-xl text-center">
+      <p class="text-muted small mb-0">
+        &copy; 2026 Hán Ngữ &amp; Bộ Thủ. Nền tảng học chữ Hán trực quan &amp; ôn tập thông minh SRS.
+      </p>
+    </div>
+  </footer>
+
+  <!-- Management Workspace Layout & Sidebar Component -->
+  <script type="module" src="js/ui/management-layout.js"></script>
+
+  <!-- Page Initialization Entrypoint -->
+  <script type="module" src="js/pages/admin-audit-logs-page.js"></script>
+</body>
+</html>

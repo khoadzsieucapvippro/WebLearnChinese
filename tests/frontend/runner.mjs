@@ -88,7 +88,9 @@ function resolveTestFiles(tier) {
     'tests/frontend/unit/lesson/creator-submission.test.mjs',
     'tests/frontend/unit/moderator/moderator-queue.test.mjs',
     'tests/frontend/unit/moderator/moderator-review.test.mjs',
-    'tests/frontend/unit/auth/authenticated-links-regression.test.mjs'
+    'tests/frontend/unit/auth/authenticated-links-regression.test.mjs',
+    'tests/frontend/unit/management/management.test.mjs',
+    'tests/frontend/unit/management/management-layout.test.mjs'
   ];
 
   const browserFiles = [

@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' https://cdn.jsdelivr.net; style-src-elem 'self' https://cdn.jsdelivr.net; style-src-attr 'unsafe-inline'; font-src 'self'; img-src 'self' data: https:; media-src 'self' blob: https:; connect-src 'self' http://localhost:8080 http://127.0.0.1:8080 https://*.up.railway.app https://*.onrender.com https://*.koyeb.app; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'self' https://www.youtube-nocookie.com">
+  <title>Khu Vực Quản Lý &amp; Tác Nghiệp | Hán Ngữ Học Đường</title>
+  <meta name="description" content="Trung tâm điều hành và phân hệ tác vụ chuyên biệt theo vai trò người dùng (Tác giả, Kiểm duyệt viên và Quản trị viên) trong hệ thống Hán Ngữ Học Đường.">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>管</text></svg>">
+
+  <!-- Bootstrap 5.3.3 CSS via CDN with Subresource Integrity -->
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+        crossorigin="anonymous">
+
+  <!-- Custom Core Design System CSS -->
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- Runtime Environment Configuration -->
+  <script src="js/config.js"></script>
+</head>
+<body class="bg-chinese-cream d-flex flex-column min-vh-100">
+
+  <!-- Accessible Skip Link Landmark -->
+  <a href="#mainContent" class="skip-link">Chuyển đến nội dung chính</a>
+
+  <!-- Global Management Workspace Header Landmark -->
+  <header class="management-header sticky-top">
+    <div class="container-fluid px-3 px-lg-4">
+      <div class="d-flex align-items-center justify-content-between py-2">
+        <!-- Brand & Mobile Toggle Cluster -->
+        <div class="d-flex align-items-center gap-2 gap-lg-3">
+          <!-- Mobile Sidebar Toggle -->
+          <button class="btn btn-sm btn-chinese-outline d-lg-none" type="button" id="managementSidebarToggle" aria-label="Mở danh mục quản lý" aria-expanded="false" aria-controls="managementSidebar">
+            <span class="navbar-toggler-icon d-inline-block" style="width: 1.25em; height: 1.25em; vertical-align: middle;"></span>
+          </button>
+
+          <!-- Management Brand Identity (Directs to management.html) -->
+          <a class="management-brand d-flex align-items-center gap-2 text-decoration-none" href="management.html">
+            <span class="chinese-seal-icon" aria-hidden="true">管</span>
+            <div class="d-flex flex-column">
+              <span class="fw-bold fs-5 text-chinese-red lh-1">Hán Ngữ</span>
+              <span class="fs-7 text-secondary tracking-wide">QUẢN LÝ &amp; TÁC NGHIỆP</span>
+            </div>
+            <span class="management-brand-badge d-none d-sm-inline-block">Khu vực quản lý</span>
+          </a>
+        </div>
+
+        <!-- Management User & Learner Gateway Cluster -->
+        <div class="d-flex align-items-center gap-2">
+
+          <!-- Session State Container (Auth cluster rendered authoritatively by nav.js) -->
+          <div id="navAuthContainer" class="d-flex align-items-center gap-2">
+            <a href="login.html" class="btn-chinese-secondary py-2 px-3 text-decoration-none">
+              Đăng nhập
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Management Workspace Outer Layout Wrapper -->
+  <div class="management-layout">
+    <!-- Management Sidebar Landmark -->
+    <aside id="managementSidebar" class="management-sidebar" aria-label="Điều hướng quản lý">
+      <div class="d-flex align-items-center justify-content-between p-3 border-bottom d-lg-none">
+        <span class="fw-bold small text-secondary">DANH MỤC QUẢN LÝ</span>
+        <button type="button" class="btn-close" id="managementSidebarClose" aria-label="Đóng menu quản lý"></button>
+      </div>
+      <nav class="management-sidebar-inner" aria-label="Danh mục chức năng quản lý">
+        <div id="managementSidebarNav">
+          <!-- Populated authoritatively by management-layout.js based on authenticated role -->
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Mobile Drawer Backdrop -->
+    <div id="managementSidebarBackdrop" class="management-sidebar-backdrop" aria-hidden="true"></div>
+
+    <!-- Main Content Landmark -->
+    <main id="mainContent" class="management-main-content">
+      <div class="container-xl creator-studio-wrapper">
+
+        <!-- Sub-navigation Breadcrumb -->
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+          <nav aria-label="Đường dẫn điều hướng">
+            <ol class="breadcrumb mb-0 small">
+              <li class="breadcrumb-item active" aria-current="page">Trung tâm quản lý</li>
+            </ol>
+          </nav>
+        </div>
+
+      <!-- Overview Banner Card -->
+      <div class="creator-panel-card mb-4">
+        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+          <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+              <span class="chinese-seal-icon small" aria-hidden="true">管</span>
+              <span id="managementUserBadge" class="badge bg-secondary-subtle text-secondary border small">Đang xác thực...</span>
+            </div>
+            <h1 class="h4 fw-bold text-chinese-red mb-1">
+              Khu Vực Quản Lý &amp; Tác Nghiệp
+            </h1>
+            <p class="text-secondary small mb-0">
+              Trung tâm điều hành và phân hệ tác vụ chuyên biệt theo vai trò người dùng (Tác giả, Kiểm duyệt viên và Quản trị viên).
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Role Guard Message Container (Shown if unauthorized or learner only) -->
+      <div id="managementAuthGuardContainer" class="d-none mb-4" role="alert">
+        <div class="creator-panel-card text-center py-5">
+          <div class="state-error-icon mx-auto mb-3" aria-hidden="true">&#9888;</div>
+          <h2 class="h5 fw-bold text-dark mb-2">Quyền Truy Cập Bị Giới Hạn</h2>
+          <p class="text-secondary small mb-4" id="managementAuthGuardMessage">
+            Bạn cần đăng nhập với vai trò Tác giả (Creator), Kiểm duyệt viên (Moderator) hoặc Quản trị viên (Admin) để sử dụng Khu vực quản lý.
+          </p>
+          <div class="d-flex justify-content-center gap-2">
+            <a href="login.html?redirect=management.html" id="btnManagementLogin" class="btn-chinese-primary py-2 px-4 text-decoration-none">
+              Đăng nhập tài khoản
+            </a>
+            <a href="index.html" class="btn-chinese-outline py-2 px-4 text-decoration-none">
+              Quay lại trang học
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Management Task Hub Sections Container -->
+      <div id="managementSectionsContainer" class="d-none">
+
+        <!-- 1. Creator Studio Section -->
+        <section id="sectionCreatorStudio" class="mb-5 d-none" aria-labelledby="creatorStudioHeading">
+          <div class="d-flex align-items-center gap-2 mb-3">
+            <span class="brand-seal-mark" aria-hidden="true" style="width: 28px; height: 28px; font-size: 0.9rem;">创</span>
+            <div>
+              <h2 id="creatorStudioHeading" class="h5 fw-bold text-dark mb-0">Phân Hệ Tác Giả (Creator Studio)</h2>
+              <div class="text-secondary small">Biên soạn nội dung bài học, phân bổ từ vựng và nhập liệu giáo trình</div>
+            </div>
+          </div>
+
+          <div class="row g-3">
+            <div class="col-12 col-md-6">
+              <div class="card h-100 border-0 shadow-xs rounded-3 p-3 bg-white">
+                <div class="d-flex align-items-start gap-3">
+                  <div class="p-2 bg-danger-subtle text-chinese-red rounded-3 fs-4" aria-hidden="true">📖</div>
+                  <div class="flex-grow-1">
+                    <h3 class="h6 fw-bold text-dark mb-1">Quản Lý Bài Học</h3>
+                    <p class="text-secondary small mb-3">
+                      Tạo bài học mới, chỉnh sửa nội dung bài nháp, sắp xếp trình tự học tập và gửi bài lên hàng đợi kiểm duyệt.
+                    </p>
+                    <a href="creator-lessons.html" id="cardLinkCreatorLessons" class="btn-chinese-primary btn-sm text-decoration-none d-inline-flex align-items-center gap-1">
+                      <span>Vào Creator Studio</span>
+                      <span aria-hidden="true">&rarr;</span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-12 col-md-6">
+              <div class="card h-100 border-0 shadow-xs rounded-3 p-3 bg-white">
+                <div class="d-flex align-items-start gap-3">
+                  <div class="p-2 bg-success-subtle text-success rounded-3 fs-4" aria-hidden="true">📊</div>
+                  <div class="flex-grow-1">
+                    <h3 class="h6 fw-bold text-dark mb-1">Nhập Bài Học Từ Excel</h3>
+                    <p class="text-secondary small mb-3">
+                      Nhập khẩu danh sách bài học và từ vựng nhanh chóng thông qua tệp bảng tính Excel chuẩn định dạng.
+                    </p>
+                    <a href="creator-import.html" id="cardLinkCreatorImport" class="btn-chinese-secondary btn-sm text-decoration-none d-inline-flex align-items-center gap-1">
+                      <span>Nhập từ Excel</span>
+                      <span aria-hidden="true">&rarr;</span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 2. Moderation Section -->
+        <section id="sectionModeration" class="mb-5 d-none" aria-labelledby="moderatorHeading">
+          <div class="d-flex align-items-center gap-2 mb-3">
+            <span class="brand-seal-mark" aria-hidden="true" style="width: 28px; height: 28px; font-size: 0.9rem;">审</span>
+            <div>
+              <h2 id="moderatorHeading" class="h5 fw-bold text-dark mb-0">Phân Hệ Kiểm Duyệt (Moderation)</h2>
+              <div class="text-secondary small">Thẩm định tính chính xác, phê duyệt hoặc từ chối bài học từ tác giả</div>
+            </div>
+          </div>
+
+          <div class="row g-3">
+            <div class="col-12 col-md-6">
+              <div class="card h-100 border-0 shadow-xs rounded-3 p-3 bg-white">
+                <div class="d-flex align-items-start gap-3">
+                  <div class="p-2 bg-warning-subtle text-warning-emphasis rounded-3 fs-4" aria-hidden="true">⏳</div>
+                  <div class="flex-grow-1">
+                    <h3 class="h6 fw-bold text-dark mb-1">Hàng Đợi Chờ Duyệt</h3>
+                    <p class="text-secondary small mb-3">
+                      Xem xét danh sách bài học ở trạng thái Chờ duyệt (Pending), thẩm định chi tiết nội dung và ra quyết định phê duyệt.
+                    </p>
+                    <a href="moderator-queue.html" id="cardLinkModeratorQueue" class="btn-chinese-primary btn-sm text-decoration-none d-inline-flex align-items-center gap-1">
+                      <span>Vào hàng đợi duyệt</span>
+                      <span aria-hidden="true">&rarr;</span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-12 col-md-6">
+              <div class="card h-100 border-0 shadow-xs rounded-3 p-3 bg-white">
+                <div class="d-flex align-items-start gap-3">
+                  <div class="p-2 bg-info-subtle text-info-emphasis rounded-3 fs-4" aria-hidden="true">📜</div>
+                  <div class="flex-grow-1">
+                    <h3 class="h6 fw-bold text-dark mb-1">Lịch Sử Kiểm Duyệt</h3>
+                    <p class="text-secondary small mb-3">
+                      Tra cứu lịch sử các bài học đã được phê duyệt hoặc từ chối, kèm theo lý do phản hồi chi tiết cho tác giả.
+                    </p>
+                    <a href="moderator-history.html" id="cardLinkModeratorHistory" class="btn-chinese-secondary btn-sm text-decoration-none d-inline-flex align-items-center gap-1">
+                      <span>Xem lịch sử duyệt</span>
+                      <span aria-hidden="true">&rarr;</span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 3. Administration Section -->
+        <section id="sectionAdministration" class="mb-5 d-none" aria-labelledby="adminHeading">
+          <div class="d-flex align-items-center gap-2 mb-3">
+            <span class="brand-seal-mark" aria-hidden="true" style="width: 28px; height: 28px; font-size: 0.9rem;">管</span>
+            <div>
+              <h2 id="adminHeading" class="h5 fw-bold text-dark mb-0">Phân Hệ Quản Trị Hệ Thống (Administration)</h2>
+              <div class="text-secondary small">Quản lý người dùng, phân quyền, dữ liệu cốt lõi và kiểm toán hệ thống</div>
+            </div>
+          </div>
+
+          <div class="row g-3">
+            <div class="col-12 col-md-4">
+              <div class="card h-100 border-0 shadow-xs rounded-3 p-3 bg-white">
+                <div class="d-flex align-items-start gap-3">
+                  <div class="p-2 bg-primary-subtle text-primary rounded-3 fs-5" aria-hidden="true">👥</div>
+                  <div class="flex-grow-1">
+                    <h3 class="h6 fw-bold text-dark mb-1">Quản Trị Tài Khoản</h3>
+                    <p class="text-secondary small mb-3">
+                      Khóa / mở khóa tài khoản người dùng, tra cứu danh sách học viên toàn hệ thống.
+                    </p>
+                    <a href="admin-accounts.html" id="cardLinkAdminAccounts" class="btn-chinese-primary btn-sm text-decoration-none d-inline-flex align-items-center gap-1">
+                      <span>Tài khoản</span>
+                      <span aria-hidden="true">&rarr;</span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-12 col-md-4">
+              <div class="card h-100 border-0 shadow-xs rounded-3 p-3 bg-white">
+                <div class="d-flex align-items-start gap-3">
+                  <div class="p-2 bg-primary-subtle text-primary rounded-3 fs-5" aria-hidden="true">🛡️</div>
+                  <div class="flex-grow-1">
+                    <h3 class="h6 fw-bold text-dark mb-1">Phân Quyền Vai Trò</h3>
+                    <p class="text-secondary small mb-3">
+                      Gán và thu hồi các vai trò Creator, Moderator, Admin cho các tài khoản hợp lệ.
+                    </p>
+                    <a href="admin-roles.html" id="cardLinkAdminRoles" class="btn-chinese-secondary btn-sm text-decoration-none d-inline-flex align-items-center gap-1">
+                      <span>Phân quyền</span>
+                      <span aria-hidden="true">&rarr;</span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-12 col-md-4">
+              <div class="card h-100 border-0 shadow-xs rounded-3 p-3 bg-white">
+                <div class="d-flex align-items-start gap-3">
+                  <div class="p-2 bg-primary-subtle text-primary rounded-3 fs-5" aria-hidden="true">📚</div>
+                  <div class="flex-grow-1">
+                    <h3 class="h6 fw-bold text-dark mb-1">Giám Sát Bài Học</h3>
+                    <p class="text-secondary small mb-3">
+                      Theo dõi vòng đời bài học toàn hệ thống qua các trạng thái Bản nháp, Chờ duyệt, Đã duyệt.
+                    </p>
+                    <a href="admin-lessons.html" id="cardLinkAdminLessons" class="btn-chinese-secondary btn-sm text-decoration-none d-inline-flex align-items-center gap-1">
+                      <span>Giám sát bài học</span>
+                      <span aria-hidden="true">&rarr;</span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-12 col-md-4">
+              <div class="card h-100 border-0 shadow-xs rounded-3 p-3 bg-white">
+                <div class="d-flex align-items-start gap-3">
+                  <div class="p-2 bg-secondary-subtle text-dark rounded-3 fs-5" aria-hidden="true">部</div>
+                  <div class="flex-grow-1">
+                    <h3 class="h6 fw-bold text-dark mb-1">Quản Trị Bộ Thủ</h3>
+                    <p class="text-secondary small mb-3">
+                      Quản lý dữ liệu 214 bộ thủ Khang Hy, âm Hán-Việt, giải nghĩa và chiết tự cấu thành.
+                    </p>
+                    <a href="admin-radicals.html" id="cardLinkAdminRadicals" class="btn-chinese-outline btn-sm text-decoration-none d-inline-flex align-items-center gap-1">
+                      <span>Bộ thủ</span>
+                      <span aria-hidden="true">&rarr;</span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-12 col-md-4">
+              <div class="card h-100 border-0 shadow-xs rounded-3 p-3 bg-white">
+                <div class="d-flex align-items-start gap-3">
+                  <div class="p-2 bg-secondary-subtle text-dark rounded-3 fs-5" aria-hidden="true">词</div>
+                  <div class="flex-grow-1">
+                    <h3 class="h6 fw-bold text-dark mb-1">Quản Trị Từ Vựng</h3>
+                    <p class="text-secondary small mb-3">
+                      Quản lý kho từ vựng HSK 1–3, phiên âm Pinyin, nghĩa tiếng Việt và quan hệ cấu thành.
+                    </p>
+                    <a href="admin-vocabulary.html" id="cardLinkAdminVocabulary" class="btn-chinese-outline btn-sm text-decoration-none d-inline-flex align-items-center gap-1">
+                      <span>Từ vựng</span>
+                      <span aria-hidden="true">&rarr;</span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-12 col-md-4">
+              <div class="card h-100 border-0 shadow-xs rounded-3 p-3 bg-white">
+                <div class="d-flex align-items-start gap-3">
+                  <div class="p-2 bg-dark-subtle text-dark rounded-3 fs-5" aria-hidden="true">📋</div>
+                  <div class="flex-grow-1">
+                    <h3 class="h6 fw-bold text-dark mb-1">Nhật Ký Kiểm Toán</h3>
+                    <p class="text-secondary small mb-3">
+                      Tra cứu nhật ký kiểm toán quản trị: đổi vai trò, khóa tài khoản, chỉnh sửa dữ liệu và phê duyệt.
+                    </p>
+                    <a href="admin-audit-logs.html" id="cardLinkAdminAuditLogs" class="btn-chinese-outline btn-sm text-decoration-none d-inline-flex align-items-center gap-1">
+                      <span>Nhật ký kiểm toán</span>
+                      <span aria-hidden="true">&rarr;</span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+
+    </div>
+  </main>
+  </div>
+
+  <!-- Global Toast Notification Container -->
+  <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- Global Semantic Footer Landmark -->
+  <footer class="site-footer">
+    <div class="container-xl">
+      <div class="row align-items-center g-3">
+        <div class="col-md-6 text-center text-md-start">
+          <div class="fw-semibold text-dark mb-1">Hệ Thống Học Bộ Thủ &amp; Từ Vựng Tiếng Trung</div>
+          <div class="small">Xây dựng trên nền tảng HTML5 ngữ nghĩa, CSS Tokens và Vanilla JS chuẩn mực.</div>
+        </div>
+        <div class="col-md-6 text-center text-md-end">
+          <div class="small">Tuân thủ tiêu chuẩn tiếp cận W3C WCAG 2.2 Level AA &bull; Zero-Build Architecture</div>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Verified Bootstrap 5.3.3 JS Bundle with Authenticated SRI -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+          crossorigin="anonymous"></script>
+
+  <!-- Management Workspace Layout & Sidebar Component -->
+  <script type="module" src="js/ui/management-layout.js"></script>
+
+  <!-- Management Page Controller -->
+  <script type="module" src="js/pages/management-page.js"></script>
+</body>
+</html>

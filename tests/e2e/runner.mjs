@@ -23,24 +23,24 @@ const ROOT_DIR = path.resolve(__dirname, '../..');
 
 const TIER_MAPPING = {
   1: {
-    name: 'Tier 1: Feature Coverage',
+    name: 'Tier 1: Feature Coverage (F1 - F20)',
     file: 'tests/e2e/tier1-feature-coverage.test.mjs',
-    scope: 'Audio playback, Speech DTO contract, Tone sandhi rules, Radicals & HSK data, SRS review'
+    scope: 'Production security, Self-review invariant, Last admin rule, SRS card bounds, Audit log system, Management hub & nav decoupling, Password change'
   },
   2: {
     name: 'Tier 2: Boundary & Corner Cases',
     file: 'tests/e2e/tier2-boundary-corner-cases.test.mjs',
-    scope: 'Silence gate (RMS < 0.006), Noise, Audio clipping, Short audio (<0.35s), Sandhi 3+3+3, Rapid clicks'
+    scope: 'JWT secret length boundaries (31 vs 32B), SRS [1..100] bounds, Concurrent admin demotion race, Deep audit sanitization, Empty roles'
   },
   3: {
     name: 'Tier 3: Cross-Feature Combinations',
     file: 'tests/e2e/tier3-cross-feature-combinations.test.mjs',
-    scope: 'Card flip during audio play, Reading room shortcut locking, Listening room locking, Review failure resilience'
+    scope: 'Self-review + Audit logging, Last admin demotion + Audit verification, Management hub + Audit REST RBAC, Password change + Zero storage leak'
   },
   4: {
     name: 'Tier 4: Real-World Application Workloads',
     file: 'tests/e2e/tier4-application-workloads.test.mjs',
-    scope: 'Full SRS learning lifecycle, Complete listening workflow, Complete reading workflow, Multi-skill switcher'
+    scope: 'Dual-role creator-moderator lifecycle, Concurrent last admin race, Learner vs management nav decoupling, Password change & settings, Full audit trail'
   }
 };
 

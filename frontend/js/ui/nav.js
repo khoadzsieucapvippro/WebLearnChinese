@@ -17,6 +17,42 @@
 import { authManager } from '../auth/auth-state.js';
 import { createSafeElement, clearContainer } from './security.js';
 import { showToast } from './ui.js';
+import { isDemoFallbackActive, isGitHubPagesEnvironment } from '../api/api.js';
+
+export const MANAGEMENT_PAGE_SET = new Set([
+  'management.html',
+  'creator-lessons.html',
+  'creator-lesson-editor.html',
+  'creator-import.html',
+  'moderator-queue.html',
+  'moderator-review.html',
+  'moderator-history.html',
+  'admin-accounts.html',
+  'admin-roles.html',
+  'admin-lessons.html',
+  'admin-radicals.html',
+  'admin-vocabulary.html',
+  'admin-audit-logs.html'
+]);
+
+/**
+ * Creates the persistent Demo Mode Simulation Warning Badge.
+ * Contract: <span class="badge badge-warning ...">🟡 Dữ liệu mô phỏng</span>
+ * 
+ * @returns {HTMLElement}
+ */
+export function createDemoSimulationBadge() {
+  return createSafeElement('span', {
+    className: 'badge badge-warning bg-warning text-dark fw-semibold',
+    text: '🟡 Dữ liệu mô phỏng',
+    attrs: {
+      id: 'demoSimulationBadge',
+      role: 'status',
+      'aria-label': 'Dữ liệu mô phỏng',
+      title: 'Đang chạy ở chế độ mô phỏng client-side (Demo Mode)'
+    }
+  });
+}
 
 /**
  * Maps backend JSON role string to scholarly Vietnamese display label.
@@ -81,44 +117,71 @@ export function renderNavbarAuth(container) {
 
   clearContainer(container);
 
+  const isDemo = isDemoFallbackActive() || isGitHubPagesEnvironment();
+  const rawPath = (typeof window !== 'undefined' && window.location && window.location.pathname) ? window.location.pathname : '';
+  const currentPage = (rawPath.split('/').pop() || '').toLowerCase();
+  const activeRoles = authManager.getRoles();
+  const hasStaffRole = activeRoles.includes('Admin') || activeRoles.includes('Creator') || activeRoles.includes('Moderator');
+  const isManagement = MANAGEMENT_PAGE_SET.has(currentPage) || (currentPage === 'profile.html' && hasStaffRole);
+
   if (!authManager.isAuthenticated()) {
     // --- GUEST STATE ---
-    const rawPath = (typeof window !== 'undefined' && window.location && window.location.pathname) ? window.location.pathname : '';
-    const currentPage = (rawPath.split('/').pop() || '').toLowerCase();
+    if (isManagement) {
+      // In Management Workspace: render direct login button without student registration
+      const loginAttrs = {
+        href: currentPage ? `login.html?redirect=${currentPage}` : 'login.html',
+        id: 'navLoginBtn',
+        'aria-label': 'Đăng nhập vào không gian quản lý'
+      };
 
-    const isLoginActive = currentPage === 'login.html';
-    const isRegisterActive = currentPage === 'register.html';
+      const loginLink = createSafeElement('a', {
+        className: 'btn-chinese-primary py-2 px-3 text-decoration-none',
+        text: 'Đăng nhập',
+        attrs: loginAttrs
+      });
 
-    const loginAttrs = {
-      href: 'login.html',
-      id: 'navLoginBtn'
-    };
-    if (isLoginActive) {
-      loginAttrs['aria-current'] = 'page';
+      if (isDemo) {
+        container.appendChild(createDemoSimulationBadge());
+      }
+      container.appendChild(loginLink);
+    } else {
+      const isLoginActive = currentPage === 'login.html';
+      const isRegisterActive = currentPage === 'register.html';
+
+      const loginAttrs = {
+        href: 'login.html',
+        id: 'navLoginBtn'
+      };
+      if (isLoginActive) {
+        loginAttrs['aria-current'] = 'page';
+      }
+
+      const registerAttrs = {
+        href: 'register.html',
+        id: 'navRegisterBtn'
+      };
+      if (isRegisterActive) {
+        registerAttrs['aria-current'] = 'page';
+      }
+
+      const loginLink = createSafeElement('a', {
+        className: `btn-chinese-secondary py-2 px-3 text-decoration-none${isLoginActive ? ' active' : ''}`,
+        text: 'Đăng nhập',
+        attrs: loginAttrs
+      });
+
+      const registerLink = createSafeElement('a', {
+        className: `btn-chinese-primary py-2 px-3 text-decoration-none${isRegisterActive ? ' active' : ''}`,
+        text: 'Đăng ký',
+        attrs: registerAttrs
+      });
+
+      if (isDemo) {
+        container.appendChild(createDemoSimulationBadge());
+      }
+      container.appendChild(loginLink);
+      container.appendChild(registerLink);
     }
-
-    const registerAttrs = {
-      href: 'register.html',
-      id: 'navRegisterBtn'
-    };
-    if (isRegisterActive) {
-      registerAttrs['aria-current'] = 'page';
-    }
-
-    const loginLink = createSafeElement('a', {
-      className: `btn-chinese-secondary py-2 px-3 text-decoration-none${isLoginActive ? ' active' : ''}`,
-      text: 'Đăng nhập',
-      attrs: loginAttrs
-    });
-
-    const registerLink = createSafeElement('a', {
-      className: `btn-chinese-primary py-2 px-3 text-decoration-none${isRegisterActive ? ' active' : ''}`,
-      text: 'Đăng ký',
-      attrs: registerAttrs
-    });
-
-    container.appendChild(loginLink);
-    container.appendChild(registerLink);
   } else {
     // --- AUTHENTICATED STATE ---
     const user = authManager.getUser();
@@ -131,75 +194,78 @@ export function renderNavbarAuth(container) {
     // Build role shortcut links for the account dropdown
     const dropdownLinks = [];
 
-    // Profile link (always present)
-    dropdownLinks.push(
-      createSafeElement('a', {
-        className: 'nav-dropdown-item py-2 px-3 text-decoration-none d-flex align-items-center gap-2',
-        text: 'Hồ sơ',
-        attrs: {
-          href: 'profile.html',
-          id: 'navProfileBtn',
-          'aria-label': 'Trang quản lý hồ sơ cá nhân'
-        }
-      })
-    );
-
-    // Learning Progress link (Tiến độ học tập - ngay dưới Hồ sơ)
-    dropdownLinks.push(
-      createSafeElement('a', {
-        className: 'nav-dropdown-item py-2 px-3 text-decoration-none d-flex align-items-center gap-2',
-        text: 'Tiến độ học tập',
-        attrs: {
-          href: 'srs-dashboard.html',
-          id: 'navLearningProgressBtn',
-          'aria-label': 'Theo dõi tiến độ học tập và cài đặt SRS'
-        }
-      })
-    );
-
-    // Creator Studio link (for Creator or Admin)
-    if (roles.includes('Creator') || roles.includes('Admin')) {
+    if (isManagement) {
+      // In Management Workspace: purely administrative account menu
+      // 1. Account profile & security
       dropdownLinks.push(
         createSafeElement('a', {
           className: 'nav-dropdown-item py-2 px-3 text-decoration-none d-flex align-items-center gap-2',
-          text: 'Studio',
+          text: 'Hồ sơ tài khoản',
           attrs: {
-            href: 'creator-lessons.html',
-            id: 'navCreatorStudioBtn',
-            'aria-label': 'Creator Lesson Studio — Quản lý bài học'
+            href: 'profile.html',
+            id: 'navProfileBtn',
+            'aria-label': 'Trang quản lý hồ sơ và bảo mật tài khoản'
           }
         })
       );
-    }
 
-    // Moderator Queue link (for Moderator or Admin)
-    if (roles.includes('Moderator') || roles.includes('Admin')) {
+      // 2. Hub return shortcut: ONLY show when on a sub-operational page (never duplicate on management.html)
+      if (currentPage !== 'management.html') {
+        dropdownLinks.push(
+          createSafeElement('a', {
+            className: 'nav-dropdown-item py-2 px-3 text-decoration-none d-flex align-items-center gap-2',
+            text: 'Trung tâm quản lý',
+            attrs: {
+              href: 'management.html',
+              id: 'navManagementBtn',
+              'aria-label': 'Quay về trang tổng quan trung tâm quản lý'
+            }
+          })
+        );
+      }
+      // Strictly zero learning links ("Tiến độ học tập", "Không gian học tập") in Management Workspace
+    } else {
+      // In Learner Workspace: standard learner account menu
       dropdownLinks.push(
         createSafeElement('a', {
           className: 'nav-dropdown-item py-2 px-3 text-decoration-none d-flex align-items-center gap-2',
-          text: 'Kiểm duyệt',
+          text: 'Hồ sơ',
           attrs: {
-            href: 'moderator-queue.html',
-            id: 'navModeratorBtn',
-            'aria-label': 'Hàng đợi kiểm duyệt bài học'
+            href: 'profile.html',
+            id: 'navProfileBtn',
+            'aria-label': 'Trang quản lý hồ sơ cá nhân'
           }
         })
       );
-    }
 
-    // Admin Management link (for Admin)
-    if (roles.includes('Admin')) {
+      // Learning Progress link (Tiến độ học tập - ngay dưới Hồ sơ)
       dropdownLinks.push(
         createSafeElement('a', {
           className: 'nav-dropdown-item py-2 px-3 text-decoration-none d-flex align-items-center gap-2',
-          text: 'Quản trị',
+          text: 'Tiến độ học tập',
           attrs: {
-            href: 'admin-lessons.html',
-            id: 'navAdminBtn',
-            'aria-label': 'Khu vực quản trị & giám sát hệ thống'
+            href: 'srs-dashboard.html',
+            id: 'navLearningProgressBtn',
+            'aria-label': 'Theo dõi tiến độ học tập và cài đặt SRS'
           }
         })
       );
+
+      // Management Area gateway for Creator, Moderator, or Admin
+      const hasManagementRole = roles.includes('Creator') || roles.includes('Moderator') || roles.includes('Admin');
+      if (hasManagementRole) {
+        dropdownLinks.push(
+          createSafeElement('a', {
+            className: 'nav-dropdown-item py-2 px-3 text-decoration-none d-flex align-items-center gap-2',
+            text: 'Khu vực quản lý',
+            attrs: {
+              href: 'management.html',
+              id: 'navManagementBtn',
+              'aria-label': 'Khu vực quản lý và tác nghiệp chuyên biệt'
+            }
+          })
+        );
+      }
     }
 
     // Dropdown Menu Panel
@@ -333,6 +399,7 @@ export function renderNavbarAuth(container) {
       className: 'nav-account-cluster d-flex align-items-center gap-2',
       attrs: { id: 'navAuthenticatedSection' },
       children: [
+        ...(isDemo ? [createDemoSimulationBadge()] : []),
         roleBadge,
         dropdownWrapper,
         logoutBtn
@@ -355,7 +422,9 @@ export function renderNavbarAuth(container) {
          window.location.pathname.endsWith('admin-roles.html') ||
          window.location.pathname.endsWith('admin-radicals.html') ||
          window.location.pathname.endsWith('admin-vocabulary.html') ||
-         window.location.pathname.endsWith('admin-lessons.html'));
+         window.location.pathname.endsWith('admin-lessons.html') ||
+         window.location.pathname.endsWith('management.html') ||
+         window.location.pathname.endsWith('admin-audit-logs.html'));
 
       authManager.logout(false);
 

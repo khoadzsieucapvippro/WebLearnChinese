@@ -13,6 +13,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.elearning.common.AuditActionType;
+import com.elearning.common.AuditResourceType;
+import com.elearning.service.ManagementAuditService;
+
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -24,9 +29,24 @@ public class AdminAccountServiceImpl implements AdminAccountService {
     private static final Set<String> VALID_STATUSES = Set.of("Active", "Inactive", "Banned");
 
     private final AccountRepository accountRepository;
+    private final com.elearning.repository.RoleRepository roleRepository;
+    private final ManagementAuditService managementAuditService;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public AdminAccountServiceImpl(AccountRepository accountRepository,
+                                  com.elearning.repository.RoleRepository roleRepository,
+                                  ManagementAuditService managementAuditService) {
+        this.accountRepository = accountRepository;
+        this.roleRepository = roleRepository;
+        this.managementAuditService = managementAuditService;
+    }
+
+    public AdminAccountServiceImpl(AccountRepository accountRepository, com.elearning.repository.RoleRepository roleRepository) {
+        this(accountRepository, roleRepository, null);
+    }
 
     public AdminAccountServiceImpl(AccountRepository accountRepository) {
-        this.accountRepository = accountRepository;
+        this(accountRepository, null, null);
     }
 
     @Override
@@ -64,10 +84,44 @@ public class AdminAccountServiceImpl implements AdminAccountService {
             );
         }
 
+        // Last Active Admin Invariant: prevent deactivating or locking the last active administrator
+        boolean isTargetAdmin = account.getRoles().stream()
+                .anyMatch(r -> "Admin".equalsIgnoreCase(r.getRoleName()) || "ROLE_ADMIN".equalsIgnoreCase(r.getRoleName()));
+        boolean isCurrentlyActive = "Active".equalsIgnoreCase(account.getStatus());
+        boolean isDeactivating = !normalizedStatus.equalsIgnoreCase("Active");
+
+        if (isTargetAdmin && isCurrentlyActive && isDeactivating) {
+            // Deactivating/locking an active admin: acquire pessimistic write lock on Admin role row to ensure concurrency safety
+            if (roleRepository != null) {
+                roleRepository.findByRoleNameForUpdate("Admin");
+            }
+            long activeAdmins = accountRepository.countActiveAdmins();
+            if (activeAdmins <= 1) {
+                throw new BusinessException(
+                        ErrorCode.BAD_REQUEST,
+                        "Không thể hạ quyền hoặc vô hiệu hóa quản trị viên hoạt động cuối cùng của hệ thống"
+                );
+            }
+        }
+
+        String previousStatus = account.getStatus();
         if (!account.getStatus().equalsIgnoreCase(normalizedStatus)) {
             account.setStatus(normalizedStatus);
             account.incrementAuthorizationVersion();
             account = accountRepository.save(account);
+        }
+
+        if (managementAuditService != null) {
+            String details = String.format("Cập nhật trạng thái tài khoản %s (#%d): từ %s thành %s",
+                    account.getEmailOrPhone(), accountId, previousStatus, normalizedStatus);
+            managementAuditService.logSuccess(
+                    AuditActionType.ACCOUNT_STATUS_UPDATE,
+                    AuditResourceType.USER,
+                    String.valueOf(accountId),
+                    details,
+                    Map.of("status", previousStatus),
+                    Map.of("status", normalizedStatus)
+            );
         }
 
         return AccountResponse.fromEntity(account);

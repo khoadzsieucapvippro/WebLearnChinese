@@ -17,7 +17,7 @@ WORKDIR /app
 
 # Cloud runtime environment variables
 ENV PORT=8080 \
-    APP_DEMO_SEED_ACCOUNTS=true \
+    APP_DEMO_SEED_ACCOUNTS=false \
     JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"
 
 # Copy built artifact from builder stage
@@ -25,4 +25,4 @@ COPY --from=builder /build/target/*.jar /app/app.jar
 
 EXPOSE 8080
 
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -Dserver.port=${PORT:-8080} -jar /app/app.jar"]
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -Dserver.port=${PORT:-8080} -Dserver.address=0.0.0.0 -jar /app/app.jar"]
