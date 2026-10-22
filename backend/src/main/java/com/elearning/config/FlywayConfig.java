@@ -209,6 +209,18 @@ public class FlywayConfig {
     }
 
     private static void reconcileMissingUserProfiles(Flyway flyway) {
+        String seedAdminSql = "INSERT INTO `account` (`email_or_phone`, `password_hash`, `status`, `authorization_version`, `created_at`, `updated_at`) "
+                + "SELECT 'admin@test.com', '$2a$10$UPN3ubt5uNRTKHbXcMsEgOjsd70AqQ.EMiekc6.7ngAuynlOFuFCm', 'Active', 1, NOW(), NOW() "
+                + "WHERE NOT EXISTS (SELECT 1 FROM `account` WHERE `email_or_phone` = 'admin@test.com')";
+
+        String seedModeratorSql = "INSERT INTO `account` (`email_or_phone`, `password_hash`, `status`, `authorization_version`, `created_at`, `updated_at`) "
+                + "SELECT 'moderator@test.com', '$2a$10$UPN3ubt5uNRTKHbXcMsEgOjsd70AqQ.EMiekc6.7ngAuynlOFuFCm', 'Active', 1, NOW(), NOW() "
+                + "WHERE NOT EXISTS (SELECT 1 FROM `account` WHERE `email_or_phone` = 'moderator@test.com')";
+
+        String seedCreatorSql = "INSERT INTO `account` (`email_or_phone`, `password_hash`, `status`, `authorization_version`, `created_at`, `updated_at`) "
+                + "SELECT 'creator@test.com', '$2a$10$UPN3ubt5uNRTKHbXcMsEgOjsd70AqQ.EMiekc6.7ngAuynlOFuFCm', 'Active', 1, NOW(), NOW() "
+                + "WHERE NOT EXISTS (SELECT 1 FROM `account` WHERE `email_or_phone` = 'creator@test.com')";
+
         String insertProfilesSql = "INSERT INTO `user_profile` (`account_id`, `full_name`, `created_at`, `updated_at`) "
                 + "SELECT a.`account_id`, SUBSTRING_INDEX(a.`email_or_phone`, '@', 1), NOW(), NOW() "
                 + "FROM `account` a "
@@ -217,7 +229,19 @@ public class FlywayConfig {
         String insertDefaultRolesSql = "INSERT INTO `account_role` (`account_id`, `role_id`) "
                 + "SELECT a.`account_id`, 1 "
                 + "FROM `account` a "
-                + "WHERE NOT EXISTS (SELECT 1 FROM `account_role` ar WHERE ar.`account_id` = a.`account_id`)";
+                + "WHERE NOT EXISTS (SELECT 1 FROM `account_role` ar WHERE ar.`account_id` = a.`account_id` AND ar.`role_id` = 1)";
+
+        String insertAdminRolesSql = "INSERT INTO `account_role` (`account_id`, `role_id`) "
+                + "SELECT a.`account_id`, 4 "
+                + "FROM `account` a "
+                + "WHERE a.`email_or_phone` = 'admin@test.com' "
+                + "AND NOT EXISTS (SELECT 1 FROM `account_role` ar WHERE ar.`account_id` = a.`account_id` AND ar.`role_id` = 4)";
+
+        String insertModRolesSql = "INSERT INTO `account_role` (`account_id`, `role_id`) "
+                + "SELECT a.`account_id`, 3 "
+                + "FROM `account` a "
+                + "WHERE a.`email_or_phone` = 'moderator@test.com' "
+                + "AND NOT EXISTS (SELECT 1 FROM `account_role` ar WHERE ar.`account_id` = a.`account_id` AND ar.`role_id` = 3)";
 
         String insertCreatorRolesSql = "INSERT INTO `account_role` (`account_id`, `role_id`) "
                 + "SELECT a.`account_id`, 2 "
@@ -227,10 +251,15 @@ public class FlywayConfig {
 
         try (Connection conn = flyway.getConfiguration().getDataSource().getConnection();
              Statement stmt = conn.createStatement()) {
+            stmt.executeUpdate(seedAdminSql);
+            stmt.executeUpdate(seedModeratorSql);
+            stmt.executeUpdate(seedCreatorSql);
             int profiles = stmt.executeUpdate(insertProfilesSql);
-            int roles = stmt.executeUpdate(insertDefaultRolesSql);
-            int creatorRoles = stmt.executeUpdate(insertCreatorRolesSql);
-            log.info("Reconciled user profiles ({}) and account roles ({}, creator: {}).", profiles, roles, creatorRoles);
+            int defaultRoles = stmt.executeUpdate(insertDefaultRolesSql);
+            stmt.executeUpdate(insertAdminRolesSql);
+            stmt.executeUpdate(insertModRolesSql);
+            stmt.executeUpdate(insertCreatorRolesSql);
+            log.info("Reconciled staff accounts (Admin, Moderator, Creator), user profiles ({}), and default roles ({}).", profiles, defaultRoles);
         } catch (SQLException e) {
             log.warn("Non-fatal: Failed to reconcile user profiles / roles: {}", e.getMessage());
         }
