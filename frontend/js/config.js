@@ -80,7 +80,7 @@
         apiBaseUrl = savedCloudUrl.replace(/\/$/, '');
       } else if (currentEnv.API_BASE_URL) {
         apiBaseUrl = currentEnv.API_BASE_URL;
-      } else if (CLOUD_PRODUCTION_API_URL !== '__CLOUD_BACKEND_API_URL__' && CLOUD_PRODUCTION_API_URL.startsWith('http')) {
+      } else if (!CLOUD_PRODUCTION_API_URL.startsWith('__') && CLOUD_PRODUCTION_API_URL.startsWith('http')) {
         apiBaseUrl = CLOUD_PRODUCTION_API_URL.replace(/\/$/, '');
       } else {
         apiBaseUrl = '/api/v1';

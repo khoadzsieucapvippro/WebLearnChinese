@@ -44,7 +44,7 @@ jobs:
           cp -r frontend/* _site/
           touch _site/.nojekyll
 
-          API_URL="${{ inputs.backend_api_url || vars.BACKEND_API_URL || '' }}"
+          API_URL="${{ inputs.backend_api_url || vars.BACKEND_API_URL || 'https://elearning-backend-pwyi.onrender.com/api/v1' }}"
           if [ -n "$API_URL" ]; then
             echo "Injecting cloud production API URL: $API_URL"
             sed -i "s|__CLOUD_BACKEND_API_URL__|$API_URL|g" _site/js/config.js
