@@ -82,6 +82,7 @@ public class FlywayConfig {
             log.info("Executing Flyway database migration...");
             flyway.migrate();
             log.info("Flyway database migration completed successfully.");
+            reconcileMissingUserProfiles(flyway);
         };
     }
 
@@ -205,5 +206,33 @@ public class FlywayConfig {
             }
         }
         return columns;
+    }
+
+    private static void reconcileMissingUserProfiles(Flyway flyway) {
+        String insertProfilesSql = "INSERT INTO `user_profile` (`account_id`, `full_name`, `created_at`, `updated_at`) "
+                + "SELECT a.`account_id`, SUBSTRING_INDEX(a.`email_or_phone`, '@', 1), NOW(), NOW() "
+                + "FROM `account` a "
+                + "WHERE NOT EXISTS (SELECT 1 FROM `user_profile` up WHERE up.`account_id` = a.`account_id`)";
+
+        String insertDefaultRolesSql = "INSERT INTO `account_role` (`account_id`, `role_id`) "
+                + "SELECT a.`account_id`, 1 "
+                + "FROM `account` a "
+                + "WHERE NOT EXISTS (SELECT 1 FROM `account_role` ar WHERE ar.`account_id` = a.`account_id`)";
+
+        String insertCreatorRolesSql = "INSERT INTO `account_role` (`account_id`, `role_id`) "
+                + "SELECT a.`account_id`, 2 "
+                + "FROM `account` a "
+                + "WHERE a.`email_or_phone` = 'creator@test.com' "
+                + "AND NOT EXISTS (SELECT 1 FROM `account_role` ar WHERE ar.`account_id` = a.`account_id` AND ar.`role_id` = 2)";
+
+        try (Connection conn = flyway.getConfiguration().getDataSource().getConnection();
+             Statement stmt = conn.createStatement()) {
+            int profiles = stmt.executeUpdate(insertProfilesSql);
+            int roles = stmt.executeUpdate(insertDefaultRolesSql);
+            int creatorRoles = stmt.executeUpdate(insertCreatorRolesSql);
+            log.info("Reconciled user profiles ({}) and account roles ({}, creator: {}).", profiles, roles, creatorRoles);
+        } catch (SQLException e) {
+            log.warn("Non-fatal: Failed to reconcile user profiles / roles: {}", e.getMessage());
+        }
     }
 }

@@ -17,7 +17,7 @@
 import { authManager } from '../auth/auth-state.js';
 import { createSafeElement, clearContainer } from './security.js';
 import { showToast } from './ui.js';
-import { isDemoFallbackActive, isGitHubPagesEnvironment } from '../api/api.js';
+import { isDemoFallbackActive, isGitHubPagesEnvironment, isApiConfigured } from '../api/api.js';
 
 export const MANAGEMENT_PAGE_SET = new Set([
   'management.html',
@@ -117,7 +117,7 @@ export function renderNavbarAuth(container) {
 
   clearContainer(container);
 
-  const isDemo = isDemoFallbackActive() || isGitHubPagesEnvironment();
+  const isDemo = (isDemoFallbackActive() || isGitHubPagesEnvironment()) && !isApiConfigured();
   const rawPath = (typeof window !== 'undefined' && window.location && window.location.pathname) ? window.location.pathname : '';
   const currentPage = (rawPath.split('/').pop() || '').toLowerCase();
   const activeRoles = authManager.getRoles();
