@@ -12,11 +12,13 @@
 -- Charset: utf8mb4, Collation: utf8mb4_unicode_ci
 -- =============================================================================
 
-ALTER TABLE `radical`
+ALTER TABLE `RADICAL`
     ADD COLUMN `explanation_vi` VARCHAR(1000) NULL AFTER `meaning_vi`,
     ADD COLUMN `video_lesson_url` VARCHAR(500) NULL AFTER `video_writing_url`,
     ADD COLUMN `common_rank` TINYINT UNSIGNED NULL AFTER `video_lesson_url`;
 
-ALTER TABLE `radical`
-    ADD CONSTRAINT `uk_radical_common_rank` UNIQUE (`common_rank`),
+ALTER TABLE `RADICAL`
+    ADD CONSTRAINT `uk_radical_common_rank` UNIQUE (`common_rank`);
+
+ALTER TABLE `RADICAL`
     ADD CONSTRAINT `chk_radical_common_rank` CHECK (`common_rank` IS NULL OR (`common_rank` >= 1 AND `common_rank` <= 50));
