@@ -2133,4 +2133,6 @@ FROM (
     UNION ALL
     SELECT '做' AS `hanzi`, 'zuo' AS `pinyin_raw`, 9 AS `radical_id`
 ) AS mapping
-JOIN `VOCABULARY` v ON v.`hanzi` = mapping.`hanzi` AND v.`pinyin_raw` = mapping.`pinyin_raw`;
+JOIN `VOCABULARY` v
+  ON v.`hanzi` = mapping.`hanzi` COLLATE utf8mb4_unicode_ci
+ AND v.`pinyin_raw` = mapping.`pinyin_raw` COLLATE utf8mb4_unicode_ci;

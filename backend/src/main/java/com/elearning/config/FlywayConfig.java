@@ -100,12 +100,17 @@ public class FlywayConfig {
     }
 
     /**
-     * V25..V28 only apply deterministic UPDATE/DELETE statements and
-     * INSERT IGNORE statements. Rerunning them after a failure is therefore
-     * safe and converges on the same data.
+     * These migrations are pure DML and idempotent:
+     * <ul>
+     *   <li>V13 seeds vocabulary with INSERT ... ON DUPLICATE KEY UPDATE and
+     *       VOCAB_RADICAL with INSERT IGNORE.</li>
+     *   <li>V25..V28 only apply deterministic UPDATE/DELETE statements and
+     *       INSERT IGNORE statements.</li>
+     * </ul>
+     * Rerunning them after a failure converges on the same data.
      */
     private static boolean isRestartableDmlMigration(String version) {
-        return "25".equals(version) || "26".equals(version)
+        return "13".equals(version) || "25".equals(version) || "26".equals(version)
                 || "27".equals(version) || "28".equals(version);
     }
 
