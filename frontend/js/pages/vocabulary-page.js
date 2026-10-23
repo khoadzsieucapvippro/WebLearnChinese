@@ -719,6 +719,20 @@ export class VocabularyPageController {
       this.updateResultCountBadge(parsed.items.length, parsed.totalElements);
       this.updateGroupOverview(parsed.totalElements);
 
+      // 8. URL Deep-Linking: Auto-open modal if target vocabId is specified
+      if (typeof window !== 'undefined' && !this.initialDeepLinkHandled) {
+        const urlParams = new URLSearchParams(window.location.search || '');
+        const targetVocabId = urlParams.get('vocabId') || urlParams.get('id');
+        if (targetVocabId) {
+          this.initialDeepLinkHandled = true;
+          const targetVocab = parsed.items.find(v => String(v.vocabId) === String(targetVocabId));
+          if (targetVocab) {
+            const cardEl = this.elements.grid?.querySelector(`[data-vocab-id="${targetVocab.vocabId}"]`);
+            this.openDetailModal(targetVocab, cardEl || null);
+          }
+        }
+      }
+
     } catch (err) {
       // Ignore intentional aborts from subsequent typing
       if (err.name === 'AbortError') {
@@ -807,6 +821,7 @@ export class VocabularyPageController {
         className: 'vocab-card',
         attrs: {
           role: 'listitem',
+          'data-vocab-id': String(vocab.vocabId || ''),
           tabindex: '0',
           'aria-label': `Xem chi tiết từ vựng ${vocab.hanzi || ''} (${vocab.pinyin || ''} - ${vocab.meaningHanViet || ''})`
         }

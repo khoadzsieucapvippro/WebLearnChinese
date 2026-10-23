@@ -2076,6 +2076,22 @@ dialog:not([open]) {
   line-height: 1.2;
   color: var(--color-text-primary);
   min-width: 50px;
+  transition: color var(--transition-fast);
+}
+
+a.lesson-vocab-hanzi:hover {
+  color: var(--color-primary);
+  text-decoration: underline !important;
+}
+
+.lesson-vocab-radicals .badge {
+  transition: all 0.15s ease-in-out;
+}
+
+.lesson-vocab-radicals .badge:hover {
+  background-color: #f8f9fa !important;
+  border-color: var(--color-primary) !important;
+  transform: translateY(-1px);
 }
 
 .lesson-vocab-readings {
@@ -2097,6 +2113,20 @@ dialog:not([open]) {
 .lesson-vocab-details {
   flex: 1;
   min-width: 220px;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.lesson-vocab-radicals {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.lesson-vocab-radicals .badge {
+  max-width: 100%;
+  box-sizing: border-box;
+  white-space: normal;
+  text-align: left;
 }
 
 .lesson-vocab-meaning {
@@ -2207,6 +2237,14 @@ dialog:not([open]) {
 
   .lesson-vocab-details {
     min-width: 0;
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .lesson-vocab-radicals-label {
+    width: 100%;
+    display: block;
+    margin-bottom: 2px;
   }
 
   .lesson-vocab-actions {

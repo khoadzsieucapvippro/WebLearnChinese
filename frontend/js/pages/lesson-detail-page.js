@@ -29,8 +29,71 @@ import { openVocabWritingModal } from '../ui/character-writing/vocab-writing-mod
 import { authManager } from '../auth/auth-state.js';
 import { partitionRadicals } from './radicals-page.js';
 import { HSK1_TOPICS, HSK2_TOPICS, HSK3_TOPICS } from './srs-review-page.js';
+import { SEED_RADICALS, CHAR_TO_RADICAL_MAP, CHAR_TO_RADICALS_MAP } from '../api/demo-seed-data.js';
 
 export { createSpeakerIcon, openVocabWritingModal };
+
+const RADICAL_BY_ID = new Map(
+  Array.isArray(SEED_RADICALS) ? SEED_RADICALS.map(r => [Number(r.radicalId), r]) : []
+);
+
+/**
+ * Resolves constituent Kangxi radicals for a given vocabulary item or Chinese string.
+ * Decomposes characters and resolves their authoritative Kangxi radicals.
+ *
+ * @param {Object|string} vocabOrHanzi
+ * @returns {Array<{ radicalId: number, character: string, pinyin: string, meaningHanViet: string, meaningVi: string, charInWord: string }>}
+ */
+export function getConstituentRadicals(vocabOrHanzi) {
+  if (!vocabOrHanzi) return [];
+
+  // If object with pre-populated radicals from backend/item
+  if (typeof vocabOrHanzi === 'object') {
+    if (Array.isArray(vocabOrHanzi.radicals) && vocabOrHanzi.radicals.length > 0) {
+      return vocabOrHanzi.radicals.map(r => ({
+        radicalId: Number(r.radicalId),
+        character: r.character || '',
+        pinyin: r.pinyin || '',
+        meaningHanViet: r.meaningHanViet || '',
+        meaningVi: r.meaningVi || '',
+        charInWord: r.hanziChar || ''
+      }));
+    }
+  }
+
+  const hanzi = typeof vocabOrHanzi === 'string' ? vocabOrHanzi : vocabOrHanzi.hanzi;
+  if (!hanzi || typeof hanzi !== 'string') return [];
+
+  const radicals = [];
+  const seenIds = new Set();
+
+  for (const char of hanzi) {
+    if (!/[\u4e00-\u9fa5]/.test(char)) continue;
+
+    const radIds = (typeof CHAR_TO_RADICALS_MAP !== 'undefined' && CHAR_TO_RADICALS_MAP[char])
+      || (typeof CHAR_TO_RADICAL_MAP !== 'undefined' && CHAR_TO_RADICAL_MAP[char] ? [CHAR_TO_RADICAL_MAP[char]] : []);
+
+    for (const rid of radIds) {
+      const numId = Number(rid);
+      if (numId > 0 && !seenIds.has(numId)) {
+        seenIds.add(numId);
+        const rad = RADICAL_BY_ID.get(numId);
+        if (rad) {
+          radicals.push({
+            radicalId: rad.radicalId,
+            character: rad.character,
+            pinyin: rad.pinyin,
+            meaningHanViet: rad.meaningHanViet,
+            meaningVi: rad.meaningVi,
+            charInWord: char
+          });
+        }
+      }
+    }
+  }
+
+  return radicals;
+}
 
 /**
  * Validates the raw lesson ID string from URL parameter.
@@ -337,43 +400,43 @@ export class LessonDetailPageController {
     this.dom.contentWrapper.classList.add('d-none');
     showLoading(this.dom.stateContainer, { message: 'Đang nạp danh sách bộ thủ...' });
 
+    let items = [];
     try {
       const resp = await apiClient('/radicals', { params: { page: 0, size: 214 } });
-      const items = Array.isArray(resp?.items) ? resp.items : [];
-      clearContainer(this.dom.stateContainer);
-
-      let chapterRadicals = [];
-      let chapterTitle = '';
-      let chapterDesc = '';
-      const chapIdx = this.chapter !== null ? this.chapter : 0;
-
-      if (this.group === 'radicals50') {
-        const partitioned = partitionRadicals(items);
-        const list = partitioned.commonRadicals.length > 0 ? partitioned.commonRadicals : items.slice(0, 50);
-        const start = chapIdx * 10;
-        const end = Math.min(list.length, start + 10);
-        chapterRadicals = list.slice(start, end);
-        chapterTitle = `50 Bộ Thủ Thông Dụng — Chặng ${String(chapIdx + 1).padStart(2, '0')}: Bộ thủ ${start + 1} đến ${end}`;
-        chapterDesc = `Tập trung ghi nhớ nhận diện mặt chữ, pinyin, âm Hán-Việt và nghĩa tiếng Việt của ${chapterRadicals.length} bộ thủ cốt lõi.`;
-      } else {
-        const list = items;
-        const start = chapIdx * 20;
-        const end = Math.min(list.length, start + 20);
-        chapterRadicals = list.slice(start, end);
-        chapterTitle = `214 Bộ Thủ Khang Hy — Chặng ${String(chapIdx + 1).padStart(2, '0')}: Bộ thủ ${start + 1} đến ${end}`;
-        chapterDesc = `Toàn bộ ${chapterRadicals.length} bộ thủ Khang Hy theo số nét chuẩn hóa giúp tra cứu và giải nghĩa cấu tạo chữ Hán.`;
-      }
-
-      this.renderRadicalsContent(chapterTitle, chapterDesc, chapterRadicals);
+      items = Array.isArray(resp?.items) ? resp.items : [];
     } catch (err) {
-      console.warn('[LessonDetail] Error loading radicals, using offline catalog:', err);
-      clearContainer(this.dom.stateContainer);
-      this.renderRadicalsContent(
-        `Bộ Thủ — Chặng ${String((this.chapter || 0) + 1).padStart(2, '0')}`,
-        'Nội dung bộ thủ học tập',
-        []
-      );
+      console.warn('[LessonDetail] Error loading radicals from API, using offline SEED_RADICALS:', err);
     }
+
+    if (items.length === 0 && Array.isArray(SEED_RADICALS) && SEED_RADICALS.length > 0) {
+      items = SEED_RADICALS;
+    }
+
+    clearContainer(this.dom.stateContainer);
+
+    let chapterRadicals = [];
+    let chapterTitle = '';
+    let chapterDesc = '';
+    const chapIdx = this.chapter !== null ? this.chapter : 0;
+
+    if (this.group === 'radicals50') {
+      const partitioned = partitionRadicals(items);
+      const list = partitioned.commonRadicals.length > 0 ? partitioned.commonRadicals : items.slice(0, 50);
+      const start = chapIdx * 10;
+      const end = Math.min(list.length, start + 10);
+      chapterRadicals = list.slice(start, end);
+      chapterTitle = `50 Bộ Thủ Thông Dụng — Chặng ${String(chapIdx + 1).padStart(2, '0')}: Bộ thủ ${start + 1} đến ${end}`;
+      chapterDesc = `Tập trung ghi nhớ nhận diện mặt chữ, pinyin, âm Hán-Việt và nghĩa tiếng Việt của ${chapterRadicals.length} bộ thủ cốt lõi.`;
+    } else {
+      const list = items;
+      const start = chapIdx * 20;
+      const end = Math.min(list.length, start + 20);
+      chapterRadicals = list.slice(start, end);
+      chapterTitle = `214 Bộ Thủ Khang Hy — Chặng ${String(chapIdx + 1).padStart(2, '0')}: Bộ thủ ${start + 1} đến ${end}`;
+      chapterDesc = `Toàn bộ ${chapterRadicals.length} bộ thủ Khang Hy theo số nét chuẩn hóa giúp tra cứu và giải nghĩa cấu tạo chữ Hán.`;
+    }
+
+    this.renderRadicalsContent(chapterTitle, chapterDesc, chapterRadicals);
   }
 
   /**
@@ -428,11 +491,19 @@ export class LessonDetailPageController {
         text: `#${index + 1}`
       });
 
-      // 2. Main Character & Readings
+      // 2. Main Character & Readings (Trỏ thẳng đến 214 Bộ Thủ)
+      const radicalUrl = rad.radicalId
+        ? `radicals.html?id=${encodeURIComponent(rad.radicalId)}`
+        : `radicals.html?search=${encodeURIComponent(rad.character || rad.hanzi || '')}`;
+
       const mainDiv = createSafeElement('div', { className: 'lesson-vocab-main' });
-      const hanziSpan = createSafeElement('span', {
-        className: 'lesson-vocab-hanzi',
-        lang: 'zh-Hans',
+      const hanziLink = createSafeElement('a', {
+        className: 'lesson-vocab-hanzi text-decoration-none',
+        attrs: {
+          href: radicalUrl,
+          lang: 'zh-Hans',
+          title: `Tra cứu bộ thủ ${rad.character || rad.hanzi || ''} trong 214 Bộ Thủ`
+        },
         text: rad.character || rad.hanzi || '?'
       });
 
@@ -449,23 +520,34 @@ export class LessonDetailPageController {
       readingsDiv.appendChild(hanvietSpan);
 
       mainDiv.appendChild(orderBadge);
-      mainDiv.appendChild(hanziSpan);
+      mainDiv.appendChild(hanziLink);
       mainDiv.appendChild(readingsDiv);
 
-      // 3. Details (Meaning, Stroke Count)
+      // 3. Details (Meaning, Stroke Count, Direct Link)
       const detailsDiv = createSafeElement('div', { className: 'lesson-vocab-details' });
       const meaningDiv = createSafeElement('div', {
         className: 'lesson-vocab-meaning',
         text: rad.meaningVi || 'Đang cập nhật ý nghĩa'
       });
+
+      const linkBadge = createSafeElement('a', {
+        className: 'badge bg-light text-dark border text-decoration-none ms-2 align-middle',
+        attrs: {
+          href: radicalUrl,
+          title: `Tra cứu chi tiết bộ thủ ${rad.character || rad.hanzi || ''} trong 214 Bộ Thủ`
+        },
+        text: 'Tra bộ thủ ↗'
+      });
+      meaningDiv.appendChild(linkBadge);
+
       const strokeInfo = createSafeElement('div', {
-        className: 'lesson-vocab-example text-muted small',
+        className: 'lesson-vocab-example text-muted small mt-1',
         text: `Số nét: ${rad.strokeCount || '--'} nét ${rad.isCommon50 ? '• Thuộc 50 bộ thủ thông dụng' : ''}`
       });
       detailsDiv.appendChild(meaningDiv);
       detailsDiv.appendChild(strokeInfo);
 
-      // 4. Action Buttons (Audio & Writing)
+      // 4. Action Button: ONLY Pronunciation Speaker (Bỏ các ô màu đỏ)
       const actionsDiv = createSafeElement('div', { className: 'lesson-vocab-actions' });
       
       const speechBtn = createSpeechButton({
@@ -476,29 +558,7 @@ export class LessonDetailPageController {
         iconOnly: true
       });
 
-      const writeBtn = createSafeElement('button', {
-        type: 'button',
-        className: 'btn-chinese-outline py-1 px-2 small d-inline-flex align-items-center gap-1',
-        title: 'Tập viết chữ này',
-        'aria-label': `Tập viết bộ thủ ${rad.character || rad.hanzi}`
-      }, [
-        createSafeElement('span', { text: '✍️' }),
-        createSafeElement('span', { text: 'Viết' })
-      ]);
-
-      writeBtn.addEventListener('click', () => {
-        openVocabWritingModal({
-          vocabId: rad.radicalId || index + 1,
-          hanzi: rad.character || rad.hanzi,
-          pinyin: rad.pinyin,
-          meaningVi: rad.meaningVi,
-          meaningHanViet: rad.meaningHanViet,
-          itemType: 'RADICAL'
-        });
-      });
-
       actionsDiv.appendChild(speechBtn);
-      actionsDiv.appendChild(writeBtn);
 
       li.appendChild(mainDiv);
       li.appendChild(detailsDiv);
@@ -672,11 +732,17 @@ export class LessonDetailPageController {
         text: `#${vocab.orderIndex}`
       });
 
-      // 2. Main Character & Phonetic Block
+      // 2. Main Character & Phonetic Block (Trỏ thẳng đến Từ Vựng)
+      const vocabUrl = `vocabulary.html?search=${encodeURIComponent(vocab.hanzi || '')}${this.lessonLevel ? `&hsk=${this.lessonLevel}` : ''}${vocab.vocabId ? `&vocabId=${vocab.vocabId}` : ''}`;
+
       const mainDiv = createSafeElement('div', { className: 'lesson-vocab-main' });
-      const hanziSpan = createSafeElement('span', {
-        className: 'lesson-vocab-hanzi',
-        lang: 'zh-Hans',
+      const hanziLink = createSafeElement('a', {
+        className: 'lesson-vocab-hanzi text-decoration-none',
+        attrs: {
+          href: vocabUrl,
+          lang: 'zh-Hans',
+          title: `Tra cứu từ '${vocab.hanzi || ''}' trong Từ Vựng`
+        },
         text: vocab.hanzi || '?'
       });
 
@@ -696,17 +762,79 @@ export class LessonDetailPageController {
       readingsDiv.appendChild(hanvietSpan);
 
       mainDiv.appendChild(orderBadge);
-      mainDiv.appendChild(hanziSpan);
+      mainDiv.appendChild(hanziLink);
       mainDiv.appendChild(readingsDiv);
 
-      // 3. Semantic Meaning & Contextual Example
+      // 3. Semantic Meaning, Contextual Example, and Constituent Radicals ("Bộ thủ cấu thành")
       const detailsDiv = createSafeElement('div', { className: 'lesson-vocab-details' });
       const meaningDiv = createSafeElement('div', {
         className: 'lesson-vocab-meaning',
         text: vocab.meaningVi || 'Chưa cập nhật nghĩa'
       });
 
+      const vocabLinkBadge = createSafeElement('a', {
+        className: 'badge bg-light text-dark border text-decoration-none ms-2 align-middle',
+        attrs: {
+          href: vocabUrl,
+          title: `Tra cứu từ '${vocab.hanzi || ''}' trong Từ Vựng`
+        },
+        text: 'Tra từ vựng ↗'
+      });
+      meaningDiv.appendChild(vocabLinkBadge);
+
       detailsDiv.appendChild(meaningDiv);
+
+      // Constituent Radicals Section ("Bộ thủ cấu thành" trỏ thẳng đến 214 bộ thủ)
+      const constituentRadicals = getConstituentRadicals(vocab);
+      if (constituentRadicals.length > 0) {
+        const radicalsRow = createSafeElement('div', {
+          className: 'lesson-vocab-radicals d-flex align-items-center flex-wrap gap-1 mt-2'
+        });
+
+        const labelSpan = createSafeElement('span', {
+          className: 'lesson-vocab-radicals-label text-muted small me-1',
+          text: 'Bộ thủ cấu thành:'
+        });
+        radicalsRow.appendChild(labelSpan);
+
+        constituentRadicals.forEach(rad => {
+          const radTargetUrl = rad.radicalId
+            ? `radicals.html?id=${encodeURIComponent(rad.radicalId)}`
+            : `radicals.html?search=${encodeURIComponent(rad.character || '')}`;
+
+          const displayChar = (rad.character || '').includes('(')
+            ? rad.character.split('(')[0].trim()
+            : (rad.character || '');
+
+          const displayMeaning = (rad.meaningHanViet || rad.meaningVi || '').includes('(')
+            ? (rad.meaningHanViet || rad.meaningVi).split('(')[0].trim()
+            : (rad.meaningHanViet || rad.meaningVi || '');
+
+          const radBadge = createSafeElement('a', {
+            className: 'badge bg-light text-dark border text-decoration-none d-inline-flex align-items-center gap-1 py-1 px-2',
+            attrs: {
+              href: radTargetUrl,
+              title: `Xem chi tiết bộ thủ ${rad.character} (${rad.meaningHanViet || rad.meaningVi}) trong 214 Bộ Thủ`
+            },
+            children: [
+              createSafeElement('span', {
+                className: 'fw-bold text-danger font-hanzi',
+                attrs: { lang: 'zh-Hans' },
+                text: displayChar
+              }),
+              ...(displayMeaning ? [
+                createSafeElement('span', {
+                  className: 'text-secondary small',
+                  text: `(${displayMeaning})`
+                })
+              ] : [])
+            ]
+          });
+          radicalsRow.appendChild(radBadge);
+        });
+
+        detailsDiv.appendChild(radicalsRow);
+      }
 
       if (vocab.exampleSentence) {
         const exampleDiv = createSafeElement('div', { className: 'lesson-vocab-example mt-1' });
@@ -725,7 +853,7 @@ export class LessonDetailPageController {
         detailsDiv.appendChild(exampleDiv);
       }
 
-      // 4. Action Controls: Pronunciation, Writing Practice, and Personal Notes
+      // 4. Action Controls: ONLY Pronunciation Speaker (Bỏ các ô màu đỏ)
       const actionsDiv = createSafeElement('div', { className: 'lesson-vocab-actions' });
 
       // Speech Pronunciation Button
@@ -737,50 +865,7 @@ export class LessonDetailPageController {
         iconOnly: true
       });
 
-      // Writing Practice Button
-      const writeBtn = createSafeElement('button', {
-        type: 'button',
-        className: 'btn-chinese-outline py-1 px-2 small d-inline-flex align-items-center gap-1',
-        title: 'Tập viết chữ này',
-        'aria-label': `Tập viết chữ ${vocab.hanzi}`
-      }, [
-        createSafeElement('span', { text: '✍️' }),
-        createSafeElement('span', { text: 'Viết' })
-      ]);
-
-      writeBtn.addEventListener('click', () => {
-        openVocabWritingModal({
-          vocabId: vocab.vocabId,
-          hanzi: vocab.hanzi,
-          pinyin: vocab.pinyin,
-          meaningVi: vocab.meaningVi,
-          meaningHanViet: vocab.meaningHanViet,
-          itemType: 'VOCABULARY'
-        });
-      });
-
-      // Personal Notes Button
-      const noteBtn = createSafeElement('button', {
-        type: 'button',
-        className: 'btn-chinese-outline py-1 px-2 small d-inline-flex align-items-center gap-1',
-        title: 'Ghi chú cá nhân',
-        'aria-label': `Ghi chú cho từ ${vocab.hanzi}`
-      }, [
-        createSafeElement('span', { text: '📝' }),
-        createSafeElement('span', { text: 'Ghi chú' })
-      ]);
-
-      noteBtn.addEventListener('click', () => {
-        openNotesModal({
-          vocabId: vocab.vocabId,
-          hanzi: vocab.hanzi,
-          pinyin: vocab.pinyin
-        });
-      });
-
       actionsDiv.appendChild(speechBtn);
-      actionsDiv.appendChild(writeBtn);
-      actionsDiv.appendChild(noteBtn);
 
       // Assemble list item
       li.appendChild(mainDiv);
