@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' https://cdn.jsdelivr.net; style-src-elem 'self' https://cdn.jsdelivr.net; style-src-attr 'unsafe-inline'; font-src 'self'; img-src 'self' data: https:; media-src 'self' blob: https:; connect-src 'self' http://localhost:8080 http://127.0.0.1:8080 https://*.up.railway.app https://*.onrender.com https://*.koyeb.app; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'self' https://www.youtube-nocookie.com">
   <title>Chi Tiết Bài Học | Hán Ngữ &amp; Bộ Thủ</title>
-  <meta name="description" content="Học từ vựng tiếng Trung theo lộ trình tuần tự chuẩn hóa, ghi nhớ mặt chữ, phát âm Pinyin và ngữ nghĩa tiếng Việt.">
+  <meta name="description" content="Học từ vựng và bộ thủ tiếng Trung theo lộ trình tuần tự chuẩn hóa HSK 3.0, ghi nhớ mặt chữ, phát âm Pinyin và ngữ nghĩa tiếng Việt.">
 
   <!-- Verified Bootstrap 5.3.3 CSS via CDN with Authenticated Subresource Integrity (SRI) -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
@@ -16,7 +16,7 @@
   <!-- Core Design Tokens & Custom Stylesheet -->
   <link rel="stylesheet" href="css/style.css">
 
-  <!-- Runtime Environment Configuration (Task FE-REMEDIATION-03) -->
+  <!-- Runtime Environment Configuration -->
   <script src="js/config.js"></script>
 </head>
 <body>
@@ -78,8 +78,8 @@
       <nav aria-label="Đường dẫn bài học" class="breadcrumb-nav">
         <ol class="breadcrumb-custom detail-breadcrumb">
           <li><a href="index.html">Trang chủ</a></li>
-          <li><a href="srs-review.html">Ôn tập</a></li>
-          <li><a href="lessons.html">Danh mục bài học</a></li>
+          <li><a href="srs-review.html" id="breadcrumbReviewHub">Ôn tập</a></li>
+          <li id="breadcrumbGroupItem" class="d-none"><a href="srs-review.html" id="breadcrumbGroupLink">Nhóm bài học</a></li>
           <li id="breadcrumbLessonTitle" aria-current="page">Đang tải bài học...</li>
         </ol>
       </nav>
@@ -95,186 +95,115 @@
           <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
             <div>
               <div class="d-flex align-items-center gap-2 mb-2">
-                <span class="badge-status badge-status-approved">Đã kiểm duyệt</span>
+                <span class="badge-status badge-status-approved" id="detailStatusBadge">Đã kiểm duyệt</span>
                 <span id="detailVocabCount" class="lesson-vocab-count-badge">0 từ vựng</span>
               </div>
               <h1 id="lessonDetailHeading" class="h2 fw-bold text-dark mb-1">Tiêu đề bài học</h1>
+              <p id="lessonDetailDescription" class="text-secondary small mb-2"></p>
               <div class="small text-muted">
                 <span>Ngày cập nhật: </span>
                 <time id="detailLessonDate" datetime="">-</time>
               </div>
             </div>
 
-            <!-- Header Action Controls (4 Main Actions) -->
+            <!-- Header Action Controls -->
             <div class="d-flex align-items-center gap-2 flex-wrap">
-              <a href="srs-review.html" id="btnHeaderNewCards" class="btn-chinese-primary py-2 px-3 text-decoration-none">
-                Học từ mới
-              </a>
-              <a href="srs-review.html" id="btnHeaderLessonSrs" class="btn-chinese-secondary py-2 px-3 text-decoration-none">
-                Ôn SRS bài này
-              </a>
-              <a href="srs-review.html" id="btnHeaderPractice" class="btn-chinese-secondary py-2 px-3 text-decoration-none">
-                Luyện tự do
-              </a>
-              <a href="srs-review.html?group=hsk1" id="btnHeaderReviewHub" class="btn-chinese-secondary py-2 px-3 text-decoration-none">
-                &larr; Trung tâm Ôn tập
-              </a>
-              <a href="lessons.html" class="btn-chinese-secondary py-2 px-3 text-decoration-none">
-                &larr; Danh sách bài học
+              <a href="srs-review.html" id="btnBackToReview" class="btn-chinese-outline py-2 px-3 text-decoration-none">
+                &larr; Quay lại Ôn tập
               </a>
             </div>
           </div>
         </article>
 
-        <!-- Lesson Study & 4-Action Hub Section (Task FE-LESSON-02) -->
-        <section class="lesson-study-hub mb-5" aria-label="Trung tâm học tập và 4 hành động bài học">
+        <!-- Modern Unified 4-Room Quick Launch Bar -->
+        <section class="lesson-study-hub mb-5" aria-label="Trung tâm học tập và 4 chế độ luyện tập">
           <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
             <div>
-              <h2 class="h5 fw-bold text-dark mb-1">Tiến Độ Bài Học &amp; Hành Động Học Tập</h2>
-              <p class="text-secondary small mb-0" id="lessonAuthPrompt">Lựa chọn chế độ học tập phù hợp theo thuật toán lặp lại ngắt quãng SM-2 hoặc luyện tập tự do.</p>
-            </div>
-            <div class="d-flex align-items-center gap-2">
-              <span id="lessonProgressBadge" class="badge-status badge-status-draft">Chưa bắt đầu</span>
+              <h2 class="h5 fw-bold text-dark mb-1">Chế Độ Luyện Tập Chuẩn Hóa</h2>
+              <p class="text-secondary small mb-0">Lựa chọn 1 trong 4 phòng luyện tập tương ứng theo hệ thống Spaced Repetition (SRS).</p>
             </div>
           </div>
 
-          <!-- Real Metrics Display Row -->
-          <div class="lesson-metrics-bar">
-            <div class="lesson-metric-item">
-              <span class="lesson-metric-label">Tổng số từ trong bài</span>
-              <span class="lesson-metric-val" id="statTotalWords">--</span>
-            </div>
-            <div class="lesson-metric-item">
-              <span class="lesson-metric-label">Số từ đã học</span>
-              <span class="lesson-metric-val text-success" id="statLearnedWords">--</span>
-            </div>
-            <div class="lesson-metric-item">
-              <span class="lesson-metric-label">Thẻ đến hạn ôn</span>
-              <span class="lesson-metric-val text-danger" id="statDueWords">--</span>
-            </div>
-            <div class="lesson-metric-item">
-              <span class="lesson-metric-label">Từ mới sẵn sàng học</span>
-              <span class="lesson-metric-val text-primary" id="statNewWords">--</span>
-            </div>
-          </div>
-
-          <!-- Progress Bar -->
-          <div class="lesson-progress-wrap">
-            <div class="d-flex justify-content-between small text-secondary mb-1">
-              <span>Tỷ lệ hoàn thành bài học</span>
-              <span id="lessonProgressPercent" class="fw-semibold">0%</span>
-            </div>
-            <div class="lesson-progress-bar-bg" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="lessonProgressBar">
-              <div class="lesson-progress-bar-fill" id="lessonProgressBarFill" style="width: 0%;"></div>
-            </div>
-          </div>
-
-          <!-- 4 Explicit Action Cards Grid -->
-          <div class="lesson-action-grid">
-            <!-- 1. Học từ mới -->
-            <div class="lesson-action-card action-card-primary" id="cardActionNew">
-              <div>
-                <div class="lesson-action-header mb-2">
-                  <h3 class="lesson-action-title">1. Học từ mới</h3>
-                  <span class="badge-status badge-status-draft small" id="badgeActionNew">Từ mới</span>
+          <div class="row g-3">
+            <!-- 1. Thẻ Ghi Nhớ -->
+            <div class="col-12 col-sm-6 col-lg-3">
+              <div class="p-3 border rounded-3 bg-white h-100 d-flex flex-column justify-content-between text-center shadow-sm">
+                <div>
+                  <div class="fs-3 mb-2" aria-hidden="true">🎴</div>
+                  <h3 class="h6 fw-bold mb-1">Thẻ Ghi Nhớ</h3>
+                  <p class="small text-muted mb-3">Lật thẻ flashcard 2 mặt, nhận diện chữ Hán và kiểm tra trí nhớ.</p>
                 </div>
-                <p class="lesson-action-desc">
-                  Bắt đầu phiên học từ vựng mới trong bài theo chu trình ghi nhớ chủ động với phiên âm, giải nghĩa và câu ví dụ.
-                </p>
-              </div>
-              <div>
-                <a href="srs-review.html" id="btnActionNewCards" class="btn-chinese-primary py-2 px-3 text-decoration-none d-block text-center">
-                  Học từ mới
+                <a href="srs-review.html?mode=flashcard" id="btnLaunchFlashcard" class="btn-chinese-primary py-2 px-3 text-decoration-none d-block">
+                  Luyện Flashcard
                 </a>
               </div>
             </div>
 
-            <!-- 2. Ôn SRS bài này -->
-            <div class="lesson-action-card" id="cardActionLessonSrs">
-              <div>
-                <div class="lesson-action-header mb-2">
-                  <h3 class="lesson-action-title">2. Ôn SRS bài này</h3>
-                  <span class="badge-status badge-status-pending small" id="badgeActionLessonSrs">SRS bài</span>
+            <!-- 2. Luyện Viết -->
+            <div class="col-12 col-sm-6 col-lg-3">
+              <div class="p-3 border rounded-3 bg-white h-100 d-flex flex-column justify-content-between text-center shadow-sm">
+                <div>
+                  <div class="fs-3 mb-2" aria-hidden="true">✍️</div>
+                  <h3 class="h6 fw-bold mb-1">Luyện Viết</h3>
+                  <p class="small text-muted mb-3">Tập viết từng nét chữ Hán thuận bút trên bảng vẽ tương tác.</p>
                 </div>
-                <p class="lesson-action-desc">
-                  Ôn tập các thẻ đến hạn theo chu kỳ lặp lại ngắt quãng SuperMemo-2 tối ưu hóa trí nhớ dài hạn của riêng bài này.
-                </p>
-              </div>
-              <div>
-                <a href="srs-review.html" id="btnActionLessonSrs" class="btn-chinese-secondary py-2 px-3 text-decoration-none d-block text-center">
-                  Ôn SRS bài này
+                <a href="srs-review.html?mode=writing" id="btnLaunchWriting" class="btn-chinese-secondary py-2 px-3 text-decoration-none d-block">
+                  Luyện Viết
                 </a>
               </div>
             </div>
 
-            <!-- 3. Luyện lại bài (Luyện tự do) -->
-            <div class="lesson-action-card" id="cardActionPractice">
-              <div>
-                <div class="lesson-action-header mb-2">
-                  <h3 class="lesson-action-title">3. Luyện tự do</h3>
-                  <span class="badge-status badge-status-active small" id="badgeActionPractice">Không đổi SRS</span>
+            <!-- 3. Luyện Nghe -->
+            <div class="col-12 col-sm-6 col-lg-3">
+              <div class="p-3 border rounded-3 bg-white h-100 d-flex flex-column justify-content-between text-center shadow-sm">
+                <div>
+                  <div class="fs-3 mb-2" aria-hidden="true">🎧</div>
+                  <h3 class="h6 fw-bold mb-1">Luyện Nghe</h3>
+                  <p class="small text-muted mb-3">Luyện nghe phát âm chuẩn bản xứ và phản xạ nhận diện âm thanh.</p>
                 </div>
-                <p class="lesson-action-desc">
-                  Luyện tập tự do toàn bộ từ vựng trong bài bất kỳ lúc nào để củng cố phản xạ mà không làm thay đổi lịch ôn SRS.
-                </p>
-              </div>
-              <div>
-                <a href="srs-review.html" id="btnActionPractice" class="btn-chinese-outline py-2 px-3 text-decoration-none d-block text-center">
-                  Luyện tự do
+                <a href="srs-review.html?mode=listening" id="btnLaunchListening" class="btn-chinese-secondary py-2 px-3 text-decoration-none d-block">
+                  Luyện Nghe
                 </a>
               </div>
             </div>
 
-            <!-- 4. Ôn SRS toàn hệ thống -->
-            <div class="lesson-action-card" id="cardActionSystemSrs">
-              <div>
-                <div class="lesson-action-header mb-2">
-                  <h3 class="lesson-action-title">4. Ôn toàn hệ thống</h3>
-                  <span class="badge-status badge-status-draft small" id="badgeActionSystemSrs">Phòng ôn chung</span>
+            <!-- 4. Luyện Đọc -->
+            <div class="col-12 col-sm-6 col-lg-3">
+              <div class="p-3 border rounded-3 bg-white h-100 d-flex flex-column justify-content-between text-center shadow-sm">
+                <div>
+                  <div class="fs-3 mb-2" aria-hidden="true">📖</div>
+                  <h3 class="h6 fw-bold mb-1">Luyện Đọc</h3>
+                  <p class="small text-muted mb-3">Đọc to câu văn và nhận diện cao độ thanh điệu (Chao 5-scale).</p>
                 </div>
-                <p class="lesson-action-desc">
-                  Chuyển đến phòng ôn tập toàn diện cho tất cả từ vựng và bộ thủ đến hạn trong toàn bộ tài khoản.
-                </p>
-              </div>
-              <div>
-                <a href="srs-review.html" id="btnActionSystemSrs" class="btn-chinese-secondary py-2 px-3 text-decoration-none d-block text-center">
-                  Phòng ôn chung &rarr;
+                <a href="srs-review.html?mode=reading" id="btnLaunchReading" class="btn-chinese-secondary py-2 px-3 text-decoration-none d-block">
+                  Luyện Đọc
                 </a>
               </div>
             </div>
           </div>
         </section>
 
-        <!-- Ordered Vocabulary Learning Sequence Section -->
+        <!-- Ordered Vocabulary / Radicals Sequence Section -->
         <section aria-labelledby="lessonVocabHeading" class="mb-5">
-          <div class="d-flex align-items-center justify-content-between mb-3">
-            <h2 id="lessonVocabHeading" class="h4 fw-bold text-dark mb-0">Trình Tự Từ Vựng Bài Học</h2>
-            <span class="small text-secondary fst-italic">Thứ tự chuẩn hóa do tác giả bài học thiết kế</span>
+          <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+            <h2 id="lessonVocabHeading" class="h4 fw-bold text-dark mb-0">Nội Dung Chi Tiết</h2>
+            <span class="small text-secondary fst-italic" id="lessonSubHeading">Thứ tự chuẩn hóa theo lộ trình học tập</span>
           </div>
 
           <!-- Semantic Ordered List for Learning Items -->
           <ol id="lessonVocabList" class="lesson-vocab-list" aria-label="Trình tự từ vựng bài học"></ol>
         </section>
 
-        <!-- Post-Study Action Banner -->
+        <!-- Modern Post-Study Action Banner -->
         <section class="p-4 rounded-3 border bg-surface text-center mb-4">
-          <h3 class="h5 fw-bold text-dark mb-2">Sẵn sàng ghi nhớ và làm chủ từ vựng?</h3>
-          <p class="text-secondary small mb-3">Luyện tập tự do không làm đổi lịch SRS, hoặc ôn tập theo thuật toán SuperMemo-2 tối ưu hóa trí nhớ dài hạn.</p>
+          <h3 class="h5 fw-bold text-dark mb-2">Sẵn sàng ghi nhớ và làm chủ nội dung này?</h3>
+          <p class="text-secondary small mb-3">Luyện tập theo thuật toán SuperMemo-2 tối ưu hóa trí nhớ dài hạn hoặc luyện tập tự do củng cố phản xạ.</p>
           <div class="d-flex align-items-center justify-content-center gap-3 flex-wrap">
-            <a href="srs-review.html" id="btnStartNewCards" class="btn-chinese-primary py-2 px-4 text-decoration-none">
-              Học từ mới trong bài &rarr;
+            <a href="srs-review.html" id="btnStartPrimaryStudy" class="btn-chinese-primary py-2 px-4 text-decoration-none">
+              ▶ Bắt đầu luyện tập ngay &rarr;
             </a>
-            <a href="srs-review.html" id="btnStartLessonSrs" class="btn-chinese-secondary py-2 px-3 text-decoration-none">
-              Ôn SRS bài này
-            </a>
-            <a href="srs-review.html" id="btnStartPracticeCards" class="btn-chinese-secondary py-2 px-4 text-decoration-none">
-              Luyện lại bài tự do
-            </a>
-            <a href="srs-review.html" id="btnGoToSrsReview" class="btn-chinese-secondary py-2 px-3 text-decoration-none">
-              Ôn tập SRS toàn hệ thống
-            </a>
-            <a href="lessons.html" class="btn-chinese-secondary py-2 px-3 text-decoration-none">
-              Khám phá bài học khác
+            <a href="srs-review.html" id="btnBottomBackToShelf" class="btn-chinese-secondary py-2 px-3 text-decoration-none">
+              &larr; Về phòng ôn tập
             </a>
           </div>
         </section>

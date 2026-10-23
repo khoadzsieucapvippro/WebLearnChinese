@@ -11321,7 +11321,9 @@ export class SrsReviewController {
         onStart: () => this.startChapterSession('radicals50', i, 'start'),
         onContinue: () => this.startChapterSession('radicals50', i, 'continue'),
         onReview: () => this.startChapterSession('radicals50', i, 'review'),
-        onDue: dueCount > 0 ? () => this.startChapterSession('radicals50', i, 'due') : null
+        onDue: dueCount > 0 ? () => this.startChapterSession('radicals50', i, 'due') : null,
+        extraButtonText: 'Chi tiết chặng',
+        extraButtonHref: `lesson-detail.html?group=radicals50&chapter=${i}&mode=${this.activeMode}`
       });
 
       grid.appendChild(card);
@@ -11437,7 +11439,9 @@ export class SrsReviewController {
         onStart: () => this.startChapterSession('radicals214', i, 'start'),
         onContinue: () => this.startChapterSession('radicals214', i, 'continue'),
         onReview: () => this.startChapterSession('radicals214', i, 'review'),
-        onDue: dueCount > 0 ? () => this.startChapterSession('radicals214', i, 'due') : null
+        onDue: dueCount > 0 ? () => this.startChapterSession('radicals214', i, 'due') : null,
+        extraButtonText: 'Chi tiết chặng',
+        extraButtonHref: `lesson-detail.html?group=radicals214&chapter=${i}&mode=${this.activeMode}`
       });
 
       grid.appendChild(card);
@@ -11534,11 +11538,31 @@ export class SrsReviewController {
     if (lessons.length === 0) {
       return requestedId;
     }
-    if (lessons.some(l => Number(l.lessonId) === Number(requestedId))) {
-      return Number(requestedId);
+    const numId = Number(requestedId);
+    if (lessons.some(l => Number(l.lessonId) === numId)) {
+      return numId;
     }
-    if (requestedId >= 5 && requestedId <= 14) {
-      const legacy = lessons[requestedId - 5];
+    // HSK 2 topic ID range (201..210)
+    if (numId >= 201 && numId <= 210) {
+      const chapStr = `Bài ${String(numId - 200).padStart(2, '0')}`;
+      const found = lessons.find(l => l.title?.includes('HSK 2') && l.title?.includes(chapStr));
+      if (found) return Number(found.lessonId);
+    }
+    // HSK 3 topic ID range (301..325)
+    if (numId >= 301 && numId <= 325) {
+      const chapStr = `Bài ${String(numId - 300).padStart(2, '0')}`;
+      const found = lessons.find(l => l.title?.includes('HSK 3') && l.title?.includes(chapStr));
+      if (found) return Number(found.lessonId);
+    }
+    // HSK 1 topic ID range (1..15)
+    if (numId >= 1 && numId <= 15) {
+      const chapStr = `Bài ${String(numId).padStart(2, '0')}`;
+      const found = lessons.find(l => l.title?.includes('HSK 1') && l.title?.includes(chapStr));
+      if (found) return Number(found.lessonId);
+    }
+    // Legacy catalog fallback 5..14
+    if (numId >= 5 && numId <= 14) {
+      const legacy = lessons[numId - 5];
       if (legacy) {
         return Number(legacy.lessonId);
       }
@@ -11569,9 +11593,16 @@ export class SrsReviewController {
     grid.className = 'stage-grid srs-chapters-grid';
 
     topics.forEach((topic, topicIndex) => {
-      // Only HSK 1 lessons currently exist in the backend. When authenticated we
-      // must use the real IDs, otherwise every SRS request 404s.
-      const realLesson = level === 1 ? (lessons[topicIndex] || null) : null;
+      const chapterStr = String(topicIndex + 1).padStart(2, '0');
+      const lessonNumberMatch = `Bài ${chapterStr}`;
+      const levelMatch = `HSK ${level}`;
+      const realLesson = lessons.find(l => {
+        if (!l || !l.title) return false;
+        return l.title.includes(levelMatch) && l.title.includes(lessonNumberMatch);
+      }) || lessons.find(l => {
+        if (!l || !l.title) return false;
+        return l.title.includes(topic.title);
+      }) || (level === 1 ? (lessons[topicIndex] || null) : null);
       const effectiveLessonId = realLesson ? realLesson.lessonId : (topic.backendLessonId || topic.topicId);
       const unavailable = isAuthenticated && !realLesson;
       const vocabList = Array.isArray(topic.vocabularies) ? topic.vocabularies : [];
@@ -11623,8 +11654,8 @@ export class SrsReviewController {
           this.currentChapterTitle = topic.title;
           this.startTopicSession(effectiveLessonId, 'due');
         } : null,
-        extraButtonText: shouldShowLessonDetailLink ? 'Chi tiết bài học' : null,
-        extraButtonHref: shouldShowLessonDetailLink ? `lesson-detail.html?id=${effectiveLessonId}` : null
+        extraButtonText: 'Chi tiết bài học',
+        extraButtonHref: `lesson-detail.html?id=${effectiveLessonId}&group=hsk${level}&chapter=${topicIndex}&mode=${this.activeMode}`
       });
 
       grid.appendChild(topicCard);

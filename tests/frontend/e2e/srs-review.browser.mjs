@@ -92,6 +92,18 @@ async function setupAuthenticatedSession(page) {
     });
   });
 
+  await page.route('**/api/v1/lessons*', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        code: 'SUCCESS',
+        message: 'OK',
+        data: { items: [], page: 0, size: 100, totalElements: 0, totalPages: 0 }
+      })
+    });
+  });
+
   await page.route('**/api/v1/vocabulary/*', async (route) => {
     const url = route.request().url();
     const idMatch = url.match(/\/vocabulary\/(\d+)/);
