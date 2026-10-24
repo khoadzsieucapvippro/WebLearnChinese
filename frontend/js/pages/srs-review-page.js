@@ -13868,7 +13868,7 @@ export class SrsReviewController {
   }
 
   /**
-   * Handles completed recording Blob and calls Gemini assess API.
+   * Handles completed recording Blob and calls speech assessment API.
    * @param {Blob} audioBlob
    */
   async handleRecordingFinished(audioBlob) {
@@ -13913,21 +13913,33 @@ export class SrsReviewController {
 
     } catch (err) {
       console.error('[SRS Reading] Assessment failed:', err);
-      const isUnconfigured = err.status === 503 || (err.message && err.message.includes('GEMINI_API_KEY'));
-      const isRateLimited = err.status === 429;
+      this.cleanUpReadingMedia();
+      const status = err.status;
+      const isUnconfigured = status === 503;
+      const isRateLimited = status === 429;
+      const isTimeout = status === 408 || status === 504 || err.code === 'TIMEOUT' ||
+        (err.message && (
+          err.message.toLowerCase().includes('timeout') ||
+          err.message.toLowerCase().includes('hết thời gian') ||
+          err.message.toLowerCase().includes('quá thời gian')
+        ));
 
       let title = 'Không thể đánh giá phát âm';
       let message = err.message || 'Đã xảy ra lỗi khi kết nối tới máy chủ phân tích phát âm.';
       let advice = 'Vui lòng kiểm tra kết nối mạng và thử lại.';
 
-      if (isUnconfigured) {
-        title = 'Chưa cấu hình Gemini AI API';
-        message = 'Tính năng Luyện đọc AI sử dụng Google Gemini (Gói miễn phí) nhưng máy chủ chưa được cấu hình biến môi trường GEMINI_API_KEY.';
-        advice = 'Quản trị viên cần đặt biến môi trường GEMINI_API_KEY hoặc GOOGLE_API_KEY trước khi khởi động backend.';
+      if (isTimeout) {
+        title = 'Máy chủ phân tích âm thanh đang khởi động';
+        message = 'Máy chủ phân tích âm thanh đang được đánh thức từ trạng thái nghỉ (Render Free Tier spin-up ~30-50s).';
+        advice = 'Máy chủ cần khoảng 30–50 giây để khởi động lại sau thời gian không sử dụng. Bạn có thể bấm "Thử đọc lại" sau giây lát hoặc bấm "Bỏ qua →" để tiếp tục học.';
+      } else if (isUnconfigured) {
+        title = 'Hệ thống Phân tích Phát âm & Thanh điệu chưa sẵn sàng';
+        message = 'Không thể kết nối tới máy chủ phân tích phát âm cục bộ.';
+        advice = 'Quản trị viên cần kiểm tra máy chủ speech-service (cổng 8000) hoặc bấm "Bỏ qua →" để tiếp tục ôn tập.';
       } else if (isRateLimited) {
-        title = 'Đã đạt giới hạn yêu cầu (Rate Limit)';
-        message = 'Bạn hoặc hệ thống đã đạt giới hạn yêu cầu phát âm trên phút của gói miễn phí Gemini API.';
-        advice = 'Vui lòng đợi khoảng 1 phút rồi bấm "Thử đọc lại".';
+        title = 'Gửi yêu cầu quá nhanh';
+        message = 'Bạn đang gửi yêu cầu phân tích phát âm quá nhanh trong thời gian ngắn.';
+        advice = 'Vui lòng đợi khoảng 15–30 giây rồi bấm "Thử đọc lại" hoặc bấm "Bỏ qua →" để chuyển thẻ.';
       }
 
       this.showReadingError(title, message, advice);
@@ -13945,7 +13957,9 @@ export class SrsReviewController {
       return;
     }
 
-    if (response.status === 'SCORED' || response.status === 'assessed') {
+    const rawStatus = String(response.status || '').toLowerCase().trim();
+
+    if (rawStatus === 'scored' || rawStatus === 'assessed') {
       this.hasCompletedReadingForCurrentCard = true;
       this.currentReadingScore = response.overallScore;
 
@@ -13964,7 +13978,7 @@ export class SrsReviewController {
 
       // Confidence Badge
       if (this.dom.readingConfidenceBadge) {
-        const conf = response.confidence || 'MEDIUM';
+        const conf = String(response.confidence || 'MEDIUM').toUpperCase();
         const confText = conf === 'HIGH' ? 'Độ tin cậy: Cao' : (conf === 'LOW' ? 'Độ tin cậy: Thấp' : 'Độ tin cậy: Trung bình');
         this.dom.readingConfidenceBadge.textContent = confText;
         this.dom.readingConfidenceBadge.classList.add('d-none'); // Hidden from UI per user request
@@ -14036,21 +14050,52 @@ export class SrsReviewController {
       }
 
     } else {
-      // NOT_SCORABLE, UNCONFIGURED, QUOTA_EXCEEDED
+      // Handle non-scored statuses case-insensitively with encouraging feedback
       let title = 'Không đủ căn cứ chấm điểm';
       let message = response.summaryVi || 'Âm thanh không rõ hoặc có nhiều tạp âm.';
       let advice = response.retryAdvice || 'Vui lòng đọc lại to, rõ ràng và gần micro hơn.';
 
-      if (response.status === 'UNCONFIGURED') {
-        title = 'Chưa cấu hình Gemini AI API';
-        advice = 'Hệ thống chưa được cài đặt GEMINI_API_KEY. Vui lòng thiết lập biến môi trường trên máy chủ.';
-      } else if (response.status === 'QUOTA_EXCEEDED') {
-        title = 'Đã đạt hạn mức miễn phí Google Gemini';
-        advice = 'Vui lòng thử lại sau giây lát khi hạn mức được hồi phục.';
-      } else if (response.status === 'engine_unavailable' || response.status === 'ENGINE_UNAVAILABLE') {
-        title = 'Dịch vụ AI Luyện đọc chưa sẵn sàng';
-        message = response.summaryVi || 'Dịch vụ phân tích phát âm cục bộ chưa được khởi chạy (cổng 8000).';
-        advice = 'Bạn có thể bấm "Bỏ qua →" để tiếp tục học từ tiếp theo hoặc khởi chạy speech-service.';
+      const isColdStart = rawStatus === 'cold_start' ||
+                          rawStatus === 'coldstart' ||
+                          rawStatus === 'coldstartwakingup' ||
+                          rawStatus === 'cold_start_waking_up' ||
+                          (rawStatus === 'engine_unavailable' && (
+                            (response.summaryVi && (
+                              response.summaryVi.toLowerCase().includes('khởi động') ||
+                              response.summaryVi.toLowerCase().includes('spin-up') ||
+                              response.summaryVi.toLowerCase().includes('trạng thái nghỉ') ||
+                              response.summaryVi.toLowerCase().includes('đánh thức')
+                            )) ||
+                            (response.retryAdvice && (
+                              response.retryAdvice.includes('30-50') ||
+                              response.retryAdvice.toLowerCase().includes('khởi động lại')
+                            ))
+                          ));
+
+      if (isColdStart) {
+        title = 'Máy chủ phân tích âm thanh đang khởi động';
+        message = response.summaryVi || 'Máy chủ phân tích âm thanh đang khởi động từ trạng thái nghỉ (Render Free Tier spin-up ~30-50s).';
+        advice = response.retryAdvice || 'Máy chủ cần khoảng 30–50 giây để khởi động lại sau thời gian nghỉ. Vui lòng bấm "Thử đọc lại" sau giây lát hoặc bấm "Bỏ qua →" để tiếp tục ôn tập.';
+      } else if (rawStatus === 'unconfigured') {
+        title = 'Hệ thống Phân tích Phát âm & Thanh điệu chưa cấu hình';
+        message = response.summaryVi || 'Hệ thống chưa được thiết lập máy chủ speech-service.';
+        advice = response.retryAdvice || 'Hệ thống chưa được thiết lập máy chủ speech-service. Bạn có thể bấm "Bỏ qua →" để tiếp tục.';
+      } else if (rawStatus === 'quota_exceeded' || rawStatus === 'rate_limited' || rawStatus === 'ratelimited') {
+        title = 'Gửi yêu cầu quá nhanh';
+        message = response.summaryVi || 'Bạn đang gửi yêu cầu phân tích phát âm quá nhanh trong thời gian ngắn.';
+        advice = response.retryAdvice || 'Vui lòng đợi 15–30 giây rồi bấm "Thử đọc lại" hoặc bấm "Bỏ qua →".';
+      } else if (rawStatus === 'engine_unavailable' || rawStatus === 'engineunavailable' || rawStatus === 'unavailable') {
+        title = 'Hệ thống Phân tích Phát âm & Thanh điệu chưa sẵn sàng';
+        message = response.summaryVi || 'Máy chủ phân tích âm thanh đang khởi động lại hoặc chưa thể kết nối.';
+        advice = response.retryAdvice || 'Bạn có thể bấm "Thử đọc lại" sau giây lát hoặc bấm "Bỏ qua →" để tiếp tục học.';
+      } else if (rawStatus === 'not_scorable' || rawStatus === 'notscorable') {
+        title = 'Không đủ căn cứ chấm điểm';
+        message = response.summaryVi || 'Âm thanh không rõ hoặc có nhiều tạp âm.';
+        advice = response.retryAdvice || 'Vui lòng đọc lại to, rõ ràng và gần micro hơn.';
+      } else if (rawStatus === 'error') {
+        title = 'Lỗi phân tích phát âm';
+        message = response.summaryVi || 'Đã xảy ra lỗi trong quá trình phân tích âm thanh.';
+        advice = response.retryAdvice || 'Vui lòng thử lại sau giây lát hoặc bấm "Bỏ qua →" để tiếp tục.';
       }
 
       this.showReadingError(title, message, advice);
@@ -14083,10 +14128,16 @@ export class SrsReviewController {
       this.dom.readingPinyinMeaningBox.classList.remove('d-none');
     }
 
-    // Enable skip button so learner is never stuck
+    // Enable skip button and try-again button so learner is never stuck
     if (this.dom.btnReadingSkipOnError) {
       this.dom.btnReadingSkipOnError.disabled = false;
       this.dom.btnReadingSkipOnError.removeAttribute('aria-hidden');
+      this.dom.btnReadingSkipOnError.removeAttribute('aria-busy');
+    }
+    if (this.dom.btnReadingTryAgain) {
+      this.dom.btnReadingTryAgain.disabled = false;
+      this.dom.btnReadingTryAgain.removeAttribute('aria-hidden');
+      this.dom.btnReadingTryAgain.removeAttribute('aria-busy');
     }
 
     // Keep Next button hidden

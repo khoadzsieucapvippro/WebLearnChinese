@@ -37,7 +37,8 @@ public class LocalSpeechServiceClient {
     private final ObjectMapper objectMapper;
 
     private int maxAttempts = 3;
-    private long backoffMs = 2500L;
+    private long backoffMs = 2000L;
+    private static final long MAX_TOTAL_WAIT_MS = 48000L;
 
     @Autowired
     public LocalSpeechServiceClient(LocalSpeechConfig localSpeechConfig, ObjectMapper objectMapper) {
@@ -105,9 +106,16 @@ public class LocalSpeechServiceClient {
 
         String evaluateUrl = localSpeechConfig.getBaseUrl() + "/evaluate-reading";
         boolean coldStartSuspected = false;
+        long startTime = System.currentTimeMillis();
 
         for (int attempt = 1; attempt <= maxAttempts; attempt++) {
             if (attempt > 1 && backoffMs > 0) {
+                long elapsed = System.currentTimeMillis() - startTime;
+                if (elapsed + backoffMs >= MAX_TOTAL_WAIT_MS) {
+                    log.warn("Total elapsed time ({}ms) approaching 50s limit before backoff. Halting retries to return coldStartWakingUp.", elapsed);
+                    coldStartSuspected = true;
+                    break;
+                }
                 try {
                     log.info("Backing off {}ms before attempt {}/{} to reach speech service at {}",
                             backoffMs, attempt, maxAttempts, evaluateUrl);
@@ -117,7 +125,7 @@ public class LocalSpeechServiceClient {
                     return PronunciationAssessmentResponse.error(
                             targetHanzi,
                             targetPinyin,
-                            "Yêu cầu bị gián đoạn trong khi chờ dịch vụ AI."
+                            "Yêu cầu bị gián đoạn trong khi chờ hệ thống phân tích phát âm."
                     );
                 }
             }
@@ -160,7 +168,7 @@ public class LocalSpeechServiceClient {
                     return PronunciationAssessmentResponse.error(
                             targetHanzi,
                             targetPinyin,
-                            "Dịch vụ AI cục bộ phản hồi mã lỗi: " + response.getStatusCode()
+                            "Hệ thống phân tích phát âm phản hồi mã lỗi: " + response.getStatusCode()
                     );
                 }
             } catch (HttpStatusCodeException e) {
@@ -170,28 +178,35 @@ public class LocalSpeechServiceClient {
 
                 if (statusCode == 502 || statusCode == 503 || statusCode == 504) {
                     coldStartSuspected = true;
-                    if (attempt < maxAttempts) {
+                    long elapsed = System.currentTimeMillis() - startTime;
+                    if (attempt < maxAttempts && elapsed < 25000L) {
                         continue;
+                    } else {
+                        break;
                     }
                 } else {
                     // Non-cold-start error (e.g. 401 Unauthorized, 400 Bad Request, 500)
                     return PronunciationAssessmentResponse.error(
                             targetHanzi,
                             targetPinyin,
-                            "Dịch vụ AI phản hồi mã lỗi: " + statusCode
+                            "Hệ thống phân tích phát âm phản hồi mã lỗi: " + statusCode
                     );
                 }
             } catch (ResourceAccessException e) {
                 log.warn("Network/timeout error reaching speech service on attempt {}/{} at {}: {}",
                         attempt, maxAttempts, evaluateUrl, e.getMessage());
                 coldStartSuspected = true;
-                if (attempt < maxAttempts) {
+                long elapsed = System.currentTimeMillis() - startTime;
+                if (attempt < maxAttempts && elapsed < 25000L) {
                     continue;
+                } else {
+                    break;
                 }
             } catch (RestClientException e) {
                 log.warn("RestClientException reaching speech service on attempt {}/{} at {}: {}",
                         attempt, maxAttempts, evaluateUrl, e.getMessage());
-                if (attempt < maxAttempts) {
+                long elapsed = System.currentTimeMillis() - startTime;
+                if (attempt < maxAttempts && elapsed < 25000L) {
                     continue;
                 }
                 return PronunciationAssessmentResponse.engineUnavailable(targetHanzi, targetPinyin);
@@ -200,7 +215,7 @@ public class LocalSpeechServiceClient {
                 return PronunciationAssessmentResponse.error(
                         targetHanzi,
                         targetPinyin,
-                        "Lỗi khi xử lý qua dịch vụ AI cục bộ: " + e.getMessage()
+                        "Lỗi khi xử lý qua hệ thống phân tích phát âm cục bộ: " + e.getMessage()
                 );
             }
         }

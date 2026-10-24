@@ -1,6 +1,6 @@
 /**
  * =============================================================================
- * BROWSER E2E TEST: SRS READING ROOM & GEMINI PRONUNCIATION ASSESSMENT
+ * BROWSER E2E TEST: SRS READING ROOM & CHAO 5-SCALE TONE SANDHI ASSESSMENT
  * File: tests/frontend/e2e/srs-reading.browser.mjs
  *
  * Verifies on real browser (Microsoft Edge):
@@ -160,8 +160,9 @@ async function setupReadingMockBackend(page, options = {}) {
         message: 'OK',
         data: {
           configured: options.configured ?? true,
-          model: 'gemini-3.8-flash',
-          freeTier: true
+          provider: 'speech-service-local',
+          model: 'Chao-5-Scale Tone Sandhi Engine',
+          tier: 'open-source-offline'
         }
       })
     });
@@ -183,10 +184,10 @@ async function setupReadingMockBackend(page, options = {}) {
             recognizedText: '',
             overallScore: null,
             confidence: null,
-            summaryVi: 'Tính năng Luyện đọc AI sử dụng Google Gemini (Gói miễn phí) nhưng máy chủ chưa cấu hình GEMINI_API_KEY.',
+            summaryVi: 'Hệ thống Phân tích Phát âm & Thanh điệu chưa được cấu hình địa chỉ dịch vụ.',
             components: null,
-            retryAdvice: 'Quản trị viên cần đặt biến môi trường GEMINI_API_KEY trước khi khởi động backend.',
-            limitations: 'Gemini API Free Tier'
+            retryAdvice: 'Quản trị viên vui lòng thiết lập biến môi trường SPEECH_SERVICE_URL trên máy chủ.',
+            limitations: 'Chao 5-scale Tone Sandhi Engine'
           }
         })
       });
@@ -213,7 +214,7 @@ async function setupReadingMockBackend(page, options = {}) {
             tones: 'Thanh 1 (bình) cao và bằng phẳng chuẩn.'
           },
           retryAdvice: 'Hãy duy trì độ rõ này ở các thẻ tiếp theo.',
-          limitations: 'Ước lượng từ Gemini API (Gói miễn phí)'
+          limitations: 'Đánh giá bởi Hệ thống Phân tích Phát âm & Thanh điệu (Chao 5-scale Tone Sandhi Engine)'
         }
       })
     });
@@ -431,8 +432,8 @@ describe('Browser E2E: SRS Reading Room & AI Assessment', () => {
         if (ctrl) {
           ctrl.handleAssessmentResponse({
             status: 'UNCONFIGURED',
-            summaryVi: 'Tính năng Luyện đọc AI sử dụng Google Gemini (Gói miễn phí) nhưng máy chủ chưa cấu hình GEMINI_API_KEY.',
-            retryAdvice: 'Quản trị viên cần đặt biến môi trường GEMINI_API_KEY trước khi khởi động backend.'
+            summaryVi: 'Hệ thống Phân tích Phát âm & Thanh điệu chưa được cấu hình địa chỉ dịch vụ.',
+            retryAdvice: 'Quản trị viên vui lòng thiết lập biến môi trường SPEECH_SERVICE_URL trên máy chủ.'
           }, ctrl.sessionQueue[ctrl.currentIndex]?.card);
         }
       });
@@ -442,7 +443,7 @@ describe('Browser E2E: SRS Reading Room & AI Assessment', () => {
       assert.strictEqual(errorVisible, true);
 
       const errorTitle = await page.$eval('#readingErrorTitle', el => el.textContent.trim());
-      assert.strictEqual(errorTitle, 'Chưa cấu hình Gemini AI API');
+      assert.strictEqual(errorTitle, 'Hệ thống Phân tích Phát âm & Thanh điệu chưa cấu hình');
 
       // Next button remains locked
       const nextLocked = await page.$eval('#btnReadingNext', el => el.classList.contains('writing-next-hidden'));

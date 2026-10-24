@@ -266,36 +266,37 @@ public class LocalSpeechServiceClientTests {
         // 1. coldStartWakingUp
         PronunciationAssessmentResponse cold = PronunciationAssessmentResponse.coldStartWakingUp("好", "hǎo");
         assertEquals("engine_unavailable", cold.getStatus());
-        assertEquals("Dịch vụ AI Luyện đọc đang khởi động từ trạng thái nghỉ (Render Free Tier spin-up ~30-50s).", cold.getSummaryVi());
-        assertEquals("Máy chủ AI miễn phí cần khoảng 30-50 giây để khởi động lại sau thời gian không sử dụng. Vui lòng bấm thử lại sau giây lát.", cold.getRetryAdvice());
-        assertEquals("Dịch vụ AI speech service đang được đánh thức từ chế độ ngủ miễn phí.", cold.getLimitations());
+        assertEquals("Hệ thống Phân tích Phát âm & Thanh điệu đang khởi động từ trạng thái nghỉ (Render Free Tier spin-up ~30-50s).", cold.getSummaryVi());
+        assertEquals("Máy chủ phân tích âm thanh cần khoảng 30-50 giây để khởi động lại sau thời gian nghỉ. Vui lòng bấm 'Thử đọc lại' sau giây lát hoặc bấm 'Bỏ qua →' để tiếp tục ôn tập.", cold.getRetryAdvice());
+        assertEquals("Hệ thống speech-service đang được đánh thức từ chế độ ngủ (Render Free Tier).", cold.getLimitations());
 
         // 2. engineUnavailable
         PronunciationAssessmentResponse unavail = PronunciationAssessmentResponse.engineUnavailable("好", "hǎo");
         assertEquals("engine_unavailable", unavail.getStatus());
-        assertEquals("Dịch vụ AI Luyện đọc Local chưa được khởi chạy hoặc không thể kết nối (cổng 8000).", unavail.getSummaryVi());
-        assertEquals("Quản trị viên vui lòng chạy lệnh: python run_service.py để kích hoạt engine.", unavail.getRetryAdvice());
-        assertEquals("Dịch vụ AI cục bộ chưa sẵn sàng.", unavail.getLimitations());
+        assertEquals("Hệ thống Phân tích Phát âm & Thanh điệu chưa được khởi chạy hoặc không thể kết nối.", unavail.getSummaryVi());
+        assertEquals("Quản trị viên vui lòng khởi chạy speech-service (cổng 8000) hoặc kiểm tra SPEECH_SERVICE_URL.", unavail.getRetryAdvice());
+        assertEquals("Hệ thống phân tích âm học cục bộ chưa sẵn sàng.", unavail.getLimitations());
 
         // 3. unconfigured
         PronunciationAssessmentResponse unconf = PronunciationAssessmentResponse.unconfigured("好", "hǎo");
         assertEquals("unconfigured", unconf.getStatus());
-        assertEquals("Hệ thống chưa được cấu hình khóa truy cập Google Gemini (GEMINI_API_KEY).", unconf.getSummaryVi());
-        assertEquals("Vui lòng thiết lập biến môi trường GEMINI_API_KEY trên máy chủ để kích hoạt Luyện đọc.", unconf.getRetryAdvice());
+        assertEquals("Hệ thống Phân tích Phát âm & Thanh điệu chưa được cấu hình địa chỉ dịch vụ.", unconf.getSummaryVi());
+        assertEquals("Quản trị viên vui lòng thiết lập biến môi trường SPEECH_SERVICE_URL trên máy chủ.", unconf.getRetryAdvice());
+        assertEquals("Chưa có dịch vụ speech-service hợp lệ để phân tích phát âm.", unconf.getLimitations());
 
         // 4. notScorable
         PronunciationAssessmentResponse notScorable = PronunciationAssessmentResponse.notScorable("好", "hǎo", null, null);
         assertEquals("not_scorable", notScorable.getStatus());
         assertEquals("Không thể đánh giá bản ghi âm này.", notScorable.getSummaryVi());
         assertEquals("Vui lòng đọc to, rõ ràng và gần micro hơn.", notScorable.getRetryAdvice());
-        assertEquals("Bản ghi âm không đủ rõ ràng hoặc chứa tạp âm lớn để Gemini AI phân tích.", notScorable.getLimitations());
+        assertEquals("Bản ghi âm không đủ rõ ràng hoặc chứa tạp âm lớn để phân tích đường cao độ F0.", notScorable.getLimitations());
 
         // 5. error
         PronunciationAssessmentResponse err = PronunciationAssessmentResponse.error("好", "hǎo", "Lỗi mạng kiểm tra");
         assertEquals("error", err.getStatus());
         assertEquals("Lỗi mạng kiểm tra", err.getSummaryVi());
         assertEquals("Vui lòng thử lại sau giây lát.", err.getRetryAdvice());
-        assertEquals("Dịch vụ phân tích AI tạm thời gặp gián đoạn.", err.getLimitations());
+        assertEquals("Hệ thống phân tích phát âm tạm thời gặp gián đoạn.", err.getLimitations());
     }
 
     @Test

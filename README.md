@@ -202,46 +202,44 @@ For manual Postman execution, import `tests/postman/elearning-api.postman_collec
 
 ---
 
-## 🎙️ Luyện Đọc Phát Âm với Google Gemini AI (Gói Miễn Phí)
+## 🎙️ Hệ Thống Phân Tích Phát Âm & Thanh Điệu (Chao 5-Scale Tone Sandhi Engine)
 
-Tính năng **Luyện đọc AI** (Reading Mode) trong phiên ôn tập SRS (`srs-review.html?mode=reading`) cho phép người học ghi âm giọng đọc chữ Hán và nhận đánh giá ngữ âm chi tiết:
+Tính năng **Luyện đọc** (Reading Mode) trong phiên ôn tập SRS (`srs-review.html?mode=reading`) cho phép người học ghi âm giọng đọc chữ Hán và nhận đánh giá ngữ âm chi tiết:
 
-### 1. Kiến trúc & Công nghệ AI
-- **Mô hình**: Google Gemini `gemini-3.5-flash` (mặc định phản hồi nhanh ~6s) hoặc `gemini-3.8-flash` qua biến môi trường `GEMINI_MODEL`.
-- **SDK**: Thư viện chính thức `com.google.genai:google-genai:1.78.0` cho Java Spring Boot.
-- **Phân tích ngữ âm đa chiều**: Đánh giá điểm tổng quan (0–100), mức tin cậy, văn bản nhận diện, nhận xét tiếng Việt chi tiết cho **thanh mẫu (initials)**, **vận mẫu (finals)**, **thanh điệu (tones)**, và lời khuyên cải thiện cụ thể.
+### 1. Kiến trúc & Công nghệ Mã Nguồn Mở
+- **Mô hình**: 100% Offline Acoustic & Tone Sandhi Model (Chao 5-scale Tone Sandhi Engine) chạy cục bộ qua microservice Python FastAPI (`speech-service/`).
+- **Phân tích âm học**: Trích xuất đường cao độ F0 (Pitch Contour), phân đoạn âm tiết và đối chiếu theo thang ngũ độ Triệu Nguyên Nhiệm (Chao 5-scale: 55, 35, 214, 51, thanh nhẹ và biến điệu 3+3, 不, 一).
+- **Phân tích ngữ âm đa chiều**: Đánh giá điểm tổng quan (0–100), mức tin cậy, nhận xét tiếng Việt chi tiết cho **thanh mẫu (initials)**, **vận mẫu (finals)**, **thanh điệu (tones)**, và lời khuyên cải thiện cụ thể.
 
-### 2. Chính sách Chi phí & Hạn mức Miễn phí (Free Tier)
+### 2. Nguyên Tắc Vận Hành & An Toàn Dữ Liệu
 > [!IMPORTANT]
-> - Tính năng được thiết kế hoạt động **hoàn toàn trên hạn mức miễn phí (Free Tier)** của Gemini API.
-> - **Tuyệt đối không phát sinh chi phí**, không yêu cầu bật thanh toán (Billing), không cấu hình fallback sang endpoint trả phí.
-> - **Cảnh báo về chính sách của Google**: Hệ thống phụ thuộc vào hạn mức miễn phí (ví dụ 15 RPM / 1M TPM / 1,500 RPD tại Google AI Studio) và các điều khoản sử dụng của Google. Tính khả dụng của mô hình và chính sách miễn phí có thể thay đổi theo quyết định của Google mà không báo trước.
-> - **Xử lý trung thực**: Khi vượt rate limit (`429`), hết quota, hoặc chưa cấu hình API key, hệ thống trả về thông báo rõ ràng (`QUOTA_EXCEEDED` / `UNCONFIGURED`), tuyệt đối không tạo điểm AI giả.
-> - **Chính sách Zero-Storage Audio**: Bản ghi âm chỉ được gửi trực tiếp lên RAM của server để chuyển tiếp tới Gemini API và giải phóng ngay lập tức sau phân tích, không lưu file âm thanh vào cơ sở dữ liệu hay ổ cứng máy chủ.
+> - **100% Mã nguồn mở & Không chi phí**: Không phụ thuộc vào bất kỳ dịch vụ đám mây hay API trả phí nào.
+> - **Xử lý trung thực**: Khi âm thanh không đủ điều kiện (nhiễu, im lặng, clipping) hoặc microservice chưa sẵn sàng, hệ thống trả về thông báo rõ ràng (`not_scorable` / `engine_unavailable`), tuyệt đối không tạo điểm giả.
+> - **Chính sách Zero-Storage Audio**: Bản ghi âm chỉ được xử lý tạm thời trong bộ nhớ RAM và giải phóng ngay lập tức sau phân tích, không lưu file âm thanh vào cơ sở dữ liệu hay ổ cứng máy chủ.
 
-### 3. Hướng dẫn Thiết lập Gemini API Key
-Để kích hoạt tính năng Luyện đọc AI trên môi trường thật:
-1. Đăng ký nhận API key miễn phí tại [Google AI Studio](https://aistudio.google.com/app/apikey).
-2. Thiết lập biến môi trường hoặc cấu hình tệp cục bộ (đã được tự động bỏ qua trong `.gitignore`):
+### 3. Hướng dẫn Khởi chạy Speech Service Cục bộ
+Để kích hoạt tính năng Luyện đọc trên môi trường phát triển:
+1. Cài đặt các gói phụ thuộc Python cho speech service:
    ```bash
-   # Cách 1: Biến môi trường (Linux / macOS)
-   export GEMINI_API_KEY="AIzaSyYourApiKeyHere"
-   
-   # Cách 1: Biến môi trường (Windows PowerShell)
-   $env:GEMINI_API_KEY="AIzaSyYourApiKeyHere"
-   
-   # Cách 2: Tệp cục bộ backend/src/main/resources/application-local.yml
-   gemini:
-     api-key: "AIzaSyYourApiKeyHere"
-     model: "gemini-3.5-flash"
+   cd speech-service
+   pip install -r requirements.txt
    ```
-3. Khởi động lại backend Spring Boot:
+2. Khởi chạy microservice FastAPI (cổng 8000):
    ```bash
-   cd backend
-   mvn spring-boot:run
+   python -X utf8 run_service.py
    ```
-4. Kiểm tra trạng thái cấu hình qua endpoint:
-   `GET /api/v1/srs/reading/status` -> trả về `{ "configured": true, "model": "gemini-3.5-flash", "freeTier": true }`.
+3. Kiểm tra trạng thái sẵn sàng qua endpoint:
+   `GET http://127.0.0.1:8000/health` -> trả về `{ "status": "READY", "engine": "local-acoustic-f0-tone", "model": "Chao-5-Scale Tone Sandhi Engine" }`.
+
+### 4. Duy Trì 24/7 Warm State với UptimeRobot (Render Free Tier)
+Trên môi trường triển khai Render Free Tier, các dịch vụ web sẽ tự động đi vào trạng thái ngủ đông (sleep) sau 15 phút không nhận được yêu cầu. Để đảm bảo 100% Warm State và phản hồi ngay lập tức (0s delay) cho người học:
+1. **Thiết lập 2 HTTP Monitor độc lập trên [UptimeRobot](https://uptimerobot.com) (Gói Free, chu kỳ 5 phút):**
+   - **Monitor 1 (Backend):** `https://<YOUR_BACKEND_DOMAIN>.onrender.com/actuator/health` (Spring Boot Actuator probe công khai, trả về HTTP 200 `{"status":"UP"}`).
+   - **Monitor 2 (Speech Service):** `https://speech-service-3l49.onrender.com/health` (FastAPI Chao tone engine probe công khai, trả về HTTP 200 `{"status":"READY"}`).
+2. **Cơ chế hoạt động:**
+   - Mỗi yêu cầu ping 5 phút một lần sẽ tự động reset bộ đếm 15 phút của Render về 0.
+   - Giúp cả hai container `elearning-backend` và `speech-service` duy trì thường trực trên RAM, ngăn chặn hoàn toàn hiện tượng spin-up 30–50s.
+   - Chi tiết từng bước cài đặt xem tại [DEPLOYMENT_FREE_TIER.md (Mục 7)](./DEPLOYMENT_FREE_TIER.md#7-thiết-lập-uptimerobot-giữ-ấm-247-prevent-render-sleep--guarantee-0s-latency).
 
 ---
 

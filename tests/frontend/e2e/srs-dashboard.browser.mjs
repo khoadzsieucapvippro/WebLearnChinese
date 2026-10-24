@@ -196,16 +196,37 @@ describe('Browser E2E: SRS Dashboard & Profile Settings Integration', () => {
     try {
       await setupAuthenticatedSession(page);
 
-      await page.route('**/api/v1/srs/stats', async (route) => {
-        await route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify({ code: 'SUCCESS', data: createMockStudyStats() })
-        });
-      });
-
-      await page.route('**/api/v1/srs/due**', async (route) => {
-        await route.fulfill({
+      await page.route('**/api/v1/**', async (route) => {
+        const url = route.request().url();
+        if (url.includes('/srs/stats')) {
+          return route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({ code: 'SUCCESS', data: createMockStudyStats() })
+          });
+        }
+        if (url.includes('/srs/due')) {
+          return route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({ code: 'SUCCESS', data: [] })
+          });
+        }
+        if (url.includes('/users/profile')) {
+          return route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({ code: 'SUCCESS', data: createMockUserProfile() })
+          });
+        }
+        if (url.includes('/srs/settings')) {
+          return route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({ code: 'SUCCESS', data: createMockUserSrsSetting() })
+          });
+        }
+        return route.fulfill({
           status: 200,
           contentType: 'application/json',
           body: JSON.stringify({ code: 'SUCCESS', data: [] })

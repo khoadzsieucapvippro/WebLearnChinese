@@ -90,17 +90,11 @@ management:
     health:
       show-details: never
 
-gemini:
-  api-key: ${GEMINI_API_KEY:${GOOGLE_API_KEY:}}
-  model: ${GEMINI_MODEL:gemini-3.5-flash}
-  timeout-seconds: ${GEMINI_TIMEOUT_SECONDS:35}
-  max-audio-bytes: ${GEMINI_MAX_AUDIO_BYTES:5242880}
-
 speech:
   engine:
     local:
       enabled: ${SPEECH_ENGINE_LOCAL_ENABLED:true}
       base-url: ${SPEECH_SERVICE_URL:${SPEECH_ENGINE_LOCAL_BASE_URL:http://127.0.0.1:8000}}
       internal-token: ${INTERNAL_SPEECH_TOKEN:${SPEECH_SERVICE_TOKEN:}}
-      connect-timeout-ms: ${SPEECH_ENGINE_LOCAL_CONNECT_TIMEOUT_MS:30000}
-      read-timeout-ms: ${SPEECH_ENGINE_LOCAL_READ_TIMEOUT_MS:45000}
+      connect-timeout-ms: ${SPEECH_ENGINE_LOCAL_CONNECT_TIMEOUT_MS:15000}
+      read-timeout-ms: ${SPEECH_ENGINE_LOCAL_READ_TIMEOUT_MS:30000}

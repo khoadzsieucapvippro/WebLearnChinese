@@ -91,6 +91,14 @@ describe('Verification Center E2E: Dedicated Diagnostic Surface Suite', () => {
     });
 
     try {
+      await page.route('**/actuator/health', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ status: 'UP' })
+        });
+      });
+
       await page.goto(`${baseUrl}/ui-verification.html`, { waitUntil: 'domcontentloaded' });
 
       let probedUrl = null;
@@ -356,6 +364,26 @@ describe('Verification Center E2E: Dedicated Diagnostic Surface Suite', () => {
     });
 
     try {
+      await page.route('**/api/v1/vocabulary*', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            code: 'SUCCESS',
+            message: 'OK',
+            data: {
+              items: [
+                { vocabId: 1, hanzi: '书', pinyin: 'shū', meaningHanViet: 'Thư', meaningVi: 'Sách, vở' }
+              ],
+              page: 0,
+              size: 20,
+              totalElements: 1,
+              totalPages: 1
+            }
+          })
+        });
+      });
+
       await page.goto(`${baseUrl}/ui-verification.html`, { waitUntil: 'domcontentloaded' });
 
       // 1. Speech API Capability Check (always evaluates in browser environment)
@@ -410,6 +438,58 @@ describe('Verification Center E2E: Dedicated Diagnostic Surface Suite', () => {
     });
 
     try {
+      await page.route('**/api/v1/lessons/**', async (route) => {
+        const url = route.request().url();
+        if (url.includes('99999999')) {
+          return route.fulfill({
+            status: 404,
+            contentType: 'application/json',
+            body: JSON.stringify({
+              code: 'NOT_FOUND',
+              message: 'Không tìm thấy bài học hoặc bài học chưa được công khai.'
+            })
+          });
+        }
+        return route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            code: 'SUCCESS',
+            message: 'OK',
+            data: {
+              lessonId: 1,
+              title: 'Bài 1: Giới thiệu',
+              status: 'Approved',
+              vocabularyCount: 2,
+              vocabularies: [
+                { vocabId: 1, orderIndex: 1, hanzi: '你', pinyin: 'nǐ', meaningVi: 'Bạn' },
+                { vocabId: 2, orderIndex: 2, hanzi: '好', pinyin: 'hǎo', meaningVi: 'Tốt' }
+              ]
+            }
+          })
+        });
+      });
+
+      await page.route('**/api/v1/lessons*', async (route) => {
+        return route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            code: 'SUCCESS',
+            message: 'OK',
+            data: {
+              items: [
+                { lessonId: 1, title: 'Bài 1: Giới thiệu', status: 'Approved', vocabularyCount: 2 }
+              ],
+              page: 0,
+              size: 20,
+              totalElements: 1,
+              totalPages: 1
+            }
+          })
+        });
+      });
+
       await page.goto(`${baseUrl}/ui-verification.html`, { waitUntil: 'domcontentloaded' });
 
       // 1. In-browser orderIndex sorting validation (deterministic unit probe)

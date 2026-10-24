@@ -1,13 +1,13 @@
 /**
  * =============================================================================
- * UNIT TEST SUITE: SRS READING ROOM & GEMINI AI PRONUNCIATION ASSESSMENT
+ * UNIT TEST SUITE: SRS READING ROOM & CHAO 5-SCALE TONE SANDHI ASSESSMENT
  * Module: tests/frontend/unit/srs/srs-skill-reading.test.mjs
  *
  * Verifies:
  * - Storage key isolation (STORAGE_KEY_READING = 'HOC_HAN_NGU_READING_PROGRESS').
  * - URL & mode resolution (?mode=reading, ?skill=READING, ?cardType=READING).
  * - SrsReviewController Reading Room lifecycle & 5 distinct states (A, B, C, D, E).
- * - Free-tier Gemini AI privacy banner and persistence preference.
+ * - Reading error card and state machine feedback.
  * - Microphone MediaStream resource cleanup and zero-storage audio policy.
  * - Rating buttons [1]-[4] and shortcut isolation in Reading mode.
  * - Format constituent radicals presentation and truthfulness contract.
@@ -241,6 +241,7 @@ describe('SRS Reading Room & AI Assessment Tests', () => {
         readingErrorMessage: makeEl('div'),
         readingErrorAdvice: makeEl('div'),
         btnReadingTryAgain: makeEl('button'),
+        btnReadingSkipOnError: makeEl('button'),
         readingNextContainer: makeEl('div'),
         btnReadingNext: makeEl('button'),
         flashcardContainer: makeEl('div'),
@@ -332,19 +333,106 @@ describe('SRS Reading Room & AI Assessment Tests', () => {
       const card = { itemId: 101, hanzi: '学', pinyin: 'xué' };
       const unconfiguredResponse = {
         status: 'UNCONFIGURED',
-        summaryVi: 'Tính năng Luyện đọc AI sử dụng Google Gemini (Gói miễn phí) nhưng máy chủ chưa cấu hình GEMINI_API_KEY.',
-        retryAdvice: 'Quản trị viên cần đặt biến môi trường GEMINI_API_KEY trước khi khởi động backend.'
+        summaryVi: 'Hệ thống Phân tích Phát âm & Thanh điệu chưa được cấu hình địa chỉ dịch vụ.',
+        retryAdvice: 'Quản trị viên vui lòng thiết lập biến môi trường SPEECH_SERVICE_URL trên máy chủ.'
       };
 
       controller.handleAssessmentResponse(unconfiguredResponse, card);
 
       assert.strictEqual(controller.hasCompletedReadingForCurrentCard, false);
       assert.strictEqual(mockDom.readingStateError.classList.contains('d-none'), false);
-      assert.strictEqual(mockDom.readingErrorTitle.textContent, 'Chưa cấu hình Gemini AI API');
+      assert.strictEqual(mockDom.readingErrorTitle.textContent, 'Hệ thống Phân tích Phát âm & Thanh điệu chưa cấu hình');
       assert.strictEqual(mockDom.readingErrorMessage.textContent, unconfiguredResponse.summaryVi);
       assert.strictEqual(mockDom.btnReadingNext.classList.contains('writing-next-hidden'), true);
       // Pinyin & meaning are retained for learner support even on error
       assert.strictEqual(mockDom.readingPinyinMeaningBox.classList.contains('d-none'), false);
+    });
+
+    test('handleAssessmentResponse handles cold-start waking up encouragingly and case-insensitively', () => {
+      const card = { itemId: 101, hanzi: '好', pinyin: 'hǎo' };
+
+      // Case 1: status = 'cold_start'
+      const coldStartResp = {
+        status: 'cold_start',
+        summaryVi: 'Máy chủ phân tích âm thanh đang khởi động lại từ trạng thái nghỉ (Render Free Tier spin-up ~30-50s).',
+        retryAdvice: 'Máy chủ cần khoảng 30–50 giây để khởi động lại sau thời gian nghỉ. Vui lòng bấm "Thử đọc lại" sau giây lát hoặc bấm "Bỏ qua →" để tiếp tục ôn tập.'
+      };
+      controller.handleAssessmentResponse(coldStartResp, card);
+
+      assert.strictEqual(controller.hasCompletedReadingForCurrentCard, false);
+      assert.strictEqual(mockDom.readingStateError.classList.contains('d-none'), false);
+      assert.strictEqual(mockDom.readingErrorTitle.textContent, 'Máy chủ phân tích âm thanh đang khởi động');
+      assert.strictEqual(mockDom.readingErrorMessage.textContent, coldStartResp.summaryVi);
+      assert.strictEqual(mockDom.btnReadingTryAgain.disabled, false);
+      assert.strictEqual(mockDom.btnReadingSkipOnError.disabled, false);
+
+      // Case 2: status = 'coldstartwakingup'
+      const wakingUpResp = {
+        status: 'coldstartwakingup',
+        summaryVi: 'Dịch vụ phân tích phát âm đang thức giấc.',
+        retryAdvice: 'Vui lòng bấm "Thử đọc lại" sau giây lát.'
+      };
+      controller.handleAssessmentResponse(wakingUpResp, card);
+      assert.strictEqual(mockDom.readingErrorTitle.textContent, 'Máy chủ phân tích âm thanh đang khởi động');
+
+      // Case 3: status = 'engine_unavailable' with spin-up summary
+      const engineColdResp = {
+        status: 'engine_unavailable',
+        summaryVi: 'Hệ thống Phân tích Phát âm & Thanh điệu đang khởi động từ trạng thái nghỉ (Render Free Tier spin-up ~30-50s).',
+        retryAdvice: 'Máy chủ phân tích âm thanh cần khoảng 30-50 giây để khởi động lại sau thời gian nghỉ.'
+      };
+      controller.handleAssessmentResponse(engineColdResp, card);
+      assert.strictEqual(mockDom.readingErrorTitle.textContent, 'Máy chủ phân tích âm thanh đang khởi động');
+    });
+
+    test('handleAssessmentResponse handles case-insensitive statuses (assessed, SCORED, NOT_SCORABLE, error)', () => {
+      const card = { itemId: 102, hanzi: '水', pinyin: 'shuǐ' };
+
+      // Case 1: lowercase 'assessed'
+      const assessedResp = {
+        status: 'assessed',
+        overallScore: 92,
+        summaryVi: 'Phát âm rất chuẩn.',
+        retryAdvice: 'Giữ vững phong độ!'
+      };
+      controller.handleAssessmentResponse(assessedResp, card);
+      assert.strictEqual(controller.hasCompletedReadingForCurrentCard, true);
+      assert.strictEqual(controller.currentReadingScore, 92);
+      assert.strictEqual(mockDom.readingStateResult.classList.contains('d-none'), false);
+
+      // Case 2: lowercase 'not_scorable'
+      const notScorableResp = {
+        status: 'not_scorable',
+        summaryVi: 'Âm thanh không rõ hoặc có nhiều tạp âm.',
+        retryAdvice: 'Vui lòng đọc lại to và gần micro hơn.'
+      };
+      controller.handleAssessmentResponse(notScorableResp, card);
+      assert.strictEqual(controller.hasCompletedReadingForCurrentCard, false);
+      assert.strictEqual(mockDom.readingStateError.classList.contains('d-none'), false);
+      assert.strictEqual(mockDom.readingErrorTitle.textContent, 'Không đủ căn cứ chấm điểm');
+
+      // Case 3: uppercase 'ERROR'
+      const errorResp = {
+        status: 'ERROR',
+        summaryVi: 'Lỗi máy chủ nội bộ.',
+        retryAdvice: 'Vui lòng thử lại sau.'
+      };
+      controller.handleAssessmentResponse(errorResp, card);
+      assert.strictEqual(mockDom.readingErrorTitle.textContent, 'Lỗi phân tích phát âm');
+    });
+
+    test('showReadingError unlocks btnReadingTryAgain and btnReadingSkipOnError controls without freezing', () => {
+      mockDom.btnReadingTryAgain.disabled = true;
+      mockDom.btnReadingSkipOnError.disabled = true;
+
+      controller.showReadingError('Kiểm tra lỗi', 'Nội dung lỗi', 'Gợi ý xử lý');
+
+      assert.strictEqual(mockDom.btnReadingTryAgain.disabled, false);
+      assert.strictEqual(mockDom.btnReadingSkipOnError.disabled, false);
+      assert.strictEqual(mockDom.readingErrorTitle.textContent, 'Kiểm tra lỗi');
+      assert.strictEqual(mockDom.readingErrorMessage.textContent, 'Nội dung lỗi');
+      assert.strictEqual(mockDom.readingErrorAdvice.textContent, 'Gợi ý xử lý');
+      assert.strictEqual(mockDom.readingStateError.classList.contains('d-none'), false);
     });
 
     test('cleanUpReadingMedia stops tracks, timers, and revokes blob URL', () => {

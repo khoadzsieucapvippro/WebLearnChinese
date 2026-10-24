@@ -11,14 +11,14 @@ echo [1/4] Kiểm tra MySQL trên cổng 3306...
 powershell -Command "if ((Test-NetConnection -ComputerName 127.0.0.1 -Port 3306 -WarningAction SilentlyContinue).TcpTestSucceeded) { Write-Host '[+] MySQL đang chạy.' -ForegroundColor Green } else { Write-Host '[-] CẢNH BÁO: MySQL chưa chạy trên cổng 3306!' -ForegroundColor Yellow; Write-Host '    Hãy khởi động MySQL hoặc chạy Docker: docker run -d --name elearning-mysql -p 3306:3306 -e MYSQL_ALLOW_EMPTY_PASSWORD=yes -e MYSQL_DATABASE=elearning_db mysql:8.0' }"
 
 echo.
-echo [2/4] Kiểm tra và khởi chạy Speech AI Service (FastAPI :8000)...
+echo [2/4] Kiểm tra và khởi chạy Speech Service (FastAPI :8000)...
 where python >nul 2>nul
 if %ERRORLEVEL% equ 0 (
     echo [+] Đã tìm thấy Python. Đang khởi chạy Speech Service trong cửa sổ mới...
     start "E-Learning Speech Service (FastAPI :8000)" cmd /k "cd /d "%ROOT_DIR%speech-service" && python -X utf8 run_service.py"
 ) else (
     echo [-] CẢNH BÁO: Không tìm thấy Python trong PATH! Speech Service sẽ không chạy.
-    echo     Tính năng Luyện đọc có thể dùng Google Gemini API (nếu có key) hoặc nút Bỏ qua an toàn.
+    echo     Tính năng Luyện đọc cần Speech Service để phân tích phát âm hoặc có thể dùng nút Bỏ qua an toàn.
 )
 
 echo.

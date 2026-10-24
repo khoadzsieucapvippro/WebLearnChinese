@@ -5,7 +5,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 /**
  * Service for orchestrating learner reading assessments.
- * Coordinates input validation, authoritative database lookup, and AI evaluation.
+ * Coordinates input validation, authoritative database lookup, and pronunciation & tone evaluation.
  */
 public interface ReadingAssessmentService {
 
@@ -20,18 +20,9 @@ public interface ReadingAssessmentService {
     PronunciationAssessmentResponse assessReading(MultipartFile audio, String itemType, Long itemId);
 
     /**
-     * Checks if the Gemini AI evaluation engine is configured and operational.
-     * @deprecated Use {@link #isServiceAvailable()} for provider-neutral check.
+     * Checks if the speech & tone assessment engine is available.
      */
-    @Deprecated
-    boolean isGeminiConfigured();
-
-    /**
-     * Checks if any reading assessment engine (local speech service or cloud Gemini) is available.
-     */
-    default boolean isServiceAvailable() {
-        return isGeminiConfigured();
-    }
+    boolean isServiceAvailable();
 
     /**
      * Retrieves runtime status metadata describing provider and availability.

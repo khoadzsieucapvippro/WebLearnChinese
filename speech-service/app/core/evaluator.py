@@ -182,5 +182,5 @@ def generate_assessment_report(target_text: str, target_pinyin: str, syllables_d
         "components": components,
         "syllables": syllables_data,
         "retryAdvice": retry_advice,
-        "limitations": "Đánh giá bởi Engine AI Luyện đọc cục bộ (100% Offline Acoustic & Tone Sandhi Model - Phân tích thanh điệu F0, không nhận diện chữ ASR)."
+        "limitations": "Đánh giá bởi Hệ thống Phân tích Phát âm & Thanh điệu (Chao 5-scale Tone Sandhi Engine - Phân tích đường cao độ F0, không nhận diện chữ ASR)."
     }

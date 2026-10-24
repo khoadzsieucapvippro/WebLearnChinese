@@ -1,7 +1,6 @@
 package com.elearning;
 
 import com.elearning.common.ErrorCode;
-import com.elearning.config.GeminiConfig;
 import com.elearning.config.LocalSpeechConfig;
 import com.elearning.dto.response.PronunciationAssessmentResponse;
 import com.elearning.entity.Radical;
@@ -9,7 +8,6 @@ import com.elearning.entity.Vocabulary;
 import com.elearning.exception.BusinessException;
 import com.elearning.repository.RadicalRepository;
 import com.elearning.repository.VocabularyRepository;
-import com.elearning.service.GeminiPronunciationService;
 import com.elearning.service.LocalSpeechServiceClient;
 import com.elearning.service.impl.ReadingAssessmentServiceImpl;
 import org.junit.jupiter.api.AfterEach;
@@ -35,7 +33,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -43,9 +40,6 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 @DisplayName("ReadingAssessmentService Unit Tests")
 class ReadingAssessmentServiceTests {
-
-    @Mock
-    private GeminiPronunciationService geminiPronunciationService;
 
     @Mock
     private LocalSpeechServiceClient localSpeechServiceClient;
@@ -59,20 +53,14 @@ class ReadingAssessmentServiceTests {
     @Mock
     private RadicalRepository radicalRepository;
 
-    @Mock
-    private GeminiConfig geminiConfig;
-
     private ReadingAssessmentServiceImpl readingAssessmentService;
 
     @BeforeEach
     void setUp() {
-        lenient().when(geminiConfig.getMaxAudioBytes()).thenReturn(5242880L);
         readingAssessmentService = new ReadingAssessmentServiceImpl(
-                geminiPronunciationService,
                 localSpeechServiceClient,
                 vocabularyRepository,
                 radicalRepository,
-                geminiConfig,
                 localSpeechConfig
         );
 
@@ -89,8 +77,9 @@ class ReadingAssessmentServiceTests {
     }
 
     @Test
-    @DisplayName("assessReading validates target vocabulary from server DB and delegates to Gemini")
+    @DisplayName("assessReading validates target vocabulary from server DB and delegates to local speech service")
     void testAssessReadingVocabularySuccess() {
+        when(localSpeechConfig.isEnabled()).thenReturn(true);
         Vocabulary vocab = new Vocabulary();
         vocab.setVocabId(101L);
         vocab.setHanzi("请");
@@ -104,7 +93,7 @@ class ReadingAssessmentServiceTests {
         PronunciationAssessmentResponse mockResp = new PronunciationAssessmentResponse();
         mockResp.setStatus("assessed");
         mockResp.setOverallScore(90);
-        when(geminiPronunciationService.assessPronunciation(any(), eq("audio/webm"), eq("请"), eq("qǐng"), eq("Thỉnh")))
+        when(localSpeechServiceClient.assessPronunciation(any(), eq("audio/webm"), eq("请"), eq("qǐng"), eq("Thỉnh")))
                 .thenReturn(mockResp);
 
         PronunciationAssessmentResponse result = readingAssessmentService.assessReading(audioFile, "VOCABULARY", 101L);
@@ -113,11 +102,13 @@ class ReadingAssessmentServiceTests {
         assertEquals("assessed", result.getStatus());
         assertEquals(90, result.getOverallScore());
         verify(vocabularyRepository).findById(101L);
+        verify(localSpeechServiceClient).assessPronunciation(any(), eq("audio/webm"), eq("请"), eq("qǐng"), eq("Thỉnh"));
     }
 
     @Test
-    @DisplayName("assessReading validates target radical from server DB and delegates to Gemini")
+    @DisplayName("assessReading validates target radical from server DB and delegates to local speech service")
     void testAssessReadingRadicalSuccess() {
+        when(localSpeechConfig.isEnabled()).thenReturn(true);
         Radical radical = new Radical();
         radical.setRadicalId(1);
         radical.setCharacter("一");
@@ -131,7 +122,7 @@ class ReadingAssessmentServiceTests {
         PronunciationAssessmentResponse mockResp = new PronunciationAssessmentResponse();
         mockResp.setStatus("assessed");
         mockResp.setOverallScore(95);
-        when(geminiPronunciationService.assessPronunciation(any(), eq("audio/webm"), eq("一"), eq("yī"), eq("Nhất")))
+        when(localSpeechServiceClient.assessPronunciation(any(), eq("audio/webm"), eq("一"), eq("yī"), eq("Nhất")))
                 .thenReturn(mockResp);
 
         PronunciationAssessmentResponse result = readingAssessmentService.assessReading(audioFile, "RADICAL", 1L);
@@ -140,6 +131,7 @@ class ReadingAssessmentServiceTests {
         assertEquals("assessed", result.getStatus());
         assertEquals(95, result.getOverallScore());
         verify(radicalRepository).findById(1);
+        verify(localSpeechServiceClient).assessPronunciation(any(), eq("audio/webm"), eq("一"), eq("yī"), eq("Nhất"));
     }
 
     @Test
@@ -153,7 +145,7 @@ class ReadingAssessmentServiceTests {
                 readingAssessmentService.assessReading(audioFile, "VOCABULARY", 999L)
         );
         assertEquals(ErrorCode.NOT_FOUND, ex.getErrorCode());
-        verify(geminiPronunciationService, never()).assessPronunciation(any(), any(), any(), any(), any());
+        verify(localSpeechServiceClient, never()).assessPronunciation(any(), any(), any(), any(), any());
     }
 
     @Test
@@ -200,7 +192,7 @@ class ReadingAssessmentServiceTests {
 
         assertEquals("not_scorable", resp.getStatus());
         assertNull(resp.getOverallScore());
-        verify(geminiPronunciationService, never()).assessPronunciation(any(), any(), any(), any(), any());
+        verify(localSpeechServiceClient, never()).assessPronunciation(any(), any(), any(), any(), any());
     }
 
     @Test
@@ -227,27 +219,40 @@ class ReadingAssessmentServiceTests {
         assertEquals(true, status.get("configured"));
         assertEquals(true, status.get("available"));
         assertEquals("speech-service-local", status.get("provider"));
-        assertEquals("local-offline", status.get("tier"));
+        assertEquals("open-source-offline", status.get("tier"));
+        assertEquals("Chao-5-Scale Tone Sandhi Engine", status.get("model"));
     }
 
     @Test
-    @DisplayName("getServiceStatus indicates fallback to Gemini when local engine is offline but Gemini is configured")
-    void testGetServiceStatusLocalUnavailableFallbackToGemini() {
+    @DisplayName("getServiceStatus indicates unavailable when local engine is offline")
+    void testGetServiceStatusLocalUnavailable() {
         when(localSpeechConfig.isEnabled()).thenReturn(true);
         when(localSpeechServiceClient.isAvailable()).thenReturn(false);
-        when(geminiPronunciationService.isConfigured()).thenReturn(true);
 
         Map<String, Object> status = readingAssessmentService.getServiceStatus();
 
         assertEquals(true, status.get("configured"));
-        assertEquals(true, status.get("available"));
-        assertEquals("Google Gemini API", status.get("provider"));
-        assertEquals(true, status.get("fallback"));
+        assertEquals(false, status.get("available"));
+        assertEquals("speech-service-local", status.get("provider"));
+        assertEquals("open-source-offline", status.get("tier"));
     }
 
     @Test
-    @DisplayName("assessReading falls back to Gemini when local engine returns engine_unavailable")
-    void testAssessReadingFallbackToGeminiWhenLocalUnavailable() {
+    @DisplayName("getServiceStatus indicates unconfigured when local speech is disabled")
+    void testGetServiceStatusLocalDisabled() {
+        when(localSpeechConfig.isEnabled()).thenReturn(false);
+
+        Map<String, Object> status = readingAssessmentService.getServiceStatus();
+
+        assertEquals(false, status.get("configured"));
+        assertEquals(false, status.get("available"));
+        assertEquals("speech-service-local", status.get("provider"));
+        assertEquals("open-source-offline", status.get("tier"));
+    }
+
+    @Test
+    @DisplayName("assessReading directly returns engine_unavailable without cloud fallback")
+    void testAssessReadingDirectReturnWhenLocalUnavailable() {
         when(localSpeechConfig.isEnabled()).thenReturn(true);
         Vocabulary vocab = new Vocabulary();
         vocab.setVocabId(101L);
@@ -259,21 +264,37 @@ class ReadingAssessmentServiceTests {
         PronunciationAssessmentResponse unavailableResp = PronunciationAssessmentResponse.engineUnavailable("学", "xué");
         when(localSpeechServiceClient.assessPronunciation(any(), any(), eq("学"), eq("xué"), eq("Học")))
                 .thenReturn(unavailableResp);
-        when(geminiPronunciationService.isConfigured()).thenReturn(true);
-
-        PronunciationAssessmentResponse geminiSuccess = new PronunciationAssessmentResponse();
-        geminiSuccess.setStatus("assessed");
-        geminiSuccess.setOverallScore(92);
-        when(geminiPronunciationService.assessPronunciation(any(), any(), eq("学"), eq("xué"), eq("Học")))
-                .thenReturn(geminiSuccess);
 
         MockMultipartFile audioFile = new MockMultipartFile("audio", "speech.webm", "audio/webm", new byte[300]);
         PronunciationAssessmentResponse result = readingAssessmentService.assessReading(audioFile, "VOCABULARY", 101L);
 
         assertNotNull(result);
-        assertEquals("assessed", result.getStatus());
-        assertEquals(92, result.getOverallScore());
-        verify(geminiPronunciationService).assessPronunciation(any(), any(), eq("学"), eq("xué"), eq("Học"));
+        assertEquals("engine_unavailable", result.getStatus());
+        verify(localSpeechServiceClient).assessPronunciation(any(), any(), eq("学"), eq("xué"), eq("Học"));
+    }
+
+    @Test
+    @DisplayName("assessReading directly returns coldStartWakingUp without cloud fallback")
+    void testAssessReadingDirectReturnWhenLocalColdStart() {
+        when(localSpeechConfig.isEnabled()).thenReturn(true);
+        Vocabulary vocab = new Vocabulary();
+        vocab.setVocabId(101L);
+        vocab.setHanzi("学");
+        vocab.setPinyin("xué");
+        vocab.setMeaningHanViet("Học");
+        when(vocabularyRepository.findById(101L)).thenReturn(Optional.of(vocab));
+
+        PronunciationAssessmentResponse coldStartResp = PronunciationAssessmentResponse.coldStartWakingUp("学", "xué");
+        when(localSpeechServiceClient.assessPronunciation(any(), any(), eq("学"), eq("xué"), eq("Học")))
+                .thenReturn(coldStartResp);
+
+        MockMultipartFile audioFile = new MockMultipartFile("audio", "speech.webm", "audio/webm", new byte[300]);
+        PronunciationAssessmentResponse result = readingAssessmentService.assessReading(audioFile, "VOCABULARY", 101L);
+
+        assertNotNull(result);
+        assertEquals("engine_unavailable", result.getStatus());
+        assertTrue(result.getSummaryVi().contains("Render Free Tier spin-up ~30-50s"));
+        verify(localSpeechServiceClient).assessPronunciation(any(), any(), eq("学"), eq("xué"), eq("Học"));
     }
 
     @Test
@@ -286,39 +307,18 @@ class ReadingAssessmentServiceTests {
     }
 
     @Test
-    @DisplayName("isServiceAvailable returns true when local engine is down but Gemini fallback is configured")
-    void testIsServiceAvailableLocalDownGeminiReadyReturnsTrue() {
+    @DisplayName("isServiceAvailable returns false when local engine is down")
+    void testIsServiceAvailableLocalDownReturnsFalse() {
         when(localSpeechConfig.isEnabled()).thenReturn(true);
         when(localSpeechServiceClient.isAvailable()).thenReturn(false);
-        when(geminiPronunciationService.isConfigured()).thenReturn(true);
-
-        assertTrue(readingAssessmentService.isServiceAvailable());
-    }
-
-    @Test
-    @DisplayName("isServiceAvailable returns false when local engine is down and Gemini is not configured")
-    void testIsServiceAvailableLocalDownGeminiNotConfiguredReturnsFalse() {
-        when(localSpeechConfig.isEnabled()).thenReturn(true);
-        when(localSpeechServiceClient.isAvailable()).thenReturn(false);
-        when(geminiPronunciationService.isConfigured()).thenReturn(false);
 
         assertFalse(readingAssessmentService.isServiceAvailable());
     }
 
     @Test
-    @DisplayName("isServiceAvailable returns true when local engine is disabled and Gemini is configured")
-    void testIsServiceAvailableLocalDisabledGeminiReadyReturnsTrue() {
+    @DisplayName("isServiceAvailable returns false when local engine is disabled")
+    void testIsServiceAvailableLocalDisabledReturnsFalse() {
         when(localSpeechConfig.isEnabled()).thenReturn(false);
-        when(geminiPronunciationService.isConfigured()).thenReturn(true);
-
-        assertTrue(readingAssessmentService.isServiceAvailable());
-    }
-
-    @Test
-    @DisplayName("isServiceAvailable returns false when local engine is disabled and Gemini is not configured")
-    void testIsServiceAvailableLocalDisabledGeminiNotConfiguredReturnsFalse() {
-        when(localSpeechConfig.isEnabled()).thenReturn(false);
-        when(geminiPronunciationService.isConfigured()).thenReturn(false);
 
         assertFalse(readingAssessmentService.isServiceAvailable());
     }

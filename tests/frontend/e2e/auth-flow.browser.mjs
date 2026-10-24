@@ -558,6 +558,24 @@ describe('Browser E2E: Authentication UI, Profile & Session Integration', () => 
     const { page, context, getRuntimeErrors } = await createMonitoredPage(browser);
 
     try {
+      await page.route('**/api/v1/**', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            code: 'SUCCESS',
+            message: 'OK',
+            data: {
+              items: [],
+              page: 0,
+              size: 20,
+              totalElements: 0,
+              totalPages: 0
+            }
+          })
+        });
+      });
+
       // Start on vocabulary.html under /WebLearnChinese/
       await page.goto(`${baseUrl}/WebLearnChinese/vocabulary.html`, { waitUntil: 'domcontentloaded' });
 

@@ -15,7 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.Map;
 
 /**
- * REST Controller for Speech / Reading Pronunciation Assessment (Local Speech Engine or Gemini AI).
+ * REST Controller for Speech / Reading Pronunciation Assessment (Chao 5-scale Tone Sandhi Engine).
  * Base path: /api/v1/srs/reading
  * Protected by Spring Security: Requires authenticated learner.
  */
@@ -48,8 +48,8 @@ public class ReadingAssessmentController {
     }
 
     /**
-     * Retrieves runtime status of the Reading AI assessment service.
-     * Accurately reflects provider (Local Speech Service or Cloud Gemini AI),
+     * Retrieves runtime status of the Reading assessment service.
+     * Accurately reflects provider (Local Speech Service),
      * live health check status, and offline capability.
      *
      * @return ApiResponse wrapping configuration status and provider metadata

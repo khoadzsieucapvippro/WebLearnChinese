@@ -1,7 +1,6 @@
 package com.elearning.service.impl;
 
 import com.elearning.common.ErrorCode;
-import com.elearning.config.GeminiConfig;
 import com.elearning.config.LocalSpeechConfig;
 import com.elearning.dto.response.PronunciationAssessmentResponse;
 import com.elearning.entity.Radical;
@@ -9,11 +8,11 @@ import com.elearning.entity.Vocabulary;
 import com.elearning.exception.BusinessException;
 import com.elearning.repository.RadicalRepository;
 import com.elearning.repository.VocabularyRepository;
-import com.elearning.service.GeminiPronunciationService;
 import com.elearning.service.LocalSpeechServiceClient;
 import com.elearning.service.ReadingAssessmentService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -27,9 +26,10 @@ import java.util.concurrent.ConcurrentHashMap;
  * Implementation of ReadingAssessmentService.
  * Enforces:
  * - Server-authoritative target text verification from database (never blindly trusts client).
- * - Per-user rate limiting to protect Gemini free-tier quota (15 requests/minute).
+ * - Per-user rate limiting to protect system resources (15 requests/minute).
  * - Payload size and audio MIME type validation.
  * - Zero persistence of audio files (pure in-memory transient processing).
+ * - 100% open-source Chao 5-scale Tone Sandhi Engine integration.
  */
 @Service
 public class ReadingAssessmentServiceImpl implements ReadingAssessmentService {
@@ -38,53 +38,32 @@ public class ReadingAssessmentServiceImpl implements ReadingAssessmentService {
 
     private static final int MAX_REQUESTS_PER_MINUTE = 15;
     private static final long ONE_MINUTE_MS = 60_000L;
+    private static final long MAX_AUDIO_BYTES = 5 * 1024 * 1024L; // 5MB
 
-    private final GeminiPronunciationService geminiPronunciationService;
     private final LocalSpeechServiceClient localSpeechServiceClient;
     private final VocabularyRepository vocabularyRepository;
     private final RadicalRepository radicalRepository;
-    private final GeminiConfig geminiConfig;
     private final LocalSpeechConfig localSpeechConfig;
 
     // In-memory sliding window rate limiter per user account
     private final Map<String, UserRateWindow> rateLimiterMap = new ConcurrentHashMap<>();
 
+    @Autowired
     public ReadingAssessmentServiceImpl(
-            GeminiPronunciationService geminiPronunciationService,
-            VocabularyRepository vocabularyRepository,
-            RadicalRepository radicalRepository,
-            GeminiConfig geminiConfig) {
-        this(geminiPronunciationService, null, vocabularyRepository, radicalRepository, geminiConfig, null);
-    }
-
-    @org.springframework.beans.factory.annotation.Autowired
-    public ReadingAssessmentServiceImpl(
-            GeminiPronunciationService geminiPronunciationService,
             LocalSpeechServiceClient localSpeechServiceClient,
             VocabularyRepository vocabularyRepository,
             RadicalRepository radicalRepository,
-            GeminiConfig geminiConfig,
             LocalSpeechConfig localSpeechConfig) {
-        this.geminiPronunciationService = geminiPronunciationService;
         this.localSpeechServiceClient = localSpeechServiceClient;
         this.vocabularyRepository = vocabularyRepository;
         this.radicalRepository = radicalRepository;
-        this.geminiConfig = geminiConfig;
         this.localSpeechConfig = localSpeechConfig;
     }
 
     @Override
-    public boolean isGeminiConfigured() {
-        return isServiceAvailable();
-    }
-
-    @Override
     public boolean isServiceAvailable() {
-        boolean localEnabled = localSpeechConfig != null && localSpeechConfig.isEnabled();
-        if (localEnabled && localSpeechServiceClient != null && localSpeechServiceClient.isAvailable()) {
-            return true;
-        }
-        return geminiPronunciationService != null && geminiPronunciationService.isConfigured();
+        return localSpeechConfig != null && localSpeechConfig.isEnabled()
+                && localSpeechServiceClient != null && localSpeechServiceClient.isAvailable();
     }
 
     @Override
@@ -94,34 +73,29 @@ public class ReadingAssessmentServiceImpl implements ReadingAssessmentService {
 
         boolean localEnabled = localSpeechConfig != null && localSpeechConfig.isEnabled();
         boolean localHealthy = localEnabled && localSpeechServiceClient != null && localSpeechServiceClient.isAvailable();
-        boolean geminiReady = geminiPronunciationService != null && geminiPronunciationService.isConfigured();
 
         if (localEnabled) {
             if (localHealthy) {
                 status.put("configured", true);
                 status.put("available", true);
                 status.put("provider", "speech-service-local");
-                status.put("tier", "local-offline");
+                status.put("tier", "open-source-offline");
                 status.put("model", "Chao-5-Scale Tone Sandhi Engine");
-            } else if (geminiReady) {
-                status.put("configured", true);
-                status.put("available", true);
-                status.put("provider", "Google Gemini API");
-                status.put("tier", "free");
-                status.put("fallback", true);
-                status.put("notice", "Local speech engine unavailable; falling back to cloud Gemini API");
             } else {
                 status.put("configured", true);
                 status.put("available", false);
                 status.put("provider", "speech-service-local");
-                status.put("tier", "local-offline");
-                status.put("notice", "Dịch vụ AI Luyện đọc cục bộ chưa được khởi chạy (cổng 8000)");
+                status.put("tier", "open-source-offline");
+                status.put("model", "Chao-5-Scale Tone Sandhi Engine");
+                status.put("notice", "Hệ thống Phân tích Phát âm & Thanh điệu chưa được khởi chạy hoặc không thể kết nối");
             }
         } else {
-            status.put("configured", geminiReady);
-            status.put("available", geminiReady);
-            status.put("provider", "Google Gemini API");
-            status.put("tier", "free");
+            status.put("configured", false);
+            status.put("available", false);
+            status.put("provider", "speech-service-local");
+            status.put("tier", "open-source-offline");
+            status.put("model", "Chao-5-Scale Tone Sandhi Engine");
+            status.put("notice", "Hệ thống Phân tích Phát âm & Thanh điệu chưa được kích hoạt");
         }
 
         return status;
@@ -169,7 +143,7 @@ public class ReadingAssessmentServiceImpl implements ReadingAssessmentService {
             throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Tệp âm thanh không được để trống");
         }
 
-        if (audio.getSize() > geminiConfig.getMaxAudioBytes()) {
+        if (audio.getSize() > MAX_AUDIO_BYTES) {
             throw new BusinessException(ErrorCode.FILE_TOO_LARGE, "Dung lượng bản ghi âm vượt quá giới hạn 5MB");
         }
 
@@ -195,28 +169,16 @@ public class ReadingAssessmentServiceImpl implements ReadingAssessmentService {
         }
 
         if (localSpeechConfig != null && localSpeechConfig.isEnabled() && localSpeechServiceClient != null) {
-            PronunciationAssessmentResponse localResp = localSpeechServiceClient.assessPronunciation(
+            return localSpeechServiceClient.assessPronunciation(
                     audioBytes,
                     contentType,
                     targetHanzi,
                     targetPinyin,
                     meaningHanViet
             );
-            // If local speech engine is down/unavailable, but Gemini AI is configured, fallback smoothly
-            if (!"engine_unavailable".equalsIgnoreCase(localResp.getStatus()) || geminiPronunciationService == null || !geminiPronunciationService.isConfigured()) {
-                return localResp;
-            }
-            log.info("Local speech service unavailable at {}. Falling back to configured Gemini AI for user {}",
-                    localSpeechConfig.getBaseUrl(), currentUser);
         }
 
-        return geminiPronunciationService.assessPronunciation(
-                audioBytes,
-                contentType,
-                targetHanzi,
-                targetPinyin,
-                meaningHanViet
-        );
+        return PronunciationAssessmentResponse.unconfigured(targetHanzi, targetPinyin);
     }
 
     private String resolveAuthenticatedUser() {
@@ -240,7 +202,7 @@ public class ReadingAssessmentServiceImpl implements ReadingAssessmentService {
         if (window.count > MAX_REQUESTS_PER_MINUTE) {
             throw new BusinessException(
                     ErrorCode.TOO_MANY_REQUESTS,
-                    "Bạn đang gửi yêu cầu luyện đọc quá nhanh. Vui lòng đợi giây lát trước khi thử lại để bảo vệ hạn mức miễn phí."
+                    "Bạn đang gửi yêu cầu luyện đọc quá nhanh. Vui lòng đợi giây lát trước khi thử lại để tránh quá tải hệ thống."
             );
         }
     }

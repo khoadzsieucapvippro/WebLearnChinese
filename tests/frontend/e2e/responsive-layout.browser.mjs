@@ -52,6 +52,9 @@ const ALL_22_PAGES = [
   'admin-radicals.html',
   'admin-vocabulary.html',
   'admin-lessons.html',
+  'admin-audit-logs.html',
+  'management.html',
+  'srs-settings.html',
   'ui-verification.html'
 ];
 
@@ -88,13 +91,19 @@ describe('Responsive & Multi-Viewport Layout Verification (Task 9G.5)', () => {
    */
   async function setupMockSession(page) {
     await page.addInitScript(() => {
-      localStorage.setItem('access_token', 'mock_jwt_responsive_testing');
-      localStorage.setItem('user_info', JSON.stringify({
-        accountId: 1,
-        emailOrPhone: 'admin@example.com',
-        fullName: 'Quản Trị Viên Hệ Thống',
-        roles: ['Admin', 'Creator', 'Moderator', 'Learner']
-      }));
+      const isAuthPage = window.location.pathname.includes('login.html') || window.location.pathname.includes('register.html');
+      if (isAuthPage) {
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('user_info');
+      } else {
+        localStorage.setItem('access_token', 'mock_jwt_responsive_testing');
+        localStorage.setItem('user_info', JSON.stringify({
+          accountId: 1,
+          emailOrPhone: 'admin@example.com',
+          fullName: 'Quản Trị Viên Hệ Thống',
+          roles: ['Admin', 'Creator', 'Moderator', 'Learner']
+        }));
+      }
     });
 
     await page.route('**/api/v1/**', async (route) => {
@@ -142,6 +151,16 @@ describe('Responsive & Multi-Viewport Layout Verification (Task 9G.5)', () => {
           })
         });
       }
+      if (url.includes('/srs/settings')) {
+        return route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            code: 'SUCCESS',
+            data: { newCardsPerDay: 20, maxReviewPerDay: 100 }
+          })
+        });
+      }
       if (url.includes('/radicals')) {
         return route.fulfill({
           status: 200,
@@ -184,7 +203,7 @@ describe('Responsive & Multi-Viewport Layout Verification (Task 9G.5)', () => {
   }
 
   // TEST 1: All-Page Smoke & Document-Level Overflow Audit
-  test('Test 1: All 22 pages render with ZERO unintended document-level horizontal overflow across Mobile (375px), Tablet (768px), and Desktop (1200px)', async () => {
+  test('Test 1: All 25 pages render with ZERO unintended document-level horizontal overflow across Mobile (375px), Tablet (768px), and Desktop (1200px)', async () => {
     const viewports = [
       { name: 'Mobile-375', width: 375, height: 667 },
       { name: 'Tablet-768', width: 768, height: 1024 },
@@ -258,7 +277,7 @@ describe('Responsive & Multi-Viewport Layout Verification (Task 9G.5)', () => {
   });
 
   // TEST 2: Viewport Meta Tag Conformance
-  test('Test 2: All 22 HTML pages declare responsive viewport meta tag', async () => {
+  test('Test 2: All 25 HTML pages declare responsive viewport meta tag', async () => {
     const { page, context } = await createMonitoredPage(browser);
     try {
       for (const pageName of ALL_22_PAGES) {

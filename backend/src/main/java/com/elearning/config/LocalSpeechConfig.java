@@ -19,11 +19,11 @@ public class LocalSpeechConfig {
     @Value("${speech.engine.local.internal-token:}")
     private String internalToken;
 
-    @Value("${speech.engine.local.connect-timeout-ms:30000}")
-    private int connectTimeoutMs;
+    @Value("${speech.engine.local.connect-timeout-ms:15000}")
+    private int connectTimeoutMs = 15000;
 
-    @Value("${speech.engine.local.read-timeout-ms:45000}")
-    private int readTimeoutMs;
+    @Value("${speech.engine.local.read-timeout-ms:30000}")
+    private int readTimeoutMs = 30000;
 
     public boolean isEnabled() {
         return enabled;
@@ -60,7 +60,7 @@ public class LocalSpeechConfig {
     }
 
     public int getConnectTimeoutMs() {
-        return connectTimeoutMs > 0 ? connectTimeoutMs : 30000;
+        return connectTimeoutMs > 0 ? connectTimeoutMs : 15000;
     }
 
     public void setConnectTimeoutMs(int connectTimeoutMs) {
@@ -68,7 +68,7 @@ public class LocalSpeechConfig {
     }
 
     public int getReadTimeoutMs() {
-        return readTimeoutMs > 0 ? readTimeoutMs : 45000;
+        return readTimeoutMs > 0 ? readTimeoutMs : 30000;
     }
 
     public void setReadTimeoutMs(int readTimeoutMs) {

@@ -47,13 +47,13 @@ class ReadingAssessmentControllerTests {
     }
 
     @Test
-    @DisplayName("GET /api/v1/srs/reading/status returns operational status and free-tier metadata")
+    @DisplayName("GET /api/v1/srs/reading/status returns operational status and provider metadata")
     void testGetReadingStatus() throws Exception {
         java.util.Map<String, Object> statusData = java.util.Map.of(
                 "configured", true,
                 "available", true,
-                "tier", "free",
-                "provider", "Google Gemini API",
+                "tier", "open-source-offline",
+                "provider", "speech-service-local",
                 "audioInputSupported", true
         );
         when(readingAssessmentService.getServiceStatus()).thenReturn(statusData);
@@ -62,8 +62,8 @@ class ReadingAssessmentControllerTests {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code", is("SUCCESS")))
                 .andExpect(jsonPath("$.data.configured", is(true)))
-                .andExpect(jsonPath("$.data.tier", is("free")))
-                .andExpect(jsonPath("$.data.provider", is("Google Gemini API")));
+                .andExpect(jsonPath("$.data.tier", is("open-source-offline")))
+                .andExpect(jsonPath("$.data.provider", is("speech-service-local")));
     }
 
     @Test
@@ -101,7 +101,7 @@ class ReadingAssessmentControllerTests {
     }
 
     @Test
-    @DisplayName("POST /api/v1/srs/reading/assess returns unconfigured status when GEMINI_API_KEY is not set")
+    @DisplayName("POST /api/v1/srs/reading/assess returns unconfigured status when speech service is not configured")
     void testAssessReadingUnconfigured() throws Exception {
         MockMultipartFile audioFile = new MockMultipartFile(
                 "audio", "recording.webm", "audio/webm", new byte[]{1, 2, 3, 4}

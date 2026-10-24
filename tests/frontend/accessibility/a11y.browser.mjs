@@ -1433,13 +1433,19 @@ describe('Accessibility Verification: WCAG 2.2 AA Aligned', () => {
       });
 
       await page.addInitScript(() => {
-        localStorage.setItem('access_token', 'test_admin_jwt');
-        localStorage.setItem('user_info', JSON.stringify({
-          accountId: 1,
-          emailOrPhone: 'admin@example.com',
-          fullName: 'Quản Trị Viên',
-          roles: ['Admin', 'Creator', 'Moderator', 'Learner']
-        }));
+        const isAuthPage = window.location.pathname.includes('login.html') || window.location.pathname.includes('register.html');
+        if (isAuthPage) {
+          localStorage.removeItem('access_token');
+          localStorage.removeItem('user_info');
+        } else {
+          localStorage.setItem('access_token', 'test_admin_jwt');
+          localStorage.setItem('user_info', JSON.stringify({
+            accountId: 1,
+            emailOrPhone: 'admin@example.com',
+            fullName: 'Quản Trị Viên',
+            roles: ['Admin', 'Creator', 'Moderator', 'Learner']
+          }));
+        }
       });
 
       for (const pageName of all22Pages) {

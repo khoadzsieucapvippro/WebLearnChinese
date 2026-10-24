@@ -3,9 +3,9 @@ package com.elearning.dto.response;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 /**
- * Standardized DTO for pronunciation evaluation response from Gemini AI.
+ * Standardized DTO for pronunciation & tone assessment response (Chao 5-scale Tone Sandhi Engine).
  * Follows strict design guidelines:
- * - status: 'assessed' | 'not_scorable' | 'unconfigured' | 'error'
+ * - status: 'assessed' | 'not_scorable' | 'unconfigured' | 'engine_unavailable' | 'error'
  * - overallScore: 0..100 (null if status != 'assessed')
  * - confidence: 'HIGH' | 'MEDIUM' | 'LOW'
  * - Avoids pseudo-exact percentages; score is an educational estimate.
@@ -34,9 +34,9 @@ public class PronunciationAssessmentResponse {
         res.setTargetText(targetText);
         res.setTargetPinyin(targetPinyin);
         res.setConfidence("LOW");
-        res.setSummaryVi("Hệ thống chưa được cấu hình khóa truy cập Google Gemini (GEMINI_API_KEY).");
-        res.setRetryAdvice("Vui lòng thiết lập biến môi trường GEMINI_API_KEY trên máy chủ để kích hoạt Luyện đọc.");
-        res.setLimitations("Chưa có API key hợp lệ để gửi bản ghi âm đến Gemini API.");
+        res.setSummaryVi("Hệ thống Phân tích Phát âm & Thanh điệu chưa được cấu hình địa chỉ dịch vụ.");
+        res.setRetryAdvice("Quản trị viên vui lòng thiết lập biến môi trường SPEECH_SERVICE_URL trên máy chủ.");
+        res.setLimitations("Chưa có dịch vụ speech-service hợp lệ để phân tích phát âm.");
         return res;
     }
 
@@ -49,7 +49,7 @@ public class PronunciationAssessmentResponse {
         res.setOverallScore(null);
         res.setSummaryVi(summaryVi != null ? summaryVi : "Không thể đánh giá bản ghi âm này.");
         res.setRetryAdvice(retryAdvice != null ? retryAdvice : "Vui lòng đọc to, rõ ràng và gần micro hơn.");
-        res.setLimitations("Bản ghi âm không đủ rõ ràng hoặc chứa tạp âm lớn để Gemini AI phân tích.");
+        res.setLimitations("Bản ghi âm không đủ rõ ràng hoặc chứa tạp âm lớn để phân tích đường cao độ F0.");
         return res;
     }
 
@@ -60,9 +60,9 @@ public class PronunciationAssessmentResponse {
         res.setTargetPinyin(targetPinyin);
         res.setConfidence("LOW");
         res.setOverallScore(null);
-        res.setSummaryVi("Dịch vụ AI Luyện đọc Local chưa được khởi chạy hoặc không thể kết nối (cổng 8000).");
-        res.setRetryAdvice("Quản trị viên vui lòng chạy lệnh: python run_service.py để kích hoạt engine.");
-        res.setLimitations("Dịch vụ AI cục bộ chưa sẵn sàng.");
+        res.setSummaryVi("Hệ thống Phân tích Phát âm & Thanh điệu chưa được khởi chạy hoặc không thể kết nối.");
+        res.setRetryAdvice("Quản trị viên vui lòng khởi chạy speech-service (cổng 8000) hoặc kiểm tra SPEECH_SERVICE_URL.");
+        res.setLimitations("Hệ thống phân tích âm học cục bộ chưa sẵn sàng.");
         return res;
     }
 
@@ -73,9 +73,9 @@ public class PronunciationAssessmentResponse {
         res.setTargetPinyin(targetPinyin);
         res.setConfidence("LOW");
         res.setOverallScore(null);
-        res.setSummaryVi("Dịch vụ AI Luyện đọc đang khởi động từ trạng thái nghỉ (Render Free Tier spin-up ~30-50s).");
-        res.setRetryAdvice("Máy chủ AI miễn phí cần khoảng 30-50 giây để khởi động lại sau thời gian không sử dụng. Vui lòng bấm thử lại sau giây lát.");
-        res.setLimitations("Dịch vụ AI speech service đang được đánh thức từ chế độ ngủ miễn phí.");
+        res.setSummaryVi("Hệ thống Phân tích Phát âm & Thanh điệu đang khởi động từ trạng thái nghỉ (Render Free Tier spin-up ~30-50s).");
+        res.setRetryAdvice("Máy chủ phân tích âm thanh cần khoảng 30-50 giây để khởi động lại sau thời gian nghỉ. Vui lòng bấm 'Thử đọc lại' sau giây lát hoặc bấm 'Bỏ qua →' để tiếp tục ôn tập.");
+        res.setLimitations("Hệ thống speech-service đang được đánh thức từ chế độ ngủ (Render Free Tier).");
         return res;
     }
 
@@ -88,7 +88,7 @@ public class PronunciationAssessmentResponse {
         res.setOverallScore(null);
         res.setSummaryVi(errorMessage != null ? errorMessage : "Đã xảy ra lỗi khi phân tích phát âm.");
         res.setRetryAdvice("Vui lòng thử lại sau giây lát.");
-        res.setLimitations("Dịch vụ phân tích AI tạm thời gặp gián đoạn.");
+        res.setLimitations("Hệ thống phân tích phát âm tạm thời gặp gián đoạn.");
         return res;
     }
 

@@ -1,124 +1,79 @@
-# Project: WebLearnChinese Management Decoupling, Settings Completion & Production Security
+# Project: WebLearnChinese Audit & Full-Stack Remediation
 
 ## Architecture
-WebLearnChinese is a full-stack Chinese learning platform with:
-- **Backend**: Spring Boot 3.3.5 (Java 17/21), Spring Security (stateless JWT RBAC with Learner, Creator, Moderator, Admin), Spring Data JPA, Flyway migrations (baseline V1..V28 -> V29).
-- **Frontend**: Modular Vanilla JS (ES Modules, Zero-Build), semantic HTML5, CSS custom properties, strict CSP, and SRI hash checking.
-- **Data Flow**:
-  - Learners use public & study endpoints (`/api/v1/lessons`, `/api/v1/srs`, `/api/v1/auth`, etc.).
-  - Creators use studio endpoints (`/api/v1/creator/*`).
-  - Moderators review lessons (`/api/v1/moderation/*`).
-  - Admins manage users, roles, system resources, and audit logs (`/api/v1/admin/*`).
-- **Management Area Decoupling**: Central hub `frontend/management.html` aggregates management tasks per role; profile settings remain focused purely on learner preferences.
-- **Production Security**: Strict fail-fast on insecure JWT secrets, demo accounts disabled by default in production configurations, and explicit demo fallback simulation indicators.
-- **Audit Logging**: Comprehensive, non-destructive audit log table (`MANAGEMENT_AUDIT_LOG`) recording all administrative and moderation actions with actor attribution and sanitized payloads.
+WebLearnChinese is a full-stack Chinese learning platform comprising:
+- **Frontend**: Modular Vanilla JS (ES Modules, Zero-Build), semantic HTML5 (25 pages), CSS custom properties, strict CSP, and SRI hash checking.
+  - SRS Hub (`srs-review.html` & `srs-review-page.js`): 4 dedicated study rooms: Flashcard (🎴), Writing (✍️ - HanziWriter), Listening (🎧 - Web Speech API/Audio URL), Reading (📖 - Chao 5-scale Tone Sandhi Engine).
+  - 5 Curriculum Shelves: 50 Radicals, 214 Radicals, HSK 1 (300 words), HSK 2 (200 words), HSK 3 (500 words).
+- **Backend**: Spring Boot 3.3.5 (Java 17/21), Spring Security (stateless JWT RBAC with Learner, Creator, Moderator, Admin), Spring Data JPA, Flyway migrations (V1..V29).
+  - Reading Assessment Service (`ReadingAssessmentServiceImpl`): Connects to local/hosted Python FastAPI speech service via HTTP with `X-Internal-Token` and cold-start fallback handling.
+- **Speech Service Microservice**: Python 3.11 FastAPI running Uvicorn with Praat/PyWorld/Librosa-based Chao 5-scale acoustic pitch tracking (F0) and tone sandhi assessment (`/evaluate-reading`). 100% offline acoustic engine, zero cloud AI calls.
+- **Reliability & Keep-Alive**: UptimeRobot 24/7 dual HTTP monitoring for backend (`/actuator/health`) and speech-service (`/health`) to maintain warm instances on Render Free Tier.
 
 ---
 
 ## Feature Inventory
 | # | Feature | Description | Milestone | Source |
 |---|---------|-------------|-----------|--------|
-| F1 | Disable Demo Seed in Prod | Set `APP_DEMO_SEED_ACCOUNTS=false` in Dockerfile, backend/Dockerfile, render.yaml & add profile guard in `DemoAccountSeeder` | M1 | ORIGINAL_REQUEST §R2 |
-| F2 | JWT Secret Fail-Fast | Enforce >=32-byte non-blank JWT secret; fail startup if missing on production/non-dev profiles; allow fallback only on local/dev | M1 | ORIGINAL_REQUEST §R2 |
-| F3 | Demo Fallback Simulation Alert | Render prominent `🟡 Dữ liệu mô phỏng` badge when demo mode active; forbid silent downgrade from real backend errors to simulated auth | M1 | ORIGINAL_REQUEST §R2 |
-| F4 | Prevent Moderation Self-Review | In `ModerationServiceImpl`, reject approval/rejection if creator ID equals moderator ID (HTTP 403 / FORBIDDEN) | M2 | ORIGINAL_REQUEST §R4 |
-| F5 | Enforce Last Active Admin Invariant | In `AdminRoleServiceImpl` / `AdminAccountServiceImpl`, prevent removing Admin role or deactivating/locking last active admin with pessimistic locking | M2 | ORIGINAL_REQUEST §R4 |
-| F6 | SRS Card Limit Bounds | Add `@Max(100)` validation on `newCardsPerDay` in DTO, enforce bounds in service and frontend with validation message | M2 | ORIGINAL_REQUEST §R4 |
-| F7 | SRS Button Standardization | Standardize "Khôi phục" button to "Hoàn tác thay đổi" and update status text/revert behavior | M2 | ORIGINAL_REQUEST §R4 |
-| F8 | Audit Log Flyway Migration | Create `V29__create_management_audit_log.sql` non-destructive table with indexes for actor, action, resource, timestamp | M3 | ORIGINAL_REQUEST §R5 |
-| F9 | Audit Log JPA Entity & Repository | Implement `ManagementAuditLog`, enums (`AuditActionType`, `AuditResourceType`, `AuditStatus`), and Spring Data JPA repository | M3 | ORIGINAL_REQUEST §R5 |
-| F10 | Audit Service & Data Sanitizer | Implement `ManagementAuditService` with `AuditDataSanitizer` redacting passwords, JWT, tokens, and secrets from JSON details | M3 | ORIGINAL_REQUEST §R5 |
-| F11 | Audit Logging Hooks | Instrument role change, lock/unlock, lesson/vocab/radical updates, and moderation actions with audit log calls | M3 | ORIGINAL_REQUEST §R5 |
-| F12 | Admin Audit Log REST API | Implement `GET /api/v1/admin/audit-logs` (Admin-only, paginated, filtered) and detail endpoint | M3 | ORIGINAL_REQUEST §R5 |
-| F13 | Admin Audit Log UI | Implement `frontend/admin-audit-logs.html` and `admin-audit-logs-page.js` with filter bar, table, pagination, detail modal | M3 | ORIGINAL_REQUEST §R5 |
-| F14 | Management Central Hub | Create `frontend/management.html` & `management-page.js` with role-based card sections (Creator, Moderator, Admin) and "Quay lại học" | M4 | ORIGINAL_REQUEST §R1 |
-| F15 | Unified Navigation Entry | Update `frontend/js/ui/nav.js` to replace scattered links with single "Khu vực quản lý" for Creator/Moderator/Admin; hide from Learner | M4 | ORIGINAL_REQUEST §R1 |
-| F16 | Profile Decoupling | Remove `profileRoleWorkspacesSection` and admin nav buttons from `frontend/profile.html` and `profile-page.js` | M4 | ORIGINAL_REQUEST §R1 |
-| F17 | Consistent Management Sub-nav | Add consistent management navigation bar with "Quay lại học" across `creator-*.html`, `moderator-*.html`, `admin-*.html` | M4 | ORIGINAL_REQUEST §R1 |
-| F18 | Audio/Writing Settings Integration | Wire supported settings to speech/writing/srs modules; add explicit `localStorage` disclaimer banner on profile | M4 | ORIGINAL_REQUEST §R3 |
-| F19 | Password Change UI | Build Account Security form in Profile calling `POST /api/v1/auth/change-password` with validation & feedback (zero Web Storage exposure) | M4 | ORIGINAL_REQUEST §R3 |
-| F20 | Regression & Contract Test Suite Updates | Update `authenticated-links-regression.test.mjs` and add unit/integration tests for management nav and security contracts | M4 | ORIGINAL_REQUEST §R1, R3 |
-| F21 | E2E & Adversarial Verification | Execute full test suites (`mvn test`, `npm run verify:frontend:fast`), verify 100% pass across all tiers, and perform forensic integrity audit | M5 | ORIGINAL_REQUEST Acceptance Criteria |
+| F1 | Purge AI/Gemini Branding from Frontend UI | Purge all obsolete "Gemini", "GEMINI_API_KEY", and cloud AI quota warnings in `srs-review-page.js`, `style.css`, and templates; replace with truthful "Hệ thống Phân tích Phát âm & Thanh điệu" (Chao 5-scale Tone Sandhi Engine). Keep #746 `发展` pedagogical sentence intact. | M1 | ORIGINAL_REQUEST §R1 |
+| F2 | Purge Gemini Fallback & Cloud SDK from Backend | Remove Google GenAI SDK from `pom.xml`, delete cloud fallback logic from `ReadingAssessmentServiceImpl`, clean `application.yml`, update `PronunciationAssessmentResponse` DTO and `LocalSpeechServiceClient` messages to truthful open-source terminology. | M1 | ORIGINAL_REQUEST §R1 |
+| F3 | Standardize Speech Service Evaluator Copy | Update `evaluator.py` line 185 limitations string to "Hệ thống Phân tích Phát âm & Thanh điệu (Chao 5-scale Tone Sandhi Engine)". | M1 | ORIGINAL_REQUEST §R1 |
+| F4 | Synchronize Test Assertions for Tone Assessment | Update `srs-skill-reading.test.mjs`, `srs-reading.browser.mjs`, `ReadingAssessmentControllerTests.java`, and `ReadingAssessmentServiceTests.java` to assert new open-source terminology in lockstep. | M1 | ORIGINAL_REQUEST §R1, Acceptance Criteria |
+| F5 | Reading Room Cold-Start Resilience & State Controls | Tune backend timeouts to keep total retry duration < 50s; return `coldStartWakingUp` status with encouraging feedback; verify "Bỏ qua →" and "Thử đọc lại" controls never freeze. | M2 | ORIGINAL_REQUEST §R2 |
+| F6 | UptimeRobot 24/7 Keep-Alive Setup & Documentation | Document setup of 2 independent 5-minute HTTP monitors on UptimeRobot for `/actuator/health` and `/health` in `DEPLOYMENT_FREE_TIER.md` and `README.md`. | M2 | ORIGINAL_REQUEST §R2 |
+| F7 | Web-Wide Defect Remediation: Restore Lesson Vocab Note Button | Restore `.lesson-vocab-note-btn` in `frontend/js/pages/lesson-detail-page.js` to unblock 9 failing tests across accessibility and browser suites. | M3 | ORIGINAL_REQUEST §R3 |
+| F8 | Browser Test Suite Flake & Mock Hardening | Harden browser tests (`auth-flow`, `srs-dashboard`, `verification-center`, `vocabulary-srs-navigation`) against unmocked route console errors; expand `ALL_22_PAGES` to all 25 pages in `responsive-layout.browser.mjs`. | M3 | ORIGINAL_REQUEST §R3 |
+| F9 | Full-Stack Verification & Adversarial Forensic Audit | Execute full fast unit test suite (937+ tests), browser tests, backend maven tests, verify zero horizontal overflow on 375px mobile, and pass independent forensic audit. | M4 | ORIGINAL_REQUEST Acceptance Criteria |
 
 ---
 
 ## Milestones
 | # | Name | Scope | Dependencies | Status |
 |---|------|-------|-------------|--------|
-| M1 | Backend Configuration & Production Security Hardening | F1, F2, F3 (Dockerfile, render.yaml, JWT fail-fast, demo fallback alert) | none | DONE |
-| M2 | Management Business Invariants & SRS Constraints | F4, F5, F6, F7 (Self-review check, last admin invariant, SRS card limits, SRS button standardization) | none | DONE |
-| M3 | Centralized Management Audit Log System | F8, F9, F10, F11, F12, F13 (V29 Flyway migration, JPA entity/repo, AuditService, hooks, API & UI) | M2 | DONE |
-| M4 | Management Area Decoupling, Navigation & Settings Completion | F14, F15, F16, F17, F18, F19, F20 (management.html, nav.js, profile decoupling, sub-nav, audio/writing settings, password change UI) | M1, M3 | DONE |
-| M5 | E2E Integration Verification & Hardening | F21 (Full backend mvn test, frontend verify:frontend:fast, adversarial coverage hardening & audit clean) | M1, M2, M3, M4 | DONE |
+| M1 | Purge Obsolete AI/Gemini Terminology & Code across Full Stack | F1, F2, F3, F4 (Frontend UI, backend services/DTOs, speech service, test assertions) | none | COMPLETED |
+| M2 | Reading Room & Speech Service Resilience & Keep-Alive Documentation | F5, F6 (Cold-start retry tuning, encouraging guidance, UptimeRobot 24/7 doc) | M1 | COMPLETED |
+| M3 | Web-Wide Defect Remediation & Test Hardening | F7, F8 (Restore `.lesson-vocab-note-btn`, browser test mocks & 25-page layout coverage) | M1 | COMPLETED |
+| M4 | Final Milestone: 100% Automated Test Pass & Forensic Audit Gate | F9 (937+ fast tests pass, browser tests pass, maven tests pass, mobile 375px zero overflow, forensic audit clean) | M1, M2, M3 | COMPLETED |
 
 ---
 
 ## Interface Contracts
 
-### 1. Password Change API
-- Endpoint: `POST /api/v1/auth/change-password`
-- Headers: `Authorization: Bearer <jwt>`, `Content-Type: application/json`
-- Request Body (`ChangePasswordRequest`):
-  ```json
-  {
-    "currentPassword": "...",
-    "newPassword": "..."
-  }
-  ```
-- Responses:
-  - `200 OK`: `{"status": 200, "message": "Đổi mật khẩu thành công", "data": null}`
-  - `400 BAD REQUEST`: validation failure (e.g. blank, length < 6, current equals new)
-  - `401 UNAUTHORIZED`: invalid current password
+### 1. Reading Assessment DTO Contract (`PronunciationAssessmentResponse`)
+- Status codes:
+  - `assessed`: Successful tone and pronunciation evaluation from local speech service.
+  - `not_scorable`: Low audio quality, silence, or excessive background noise (advises user clearly).
+  - `cold_start`: Render free tier speech service spinning up (30-50s), advising user encouragingly.
+  - `engine_unavailable`: Speech service unreachable (provides fallback skip option).
+  - `error`: Internal evaluation error.
+- Fields: `status`, `overallScore`, `toneScore`, `pinyinTarget`, `summaryVi`, `retryAdvice`, `limitations`, `details`.
+- Provider metadata: `"provider": "speech-service-local"`, `"model": "Chao-5-Scale Tone Sandhi Engine"`, `"tier": "open-source-offline"`.
 
-### 2. Admin Audit Log API
-- Endpoint: `GET /api/v1/admin/audit-logs`
-- Headers: `Authorization: Bearer <jwt>` (Requires `ROLE_ADMIN`)
-- Query Parameters:
-  - `page`: integer (0-based, default 0)
-  - `size`: integer (default 20, max 100)
-  - `sort`: string (default "timestamp,desc")
-  - `actionType`: optional string (enum `AuditActionType`)
-  - `resourceType`: optional string (enum `AuditResourceType`)
-  - `actor`: optional string (username search)
-  - `startDate`: optional ISO-8601 string
-  - `endDate`: optional ISO-8601 string
-  - `status`: optional string (`SUCCESS`, `FAILURE`)
-- Response: Page of `AuditLogResponse` (id, actorId, actorUsername, actionType, resourceType, resourceId, timestamp, status, detailsSummary, ipAddress)
-- Endpoint: `GET /api/v1/admin/audit-logs/{id}`
-  - Returns full `AuditLogDetailResponse` with formatted before/after payloads (sanitized).
+### 2. Frontend Reading Room State Machine (`#srsReadingRoom`)
+- State A (`#readingStateReady`): Prompts target Hanzi, sample audio, toggle Pinyin preview.
+- State B (`#readingStateRecording`): Active audio recording with duration timer, Stop & Cancel buttons.
+- State C (`#readingStateAnalyzing`): Displays spinner with "Đang phân tích đường cao độ F0 và đánh giá thanh điệu theo thang chuẩn Chao".
+- State D (`#readingStateResult`): Renders Chao 5-scale tone breakdown and practice tips.
+- State E (`#readingStateError`): Displays error card with "Thử đọc lại" (`#btnReadingTryAgain`) and "Bỏ qua →" (`#btnReadingSkipOnError`).
+- Keyboard isolation: SRS shortcuts [1]-[4] are completely ignored in reading mode.
 
-### 3. Navigation Contract (`nav.js`)
-- Learner: shows standard learning items; "Khu vực quản lý" hidden.
-- Creator / Moderator / Admin: shows "Khu vực quản lý" (`#navManagementBtn`) pointing to `management.html`.
-- Demo Mode: When active, persistent badge `<span class="badge badge-warning">🟡 Dữ liệu mô phỏng</span>` displayed in top navigation.
-
-### 4. Self-Review Invariant (`ModerationServiceImpl`)
-- When `lesson.getCreatedBy().getAccountId().equals(currentModerator.getAccountId())`:
-  - Throws `AppException(ErrorCode.FORBIDDEN, "Bạn không thể tự kiểm duyệt nội dung do chính mình tạo ra")`.
-
-### 5. Last Admin Invariant (`AdminRoleServiceImpl` & `AdminAccountServiceImpl`)
-- Before modifying or revoking `ROLE_ADMIN` or locking an Admin account:
-  - Obtain pessimistic lock on Admin role record (`SELECT ... FOR UPDATE`).
-  - Count active Admin users (`WHERE role = 'ROLE_ADMIN' AND status = 'ACTIVE'`).
-  - If count <= 1 and target is an active admin: throw `AppException(ErrorCode.BAD_REQUEST, "Không thể hạ quyền hoặc vô hiệu hóa quản trị viên hoạt động cuối cùng của hệ thống")`.
+### 3. Keep-Alive Endpoints Contract
+- Backend: `GET /actuator/health` -> HTTP 200 `{"status":"UP"}`. Publicly accessible without auth.
+- Speech Service: `GET /health` -> HTTP 200 `{"status":"READY","engine":"local-acoustic-f0-tone","model":"Chao-5-Scale Tone Sandhi Engine"}`. Publicly accessible without auth.
 
 ---
 
 ## Code Layout
-- `backend/src/main/resources/db/migration/V29__create_management_audit_log.sql`
-- `backend/src/main/java/com/weblearnchinese/model/`
-  - `ManagementAuditLog.java`, `enums/AuditActionType.java`, `enums/AuditResourceType.java`, `enums/AuditStatus.java`
-- `backend/src/main/java/com/weblearnchinese/repository/ManagementAuditLogRepository.java`
-- `backend/src/main/java/com/weblearnchinese/service/`
-  - `ManagementAuditService.java`, `impl/ManagementAuditServiceImpl.java`
-  - `impl/ModerationServiceImpl.java` (self-review check & audit log)
-  - `impl/AdminRoleServiceImpl.java` & `impl/AdminAccountServiceImpl.java` (last admin lock & audit log)
-- `backend/src/main/java/com/weblearnchinese/controller/AdminAuditLogController.java`
-- `backend/src/main/java/com/weblearnchinese/util/JwtUtil.java` & `config/SecurityConfig.java` (fail-fast validation)
-- `frontend/management.html` & `frontend/js/pages/management-page.js`
-- `frontend/admin-audit-logs.html` & `frontend/js/pages/admin-audit-logs-page.js`
-- `frontend/profile.html` & `frontend/js/pages/profile-page.js`
-- `frontend/js/ui/nav.js`
-- `frontend/js/api/demo-fallback-engine.js` & `frontend/js/api/api.js`
-- `tests/frontend/unit/auth/authenticated-links-regression.test.mjs`
-- `Dockerfile`, `backend/Dockerfile`, `render.yaml`
+- `frontend/js/pages/srs-review-page.js` (SRS reading controller & state machine)
+- `frontend/js/pages/lesson-detail-page.js` (Lesson detail view & personal note button)
+- `frontend/css/style.css` (SRS styling & responsive mobile breakpoints)
+- `backend/src/main/java/com/elearning/dto/response/PronunciationAssessmentResponse.java`
+- `backend/src/main/java/com/elearning/service/impl/ReadingAssessmentServiceImpl.java`
+- `backend/src/main/java/com/elearning/service/LocalSpeechServiceClient.java`
+- `backend/src/main/java/com/elearning/controller/ReadingAssessmentController.java`
+- `speech-service/app/core/evaluator.py`
+- `tests/frontend/unit/srs/srs-skill-reading.test.mjs`
+- `tests/frontend/e2e/srs-reading.browser.mjs`
+- `tests/frontend/accessibility/a11y.browser.mjs`
+- `tests/frontend/e2e/personal-notes.browser.mjs`
+- `DEPLOYMENT_FREE_TIER.md` & `README.md`

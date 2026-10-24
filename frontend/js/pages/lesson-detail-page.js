@@ -853,7 +853,7 @@ export class LessonDetailPageController {
         detailsDiv.appendChild(exampleDiv);
       }
 
-      // 4. Action Controls: ONLY Pronunciation Speaker (Bỏ các ô màu đỏ)
+      // 4. Action Controls: Pronunciation Speaker and Personal Notes
       const actionsDiv = createSafeElement('div', { className: 'lesson-vocab-actions' });
 
       // Speech Pronunciation Button
@@ -865,7 +865,36 @@ export class LessonDetailPageController {
         iconOnly: true
       });
 
+      // Personal Notes Button (.lesson-vocab-note-btn)
+      const noteVocabId = vocab.vocabId || vocab.id;
+      const noteBtn = createSafeElement('button', {
+        className: 'lesson-vocab-note-btn btn-chinese-secondary py-1 px-2 small',
+        attrs: {
+          type: 'button',
+          'data-vocab-id': String(noteVocabId || ''),
+          title: 'Ghi chú cá nhân',
+          'aria-label': `Ghi chú cá nhân cho từ ${vocab.hanzi || ''}`
+        },
+        children: [
+          createSafeElement('span', {
+            attrs: { 'aria-hidden': 'true' },
+            text: '📝'
+          })
+        ]
+      });
+
+      noteBtn.addEventListener('click', () => {
+        openNotesModal({
+          vocabId: noteVocabId,
+          hanzi: vocab.hanzi,
+          pinyin: vocab.pinyin,
+          meaning: vocab.meaningVi,
+          triggerElement: noteBtn
+        });
+      });
+
       actionsDiv.appendChild(speechBtn);
+      actionsDiv.appendChild(noteBtn);
 
       // Assemble list item
       li.appendChild(mainDiv);

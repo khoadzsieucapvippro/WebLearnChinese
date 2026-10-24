@@ -54,6 +54,26 @@ describe('Browser E2E: Vocabulary UI Reversion Fix after SRS Navigation', () => 
     }
   });
 
+  async function mockApiRoutes(targetPage) {
+    await targetPage.route('**/api/v1/**', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          code: 'SUCCESS',
+          message: 'OK',
+          data: {
+            items: [],
+            page: 0,
+            size: 20,
+            totalElements: 0,
+            totalPages: 0
+          }
+        })
+      });
+    });
+  }
+
   // Scenario 1: Replicate Navigation Loop (at least 5 cycles)
   test('Scenario 1: Replicate Navigation Loop (5 cycles back-and-forth in same session with browser cache)', async () => {
     const { page, context, getRuntimeErrors } = await createMonitoredPage(browser, {
@@ -62,6 +82,7 @@ describe('Browser E2E: Vocabulary UI Reversion Fix after SRS Navigation', () => 
     });
 
     try {
+      await mockApiRoutes(page);
       const TOTAL_CYCLES = 5;
       await page.goto(`${baseUrl}/vocabulary.html`, { waitUntil: 'domcontentloaded' });
 
@@ -135,6 +156,7 @@ describe('Browser E2E: Vocabulary UI Reversion Fix after SRS Navigation', () => 
       });
 
       try {
+        await mockApiRoutes(freshPage);
         await freshPage.goto(`${baseUrl}/vocabulary.html`, { waitUntil: 'domcontentloaded' });
 
         const searchInput = freshPage.locator('#vocabSearchInput');
@@ -168,6 +190,7 @@ describe('Browser E2E: Vocabulary UI Reversion Fix after SRS Navigation', () => 
     });
 
     try {
+      await mockApiRoutes(page);
       // Direct access 1: /vocabulary.html
       const response1 = await page.goto(`${baseUrl}/vocabulary.html`, { waitUntil: 'domcontentloaded' });
       const searchInput1 = page.locator('#vocabSearchInput');
