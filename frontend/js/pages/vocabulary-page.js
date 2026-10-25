@@ -22,13 +22,13 @@ import { apiClient, ApiError } from '../api/api.js';
 import { initNavbarAuth } from '../ui/nav.js';
 import { createSafeElement, clearContainer, sanitizeResourceUrl, sanitizeNavigationUrl } from '../ui/security.js';
 import { setComponentState, createSpeakerIcon, createSpeechButton } from '../ui/ui.js';
-import { speechController, speakHanzi, isSpeechSynthesisAvailable, SpeechState } from '../ui/speech.js';
+import { speechController, speakHanzi, playPronunciation, isSpeechSynthesisAvailable, SpeechState } from '../ui/speech.js';
 import { authManager } from '../auth/auth-state.js';
 import { VocabWritingOrchestrator } from '../ui/character-writing/vocab-writing-orchestrator.js';
 import { splitHanziCharacters } from '../ui/character-writing/stroke-data-loader.js';
 import { CHAR_TO_RADICAL_MAP, CHAR_TO_RADICALS_MAP } from '../api/demo-seed-data.js';
 
-export { createSpeakerIcon, createSpeechButton, speechController, speakHanzi, isSpeechSynthesisAvailable, SpeechState, VocabWritingOrchestrator };
+export { createSpeakerIcon, createSpeechButton, speechController, speakHanzi, playPronunciation, isSpeechSynthesisAvailable, SpeechState, VocabWritingOrchestrator };
 
 /* -----------------------------------------------------------------------------
  * 1. PURE LOGIC & UTILITY HELPERS (Exported for Testability)
@@ -382,7 +382,7 @@ export class VocabularyPageController {
     if (this.elements.modalSpeechBtn) {
       this.elements.modalSpeechBtn.addEventListener('click', () => {
         if (this.currentModalVocab?.hanzi) {
-          speakHanzi(this.currentModalVocab.hanzi, { button: this.elements.modalSpeechBtn });
+          playPronunciation({ text: this.currentModalVocab.hanzi, audioUrl: this.currentModalVocab.audioUrl, button: this.elements.modalSpeechBtn });
         }
       });
     }
@@ -851,7 +851,7 @@ export class VocabularyPageController {
       speechBtn.addEventListener('click', (e) => {
         e.stopPropagation(); // Do not trigger card detail opening
         if (vocab.hanzi) {
-          speakHanzi(vocab.hanzi, { button: speechBtn });
+          playPronunciation({ text: vocab.hanzi, audioUrl: vocab.audioUrl, button: speechBtn });
         }
       });
 
@@ -1157,6 +1157,7 @@ export class VocabularyPageController {
 
       // Update audio if enriched
       if (detail.audioUrl) {
+        this.currentModalVocab.audioUrl = detail.audioUrl;
         this.setupAudioPlayer(detail.audioUrl);
       }
 

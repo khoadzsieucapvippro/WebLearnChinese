@@ -3,7 +3,7 @@
  * E2E TIER 4: REAL-WORLD APPLICATION WORKLOADS TEST SUITE (OPAQUE-BOX)
  * File: tests/e2e/tier4-application-workloads.test.mjs
  * 
- * Scope: 6 Realistic End-to-End Application Workloads (TEST_INFRA.md § Real-World Scenarios)
+ * Scope: 6 Realistic End-to-End Application Workloads (docs/TESTING.md § Real-World Scenarios)
  * - TC-T4-01: Scenario 1 — Dual-Role Creator-Moderator Workflow (F4, F11, F14, F15)
  * - TC-T4-02: Scenario 2 — Concurrent Last Admin Demotion Prevention (F5, F11, F12)
  * - TC-T4-03: Scenario 3 — Learner vs Management Navigation & Profile Decoupling (F14, F15, F16, F17)

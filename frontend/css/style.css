@@ -90,6 +90,7 @@
   --color-border-strong: var(--color-primitive-ink-300);
 
   /* Primary Accent Role */
+  --color-primary: #8B2635;
   --color-accent-primary: var(--color-primitive-cinnabar-600);
   --color-accent-hover: var(--color-primitive-cinnabar-700);
   --color-accent-active: var(--color-primitive-cinnabar-800);
@@ -4414,12 +4415,18 @@ a.lesson-vocab-hanzi:hover {
   letter-spacing: normal;
 }
 
-.listening-answer-input:focus,
-.listening-answer-input:focus-visible {
+.listening-answer-input:focus {
   border-color: var(--color-border-strong) !important;
   box-shadow: 0 0 0 3px var(--color-bg-subtle) !important;
   outline: none !important;
   outline-offset: 0 !important;
+}
+
+.listening-answer-input:focus-visible {
+  border-color: var(--focus-ring-color) !important;
+  box-shadow: 0 0 0 3px var(--color-accent-subtle) !important;
+  outline: var(--focus-ring-width) solid var(--focus-ring-color) !important;
+  outline-offset: var(--focus-ring-offset) !important;
 }
 
 .listening-answer-input.is-valid,

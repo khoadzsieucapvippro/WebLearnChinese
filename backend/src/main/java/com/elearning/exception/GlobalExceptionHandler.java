@@ -210,6 +210,22 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Handles invalid sort/property references in pagination queries (HTTP 400 Bad Request).
+     */
+    @ExceptionHandler(org.springframework.data.mapping.PropertyReferenceException.class)
+    public ResponseEntity<ApiResponse<Void>> handlePropertyReferenceException(
+            org.springframework.data.mapping.PropertyReferenceException ex) {
+        log.warn("Invalid property reference in sort/query parameter: {}", ex.getMessage());
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error(
+                        ErrorCode.VALIDATION_ERROR.getCode(),
+                        "Tham số sắp xếp không hợp lệ: " + ex.getPropertyName()
+                ));
+    }
+
+    /**
      * Handles illegal argument exceptions safely without exposing internal details (HTTP 400 Bad Request).
      */
     @ExceptionHandler(IllegalArgumentException.class)

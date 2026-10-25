@@ -163,7 +163,7 @@ class DatasetLoader:
 
 
 # ==============================================================================
-# AUTHORITATIVE REFERENCE SPECIFICATIONS (PROJECT.md & ORIGINAL_REQUEST.md)
+# AUTHORITATIVE REFERENCE SPECIFICATIONS (docs/ARCHITECTURE.md & ORIGINAL_REQUEST.md)
 # ==============================================================================
 
 # Tier 2 - Group 3: Standalone Kangxi Radicals mapped strictly to themselves

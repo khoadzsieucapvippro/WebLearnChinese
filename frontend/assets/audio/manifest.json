@@ -1,0 +1,17 @@
+{
+  "version": "1.0.0",
+  "licensePolicy": "Only verified recordings with explicit open licenses (CC0, CC-BY-4.0, or licensed offline TTS models) may be mapped to learner items. Synthetic/placeholder tones are strictly forbidden for vocabulary or radical entries.",
+  "coverageSummary": {
+    "radicalsTotal": 214,
+    "radicalsWithVerifiedAudio": 0,
+    "vocabulariesTotal": 1068,
+    "vocabulariesWithVerifiedAudio": 0,
+    "statusNote": "No offline Mandarin TTS voice pack (zh-CN/cmn) or licensed human audio corpus is bundled in the local environment. All learner items use Tier-1 audioUrl when populated by backend/manifest, falling back to Tier-2 Web Speech API (when a Chinese voice is available on the device) or Tier-3 explicit user notification."
+  },
+  "radicals": {},
+  "vocabularies": {},
+  "hanzi": {},
+  "fixtures": {
+    "diagnosticToneWav": "assets/audio/fixtures/diagnostic-tone.wav"
+  }
+}

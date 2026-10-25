@@ -41,8 +41,42 @@ export function isSpeechSynthesisAvailable() {
     typeof window.speechSynthesis?.speak === 'function';
 }
 
+/**
+ * Resolves a candidate audio URL safely across root deployments (/) and
+ * project subpath deployments (e.g. GitHub Pages /WebLearnChinese/).
+ * Preserves absolute http(s) URLs while preventing root-relative /assets/... paths
+ * from breaking under a repository subpath.
+ *
+ * @param {string} url - Raw audio URL
+ * @param {Location|Object|null} [locationObj] - Optional location object for testing
+ * @returns {string} Sanitized and subpath-resolved URL, or 'about:blank' if invalid
+ */
+export function resolveSubpathAudioUrl(url, locationObj = (typeof window !== 'undefined' ? window.location : null)) {
+  const safeUrl = sanitizeResourceUrl(url);
+  if (!safeUrl || safeUrl === 'about:blank') {
+    return 'about:blank';
+  }
+
+  if (/^https?:\/\//i.test(safeUrl)) {
+    return safeUrl;
+  }
+
+  if (safeUrl.startsWith('/') && !safeUrl.startsWith('//') && locationObj && typeof locationObj.pathname === 'string') {
+    const segments = locationObj.pathname.split('/').filter(Boolean);
+    if (segments.length > 0) {
+      const firstSeg = segments[0];
+      const isHtmlFile = firstSeg.endsWith('.html');
+      if (!isHtmlFile && firstSeg !== 'assets' && firstSeg !== 'api' && !safeUrl.startsWith(`/${firstSeg}/`)) {
+        return `/${firstSeg}${safeUrl}`;
+      }
+    }
+  }
+
+  return safeUrl;
+}
+
 export class SpeechController {
-  constructor({ toastFn = showToast, toastCooldownMs = 3500 } = {}) {
+  constructor({ toastFn = showToast, toastCooldownMs = 3500, voiceLoadTimeoutMs = 120, waitForVoicesOnEmpty = false } = {}) {
     /** @type {Function} */
     this._toastFn = toastFn;
 
@@ -83,14 +117,37 @@ export class SpeechController {
     /** @type {number} Minimum cooldown between toasts (ms) */
     this._toastCooldownMs = toastCooldownMs;
 
+    /** @type {number} Max wait time (ms) for delayed voiceschanged event when getVoices() is initially empty */
+    this._voiceLoadTimeoutMs = voiceLoadTimeoutMs;
+
+    /** @type {boolean} Whether to await voiceschanged before first speak() when getVoices() is empty */
+    this._waitForVoicesOnEmpty = waitForVoicesOnEmpty;
+
     /** @type {Array} Cached voices from speechSynthesis */
     this._cachedVoices = [];
 
     /** @type {boolean} Whether voiceschanged listener has been attached */
     this._voiceListenerInitialized = false;
 
+    /** @type {boolean} Whether voiceschanged event has fired at least once */
+    this._voicesChangedFired = false;
+
     /** @type {number} Timestamp of last cancel() call to debounce rapid successive clicks */
     this._lastCancelTimestamp = 0;
+
+    /** @type {Object} Non-sensitive diagnostic snapshot of the last playback attempt */
+    this._lastDiagnostics = {
+      timestamp: null,
+      method: null,
+      audioUrl: null,
+      audioPlayResult: null,
+      audioErrorName: null,
+      speechResult: null,
+      utteranceErrorCode: null,
+      fallbackReason: null
+    };
+
+    this._initVoiceListener();
   }
 
   /**
@@ -113,35 +170,141 @@ export class SpeechController {
     updateVoices();
     try {
       if (typeof window.speechSynthesis.addEventListener === 'function') {
-        window.speechSynthesis.addEventListener('voiceschanged', updateVoices);
-      } else {
-        window.speechSynthesis.onvoiceschanged = updateVoices;
+        window.speechSynthesis.addEventListener('voiceschanged', () => {
+          this._voicesChangedFired = true;
+          updateVoices();
+        });
+      } else if ('onvoiceschanged' in window.speechSynthesis) {
+        window.speechSynthesis.onvoiceschanged = () => {
+          this._voicesChangedFired = true;
+          updateVoices();
+        };
       }
     } catch (_) {}
   }
 
   /**
-   * Selects an optimal Chinese voice (zh-CN / zh) from Web Speech API.
-   * @returns {SpeechSynthesisVoice|null}
+   * Returns all currently available SpeechSynthesis voices from browser or cache.
+   * @returns {Array<SpeechSynthesisVoice>}
    * @private
    */
-  _getChineseVoice() {
-    if (!isSpeechSynthesisAvailable()) return null;
+  _getAvailableVoices() {
+    if (!isSpeechSynthesisAvailable()) return [];
     this._initVoiceListener();
     let voices = [];
     try {
       voices = window.speechSynthesis.getVoices?.() || [];
     } catch (_) {}
-    if ((!voices || voices.length === 0) && this._cachedVoices.length > 0) {
+    if ((!Array.isArray(voices) || voices.length === 0) && this._cachedVoices.length > 0) {
       voices = this._cachedVoices;
+    } else if (Array.isArray(voices) && voices.length > 0) {
+      this._cachedVoices = voices;
     }
-    if (!Array.isArray(voices) || voices.length === 0) return null;
+    return Array.isArray(voices) ? voices : [];
+  }
 
-    // Preference: zh-CN -> cmn-Hans-CN -> zh-TW -> general zh/cmn
+  /**
+   * Selects an optimal Chinese voice (zh-CN / cmn / zh) from Web Speech API.
+   * @returns {SpeechSynthesisVoice|null}
+   * @private
+   */
+  _getChineseVoice() {
+    const voices = this._getAvailableVoices();
+    if (voices.length === 0) return null;
+
+    // Preference: zh-CN -> cmn-Hans-CN -> zh-TW/zh-HK -> general zh/cmn -> Chinese voice name
     return voices.find(v => v && v.lang && (v.lang === 'zh-CN' || v.lang === 'zh_CN')) ||
       voices.find(v => v && v.lang && v.lang.toLowerCase().startsWith('zh-cn')) ||
-      voices.find(v => v && v.lang && (v.lang.startsWith('zh') || v.lang.startsWith('cmn'))) ||
+      voices.find(v => v && v.lang && v.lang.toLowerCase().startsWith('cmn-hans')) ||
+      voices.find(v => v && v.lang && (v.lang.toLowerCase().startsWith('zh') || v.lang.toLowerCase().startsWith('cmn'))) ||
+      voices.find(v => v && v.name && /chinese|mandarin|putonghua|普通话|中文/i.test(v.name)) ||
       null;
+  }
+
+  /**
+   * Waits briefly for voiceschanged when getVoices() is initially empty on mobile/Chromium.
+   * Only waits if speechSynthesis supports voiceschanged events and voices are currently empty.
+   *
+   * @returns {Promise<Array<SpeechSynthesisVoice>>}
+   * @private
+   */
+  _waitForVoicesIfEmpty() {
+    const initialVoices = this._getAvailableVoices();
+    if (initialVoices.length > 0 || !isSpeechSynthesisAvailable()) {
+      return Promise.resolve(initialVoices);
+    }
+
+    const synth = window.speechSynthesis;
+    const supportsVoicesChanged = typeof synth.addEventListener === 'function' || 'onvoiceschanged' in synth;
+    if (!supportsVoicesChanged || this._voiceLoadTimeoutMs <= 0) {
+      return Promise.resolve(initialVoices);
+    }
+
+    return new Promise((resolve) => {
+      let settled = false;
+      let timer = null;
+
+      const finish = () => {
+        if (settled) return;
+        settled = true;
+        if (timer) clearTimeout(timer);
+        if (typeof synth.removeEventListener === 'function') {
+          try { synth.removeEventListener('voiceschanged', onVoicesChanged); } catch (_) {}
+        }
+        resolve(this._getAvailableVoices());
+      };
+
+      const onVoicesChanged = () => {
+        this._voicesChangedFired = true;
+        finish();
+      };
+
+      try {
+        if (typeof synth.addEventListener === 'function') {
+          synth.addEventListener('voiceschanged', onVoicesChanged);
+        } else {
+          const prevHandler = synth.onvoiceschanged;
+          synth.onvoiceschanged = (ev) => {
+            if (typeof prevHandler === 'function') {
+              try { prevHandler(ev); } catch (_) {}
+            }
+            onVoicesChanged();
+          };
+        }
+      } catch (_) {
+        finish();
+        return;
+      }
+
+      timer = setTimeout(finish, this._voiceLoadTimeoutMs);
+      if (timer && typeof timer.unref === 'function') {
+        timer.unref();
+      }
+    });
+  }
+
+  /**
+   * Returns a non-sensitive diagnostic snapshot for troubleshooting mobile/desktop audio.
+   * Strictly excludes tokens, credentials, and private user data.
+   *
+   * @returns {Object}
+   */
+  getDiagnostics() {
+    const voices = this._getAvailableVoices();
+    const chineseVoices = voices
+      .filter(v => v && ((v.lang && /^(zh|cmn)/i.test(v.lang)) || (v.name && /chinese|mandarin|putonghua|普通话|中文/i.test(v.name))))
+      .map(v => ({ name: v.name || 'unknown', lang: v.lang || 'unknown', localService: Boolean(v.localService) }));
+
+    return {
+      userAgent: typeof navigator !== 'undefined' ? (navigator.userAgent || 'unknown') : 'node',
+      speechSynthesisAvailable: isSpeechSynthesisAvailable(),
+      voicesCount: voices.length,
+      hasChineseVoice: chineseVoices.length > 0,
+      chineseVoices,
+      voicesChangedFired: this._voicesChangedFired,
+      state: this._state,
+      lastAttempt: { ...this._lastDiagnostics }
+    };
   }
 
   /**
@@ -291,10 +454,13 @@ export class SpeechController {
 
     if (isSpeechSynthesisAvailable()) {
       try {
-        if (window.speechSynthesis.paused) {
-          window.speechSynthesis.resume();
+        const synth = window.speechSynthesis;
+        if (this._activeUtterance !== null || synth.speaking || synth.pending) {
+          if (synth.paused && typeof synth.resume === 'function') {
+            synth.resume();
+          }
+          synth.cancel();
         }
-        window.speechSynthesis.cancel();
       } catch (err) {
         console.warn('[SpeechController] cancel() failed:', err);
       }
@@ -313,6 +479,38 @@ export class SpeechController {
     }
 
     this._cleanup(false);
+  }
+
+  /**
+   * Resolves effective speech rate from options or localStorage preference (HOC_HAN_NGU_AUDIO_SETTINGS).
+   *
+   * @param {number} [rate=0.85]
+   * @param {boolean} [isAudioElement=false]
+   * @returns {number}
+   * @private
+   */
+  _getEffectiveSpeechRate(rate = 0.85, isAudioElement = false) {
+    let customSavedRate = null;
+    try {
+      if (typeof localStorage !== 'undefined') {
+        const rawAudioSettings = localStorage.getItem('HOC_HAN_NGU_AUDIO_SETTINGS');
+        if (rawAudioSettings) {
+          const parsed = JSON.parse(rawAudioSettings);
+          const candidate = parseFloat(parsed?.speechRate);
+          if (!isNaN(candidate) && candidate >= 0.5 && candidate <= 2.0) {
+            customSavedRate = candidate;
+          }
+        }
+      }
+    } catch (_) {}
+
+    if (rate !== 0.85 && typeof rate === 'number' && !isNaN(rate) && rate > 0) {
+      return rate;
+    }
+    if (customSavedRate !== null) {
+      return customSavedRate;
+    }
+    return isAudioElement ? 1.0 : 0.85;
   }
 
   /**
@@ -420,22 +618,7 @@ export class SpeechController {
         return false;
       }
 
-      // Resolve effective speech rate from options or localStorage preference
-      let effectiveRate = rate;
-      if (rate === 0.85) {
-        try {
-          if (typeof localStorage !== 'undefined') {
-            const rawAudioSettings = localStorage.getItem('HOC_HAN_NGU_AUDIO_SETTINGS');
-            if (rawAudioSettings) {
-              const parsed = JSON.parse(rawAudioSettings);
-              const customRate = parseFloat(parsed?.speechRate);
-              if (!isNaN(customRate) && customRate > 0) {
-                effectiveRate = customRate;
-              }
-            }
-          }
-        } catch (_) {}
-      }
+      const effectiveRate = this._getEffectiveSpeechRate(rate, false);
 
       const utterance = new UtteranceClass(cleanText);
       utterance.lang = lang;
@@ -446,14 +629,22 @@ export class SpeechController {
       const chineseVoice = this._getChineseVoice();
       if (chineseVoice) {
         utterance.voice = chineseVoice;
+        if (chineseVoice.lang) {
+          utterance.lang = chineseVoice.lang;
+        }
       }
+
+      let hasStarted = false;
 
       // Lifecycle event listeners
       utterance.onstart = () => {
+        hasStarted = true;
         this._state = SpeechState.SPEAKING;
+        this._lastDiagnostics.speechResult = 'started';
       };
 
       utterance.onend = () => {
+        this._lastDiagnostics.speechResult = 'ended';
         if (typeof onEnd === 'function') {
           try { onEnd(); } catch (_) {}
         }
@@ -463,11 +654,13 @@ export class SpeechController {
       utterance.onerror = (e) => {
         const errType = e?.error || 'unknown';
         const isCanceled = (errType === 'canceled' || errType === 'interrupted');
+        this._lastDiagnostics.utteranceErrorCode = errType;
+        this._lastDiagnostics.speechResult = isCanceled ? 'canceled' : 'error';
         // 'canceled' and 'interrupted' are natural lifecycle results of intentional cancellation
         if (!isCanceled) {
           console.warn('[SpeechController] Utterance error:', errType);
           this._showThrottledToast(
-            'Phát âm tự động',
+            'Không thể phát âm thanh',
             'Không thể phát âm thanh trên thiết bị này.',
             'info'
           );
@@ -481,9 +674,26 @@ export class SpeechController {
 
       // Safety fallback timer: prevents button lock if browser drops end/error events
       this._setSafetyTimeout(() => {
-        if (this._state === SpeechState.SPEAKING) {
+        if (this._state === SpeechState.SPEAKING && this._activeUtterance === utterance) {
           console.warn('[SpeechController] Safety timeout reached, releasing button lock');
-          this._cleanup(false);
+          if (!hasStarted) {
+            this._lastDiagnostics.speechResult = 'timeout_before_start';
+            this._showThrottledToast(
+              'Không thể phát âm thanh',
+              'Bộ tổng hợp giọng nói trên thiết bị không phản hồi. Vui lòng thử lại.',
+              'warning'
+            );
+            if (typeof onError === 'function') {
+              try { onError({ error: 'timeout', message: 'Speech synthesis timed out without starting' }); } catch (_) {}
+            }
+            this._cleanup(true);
+          } else {
+            this._lastDiagnostics.speechResult = 'timeout_after_start';
+            if (typeof onEnd === 'function') {
+              try { onEnd(); } catch (_) {}
+            }
+            this._cleanup(false);
+          }
         }
       }, 5000);
 
@@ -495,11 +705,14 @@ export class SpeechController {
         try { window.speechSynthesis.resume(); } catch (_) {}
       }
 
+      this._lastDiagnostics.speechResult = 'dispatched';
       window.speechSynthesis.speak(utterance);
       return true;
 
     } catch (err) {
       console.warn('[SpeechController] Speech dispatch failed:', err);
+      this._lastDiagnostics.speechResult = 'exception';
+      this._lastDiagnostics.utteranceErrorCode = err?.name || err?.message || 'exception';
       this._showThrottledToast(
         'Lỗi phát âm',
         'Không thể khởi động bộ phát âm trên trình duyệt.',
@@ -516,7 +729,7 @@ export class SpeechController {
   /**
    * Unified 3-Tier Pronunciation Player:
    * Tier 1: Dedicated HTMLAudioElement (if audioUrl present and playable).
-   * Tier 2: Web Speech API (window.speechSynthesis with zh-CN voice selection).
+   * Tier 2: Web Speech API (window.speechSynthesis with zh-CN/cmn voice verification).
    * Tier 3: Informative UI Toast / notification (never fail silently!).
    *
    * Executes synchronously to preserve browser Transient User Activation.
@@ -562,10 +775,23 @@ export class SpeechController {
       cleanText = cleanText.split(/[()\/]/)[0].trim();
     }
 
-    const safeAudioUrl = rawAudioUrl ? sanitizeResourceUrl(rawAudioUrl) : null;
-    const hasValidAudio = safeAudioUrl && safeAudioUrl !== 'about:blank';
+    const safeAudioUrl = rawAudioUrl ? resolveSubpathAudioUrl(rawAudioUrl) : null;
+    const hasValidAudio = Boolean(safeAudioUrl && safeAudioUrl !== 'about:blank');
+
+    this._lastDiagnostics = {
+      timestamp: Date.now(),
+      method: null,
+      audioUrl: hasValidAudio ? safeAudioUrl : null,
+      audioPlayResult: null,
+      audioErrorName: null,
+      speechResult: null,
+      utteranceErrorCode: null,
+      fallbackReason: null
+    };
 
     if (!cleanText && !hasValidAudio) {
+      this._lastDiagnostics.method = 'ui_fallback';
+      this._lastDiagnostics.fallbackReason = 'empty_input';
       return this._executeTier3ToastFallback({
         button,
         onError,
@@ -600,6 +826,7 @@ export class SpeechController {
       this._state = SpeechState.SPEAKING;
       this._currentButton = button || null;
       this._currentText = cleanText || safeAudioUrl;
+      this._lastDiagnostics.method = 'audio_file';
       if (this._currentButton) {
         this._lockButton(this._currentButton);
       }
@@ -607,9 +834,17 @@ export class SpeechController {
       let audio;
       try {
         audio = new AudioConstructor(safeAudioUrl);
+        const effectiveAudioRate = this._getEffectiveSpeechRate(rate, true);
+        if (effectiveAudioRate !== 1.0) {
+          try {
+            audio.playbackRate = effectiveAudioRate;
+          } catch (_) {}
+        }
         this._activeAudio = audio;
       } catch (audioInitErr) {
         this._activeAudio = null;
+        this._lastDiagnostics.audioPlayResult = 'init_error';
+        this._lastDiagnostics.audioErrorName = audioInitErr?.name || 'Error';
         return this._executeTier2OrTier3({ cleanText, button, lang, rate, pitch, onEnd, onError, reason: audioInitErr?.message });
       }
 
@@ -636,8 +871,13 @@ export class SpeechController {
         finish(result);
       };
 
+      audio.onplaying = () => {
+        this._lastDiagnostics.audioPlayResult = 'playing';
+      };
+
       audio.onended = () => {
         this._activeAudio = null;
+        this._lastDiagnostics.audioPlayResult = 'ended';
         if (typeof onEnd === 'function') {
           try { onEnd(); } catch (_) {}
         }
@@ -648,11 +888,17 @@ export class SpeechController {
       const handleAudioError = (e) => {
         // Ignore AbortError when playback was intentionally stopped by pause()/cancel()
         if (e && (e.name === 'AbortError' || (typeof e.message === 'string' && e.message.includes('interrupted by a call to pause')))) {
+          this._lastDiagnostics.audioPlayResult = 'aborted';
+          this._lastDiagnostics.audioErrorName = 'AbortError';
           finish({ success: false, method: 'audio_file', message: 'Playback canceled' });
           return;
         }
         if (fallbackInitiated) return;
         fallbackInitiated = true;
+
+        this._lastDiagnostics.audioPlayResult = 'error';
+        this._lastDiagnostics.audioErrorName = e?.name || e?.target?.error?.code || 'MediaError';
+        this._lastDiagnostics.fallbackReason = e?.message || 'Audio playback failed';
 
         this._activeAudio = null;
         this._activeAudioSettle = null;
@@ -678,6 +924,8 @@ export class SpeechController {
         if (playPromise !== undefined && typeof playPromise.catch === 'function') {
           playPromise.catch((err) => {
             if (err && (err.name === 'AbortError' || (typeof err.message === 'string' && err.message.includes('interrupted by a call to pause')))) {
+              this._lastDiagnostics.audioPlayResult = 'aborted';
+              this._lastDiagnostics.audioErrorName = 'AbortError';
               finish({ success: false, method: 'audio_file', message: 'Playback canceled' });
               return;
             }
@@ -686,6 +934,8 @@ export class SpeechController {
         }
       } catch (err) {
         if (err && (err.name === 'AbortError' || (typeof err.message === 'string' && err.message.includes('interrupted by a call to pause')))) {
+          this._lastDiagnostics.audioPlayResult = 'aborted';
+          this._lastDiagnostics.audioErrorName = 'AbortError';
           finish({ success: false, method: 'audio_file', message: 'Playback canceled' });
         } else {
           handleAudioError(err);
@@ -693,8 +943,9 @@ export class SpeechController {
       }
 
       this._setSafetyTimeout(() => {
-        if (this._state === SpeechState.SPEAKING) {
+        if (this._state === SpeechState.SPEAKING && this._activeAudio === audio) {
           console.warn('[SpeechController] Audio safety timeout reached, releasing button lock');
+          this._lastDiagnostics.audioPlayResult = 'timeout';
           this._activeAudioSettle = null;
           this.cancel();
           finish({ success: false, method: 'audio_file', message: 'Audio timeout' });
@@ -719,10 +970,98 @@ export class SpeechController {
 
   /**
    * Dispatches Tier 2 (Web Speech API) or cascades to Tier 3 (Informative Toast).
+   * Handles delayed voiceschanged loading and verifies Chinese (zh/cmn) voice availability
+   * when the browser enumerates voices, preventing silent fake playback on mobile/desktop.
    * @private
    */
   _executeTier2OrTier3({ cleanText, button, lang, rate, pitch, onEnd, onError, reason }) {
     if (cleanText && isSpeechSynthesisAvailable()) {
+      const synth = window.speechSynthesis;
+      const initialVoices = this._getAvailableVoices();
+      const supportsAsyncVoices = typeof synth.addEventListener === 'function' || 'onvoiceschanged' in synth;
+
+      // Case A: Voices are initially empty AND waitForVoicesOnEmpty is enabled -> wait briefly for voiceschanged
+      if (initialVoices.length === 0 && supportsAsyncVoices && this._waitForVoicesOnEmpty && this._voiceLoadTimeoutMs > 0) {
+        this._state = SpeechState.SPEAKING;
+        this._currentButton = button || null;
+        this._currentText = cleanText;
+        if (this._currentButton) {
+          this._lockButton(this._currentButton);
+        }
+
+        let promiseResolve;
+        const prom = new Promise((resolve) => {
+          promiseResolve = resolve;
+        });
+        prom.success = true;
+        prom.method = 'web_speech';
+
+        let canceledWhileWaiting = false;
+        this._activeSpeechSettle = (result) => {
+          canceledWhileWaiting = true;
+          if (promiseResolve) {
+            promiseResolve(result);
+            promiseResolve = null;
+          }
+        };
+
+        this._waitForVoicesIfEmpty().then((loadedVoices) => {
+          if (canceledWhileWaiting || this._state !== SpeechState.SPEAKING) {
+            return;
+          }
+          if (loadedVoices.length > 0 && !this._getChineseVoice()) {
+            this._activeSpeechSettle = null;
+            this._lastDiagnostics.method = 'ui_fallback';
+            this._lastDiagnostics.fallbackReason = 'no_chinese_voice_after_voiceschanged';
+            this._executeTier3ToastFallback({
+              button,
+              onError,
+              title: 'Thiếu giọng đọc tiếng Trung',
+              toastMessage: 'Thiết bị hoặc trình duyệt chưa cài đặt gói giọng đọc tiếng Trung (zh-CN).',
+              message: 'Chinese voice unavailable'
+            }).then((res) => {
+              if (promiseResolve) {
+                promiseResolve(res);
+                promiseResolve = null;
+              }
+            });
+            return;
+          }
+
+          this._dispatchTier2Speech({
+            cleanText,
+            button,
+            lang,
+            rate,
+            pitch,
+            onEnd,
+            onError,
+            promiseResolve: (res) => {
+              if (promiseResolve) {
+                promiseResolve(res);
+                promiseResolve = null;
+              }
+            }
+          });
+        });
+
+        return prom;
+      }
+
+      // Case B: Browser has enumerated voices (voices.length > 0), verify Chinese voice exists
+      if (initialVoices.length > 0 && !this._getChineseVoice()) {
+        this._lastDiagnostics.method = 'ui_fallback';
+        this._lastDiagnostics.fallbackReason = 'no_chinese_voice';
+        return this._executeTier3ToastFallback({
+          button,
+          onError,
+          title: 'Thiếu giọng đọc tiếng Trung',
+          toastMessage: 'Thiết bị hoặc trình duyệt chưa cài đặt gói giọng đọc tiếng Trung (zh-CN).',
+          message: 'Chinese voice unavailable'
+        });
+      }
+
+      // Case C: Chinese voice is available (or environment does not enumerate voices) -> synchronous dispatch
       let promiseResolve;
       const prom = new Promise((resolve) => {
         promiseResolve = resolve;
@@ -730,83 +1069,111 @@ export class SpeechController {
       prom.success = true;
       prom.method = 'web_speech';
 
-      this._activeSpeechSettle = (result) => {
-        if (promiseResolve) {
-          promiseResolve(result);
-          promiseResolve = null;
-        }
-      };
-
-      const wrappedOnEnd = () => {
-        this._activeSpeechSettle = null;
-        if (typeof onEnd === 'function') {
-          try { onEnd(); } catch (_) {}
-        }
-        if (promiseResolve) {
-          promiseResolve({ success: true, method: 'web_speech' });
-          promiseResolve = null;
-        }
-      };
-
-      const wrappedOnError = (e) => {
-        this._activeSpeechSettle = null;
-        const errType = e?.error || 'unknown';
-        const isCanceled = (errType === 'canceled' || errType === 'interrupted');
-
-        if (typeof onError === 'function') {
-          try { onError(e); } catch (_) {}
-        }
-        // Tier 3 Informative notification on failure (only if NOT canceled or interrupted)
-        if (!isCanceled) {
-          this._showThrottledToast(
-            'Không thể phát âm thanh',
-            'Không thể phát âm thanh trên thiết bị này.',
-            'info'
-          );
-        }
-        if (promiseResolve) {
-          promiseResolve({
-            success: false,
-            method: isCanceled ? 'web_speech' : 'ui_fallback',
-            message: isCanceled ? 'Speech canceled' : (e?.error || 'Speech synthesis error')
-          });
-          promiseResolve = null;
-        }
-      };
-
-      // Synchronous dispatch to Web Speech API to preserve user gesture activation
-      const dispatched = this._speakUtterance(cleanText, {
+      const dispatched = this._dispatchTier2Speech({
+        cleanText,
         button,
         lang,
         rate,
         pitch,
-        onEnd: wrappedOnEnd,
-        onError: wrappedOnError
+        onEnd,
+        onError,
+        promiseResolve: (res) => {
+          if (promiseResolve) {
+            promiseResolve(res);
+            promiseResolve = null;
+          }
+        }
       });
 
       if (!dispatched) {
         this._activeSpeechSettle = null;
-        return this._executeTier3ToastFallback({ button, onError, message: 'Web Speech dispatch returned false' });
+        return this._executeTier3ToastFallback({
+          button,
+          onError,
+          message: 'Web Speech dispatch returned false',
+          suppressToast: true
+        });
       }
 
       return prom;
     }
 
     // TIER 3: Informative Toast Fallback (Never fail silently!)
+    this._lastDiagnostics.method = 'ui_fallback';
+    this._lastDiagnostics.fallbackReason = reason || 'speech_synthesis_unavailable';
     return this._executeTier3ToastFallback({ button, onError, message: reason });
+  }
+
+  /**
+   * Internal helper to wire Tier 2 callbacks and invoke _speakUtterance.
+   * @private
+   */
+  _dispatchTier2Speech({ cleanText, button, lang, rate, pitch, onEnd, onError, promiseResolve }) {
+    this._lastDiagnostics.method = 'web_speech';
+    this._activeSpeechSettle = (result) => {
+      promiseResolve(result);
+    };
+
+    const wrappedOnEnd = () => {
+      this._activeSpeechSettle = null;
+      if (typeof onEnd === 'function') {
+        try { onEnd(); } catch (_) {}
+      }
+      promiseResolve({ success: true, method: 'web_speech' });
+    };
+
+    const wrappedOnError = (e) => {
+      this._activeSpeechSettle = null;
+      const errType = e?.error || 'unknown';
+      const isCanceled = (errType === 'canceled' || errType === 'interrupted');
+
+      if (typeof onError === 'function') {
+        try { onError(e); } catch (_) {}
+      }
+      promiseResolve({
+        success: false,
+        method: isCanceled ? 'web_speech' : 'ui_fallback',
+        message: isCanceled ? 'Speech canceled' : (e?.error || e?.message || 'Speech synthesis error')
+      });
+    };
+
+    const dispatched = this._speakUtterance(cleanText, {
+      button,
+      lang,
+      rate,
+      pitch,
+      onEnd: wrappedOnEnd,
+      onError: wrappedOnError
+    });
+
+    if (!dispatched) {
+      this._activeSpeechSettle = null;
+      promiseResolve({
+        success: false,
+        method: 'ui_fallback',
+        message: 'Web Speech dispatch returned false'
+      });
+    }
+
+    return dispatched;
   }
 
   /**
    * Tier 3 UI Notification fallback: Displays informative toast and unlocks UI cleanly.
    * @private
    */
-  _executeTier3ToastFallback({ button, onError, message = '' }) {
+  _executeTier3ToastFallback({
+    button,
+    onError,
+    title = 'Không thể phát âm thanh',
+    toastMessage = 'Không tìm thấy file phát âm và thiết bị chưa hỗ trợ tổng hợp giọng nói tiếng Trung.',
+    message = '',
+    suppressToast = false
+  }) {
     this._cleanup(true);
-    this._showThrottledToast(
-      'Không thể phát âm thanh',
-      'Không tìm thấy file phát âm và thiết bị chưa hỗ trợ tổng hợp giọng nói tiếng Trung.',
-      'warning'
-    );
+    if (!suppressToast) {
+      this._showThrottledToast(title, toastMessage, 'warning');
+    }
     if (typeof onError === 'function') {
       try { onError(new Error(message || 'Audio playback unavailable')); } catch (_) {}
     }

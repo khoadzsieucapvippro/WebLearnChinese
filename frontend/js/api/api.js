@@ -71,7 +71,12 @@ export function getBaseUrl() {
 export function isApiConfigured() {
   if (typeof window !== 'undefined' && window.__ENV__?.API_BASE_URL) {
     const raw = String(window.__ENV__.API_BASE_URL).trim();
-    return raw.length > 0;
+    if (!raw) return false;
+    const normalized = raw.replace(/\/$/, '');
+    if (normalized === DEFAULT_BASE_URL && (isGitHubPagesEnvironment() || isDemoFallbackActive())) {
+      return false;
+    }
+    return true;
   }
   return false;
 }

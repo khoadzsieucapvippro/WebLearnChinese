@@ -30,3 +30,19 @@ secrets.*
 # OS files
 .DS_Store
 Thumbs.db
+
+# Non-backend assets and test suites
+tests/
+docs/
+data/
+artifacts/
+scratch/
+speech-service/
+scripts/
+*.csv
+*.json
+*.txt
+*.zip
+*.md
+!README.md
+repomix-output*.xml

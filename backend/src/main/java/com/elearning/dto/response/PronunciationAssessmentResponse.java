@@ -2,6 +2,9 @@ package com.elearning.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * Standardized DTO for pronunciation & tone assessment response (Chao 5-scale Tone Sandhi Engine).
  * Follows strict design guidelines:
@@ -22,6 +25,7 @@ public class PronunciationAssessmentResponse {
     private String summaryVi;
     private String pronunciationFeedback;
     private PronunciationComponentsDto components;
+    private List<Map<String, Object>> syllables;
     private String retryAdvice;
     private String limitations;
 
@@ -162,6 +166,14 @@ public class PronunciationAssessmentResponse {
 
     public void setComponents(PronunciationComponentsDto components) {
         this.components = components;
+    }
+
+    public List<Map<String, Object>> getSyllables() {
+        return syllables;
+    }
+
+    public void setSyllables(List<Map<String, Object>> syllables) {
+        this.syllables = syllables;
     }
 
     public String getRetryAdvice() {

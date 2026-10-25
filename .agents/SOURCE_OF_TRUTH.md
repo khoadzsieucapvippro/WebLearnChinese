@@ -18,7 +18,7 @@ When documentation conflicts with source, preserve the source behavior, report t
 - `tests/frontend/`: static, unit, browser, accessibility, and integration verification orchestrated by `runner.mjs`.
 - `tests/fullstack/`: backend plus browser scenarios.
 - `tests/postman/`: Postman Collection v2.1 (comprehensive 11-module suite), environment, fixtures, and Newman runner.
-- `backend/src/main/resources/db/migration/`: ordered schema and seed history. Current repository baseline is V1 through V19; never rewrite an applied migration.
+- `backend/src/main/resources/db/migration/`: ordered schema and seed history. Current repository baseline is V1 through V30 (including 50 standardized curriculum lessons and 1,000 HSK 1-3 words in V30); never rewrite an applied migration.
 
 ## Hard Invariants
 

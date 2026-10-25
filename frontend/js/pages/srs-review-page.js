@@ -10367,12 +10367,6 @@ export class SrsReviewController {
     if (this.dom.btnListeningPlayAudio) {
       this.dom.btnListeningPlayAudio.addEventListener('click', (e) => {
         e.stopPropagation();
-        speechController.cancel();
-        if (this.dom.btnListeningPlayAudio) {
-          this.dom.btnListeningPlayAudio.disabled = false;
-          this.dom.btnListeningPlayAudio.removeAttribute('aria-busy');
-          this.dom.btnListeningPlayAudio.classList.remove('is-speaking');
-        }
         this.playPronunciation(this.dom.btnListeningPlayAudio);
       });
     }
@@ -10460,12 +10454,28 @@ export class SrsReviewController {
     if (this.dom.btnReadingPlayUserAudio) {
       this.dom.btnReadingPlayUserAudio.addEventListener('click', () => {
         if (this.currentUserAudioUrl) {
+          speechController.cancel();
           if (!this.currentUserAudioElement) {
             this.currentUserAudioElement = new Audio(this.currentUserAudioUrl);
           } else {
-            this.currentUserAudioElement.src = this.currentUserAudioUrl;
+            try {
+              this.currentUserAudioElement.pause();
+              this.currentUserAudioElement.currentTime = 0;
+            } catch (_) {}
+            if (this.currentUserAudioElement.src !== this.currentUserAudioUrl) {
+              this.currentUserAudioElement.src = this.currentUserAudioUrl;
+            }
           }
-          this.currentUserAudioElement.play().catch(e => console.warn('Play user audio error:', e));
+          this.currentUserAudioElement.play().catch(e => {
+            if (e && e.name !== 'AbortError') {
+              console.warn('Play user audio error:', e);
+              showToast({
+                type: 'warning',
+                title: 'Không thể phát bản ghi',
+                message: 'Trình duyệt không thể phát lại bản ghi âm vừa thu.'
+              });
+            }
+          });
         }
       });
     }
@@ -12098,9 +12108,9 @@ export class SrsReviewController {
   renderCurrentCard() {
     speechController.cancel();
     this.cleanupTimer();
+    speechController.cancel();
     this.destroyWritingEngines();
     this.destroyListeningIme();
-    this.cleanUpReadingMedia();
     this.cleanUpReadingMedia();
     this.isFlipped = false;
     this.isSubmitting = false;
@@ -12922,6 +12932,8 @@ export class SrsReviewController {
     this.isCurrentWritingCompleted = false;
     this.completedCharIndices = new Set();
     this.writingCharCount = 0;
+    this.currentWritingMistakes = 0;
+    this.hasUsedWritingHintForCurrentCard = false;
 
     if (this.dom.btnWritingOutline) {
       this.dom.btnWritingOutline.classList.remove('d-none');
@@ -13074,8 +13086,8 @@ export class SrsReviewController {
           strokeColor: '#1976D2',
           radicalColor: '#C83C23',
           outlineColor: '#D1D5DB',
-          onComplete: () => {
-            this.handleWritingCharComplete(i);
+          onComplete: (summary) => {
+            this.handleWritingCharComplete(i, summary);
           }
         });
         const loaded = await engine.load(char, WRITING_MODES.QUIZ);
@@ -13112,8 +13124,12 @@ export class SrsReviewController {
   /**
    * Handles character-level stroke completion from CharacterWritingEngine.
    * @param {number} charIndex 
+   * @param {Object} [summary]
    */
-  handleWritingCharComplete(charIndex) {
+  handleWritingCharComplete(charIndex, summary = null) {
+    if (!this.hasCompletedWritingForCurrentCard && summary && typeof summary.totalMistakes === 'number') {
+      this.currentWritingMistakes = (this.currentWritingMistakes || 0) + Math.max(0, summary.totalMistakes);
+    }
     this.completedCharIndices.add(charIndex);
 
     // Provide immediate per-character completion feedback
@@ -13175,6 +13191,9 @@ export class SrsReviewController {
    * Replays stroke order for active writing character(s).
    */
   replayWriting() {
+    if (!this.hasCompletedWritingForCurrentCard) {
+      this.hasUsedWritingHintForCurrentCard = true;
+    }
     this.writingEngines.forEach(eng => {
       try {
         if (eng.writer) {
@@ -13202,6 +13221,9 @@ export class SrsReviewController {
   toggleWritingOutline() {
     const willShow = !this.isWritingOutlineShown;
     this.isWritingOutlineShown = willShow;
+    if (willShow && !this.hasCompletedWritingForCurrentCard) {
+      this.hasUsedWritingHintForCurrentCard = true;
+    }
 
     this.writingEngines.forEach(eng => {
       try {
@@ -13298,6 +13320,12 @@ export class SrsReviewController {
       const elapsedSeconds = calculateReviewTime(this.cardStartTime, Date.now());
 
       // Record progress and SRS review if in normal mode
+      const writingMistakes = Number(this.currentWritingMistakes) || 0;
+      const usedWritingHint = Boolean(this.hasUsedWritingHintForCurrentCard);
+      const writingRating = writingMistakes >= 5
+        ? 1
+        : (writingMistakes >= 2 || usedWritingHint ? 2 : (writingMistakes === 1 ? 3 : 3));
+
       if (!this.isReviewMode) {
         if (authManager.isAuthenticated() && this.sessionQueue[this.currentIndex]?.card) {
           const card = this.sessionQueue[this.currentIndex].card;
@@ -13305,7 +13333,7 @@ export class SrsReviewController {
             itemType: card.itemType || 'VOCABULARY',
             itemId: card.itemId,
             cardType: 'WRITING',
-            rating: 3,
+            rating: writingRating,
             reviewTimeSeconds: elapsedSeconds
           });
 
@@ -13315,18 +13343,22 @@ export class SrsReviewController {
               body: payload
             });
           } catch (apiErr) {
-            console.error('[SRS Writing Review] API submission failed:', apiErr);
-            const errMsg = apiErr?.message || 'Không thể lưu kết quả luyện viết lên máy chủ.';
-            showToast({
-              type: 'error',
-              title: 'Lỗi đồng bộ SRS',
-              message: `${errMsg} Vui lòng thử lại.`
-            });
-            if (this.dom?.writingCompletionNotice) {
-              this.dom.writingCompletionNotice.textContent = `⚠️ Lỗi lưu kết quả (${errMsg}). Vui lòng bấm [Sang từ tiếp theo] để thử lại.`;
-              this.dom.writingCompletionNotice.classList.remove('d-none');
+            if (apiErr?.message && apiErr.message.includes('chưa đến hạn')) {
+              console.info('[SRS Writing Review] Thẻ chưa đến hạn ôn tập SRS, tiếp tục chuyển sang thẻ kế tiếp.');
+            } else {
+              console.error('[SRS Writing Review] API submission failed:', apiErr);
+              const errMsg = apiErr?.message || 'Không thể lưu kết quả luyện viết lên máy chủ.';
+              showToast({
+                type: 'error',
+                title: 'Lỗi đồng bộ SRS',
+                message: `${errMsg} Vui lòng thử lại.`
+              });
+              if (this.dom?.writingCompletionNotice) {
+                this.dom.writingCompletionNotice.textContent = `⚠️ Lỗi lưu kết quả (${errMsg}). Vui lòng bấm [Sang từ tiếp theo] để thử lại.`;
+                this.dom.writingCompletionNotice.classList.remove('d-none');
+              }
+              return;
             }
-            return;
           }
         }
 
@@ -13336,7 +13368,11 @@ export class SrsReviewController {
 
       this.stats.totalReviewed++;
       this.stats.totalTimeSeconds += elapsedSeconds;
-      this.stats.goodEasyCount++;
+      if (writingRating === 1) {
+        this.stats.againCount++;
+      } else if (writingRating >= 3) {
+        this.stats.goodEasyCount++;
+      }
 
       this.currentIndex++;
       if (this.currentIndex >= this.sessionQueue.length) {
@@ -13564,12 +13600,6 @@ export class SrsReviewController {
 
     // Replay audio to assist user
     if (this.dom.btnListeningPlayAudio) {
-      speechController.cancel();
-      if (this.dom.btnListeningPlayAudio) {
-        this.dom.btnListeningPlayAudio.disabled = false;
-        this.dom.btnListeningPlayAudio.removeAttribute('aria-busy');
-        this.dom.btnListeningPlayAudio.classList.remove('is-speaking');
-      }
       this.playPronunciation(this.dom.btnListeningPlayAudio).catch(() => {});
     }
   }
@@ -13618,18 +13648,22 @@ export class SrsReviewController {
               body: payload
             });
           } catch (apiErr) {
-            console.error('[SRS Listening Review] API submission failed:', apiErr);
-            const errMsg = apiErr?.message || 'Không thể lưu kết quả luyện nghe lên máy chủ.';
-            showToast({
-              type: 'error',
-              title: 'Lỗi đồng bộ SRS',
-              message: `${errMsg} Vui lòng thử lại.`
-            });
-            if (this.dom?.listeningCompletionNotice) {
-              this.dom.listeningCompletionNotice.textContent = `⚠️ Lỗi lưu kết quả (${errMsg}). Vui lòng bấm [Sang từ tiếp theo] để thử lại.`;
-              this.dom.listeningCompletionNotice.classList.remove('d-none');
+            if (apiErr?.message && apiErr.message.includes('chưa đến hạn')) {
+              console.info('[SRS Listening Review] Thẻ chưa đến hạn ôn tập SRS, tiếp tục chuyển sang thẻ kế tiếp.');
+            } else {
+              console.error('[SRS Listening Review] API submission failed:', apiErr);
+              const errMsg = apiErr?.message || 'Không thể lưu kết quả luyện nghe lên máy chủ.';
+              showToast({
+                type: 'error',
+                title: 'Lỗi đồng bộ SRS',
+                message: `${errMsg} Vui lòng thử lại.`
+              });
+              if (this.dom?.listeningCompletionNotice) {
+                this.dom.listeningCompletionNotice.textContent = `⚠️ Lỗi lưu kết quả (${errMsg}). Vui lòng bấm [Sang từ tiếp theo] để thử lại.`;
+                this.dom.listeningCompletionNotice.classList.remove('d-none');
+              }
+              return;
             }
-            return;
           }
         }
 
@@ -13750,6 +13784,7 @@ export class SrsReviewController {
    */
   async startReadingRecording() {
     if (this.readingRecorder && this.readingRecorder.state === 'recording') return;
+    speechController.cancel();
     this.cleanUpReadingMedia();
 
     if (typeof navigator === 'undefined' || !navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== 'function') {
@@ -14244,11 +14279,12 @@ export class SrsReviewController {
       this.cleanupTimer();
       const elapsedSeconds = calculateReviewTime(this.cardStartTime, Date.now());
 
+      const score = typeof this.currentReadingScore === 'number' ? this.currentReadingScore : 70;
+      const rating = score >= 85 ? 4 : (score >= 60 ? 3 : (score >= 45 ? 2 : 1));
+
       if (!this.isReviewMode) {
         if (authManager.isAuthenticated() && this.sessionQueue[this.currentIndex]?.card) {
           const card = this.sessionQueue[this.currentIndex].card;
-          const score = this.currentReadingScore || 70;
-          const rating = score >= 85 ? 4 : (score >= 60 ? 3 : 2);
 
           const payload = buildReviewPayload({
             itemType: card.itemType || 'VOCABULARY',
@@ -14264,14 +14300,18 @@ export class SrsReviewController {
               body: payload
             });
           } catch (apiErr) {
-            console.error('[SRS Reading Review] API submission failed:', apiErr);
-            const errMsg = apiErr?.message || 'Không thể lưu kết quả luyện đọc lên máy chủ.';
-            showToast({
-              type: 'error',
-              title: 'Lỗi đồng bộ SRS',
-              message: `${errMsg} Vui lòng thử lại.`
-            });
-            return;
+            if (apiErr?.message && apiErr.message.includes('chưa đến hạn')) {
+              console.info('[SRS Reading Review] Thẻ chưa đến hạn ôn tập SRS, tiếp tục chuyển sang thẻ kế tiếp.');
+            } else {
+              console.error('[SRS Reading Review] API submission failed:', apiErr);
+              const errMsg = apiErr?.message || 'Không thể lưu kết quả luyện đọc lên máy chủ.';
+              showToast({
+                type: 'error',
+                title: 'Lỗi đồng bộ SRS',
+                message: `${errMsg} Vui lòng thử lại.`
+              });
+              return;
+            }
           }
         }
 
@@ -14281,7 +14321,11 @@ export class SrsReviewController {
 
       this.stats.totalReviewed++;
       this.stats.totalTimeSeconds += elapsedSeconds;
-      this.stats.goodEasyCount++;
+      if (rating === 1) {
+        this.stats.againCount++;
+      } else if (rating >= 3) {
+        this.stats.goodEasyCount++;
+      }
 
       this.currentIndex++;
       if (this.currentIndex >= this.sessionQueue.length) {
@@ -14545,6 +14589,12 @@ export class SrsReviewController {
    * @param {HTMLElement|null} triggerButton
    */
   playPronunciation(triggerButton = null) {
+    if (this.currentUserAudioElement) {
+      try {
+        this.currentUserAudioElement.pause();
+        this.currentUserAudioElement.currentTime = 0;
+      } catch (_) {}
+    }
     const queueItem = this.sessionQueue[this.currentIndex];
     if (!queueItem || !queueItem.card) {
       return Promise.resolve({ success: false, method: 'ui_fallback', message: 'No active card' });

@@ -404,4 +404,97 @@ describe('Browser E2E: SRS Listening Room & Pinyin IME', () => {
     }
   });
 
+  test('SL-06: Real static audio asset playback (HTTP 200, valid MIME audio/wav, playing event, currentTime > 0)', async () => {
+    const { page, context, getRuntimeErrors } = await createMonitoredPage(browser);
+    try {
+      await setupListeningMockBackend(page);
+
+      // Override radicals route so card #1 has a real static WAV audio asset
+      const radicalsWithRealAudio = createMockRadicals();
+      radicalsWithRealAudio[0].audioUrl = '/assets/audio/fixtures/diagnostic-tone.wav';
+
+      await page.route('**/api/v1/radicals*', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            code: 'SUCCESS',
+            message: 'OK',
+            data: {
+              items: radicalsWithRealAudio,
+              page: 0,
+              size: 50,
+              totalElements: 50,
+              totalPages: 1
+            }
+          })
+        });
+      });
+
+      // Wrap native window.Audio to observe real HTMLAudioElement lifecycle without mocking decoding
+      await page.addInitScript(() => {
+        window.__audioProbe = {
+          playingFired: false,
+          endedFired: false,
+          maxCurrentTime: 0,
+          errorFired: null
+        };
+        const NativeAudio = window.Audio;
+        window.Audio = function(src) {
+          const el = new NativeAudio(src);
+          el.addEventListener('playing', () => {
+            window.__audioProbe.playingFired = true;
+          });
+          el.addEventListener('timeupdate', () => {
+            if (el.currentTime > window.__audioProbe.maxCurrentTime) {
+              window.__audioProbe.maxCurrentTime = el.currentTime;
+            }
+          });
+          el.addEventListener('ended', () => {
+            if (el.currentTime > window.__audioProbe.maxCurrentTime) {
+              window.__audioProbe.maxCurrentTime = el.currentTime;
+            }
+            window.__audioProbe.endedFired = true;
+          });
+          el.addEventListener('error', (err) => {
+            window.__audioProbe.errorFired = err?.message || 'MediaError';
+          });
+          return el;
+        };
+      });
+
+      let audioHttpStatus = null;
+      let audioContentType = null;
+      page.on('response', (res) => {
+        if (res.url().includes('/assets/audio/fixtures/diagnostic-tone.wav')) {
+          audioHttpStatus = res.status();
+          audioContentType = res.headers()['content-type'] || '';
+        }
+      });
+
+      await page.goto(`${baseUrl}/srs-review.html?mode=listening&group=radicals50&action=continue`, {
+        waitUntil: 'domcontentloaded'
+      });
+
+      await page.locator('#srsListeningRoom').waitFor({ state: 'visible', timeout: 5000 });
+
+      const heroAudioBtn = page.locator('#btnListeningPlayAudio');
+      await heroAudioBtn.click();
+
+      // Wait for the 0.35s WAV file to play and finish in real browser engine
+      await page.waitForFunction(() => window.__audioProbe && window.__audioProbe.endedFired === true, { timeout: 4000 });
+
+      const probe = await page.evaluate(() => window.__audioProbe);
+      assert.strictEqual(audioHttpStatus, 200, 'Static audio file request must return HTTP 200');
+      assert.ok(audioContentType.includes('audio/wav'), `Expected audio/wav Content-Type, got "${audioContentType}"`);
+      assert.strictEqual(probe.errorFired, null, 'HTMLAudioElement must decode WAV without MediaError');
+      assert.strictEqual(probe.playingFired, true, 'HTMLAudioElement must fire "playing" event');
+      assert.ok(probe.maxCurrentTime > 0, `Expected currentTime > 0 during real playback, got ${probe.maxCurrentTime}`);
+      assert.strictEqual(await heroAudioBtn.isDisabled(), false, 'Speaker button must unlock after playback completes');
+      assert.strictEqual(getRuntimeErrors().length, 0, 'Zero runtime errors during real audio playback');
+    } finally {
+      await context.close();
+    }
+  });
+
 });

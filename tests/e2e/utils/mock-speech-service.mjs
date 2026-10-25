@@ -3,7 +3,7 @@
  * CONTRACT-COMPLIANT SPEECH ASSESSMENT ENGINE & MOCK SERVICE
  * File: tests/e2e/utils/mock-speech-service.mjs
  *
- * Implements the opaque-box contract specified in PROJECT.md § Interface Contracts:
+ * Implements the opaque-box contract specified in docs/ARCHITECTURE.md § Interface Contracts:
  * - Direct simulation of FastAPI / Spring Boot Speech Proxy endpoints.
  * - Non-Scorable Audio Quality Gate: silence, noise, clipping, short audio.
  * - Zero Fake Score Guarantee on un-scorable audio.
@@ -15,7 +15,7 @@ import { computeAudioMetrics } from './audio-generator.mjs';
 import { evaluateToneSandhi } from './tone-sandhi.mjs';
 
 /**
- * Evaluates an audio input against target text and pinyin per PROJECT.md interface contract.
+ * Evaluates an audio input against target text and pinyin per docs/ARCHITECTURE.md interface contract.
  *
  * @param {Object} params
  * @param {Buffer} params.audioBuffer - raw WAV audio buffer

@@ -25,7 +25,7 @@ tests/postman/
 
 ## 2. Chuẩn bị tài khoản kiểm thử (Gated Test Fixtures)
 
-Trên một cơ sở dữ liệu mới khởi tạo (chỉ có Flyway migration V1–V18), hệ thống chỉ chứa 4 vai trò mặc định và chưa có tài khoản Admin hay Moderator. Để phục vụ kiểm thử môi trường local/test một cách an toàn và có thể tái lập:
+Trên một cơ sở dữ liệu mới khởi tạo (với toàn bộ Flyway migration V1–V30), hệ thống khởi tạo 4 vai trò mặc định cùng 214 bộ thủ Khang Hy, 50 bài học giáo trình và danh mục từ vựng HSK. Để phục vụ kiểm thử môi trường local/test một cách an toàn và có thể tái lập:
 
 ```bash
 # Cách 1: Chạy runner an toàn qua Node.js (yêu cầu opt-in tường minh, chỉ cho phép localhost & whitelist DB)

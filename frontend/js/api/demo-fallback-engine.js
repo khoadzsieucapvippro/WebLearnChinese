@@ -1337,6 +1337,30 @@ class DemoFallbackEngine {
       ];
     }
 
+    if (cleanPath === '/srs/reading/status' && method === 'GET') {
+      return {
+        audioInputSupported: true,
+        configured: false,
+        available: false,
+        demoSimulation: true,
+        provider: 'speech-service-local',
+        tier: 'open-source-offline',
+        model: 'Chao-5-Scale Tone Sandhi Engine',
+        notice: 'Chế độ Mô phỏng (Demo): Phân tích cao độ F0 trực tiếp cần kết nối với dịch vụ speech-service.'
+      };
+    }
+
+    if (cleanPath === '/srs/reading/assess' && method === 'POST') {
+      return {
+        status: 'unconfigured',
+        confidence: 'LOW',
+        overallScore: null,
+        summaryVi: 'Đang ở Chế độ Mô phỏng (Demo Offline) — hệ thống không giả lập điểm phát âm khi chưa kết nối dịch vụ phân tích giọng nói thực tế.',
+        retryAdvice: 'Bạn có thể nghe âm mẫu để tự đối chiếu hoặc bấm "Bỏ qua →" để tiếp tục phiên học.',
+        limitations: 'Chế độ Demo không chấm điểm phát âm giả để đảm bảo tính trung thực sư phạm.'
+      };
+    }
+
     // Default: Return empty object or null for unknown GET/mutations
     return null;
   }

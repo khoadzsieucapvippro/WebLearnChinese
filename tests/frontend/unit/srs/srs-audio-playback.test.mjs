@@ -17,7 +17,14 @@
 
 import { test, describe, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { SpeechController, SpeechState } from '../../../../frontend/js/ui/speech.js';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { SpeechController, SpeechState, resolveSubpathAudioUrl } from '../../../../frontend/js/ui/speech.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const FRONTEND_DIR = path.resolve(__dirname, '../../../../frontend');
 
 // Mock DOM Button
 class MockButton {
@@ -561,5 +568,153 @@ describe('Unit: SRS Audio Playback Lifecycle & 3-Tier Fallback (R1)', () => {
     assert.strictEqual(settled?.success, false);
     assert.strictEqual(settled?.method, 'audio_file');
     assert.strictEqual(settled?.message, 'Playback canceled');
+  });
+
+  test('14. Missing Chinese voice: When browser enumerates voices without zh/cmn, falls back to Tier 3 Toast without faking speech', async () => {
+    mockSynth.voices = [
+      { name: 'Microsoft David Desktop', lang: 'en-US' },
+      { name: 'Vietnamese Voice', lang: 'vi-VN' }
+    ];
+    const controller = new SpeechController({ toastFn: mockToastFn });
+    const btn = new MockButton('btn-no-zh');
+
+    const res = await controller.playPronunciation({
+      text: '你好',
+      audioUrl: null,
+      button: btn
+    });
+
+    assert.strictEqual(res.success, false, 'Must not report success when no Chinese voice is available');
+    assert.strictEqual(res.method, 'ui_fallback');
+    assert.strictEqual(res.message, 'Chinese voice unavailable');
+    assert.strictEqual(mockSynth.speakCallCount, 0, 'Must not invoke speechSynthesis.speak with non-Chinese voice');
+    assert.strictEqual(btn.disabled, false, 'Button must be unlocked cleanly');
+    assert.strictEqual(btn.getAttribute('aria-busy'), null);
+    assert.strictEqual(btn.classList.has('is-speaking'), false);
+    assert.strictEqual(toastCalls.length, 1, 'Must notify user with an informative toast');
+    assert.ok(toastCalls[0].message.includes('tiếng Trung'), 'Toast must explain missing Chinese voice');
+  });
+
+  test('15. Delayed voiceschanged: Waits for voiceschanged when getVoices() is initially empty and selects zh-CN voice', async () => {
+    mockSynth.voices = [];
+    let voicesChangedListener = null;
+    mockSynth.addEventListener = (evt, cb) => {
+      if (evt === 'voiceschanged') {
+        voicesChangedListener = cb;
+      }
+    };
+    mockSynth.removeEventListener = () => {};
+
+    const controller = new SpeechController({ toastFn: mockToastFn, voiceLoadTimeoutMs: 150, waitForVoicesOnEmpty: true });
+    const btn = new MockButton('btn-delayed-voice');
+
+    // Simulate voices arriving 25ms later via voiceschanged
+    setTimeout(() => {
+      mockSynth.voices = [
+        { name: 'English', lang: 'en-US' },
+        { name: 'Android Mandarin', lang: 'cmn-Hans-CN' }
+      ];
+      if (typeof voicesChangedListener === 'function') {
+        voicesChangedListener();
+      }
+    }, 25);
+
+    const playPromise = controller.playPronunciation({
+      text: '学习',
+      audioUrl: null,
+      button: btn
+    });
+
+    // Wait for voiceschanged + utterance start
+    await new Promise(r => setTimeout(r, 45));
+    assert.strictEqual(mockSynth.speakCallCount, 1, 'Speech must be dispatched once voiceschanged provides Chinese voice');
+    assert.strictEqual(mockSynth.lastUtterance.voice?.lang, 'cmn-Hans-CN');
+
+    // Complete utterance
+    mockSynth.lastUtterance.onend({ type: 'end' });
+    const res = await playPromise;
+    assert.strictEqual(res.success, true);
+    assert.strictEqual(res.method, 'web_speech');
+    assert.strictEqual(btn.disabled, false);
+  });
+
+  test('16. Idle cancel() does NOT call window.speechSynthesis.cancel() unnecessarily', () => {
+    const controller = new SpeechController({ toastFn: mockToastFn });
+    assert.strictEqual(mockSynth.cancelCallCount, 0);
+
+    // Calling cancel() when idle must not invoke native speechSynthesis.cancel()
+    controller.cancel();
+    controller.cancel();
+    assert.strictEqual(mockSynth.cancelCallCount, 0, 'Idle cancel() must not reset native browser speech queue');
+  });
+
+  test('17. Subpath-safe URL resolution (GitHub Pages /WebLearnChinese/ vs root /)', () => {
+    assert.strictEqual(
+      resolveSubpathAudioUrl('/assets/audio/fixtures/diagnostic-tone.wav', { pathname: '/WebLearnChinese/srs-review.html' }),
+      '/WebLearnChinese/assets/audio/fixtures/diagnostic-tone.wav',
+      'Root-relative /assets/... must be prefixed with project subpath on GitHub Pages'
+    );
+    assert.strictEqual(
+      resolveSubpathAudioUrl('/assets/audio/fixtures/diagnostic-tone.wav', { pathname: '/srs-review.html' }),
+      '/assets/audio/fixtures/diagnostic-tone.wav',
+      'Root deployment must preserve /assets/...'
+    );
+    assert.strictEqual(
+      resolveSubpathAudioUrl('https://cdn.example.com/audio/ni3.mp3', { pathname: '/WebLearnChinese/srs-review.html' }),
+      'https://cdn.example.com/audio/ni3.mp3',
+      'Absolute HTTPS URLs must remain untouched'
+    );
+    assert.strictEqual(
+      resolveSubpathAudioUrl('javascript:alert(1)', { pathname: '/WebLearnChinese/srs-review.html' }),
+      'about:blank',
+      'Malicious schemes must be rejected'
+    );
+  });
+
+  test('18. Audio asset manifest only references existing, non-empty audio files', () => {
+    const manifestPath = path.join(FRONTEND_DIR, 'assets/audio/manifest.json');
+    assert.ok(fs.existsSync(manifestPath), 'frontend/assets/audio/manifest.json must exist');
+
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
+    assert.strictEqual(typeof manifest.version, 'string');
+    assert.strictEqual(typeof manifest.radicals, 'object');
+    assert.strictEqual(typeof manifest.vocabularies, 'object');
+    assert.strictEqual(typeof manifest.fixtures, 'object');
+
+    const allReferencedPaths = [
+      ...Object.values(manifest.radicals || {}),
+      ...Object.values(manifest.vocabularies || {}),
+      ...Object.values(manifest.hanzi || {}),
+      ...Object.values(manifest.fixtures || {})
+    ];
+
+    assert.ok(allReferencedPaths.length >= 1, 'Manifest must contain at least the diagnostic fixture');
+    for (const relPath of allReferencedPaths) {
+      const normalizedRel = String(relPath).replace(/^\//, '');
+      const absPath = path.join(FRONTEND_DIR, normalizedRel);
+      assert.ok(fs.existsSync(absPath), `Referenced audio asset must exist on disk: ${relPath}`);
+      const stat = fs.statSync(absPath);
+      assert.ok(stat.size > 44, `Referenced audio asset must be non-empty valid media: ${relPath}`);
+    }
+  });
+
+  test('19. Respects user speechRate preference from localStorage on Tier 1 HTMLAudioElement and Tier 2 Utterance', () => {
+    const origStorage = globalThis.localStorage;
+    globalThis.localStorage = {
+      getItem: (key) => key === 'HOC_HAN_NGU_AUDIO_SETTINGS' ? JSON.stringify({ speechRate: 0.75 }) : null
+    };
+    try {
+      const controller = new SpeechController({ toastFn: mockToastFn });
+      const btn = new MockButton('btn-rate');
+      controller.playPronunciation({
+        text: '慢速',
+        audioUrl: 'https://cdn.example.com/slow.mp3',
+        button: btn
+      });
+      assert.strictEqual(MockAudioElement.instances[0].playbackRate, 0.75, 'Tier 1 HTMLAudioElement must respect saved speechRate');
+      controller.cancel();
+    } finally {
+      globalThis.localStorage = origStorage;
+    }
   });
 });

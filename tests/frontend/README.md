@@ -29,7 +29,7 @@ We enforce a 5-level test pyramid:
 Run these commands from the repository root:
 
 ```bash
-# 1. Fast Tier (L0 Static + L1 Unit) — ~0.76s (67 tests)
+# 1. Fast Tier (L0 Static + L1 Unit) — ~8s (940 tests across 35 files)
 npm run verify:frontend:fast
 
 # 2. Browser Smoke Tier (L2 Headless Chromium) — ~5.66s (8 tests)

@@ -42,13 +42,13 @@ def classify_detected_tone(contour: np.ndarray, target_tone: Optional[int] = Non
     if delta > 0.8 and slope > 0.03:
         return 2
         
-    # 4. Tone 1: High and relatively level (55)
-    if (mean_val >= 3.5 and abs(delta) < 1.4 and end_level >= 3.0) or (std_val < 0.35 and abs(delta) < 0.7 and mean_val >= 3.0):
-        return 1
-
-    # 5. Tone 5: Neutral tone when target is 5 and contour is relatively flat/unstressed
+    # 4. Tone 5: Neutral tone when target is 5 and contour is relatively flat/unstressed
     if target_tone == 5 and abs(delta) < 1.0 and std_val < 0.6:
         return 5
+
+    # 5. Tone 1: High and relatively level (55)
+    if (mean_val >= 3.5 and abs(delta) < 1.4 and end_level >= 3.0) or (std_val < 0.35 and abs(delta) < 0.7 and mean_val >= 3.0):
+        return 1
 
     # 6. Tone 3: Low pitch register (half-third 21) when target is 3
     if target_tone == 3 and mean_val < 2.6 and abs(delta) < 0.9:
@@ -78,8 +78,10 @@ def score_syllable(contour: np.ndarray, target_tone: int, is_half_third: bool = 
         # After Tone 2: mid (~3.0)
         # After Tone 3: mid-high (~3.6)
         # After Tone 4: low (~1.8)
+        # Isolated single-syllable neutral tone (prev_tone is None): adaptive flat register
         neutral_levels = {1: 2.6, 2: 3.0, 3: 3.6, 4: 1.8}
-        target_level = neutral_levels.get(prev_tone, 2.5)
+        default_neutral_level = float(np.clip(np.mean(contour), 2.0, 4.6)) if prev_tone is None else 2.5
+        target_level = neutral_levels.get(prev_tone, default_neutral_level)
         template = np.full(len(contour), target_level, dtype=np.float32)
         rmse = float(np.sqrt(np.mean((contour - template) ** 2)))
     elif target_tone == 3 and is_half_third:
