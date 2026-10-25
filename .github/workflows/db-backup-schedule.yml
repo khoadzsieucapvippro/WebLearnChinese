@@ -22,6 +22,7 @@ jobs:
           mysqldump --version
 
       - name: Pre-flight Check for TiDB Cloud Secrets
+        id: tidb-secrets
         env:
           TIDB_HOST: ${{ secrets.TIDB_HOST }}
           TIDB_USER: ${{ secrets.TIDB_USER }}
@@ -33,7 +34,7 @@ jobs:
           [ -z "$TIDB_PASSWORD" ] && MISSING_SECRETS="${MISSING_SECRETS} TIDB_PASSWORD"
 
           if [ -n "$MISSING_SECRETS" ]; then
-            echo "::error title=Missing GitHub Repository Secrets::Chưa cấu hình các Secrets bắt buộc:${MISSING_SECRETS}."
+            echo "::warning title=Missing GitHub Repository Secrets::Chưa cấu hình các Secrets bắt buộc:${MISSING_SECRETS}. Backup step sẽ được bỏ qua."
             echo "================================================================================================"
             echo "HƯỚNG DẪN CẤU HÌNH GITHUB SECRETS ĐỂ WORKFLOW SAO LƯU HOẠT ĐỘNG:"
             echo "1. Truy cập: Repository GitHub -> Settings -> Secrets and variables -> Actions"
@@ -44,11 +45,14 @@ jobs:
             echo "   - TIDB_PASSWORD : Mật khẩu cơ sở dữ liệu TiDB Cloud của bạn"
             echo "   - TIDB_DATABASE : Tên DB (tùy chọn, mặc định elearning_db)"
             echo "================================================================================================"
-            exit 1
+            echo "has_tidb_secrets=false" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
+          echo "has_tidb_secrets=true" >> "$GITHUB_OUTPUT"
           echo "All required TiDB secrets are present. Proceeding with backup..."
 
       - name: Execute mysqldump with TiDB Cloud Flags
+        if: steps.tidb-secrets.outputs.has_tidb_secrets == 'true'
         env:
           TIDB_HOST: ${{ secrets.TIDB_HOST }}
           TIDB_PORT: ${{ secrets.TIDB_PORT || 4000 }}
@@ -93,7 +97,7 @@ jobs:
           echo "BACKUP_FILE=$BACKUP_FILE" >> $GITHUB_ENV
 
       - name: Upload Backup Artifact to GitHub Actions Storage
-        if: success()
+        if: success() && steps.tidb-secrets.outputs.has_tidb_secrets == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: database-backups-${{ github.run_number }}
