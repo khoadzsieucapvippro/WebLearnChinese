@@ -694,8 +694,8 @@ describe('Adversarial Stress: Audio Playback Engine (Challenger 1)', () => {
       const controller = new SpeechController({ toastFn: mockToastFn });
       const btn = new MockButton();
 
-      // Setup voices with NO Chinese voices (only English)
-      mockSynth.voices = [{ name: 'Alex', lang: 'en-US' }];
+      // Setup voices with Chinese voice so synthesis dispatches, then runtime emits error
+      mockSynth.voices = [{ name: 'Tingting', lang: 'zh-CN' }];
 
       const p = controller.playPronunciation({
         text: '中文',

@@ -15,6 +15,7 @@
  * - LB9: Missing or malformed lesson ID parameters handled gracefully without unnecessary API requests.
  * - LB10: Mobile 375px responsiveness with zero horizontal overflow on both catalog and detail pages.
  * - LB11: Security & XSS defense: Untrusted HTML/script strings in lesson title/vocabularies render strictly as text.
+ * - LB12: Character Writing Modal Dialog: Opens #vocabWritingModal, mounts Hanzi writer canvas, and closes properly.
  * =============================================================================
  */
 
@@ -445,6 +446,13 @@ describe('Browser E2E: Public Lessons & Lesson Detail (Task 9C.1)', () => {
       assert.strictEqual(await firstItem.locator('.lesson-vocab-pinyin').textContent(), 'nǐ');
       assert.ok((await firstItem.locator('.lesson-vocab-hanviet').textContent()).includes('Nhĩ'));
 
+      // Verify Action Controls: speechBtn, writingBtn, noteBtn
+      const actions = firstItem.locator('.lesson-vocab-actions > button');
+      assert.strictEqual(await actions.count(), 3, 'First item must have exactly 3 action buttons');
+      assert.ok(await actions.nth(0).getAttribute('class').then(c => c.includes('btn-vocab-speech')), 'First action must be speech button');
+      assert.ok(await actions.nth(1).getAttribute('class').then(c => c.includes('lesson-vocab-writing-btn')), 'Second action must be writing button');
+      assert.ok(await actions.nth(2).getAttribute('class').then(c => c.includes('lesson-vocab-note-btn')), 'Third action must be note button');
+
       const errors = getRuntimeErrors();
       assert.strictEqual(errors.length, 0, `Runtime errors: ${errors.join('\n')}`);
     } finally {
@@ -658,6 +666,72 @@ describe('Browser E2E: Public Lessons & Lesson Detail (Task 9C.1)', () => {
 
       const errors = getRuntimeErrors();
       assert.strictEqual(errors.length, 0, `Runtime errors: ${errors.join('\n')}`);
+    } finally {
+      await context.close();
+    }
+  });
+
+  // LB12: Character Writing Modal Dialog Integration (P2-WRITING-1)
+  test('LB12: Clicking .lesson-vocab-writing-btn opens #vocabWritingModal, mounts Hanzi writer canvas, and closes properly', async () => {
+    const { page, context, getRuntimeErrors } = await createMonitoredPage(browser);
+    const detailData = createMockLessonDetail(1);
+
+    try {
+      await page.route('**/api/v1/lessons/1**', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            code: 'SUCCESS',
+            data: detailData
+          })
+        });
+      });
+
+      await page.goto(`${baseUrl}/lesson-detail.html?id=1`, { waitUntil: 'domcontentloaded' });
+      await page.waitForSelector('#lessonVocabList .lesson-vocab-item');
+
+      // Locate writing button on first vocabulary item (你)
+      const firstItem = page.locator('#lessonVocabList .lesson-vocab-item').nth(0);
+      const writingBtn = firstItem.locator('.lesson-vocab-writing-btn');
+      assert.ok(await writingBtn.isVisible(), 'Writing button must be visible');
+      assert.strictEqual(await writingBtn.getAttribute('title'), 'Luyện viết chữ Hán');
+      assert.strictEqual(await writingBtn.getAttribute('data-vocab-id'), '101');
+      const ariaLabel = await writingBtn.getAttribute('aria-label');
+      assert.ok(ariaLabel.includes('你'), `Writing button aria-label must include '你', got "${ariaLabel}"`);
+
+      // Click writing button to open modal
+      await writingBtn.click();
+
+      // Verify modal dialog #vocabWritingModal appears
+      const modal = page.locator('#vocabWritingModal');
+      await modal.waitFor({ state: 'visible', timeout: 5000 });
+      assert.ok(await modal.isVisible(), '#vocabWritingModal must be open and visible');
+
+      // Verify modal title
+      const modalTitle = await page.locator('#vocabWritingModalTitle').textContent();
+      assert.ok(modalTitle.includes('Luyện Viết Chữ Hán'), `Title must indicate writing practice, got "${modalTitle}"`);
+
+      // Verify orchestrator container and writer stage area mounted
+      const mountContainer = page.locator('#vocabWritingMountContainer');
+      assert.ok(await mountContainer.isVisible(), '#vocabWritingMountContainer must be visible');
+
+      // Wait for character stage / canvas or SVG surface to mount
+      await page.waitForSelector('#vocabWritingMountContainer .vocab-stage-area', { timeout: 5000 });
+      assert.ok(await page.locator('#vocabWritingMountContainer .vocab-stage-area').isVisible(), 'Stage area must be rendered');
+
+      // Close modal using close button
+      const closeBtn = modal.locator('.btn-close');
+      assert.ok(await closeBtn.isVisible(), 'Modal close button must be visible');
+      await closeBtn.click();
+
+      // Wait for modal dialog to dismiss
+      await modal.waitFor({ state: 'hidden', timeout: 3000 });
+      assert.strictEqual(await modal.isVisible(), false, 'Modal dialog must be closed');
+
+      // Verify clean console with zero runtime errors
+      const errors = getRuntimeErrors();
+      assert.strictEqual(errors.length, 0, `Runtime errors after writing modal lifecycle: ${errors.join('\n')}`);
     } finally {
       await context.close();
     }

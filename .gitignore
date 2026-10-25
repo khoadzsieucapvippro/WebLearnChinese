@@ -139,6 +139,10 @@ playwright-report/
 __pycache__/
 *.py[cod]
 *$py.class
+.venv/
+venv/
+ENV/
+env/
 
 # Local artifacts & repo dumps
 /artifacts/

@@ -547,7 +547,7 @@ export class LessonDetailPageController {
       detailsDiv.appendChild(meaningDiv);
       detailsDiv.appendChild(strokeInfo);
 
-      // 4. Action Button: ONLY Pronunciation Speaker (Bỏ các ô màu đỏ)
+      // 4. Action Controls: Pronunciation Speaker and Character Writing
       const actionsDiv = createSafeElement('div', { className: 'lesson-vocab-actions' });
       
       const speechBtn = createSpeechButton({
@@ -558,7 +558,37 @@ export class LessonDetailPageController {
         iconOnly: true
       });
 
+      // Character Writing Practice Button (.lesson-vocab-writing-btn)
+      const writingBtn = createSafeElement('button', {
+        className: 'lesson-vocab-writing-btn btn-chinese-secondary py-1 px-2 small',
+        attrs: {
+          type: 'button',
+          'data-radical-id': String(rad.radicalId || ''),
+          title: 'Luyện viết bộ thủ',
+          'aria-label': `Luyện viết cho bộ thủ ${rad.character || rad.hanzi || ''}`
+        },
+        children: [
+          createSafeElement('span', {
+            attrs: { 'aria-hidden': 'true' },
+            text: '✍️'
+          })
+        ]
+      });
+
+      writingBtn.addEventListener('click', () => {
+        openVocabWritingModal({
+          vocabItem: {
+            hanzi: rad.character || rad.hanzi || '',
+            pinyin: rad.pinyin || '',
+            meaningVi: rad.meaningVi || rad.meaningHanViet || ''
+          },
+          triggerElement: writingBtn,
+          initialMode: 'demo'
+        });
+      });
+
       actionsDiv.appendChild(speechBtn);
+      actionsDiv.appendChild(writingBtn);
 
       li.appendChild(mainDiv);
       li.appendChild(detailsDiv);
@@ -853,7 +883,7 @@ export class LessonDetailPageController {
         detailsDiv.appendChild(exampleDiv);
       }
 
-      // 4. Action Controls: Pronunciation Speaker and Personal Notes
+      // 4. Action Controls: Pronunciation Speaker, Writing Modal, and Personal Notes
       const actionsDiv = createSafeElement('div', { className: 'lesson-vocab-actions' });
 
       // Speech Pronunciation Button
@@ -863,6 +893,32 @@ export class LessonDetailPageController {
         className: 'btn-vocab-speech btn-chinese-secondary py-1 px-2 small',
         label: 'Nghe phát âm',
         iconOnly: true
+      });
+
+      // Character Writing Practice Button (.lesson-vocab-writing-btn)
+      const writingVocabId = vocab.vocabId || vocab.id;
+      const writingBtn = createSafeElement('button', {
+        className: 'lesson-vocab-writing-btn btn-chinese-secondary py-1 px-2 small',
+        attrs: {
+          type: 'button',
+          'data-vocab-id': String(writingVocabId || ''),
+          title: 'Luyện viết chữ Hán',
+          'aria-label': `Luyện viết chữ Hán cho từ ${vocab.hanzi || ''}`
+        },
+        children: [
+          createSafeElement('span', {
+            attrs: { 'aria-hidden': 'true' },
+            text: '✍️'
+          })
+        ]
+      });
+
+      writingBtn.addEventListener('click', () => {
+        openVocabWritingModal({
+          vocabItem: vocab,
+          triggerElement: writingBtn,
+          initialMode: 'demo'
+        });
       });
 
       // Personal Notes Button (.lesson-vocab-note-btn)
@@ -894,6 +950,7 @@ export class LessonDetailPageController {
       });
 
       actionsDiv.appendChild(speechBtn);
+      actionsDiv.appendChild(writingBtn);
       actionsDiv.appendChild(noteBtn);
 
       // Assemble list item

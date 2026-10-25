@@ -2230,16 +2230,22 @@ a.lesson-vocab-hanzi:hover {
 
   .lesson-vocab-item {
     padding: var(--space-3);
+    flex-direction: column;
+    align-items: stretch;
   }
 
-  .lesson-vocab-main {
-    min-width: 0;
+  .lesson-vocab-main,
+  .lesson-vocab-details,
+  .lesson-vocab-actions {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: none !important;
   }
 
-  .lesson-vocab-details {
-    min-width: 0;
+  .lesson-vocab-meaning .badge {
+    display: inline-block;
     max-width: 100%;
-    width: 100%;
+    white-space: normal;
   }
 
   .lesson-vocab-radicals-label {

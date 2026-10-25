@@ -32,7 +32,8 @@ import {
   parseLessonDetailResponse,
   sortVocabulariesByOrderIndex,
   isSpeechSynthesisAvailable,
-  speakHanzi
+  speakHanzi,
+  LessonDetailPageController
 } from '../../../../frontend/js/pages/lesson-detail-page.js';
 import { sanitizeResourceUrl } from '../../../../frontend/js/ui/security.js';
 
@@ -511,6 +512,282 @@ describe('Unit: Lesson Catalog & Lesson Detail Engine (Task 9C.1)', () => {
     test('Action D (Ôn SRS toàn hệ thống): routes to srs-review.html general room', () => {
       const systemUrl = 'srs-review.html';
       assert.strictEqual(systemUrl, 'srs-review.html');
+    });
+  });
+
+  describe('12. Lesson Detail Writing Action Controls Contract (P2-WRITING-1)', () => {
+    class MockElement {
+      constructor(tagName) {
+        this.tagName = String(tagName || 'div').toUpperCase();
+        this.children = [];
+        this.attrs = {};
+        this._className = '';
+        this.textContent = '';
+        this.style = {};
+        this.listeners = new Map();
+      }
+
+      get className() {
+        return this._className;
+      }
+
+      set className(val) {
+        this._className = val || '';
+      }
+
+      get classList() {
+        const self = this;
+        return {
+          contains: (cls) => self._className.split(/\s+/).includes(cls),
+          add: (...clss) => {
+            const set = new Set(self._className.split(/\s+/).filter(Boolean));
+            clss.forEach(c => set.add(c));
+            self._className = Array.from(set).join(' ');
+          },
+          remove: (...clss) => {
+            const set = new Set(self._className.split(/\s+/).filter(Boolean));
+            clss.forEach(c => set.delete(c));
+            self._className = Array.from(set).join(' ');
+          }
+        };
+      }
+
+      setAttribute(key, value) {
+        this.attrs[key] = String(value);
+      }
+
+      getAttribute(key) {
+        return Object.prototype.hasOwnProperty.call(this.attrs, key) ? this.attrs[key] : null;
+      }
+
+      removeAttribute(key) {
+        delete this.attrs[key];
+      }
+
+      appendChild(child) {
+        if (child) this.children.push(child);
+        return child;
+      }
+
+      replaceChildren(...children) {
+        this.children = [...children];
+      }
+
+      contains(node) {
+        if (this === node) return true;
+        for (const child of this.children) {
+          if (child === node || (child && typeof child.contains === 'function' && child.contains(node))) {
+            return true;
+          }
+        }
+        return false;
+      }
+
+      showModal() {
+        this.attrs.open = '';
+      }
+
+      close() {
+        delete this.attrs.open;
+      }
+
+      addEventListener(event, handler) {
+        if (!this.listeners.has(event)) {
+          this.listeners.set(event, []);
+        }
+        this.listeners.get(event).push(handler);
+      }
+
+      dispatchEvent(event) {
+        const handlers = this.listeners.get(event.type) || [];
+        for (const h of handlers) {
+          h(event);
+        }
+        return true;
+      }
+
+      click() {
+        this.dispatchEvent({ type: 'click', target: this });
+      }
+
+      querySelector(selector) {
+        const matches = this.querySelectorAll(selector);
+        return matches.length > 0 ? matches[0] : null;
+      }
+
+      querySelectorAll(selector) {
+        const results = [];
+        const walk = (node) => {
+          if (!node || !node.children) return;
+          for (const child of node.children) {
+            if (child instanceof MockElement) {
+              if (selector.startsWith('.') && child.classList.contains(selector.slice(1))) {
+                results.push(child);
+              } else if (selector.startsWith('#') && (child.attrs.id === selector.slice(1) || child.attrs['id'] === selector.slice(1))) {
+                results.push(child);
+              } else if (child.tagName === selector.toUpperCase()) {
+                results.push(child);
+              }
+              walk(child);
+            }
+          }
+        };
+        walk(this);
+        return results;
+      }
+    }
+
+    function setupMockDom() {
+      const body = new MockElement('body');
+      globalThis.Node = MockElement;
+      globalThis.HTMLElement = MockElement;
+      globalThis.document = {
+        body,
+        createElement: (tag) => new MockElement(tag),
+        createElementNS: (ns, tag) => new MockElement(tag),
+        createTextNode: (text) => {
+          const el = new MockElement('#text');
+          el.textContent = String(text);
+          return el;
+        },
+        getElementById: (id) => {
+          if (id === 'vocabWritingModal') {
+            return body.querySelector('#vocabWritingModal');
+          }
+          return null;
+        },
+        addEventListener: () => {}
+      };
+    }
+
+    test('renders .lesson-vocab-writing-btn between speech and note buttons with correct attributes and icon', () => {
+      setupMockDom();
+      const controller = new LessonDetailPageController();
+      const listContainer = new MockElement('ol');
+      controller.dom.vocabList = listContainer;
+
+      const mockVocabs = [
+        {
+          vocabId: 101,
+          hanzi: '你',
+          pinyin: 'nǐ',
+          meaningHanViet: 'Nhĩ',
+          meaningVi: 'Bạn, anh, chị',
+          orderIndex: 1
+        },
+        {
+          vocabId: 102,
+          hanzi: '好',
+          pinyin: 'hǎo',
+          meaningHanViet: 'Hảo',
+          meaningVi: 'Tốt, khỏe',
+          orderIndex: 2
+        }
+      ];
+
+      controller.renderVocabularyList(mockVocabs);
+
+      assert.strictEqual(listContainer.children.length, 2, 'Should render 2 vocabulary list items');
+
+      // Inspect first item (101: 你)
+      const item1 = listContainer.children[0];
+      const actions1 = item1.querySelector('.lesson-vocab-actions');
+      assert.ok(actions1, 'Item 1 must contain .lesson-vocab-actions');
+      assert.strictEqual(actions1.children.length, 3, 'actionsDiv must contain exactly 3 controls: speech, writing, note');
+
+      const speechBtn = actions1.children[0];
+      const writingBtn = actions1.children[1];
+      const noteBtn = actions1.children[2];
+
+      assert.ok(speechBtn.classList.contains('btn-vocab-speech'), 'Button 0 must be speechBtn (.btn-vocab-speech)');
+      assert.ok(writingBtn.classList.contains('lesson-vocab-writing-btn'), 'Button 1 must be writingBtn (.lesson-vocab-writing-btn)');
+      assert.ok(noteBtn.classList.contains('lesson-vocab-note-btn'), 'Button 2 must be noteBtn (.lesson-vocab-note-btn)');
+
+      // Verify writingBtn attributes
+      assert.strictEqual(writingBtn.getAttribute('type'), 'button');
+      assert.strictEqual(writingBtn.getAttribute('data-vocab-id'), '101');
+      assert.strictEqual(writingBtn.getAttribute('title'), 'Luyện viết chữ Hán');
+      assert.strictEqual(writingBtn.getAttribute('aria-label'), 'Luyện viết chữ Hán cho từ 你');
+
+      // Verify writingBtn icon span
+      assert.strictEqual(writingBtn.children.length, 1);
+      const iconSpan = writingBtn.children[0];
+      assert.strictEqual(iconSpan.getAttribute('aria-hidden'), 'true');
+      assert.strictEqual(iconSpan.textContent, '✍️');
+
+      // Inspect second item (102: 好)
+      const item2 = listContainer.children[1];
+      const writingBtn2 = item2.querySelector('.lesson-vocab-writing-btn');
+      assert.ok(writingBtn2, 'Item 2 must contain .lesson-vocab-writing-btn');
+      assert.strictEqual(writingBtn2.getAttribute('data-vocab-id'), '102');
+      assert.strictEqual(writingBtn2.getAttribute('aria-label'), 'Luyện viết chữ Hán cho từ 好');
+    });
+
+    test('clicking .lesson-vocab-writing-btn registers and triggers click listener safely', async () => {
+      setupMockDom();
+      const controller = new LessonDetailPageController();
+      const listContainer = new MockElement('ol');
+      controller.dom.vocabList = listContainer;
+
+      const mockVocabs = [
+        {
+          vocabId: 201,
+          hanzi: '学',
+          pinyin: 'xué',
+          meaningHanViet: 'Học',
+          meaningVi: 'Học tập',
+          orderIndex: 1
+        }
+      ];
+
+      controller.renderVocabularyList(mockVocabs);
+      const writingBtn = listContainer.querySelector('.lesson-vocab-writing-btn');
+      assert.ok(writingBtn, 'writingBtn must exist');
+
+      // Verify listener was attached
+      assert.strictEqual(writingBtn.listeners.has('click'), true, 'Click listener must be registered on writingBtn');
+      assert.strictEqual(writingBtn.listeners.get('click').length, 1);
+
+      // Verify clicking triggers click event without throwing
+      await assert.doesNotReject(async () => {
+        writingBtn.click();
+        await new Promise((resolve) => setTimeout(resolve, 60));
+      });
+    });
+
+    test('renders writing button (.lesson-vocab-writing-btn) in renderRadicalsList', () => {
+      setupMockDom();
+      const controller = new LessonDetailPageController();
+      const listContainer = new MockElement('ol');
+      controller.dom.vocabList = listContainer;
+
+      const radicals = [
+        {
+          radicalId: 1,
+          character: '一',
+          pinyin: 'yī',
+          meaningHanViet: 'Nhất',
+          meaningVi: 'Số một',
+          strokeCount: 1,
+          isCommon50: true
+        }
+      ];
+
+      controller.renderRadicalsList(radicals);
+      assert.strictEqual(listContainer.children.length, 1);
+
+      const radItem = listContainer.children[0];
+      const actions = radItem.querySelector('.lesson-vocab-actions');
+      assert.ok(actions, 'radItem must have .lesson-vocab-actions');
+      assert.strictEqual(actions.children.length, 2, 'Radicals actions must contain speechBtn and writingBtn');
+
+      const writingBtn = actions.querySelector('.lesson-vocab-writing-btn');
+      assert.ok(writingBtn, 'Radical item must have .lesson-vocab-writing-btn');
+      assert.strictEqual(writingBtn.getAttribute('type'), 'button');
+      assert.strictEqual(writingBtn.getAttribute('data-radical-id'), '1');
+      assert.strictEqual(writingBtn.getAttribute('title'), 'Luyện viết bộ thủ');
+      assert.strictEqual(writingBtn.getAttribute('aria-label'), 'Luyện viết cho bộ thủ 一');
+      assert.strictEqual(writingBtn.children[0].textContent, '✍️');
     });
   });
 });

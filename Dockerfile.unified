@@ -1,0 +1,68 @@
+# ==============================================================================
+# WebLearnChinese Production Unified Container (Single-Container Architecture)
+# Combines Spring Boot 3.3.5 (Java 21) & Python 3.11 FastAPI (Chao 5-scale DSP)
+# Runs within 512MB RAM (~435MB total) consuming 720h/month (1 Render Free Web Service)
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# Stage 1: Build Spring Boot Backend Artifact
+# ------------------------------------------------------------------------------
+FROM maven:3.9.9-eclipse-temurin-21-alpine AS java-builder
+WORKDIR /build
+
+# Copy Maven POM and pre-fetch dependencies for efficient Docker layer caching
+COPY backend/pom.xml ./backend/pom.xml
+RUN mvn -f ./backend/pom.xml dependency:go-offline -B
+
+# Copy backend source code and package application JAR (excluding local configs)
+COPY backend/src ./backend/src
+RUN rm -f ./backend/src/main/resources/application-local.yml ./backend/src/main/resources/*-local.yml
+RUN mvn -f ./backend/pom.xml clean package -DskipTests -B
+
+# ------------------------------------------------------------------------------
+# Stage 2: Runtime Base with Python 3.11 + Eclipse Temurin JRE 21 + Supervisord
+# ------------------------------------------------------------------------------
+FROM python:3.11-slim-bookworm AS runtime
+
+WORKDIR /app
+
+# 1. Install system dependencies for audio decoding (ffmpeg, libsndfile1) and process orchestration (supervisor, curl)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ffmpeg \
+    libsndfile1 \
+    supervisor \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# 2. Copy official Eclipse Temurin JRE 21 (glibc compatible with Debian Bookworm)
+COPY --from=eclipse-temurin:21-jre /opt/java/openjdk /opt/java/openjdk
+ENV JAVA_HOME=/opt/java/openjdk
+ENV PATH="${JAVA_HOME}/bin:${PATH}"
+
+# 3. Install Python dependencies for Speech Evaluation Service (CPU DSP only, no heavy torch)
+COPY speech-service/requirements.txt ./speech-service/
+RUN pip install --no-cache-dir -r speech-service/requirements.txt
+
+# 4. Copy Speech Service application code
+COPY speech-service/app/ ./speech-service/app/
+COPY speech-service/run_service.py ./speech-service/
+
+# 5. Copy built Spring Boot JAR from java-builder stage
+COPY --from=java-builder /build/backend/target/*.jar /app/app.jar
+
+# 6. Copy process manager configuration and helper scripts
+COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY docker/entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
+# Default environment configuration optimized for 512MB RAM container
+ENV PORT=8080 \
+    APP_DEMO_SEED_ACCOUNTS=false \
+    SPEECH_HOST=127.0.0.1 \
+    SPEECH_PORT=8000 \
+    SPEECH_SERVICE_URL=http://127.0.0.1:8000 \
+    JAVA_OPTS="-Xms128m -Xmx224m -XX:MaxMetaspaceSize=112m -XX:ReservedCodeCacheSize=48m -XX:+UseSerialGC -XX:+ExitOnOutOfMemoryError"
+
+EXPOSE 8080
+
+ENTRYPOINT ["/app/entrypoint.sh"]

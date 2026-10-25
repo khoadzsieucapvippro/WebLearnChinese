@@ -1,0 +1,61 @@
+name: Scheduled Database Backup (TiDB Cloud)
+
+on:
+  schedule:
+    - cron: '0 2 * * *' # Daily at 02:00 UTC (~09:00 AM VN)
+  workflow_dispatch:
+
+jobs:
+  backup:
+    name: TiDB Cloud Serverless Logical Backup
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install MySQL Client Tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y default-mysql-client gzip
+
+      - name: Execute mysqldump with TiDB Cloud Flags
+        env:
+          TIDB_HOST: ${{ secrets.TIDB_HOST }}
+          TIDB_PORT: ${{ secrets.TIDB_PORT || 4000 }}
+          TIDB_USER: ${{ secrets.TIDB_USER }}
+          TIDB_PASSWORD: ${{ secrets.TIDB_PASSWORD }}
+          TIDB_DATABASE: ${{ secrets.TIDB_DATABASE || 'elearning_db' }}
+        run: |
+          TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+          BACKUP_FILE="backup_elearning_db_${TIMESTAMP}.sql.gz"
+
+          echo "Starting logical database backup for ${TIDB_DATABASE}..."
+          
+          # Execute mysqldump with all 5 mandatory TiDB Serverless flags
+          mysqldump \
+            -h "$TIDB_HOST" \
+            -P "$TIDB_PORT" \
+            -u "$TIDB_USER" \
+            -p"$TIDB_PASSWORD" \
+            --ssl-mode=REQUIRED \
+            --default-character-set=utf8mb4 \
+            --single-transaction \
+            --skip-lock-tables \
+            --set-gtid-purged=OFF \
+            --databases "$TIDB_DATABASE" | gzip > "$BACKUP_FILE"
+
+          # Verify non-empty backup (must be > 10KB to ensure schema + data present)
+          FILE_SIZE=$(stat -c%s "$BACKUP_FILE")
+          echo "Backup completed: $BACKUP_FILE ($FILE_SIZE bytes)"
+          if [ "$FILE_SIZE" -lt 10240 ]; then
+            echo "ERROR: Backup file is smaller than 10KB ($FILE_SIZE bytes). Potential connection or dump failure!"
+            exit 1
+          fi
+
+          echo "BACKUP_FILE=$BACKUP_FILE" >> $GITHUB_ENV
+
+      - name: Upload Backup Artifact to GitHub Actions Storage
+        uses: actions/upload-artifact@v4
+        with:
+          name: database-backups-${{ github.run_number }}
+          path: ${{ env.BACKUP_FILE }}
+          retention-days: 30
+          if-no-files-found: error
