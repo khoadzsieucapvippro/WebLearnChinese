@@ -11,10 +11,42 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Install MySQL Client Tools
+      - name: Verify Environment & MySQL Client
         run: |
-          sudo apt-get update
-          sudo apt-get install -y default-mysql-client gzip
+          # GitHub Actions ubuntu-latest already includes preinstalled MySQL client
+          if ! command -v mysqldump &> /dev/null; then
+            echo "Installing mysql-client..."
+            sudo apt-get update && sudo apt-get install -y mysql-client gzip
+          fi
+          echo "MySQL client binary: $(command -v mysqldump)"
+          mysqldump --version
+
+      - name: Pre-flight Check for TiDB Cloud Secrets
+        env:
+          TIDB_HOST: ${{ secrets.TIDB_HOST }}
+          TIDB_USER: ${{ secrets.TIDB_USER }}
+          TIDB_PASSWORD: ${{ secrets.TIDB_PASSWORD }}
+        run: |
+          MISSING_SECRETS=""
+          [ -z "$TIDB_HOST" ] && MISSING_SECRETS="${MISSING_SECRETS} TIDB_HOST"
+          [ -z "$TIDB_USER" ] && MISSING_SECRETS="${MISSING_SECRETS} TIDB_USER"
+          [ -z "$TIDB_PASSWORD" ] && MISSING_SECRETS="${MISSING_SECRETS} TIDB_PASSWORD"
+
+          if [ -n "$MISSING_SECRETS" ]; then
+            echo "::error title=Missing GitHub Repository Secrets::Chưa cấu hình các Secrets bắt buộc:${MISSING_SECRETS}."
+            echo "================================================================================================"
+            echo "HƯỚNG DẪN CẤU HÌNH GITHUB SECRETS ĐỂ WORKFLOW SAO LƯU HOẠT ĐỘNG:"
+            echo "1. Truy cập: Repository GitHub -> Settings -> Secrets and variables -> Actions"
+            echo "2. Bấm 'New repository secret' và thêm các biến sau từ TiDB Cloud Serverless Console:"
+            echo "   - TIDB_HOST     : Gateway host (ví dụ: gateway01.ap-southeast-1.prod.aws.tidbcloud.com)"
+            echo "   - TIDB_PORT     : 4000 (tùy chọn, mặc định 4000 nếu không điền)"
+            echo "   - TIDB_USER     : Cluster user (ví dụ: xxxxxx.root)"
+            echo "   - TIDB_PASSWORD : Mật khẩu cơ sở dữ liệu TiDB Cloud của bạn"
+            echo "   - TIDB_DATABASE : Tên DB (tùy chọn, mặc định elearning_db)"
+            echo "================================================================================================"
+            exit 1
+          fi
+          echo "All required TiDB secrets are present. Proceeding with backup..."
 
       - name: Execute mysqldump with TiDB Cloud Flags
         env:
@@ -24,12 +56,20 @@ jobs:
           TIDB_PASSWORD: ${{ secrets.TIDB_PASSWORD }}
           TIDB_DATABASE: ${{ secrets.TIDB_DATABASE || 'elearning_db' }}
         run: |
+          set -eo pipefail
+
           TIMESTAMP=$(date +%Y%m%d_%H%M%S)
           BACKUP_FILE="backup_elearning_db_${TIMESTAMP}.sql.gz"
 
-          echo "Starting logical database backup for ${TIDB_DATABASE}..."
+          echo "Starting logical database backup for ${TIDB_DATABASE} on ${TIDB_HOST}:${TIDB_PORT}..."
           
-          # Execute mysqldump with all 5 mandatory TiDB Serverless flags
+          # Detect whether mysqldump supports --set-gtid-purged (Oracle MySQL vs MariaDB)
+          EXTRA_FLAGS=""
+          if mysqldump --help 2>&1 | grep -q -- '--set-gtid-purged'; then
+            EXTRA_FLAGS="--set-gtid-purged=OFF"
+          fi
+
+          # Execute mysqldump with TiDB Cloud Serverless best practices
           mysqldump \
             -h "$TIDB_HOST" \
             -P "$TIDB_PORT" \
@@ -39,20 +79,21 @@ jobs:
             --default-character-set=utf8mb4 \
             --single-transaction \
             --skip-lock-tables \
-            --set-gtid-purged=OFF \
+            $EXTRA_FLAGS \
             --databases "$TIDB_DATABASE" | gzip > "$BACKUP_FILE"
 
           # Verify non-empty backup (must be > 10KB to ensure schema + data present)
           FILE_SIZE=$(stat -c%s "$BACKUP_FILE")
           echo "Backup completed: $BACKUP_FILE ($FILE_SIZE bytes)"
           if [ "$FILE_SIZE" -lt 10240 ]; then
-            echo "ERROR: Backup file is smaller than 10KB ($FILE_SIZE bytes). Potential connection or dump failure!"
+            echo "::error::Backup file is smaller than 10KB ($FILE_SIZE bytes). Potential connection or dump failure!"
             exit 1
           fi
 
           echo "BACKUP_FILE=$BACKUP_FILE" >> $GITHUB_ENV
 
       - name: Upload Backup Artifact to GitHub Actions Storage
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: database-backups-${{ github.run_number }}
