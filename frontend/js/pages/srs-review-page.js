@@ -160,19 +160,71 @@ export function formatConstituentRadicalsText(radicals, wordHanzi) {
 }
 
 /**
- * Reads progress from localStorage for the given mode ('flashcard', 'writing', 'listening', or 'reading').
+ * Resolves the base storage key for a given SRS study mode.
  * @param {'flashcard'|'writing'|'listening'|'reading'} mode
- * @returns {Object}
+ * @returns {string}
  */
-export function getProgress(mode) {
-  const key = mode === 'writing'
+export function getProgressBaseKey(mode) {
+  return mode === 'writing'
     ? STORAGE_KEY_WRITING
     : (mode === 'listening'
         ? STORAGE_KEY_LISTENING
         : (mode === 'reading' ? STORAGE_KEY_READING : STORAGE_KEY_FLASHCARD));
+}
+
+/**
+ * Resolves the account-scoped storage key for a given SRS study mode.
+ * @param {'flashcard'|'writing'|'listening'|'reading'} mode
+ * @returns {{ baseKey: string, scopedKey: string, accountId: string|number|null }}
+ */
+export function resolveAccountProgressKeys(mode) {
+  const baseKey = getProgressBaseKey(mode);
+  const user = authManager.getUser();
+  const accountId = user?.accountId ?? null;
+  const scopedKey = accountId != null ? `${baseKey}_USER_${accountId}` : `${baseKey}_GUEST`;
+  return { baseKey, scopedKey, accountId };
+}
+
+/**
+ * Reads progress from localStorage for the given mode ('flashcard', 'writing', 'listening', or 'reading').
+ * Isolates progress per authenticated accountId while preserving backward compatibility with base keys.
+ * @param {'flashcard'|'writing'|'listening'|'reading'} mode
+ * @returns {Object}
+ */
+export function getProgress(mode) {
+  const { baseKey, scopedKey, accountId } = resolveAccountProgressKeys(mode);
   try {
-    const raw = typeof localStorage !== 'undefined' ? localStorage.getItem(key) : null;
-    return raw ? JSON.parse(raw) : {};
+    if (typeof localStorage === 'undefined') return {};
+
+    if (accountId != null) {
+      const scopedRaw = localStorage.getItem(scopedKey);
+      if (scopedRaw) {
+        const parsedScoped = JSON.parse(scopedRaw);
+        if (parsedScoped && typeof parsedScoped === 'object') {
+          const { _ownerAccountId, ...clean } = parsedScoped;
+          return clean;
+        }
+      }
+    }
+
+    const raw = localStorage.getItem(baseKey);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== 'object') return {};
+
+    // Prevent cross-account leakage if baseKey was written by a different logged-in account
+    if (parsed._ownerAccountId != null) {
+      if (accountId == null || String(parsed._ownerAccountId) !== String(accountId)) {
+        if (accountId == null) {
+          const guestRaw = localStorage.getItem(scopedKey);
+          return guestRaw ? JSON.parse(guestRaw) : {};
+        }
+        return {};
+      }
+    }
+
+    const { _ownerAccountId, ...clean } = parsed;
+    return clean;
   } catch (e) {
     return {};
   }
@@ -180,20 +232,19 @@ export function getProgress(mode) {
 
 /**
  * Saves progress updates to localStorage for the given mode.
+ * Persists both to the account-scoped key and tags the base key with _ownerAccountId.
  * @param {'flashcard'|'writing'|'listening'|'reading'} mode
  * @param {Object} updates
  */
 export function saveProgress(mode, updates) {
-  const key = mode === 'writing'
-    ? STORAGE_KEY_WRITING
-    : (mode === 'listening'
-        ? STORAGE_KEY_LISTENING
-        : (mode === 'reading' ? STORAGE_KEY_READING : STORAGE_KEY_FLASHCARD));
+  const { baseKey, scopedKey, accountId } = resolveAccountProgressKeys(mode);
   try {
     const current = getProgress(mode);
     const next = { ...current, ...updates };
     if (typeof localStorage !== 'undefined') {
-      localStorage.setItem(key, JSON.stringify(next));
+      localStorage.setItem(scopedKey, JSON.stringify(next));
+      const basePayload = accountId != null ? { ...next, _ownerAccountId: accountId } : next;
+      localStorage.setItem(baseKey, JSON.stringify(basePayload));
     }
   } catch (e) {
     console.warn('[SRS Progress] Could not save progress:', e);
@@ -12645,8 +12696,20 @@ export class SrsReviewController {
         note = items.length > 0 ? items[0] : null;
         if (!note) {
           try {
-            const localSaved = localStorage.getItem(`srs_vocab_note_${itemId}`);
-            if (localSaved) note = JSON.parse(localSaved);
+            const scopedVocabKey = this.getVocabNoteStorageKey(itemId);
+            const scopedSaved = localStorage.getItem(scopedVocabKey);
+            if (scopedSaved) {
+              note = JSON.parse(scopedSaved);
+            } else {
+              const localSaved = localStorage.getItem(`srs_vocab_note_${itemId}`);
+              if (localSaved) {
+                const parsed = JSON.parse(localSaved);
+                const currentAccountId = authManager.getUser()?.accountId ?? null;
+                if (parsed && (parsed._ownerAccountId == null || String(parsed._ownerAccountId) === String(currentAccountId))) {
+                  note = parsed;
+                }
+              }
+            }
           } catch (_) {}
         }
         this.notesCache.set(cacheKey, note ? [note] : []);
@@ -12676,19 +12739,46 @@ export class SrsReviewController {
   }
 
   /**
+   * Helper to retrieve account-scoped storage key for vocabulary note fallback.
+   * @param {number} vocabId
+   * @returns {string}
+   */
+  getVocabNoteStorageKey(vocabId) {
+    const user = authManager.getUser();
+    const userId = user?.accountId || 'local';
+    return `srs_vocab_note_${userId}_${vocabId}`;
+  }
+
+  /**
    * Retrieves stored personal notes for a radical item using srs_radical_notes localStorage.
+   * Isolates notes by accountId when multiple users share the same browser.
    * @param {number} radicalId
    * @returns {Array}
    */
   getRadicalNotes(radicalId) {
     try {
+      const currentAccountId = authManager.getUser()?.accountId ?? null;
+      const userKey = this.getRadicalNotesStorageKey(radicalId);
+      const userData = localStorage.getItem(userKey);
+      if (userData) {
+        const parsedUser = JSON.parse(userData);
+        if (Array.isArray(parsedUser) && parsedUser.length > 0) {
+          return parsedUser;
+        }
+      }
+
       const data = localStorage.getItem('srs_radical_notes');
       if (data) {
         const parsed = JSON.parse(data);
         if (Array.isArray(parsed)) {
           const found = parsed.find(n => Number(n.radicalId ?? n.itemId ?? n.id) === Number(radicalId));
-          if (found) return [found];
+          if (found && (found._ownerAccountId == null || String(found._ownerAccountId) === String(currentAccountId))) {
+            return [found];
+          }
         } else if (parsed && typeof parsed === 'object') {
+          if (parsed._ownerAccountId != null && (currentAccountId == null || String(parsed._ownerAccountId) !== String(currentAccountId))) {
+            return [];
+          }
           const item = parsed[radicalId] ?? parsed[String(radicalId)];
           if (item) {
             return typeof item === 'string'
@@ -12696,12 +12786,6 @@ export class SrsReviewController {
               : [item];
           }
         }
-      }
-      // User-specific fallback key
-      const userKey = this.getRadicalNotesStorageKey(radicalId);
-      const userData = localStorage.getItem(userKey);
-      if (userData) {
-        return JSON.parse(userData);
       }
       return [];
     } catch (e) {
@@ -12760,6 +12844,7 @@ export class SrsReviewController {
             }
           } catch (_) {}
         }
+        const currentAccountId = authManager.getUser()?.accountId ?? null;
         if (!trimmed) {
           delete notesMap[radicalId];
           delete notesMap[String(radicalId)];
@@ -12770,6 +12855,9 @@ export class SrsReviewController {
             content: trimmed,
             updatedAt: new Date().toISOString()
           };
+        }
+        if (currentAccountId != null) {
+          notesMap._ownerAccountId = currentAccountId;
         }
         localStorage.setItem('srs_radical_notes', JSON.stringify(notesMap));
       } catch (e) {
@@ -12818,6 +12906,16 @@ export class SrsReviewController {
 
     // Vocabulary Card
     const vocabId = card.itemId;
+    const scopedVocabKey = this.getVocabNoteStorageKey(vocabId);
+    const currentAccountId = authManager.getUser()?.accountId ?? null;
+    const persistLocalVocabNote = (noteObj) => {
+      try {
+        localStorage.setItem(scopedVocabKey, JSON.stringify(noteObj));
+        const basePayload = currentAccountId != null ? { ...noteObj, _ownerAccountId: currentAccountId } : noteObj;
+        localStorage.setItem(`srs_vocab_note_${vocabId}`, JSON.stringify(basePayload));
+      } catch (_) {}
+    };
+
     if (!trimmed) {
       if (noteToUpdate?.noteId) {
         try {
@@ -12827,6 +12925,7 @@ export class SrsReviewController {
         }
       }
       try {
+        localStorage.removeItem(scopedVocabKey);
         localStorage.removeItem(`srs_vocab_note_${vocabId}`);
       } catch (_) {}
       this.notesCache.set(cacheKey, []);
@@ -12847,9 +12946,7 @@ export class SrsReviewController {
           body: { content: trimmed }
         });
         const updated = res?.data || res || { noteId: noteToUpdate.noteId, vocabId: Number(vocabId), content: trimmed, updatedAt: new Date().toISOString() };
-        try {
-          localStorage.setItem(`srs_vocab_note_${vocabId}`, JSON.stringify(updated));
-        } catch (_) {}
+        persistLocalVocabNote(updated);
         this.notesCache.set(cacheKey, [updated]);
         if (isStillCurrentCard()) {
           this.currentCardNote = updated;
@@ -12860,9 +12957,7 @@ export class SrsReviewController {
       } catch (e) {
         console.warn('[Inline Note] Update API error, saving optimistic:', e);
         const fallback = { noteId: noteToUpdate.noteId, vocabId: Number(vocabId), content: trimmed, updatedAt: new Date().toISOString() };
-        try {
-          localStorage.setItem(`srs_vocab_note_${vocabId}`, JSON.stringify(fallback));
-        } catch (_) {}
+        persistLocalVocabNote(fallback);
         this.notesCache.set(cacheKey, [fallback]);
         if (isStillCurrentCard()) {
           this.currentCardNote = fallback;
@@ -12878,9 +12973,7 @@ export class SrsReviewController {
           body: { content: trimmed }
         });
         const created = res?.data || res || { noteId: Date.now(), vocabId: Number(vocabId), content: trimmed, createdAt: new Date().toISOString() };
-        try {
-          localStorage.setItem(`srs_vocab_note_${vocabId}`, JSON.stringify(created));
-        } catch (_) {}
+        persistLocalVocabNote(created);
         this.notesCache.set(cacheKey, [created]);
         if (isStillCurrentCard()) {
           this.currentCardNote = created;
@@ -12891,9 +12984,7 @@ export class SrsReviewController {
       } catch (e) {
         console.warn('[Inline Note] Create API error, saving optimistic:', e);
         const fallback = { noteId: Date.now(), vocabId: Number(vocabId), content: trimmed, createdAt: new Date().toISOString() };
-        try {
-          localStorage.setItem(`srs_vocab_note_${vocabId}`, JSON.stringify(fallback));
-        } catch (_) {}
+        persistLocalVocabNote(fallback);
         this.notesCache.set(cacheKey, [fallback]);
         if (isStillCurrentCard()) {
           this.currentCardNote = fallback;

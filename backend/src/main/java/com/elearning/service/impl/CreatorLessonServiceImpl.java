@@ -145,7 +145,21 @@ public class CreatorLessonServiceImpl implements CreatorLessonService {
         checkOwnership(lesson, currentAccount);
 
         List<LessonVocabulary> vocabularies = lessonVocabularyRepository.findByLessonIdWithVocabularyOrderAsc(lessonId);
-        return LessonDetailResponse.fromEntity(lesson, vocabularies);
+        LessonDetailResponse response = LessonDetailResponse.fromEntity(lesson, vocabularies);
+        if (response != null && "Rejected".equalsIgnoreCase(lesson.getStatus()) && moderationLogRepository != null) {
+            List<com.elearning.entity.ModerationLog> logs = moderationLogRepository.findByLesson_LessonIdOrderByCreatedAtDescLogIdDesc(lessonId);
+            if (logs != null && !logs.isEmpty()) {
+                com.elearning.entity.ModerationLog latestReject = logs.stream()
+                        .filter(l -> l != null && "Rejected".equalsIgnoreCase(l.getAction()))
+                        .findFirst()
+                        .orElse(logs.get(0));
+                if (latestReject != null) {
+                    response.setRejectionReason(latestReject.getRejectionReason());
+                    response.setFlaggedFields(latestReject.getFlaggedFields());
+                }
+            }
+        }
+        return response;
     }
 
     @Override
@@ -177,7 +191,21 @@ public class CreatorLessonServiceImpl implements CreatorLessonService {
         lesson = lessonRepository.save(lesson);
 
         List<LessonVocabulary> vocabularies = lessonVocabularyRepository.findByLessonIdWithVocabularyOrderAsc(lessonId);
-        return LessonDetailResponse.fromEntity(lesson, vocabularies);
+        LessonDetailResponse response = LessonDetailResponse.fromEntity(lesson, vocabularies);
+        if (response != null && "Rejected".equalsIgnoreCase(lesson.getStatus()) && moderationLogRepository != null) {
+            List<com.elearning.entity.ModerationLog> logs = moderationLogRepository.findByLesson_LessonIdOrderByCreatedAtDescLogIdDesc(lessonId);
+            if (logs != null && !logs.isEmpty()) {
+                com.elearning.entity.ModerationLog latestReject = logs.stream()
+                        .filter(l -> l != null && "Rejected".equalsIgnoreCase(l.getAction()))
+                        .findFirst()
+                        .orElse(logs.get(0));
+                if (latestReject != null) {
+                    response.setRejectionReason(latestReject.getRejectionReason());
+                    response.setFlaggedFields(latestReject.getFlaggedFields());
+                }
+            }
+        }
+        return response;
     }
 
     @Override
@@ -237,7 +265,21 @@ public class CreatorLessonServiceImpl implements CreatorLessonService {
         lessonVocabularyRepository.save(lv);
 
         List<LessonVocabulary> vocabularies = lessonVocabularyRepository.findByLessonIdWithVocabularyOrderAsc(lessonId);
-        return LessonDetailResponse.fromEntity(lesson, vocabularies);
+        LessonDetailResponse response = LessonDetailResponse.fromEntity(lesson, vocabularies);
+        if (response != null && "Rejected".equalsIgnoreCase(lesson.getStatus()) && moderationLogRepository != null) {
+            List<com.elearning.entity.ModerationLog> logs = moderationLogRepository.findByLesson_LessonIdOrderByCreatedAtDescLogIdDesc(lessonId);
+            if (logs != null && !logs.isEmpty()) {
+                com.elearning.entity.ModerationLog latestReject = logs.stream()
+                        .filter(l -> l != null && "Rejected".equalsIgnoreCase(l.getAction()))
+                        .findFirst()
+                        .orElse(logs.get(0));
+                if (latestReject != null) {
+                    response.setRejectionReason(latestReject.getRejectionReason());
+                    response.setFlaggedFields(latestReject.getFlaggedFields());
+                }
+            }
+        }
+        return response;
     }
 
     @Override
@@ -273,7 +315,21 @@ public class CreatorLessonServiceImpl implements CreatorLessonService {
         entityManager.flush();
 
         List<LessonVocabulary> vocabularies = lessonVocabularyRepository.findByLessonIdWithVocabularyOrderAsc(lessonId);
-        return LessonDetailResponse.fromEntity(lesson, vocabularies);
+        LessonDetailResponse response = LessonDetailResponse.fromEntity(lesson, vocabularies);
+        if (response != null && "Rejected".equalsIgnoreCase(lesson.getStatus()) && moderationLogRepository != null) {
+            List<com.elearning.entity.ModerationLog> logs = moderationLogRepository.findByLesson_LessonIdOrderByCreatedAtDescLogIdDesc(lessonId);
+            if (logs != null && !logs.isEmpty()) {
+                com.elearning.entity.ModerationLog latestReject = logs.stream()
+                        .filter(l -> l != null && "Rejected".equalsIgnoreCase(l.getAction()))
+                        .findFirst()
+                        .orElse(logs.get(0));
+                if (latestReject != null) {
+                    response.setRejectionReason(latestReject.getRejectionReason());
+                    response.setFlaggedFields(latestReject.getFlaggedFields());
+                }
+            }
+        }
+        return response;
     }
 
     @Override
@@ -371,7 +427,21 @@ public class CreatorLessonServiceImpl implements CreatorLessonService {
         lesson = lessonRepository.save(lesson);
 
         List<LessonVocabulary> vocabularies = lessonVocabularyRepository.findByLessonIdWithVocabularyOrderAsc(lessonId);
-        return LessonDetailResponse.fromEntity(lesson, vocabularies);
+        LessonDetailResponse response = LessonDetailResponse.fromEntity(lesson, vocabularies);
+        if (response != null && "Rejected".equalsIgnoreCase(lesson.getStatus()) && moderationLogRepository != null) {
+            List<com.elearning.entity.ModerationLog> logs = moderationLogRepository.findByLesson_LessonIdOrderByCreatedAtDescLogIdDesc(lessonId);
+            if (logs != null && !logs.isEmpty()) {
+                com.elearning.entity.ModerationLog latestReject = logs.stream()
+                        .filter(l -> l != null && "Rejected".equalsIgnoreCase(l.getAction()))
+                        .findFirst()
+                        .orElse(logs.get(0));
+                if (latestReject != null) {
+                    response.setRejectionReason(latestReject.getRejectionReason());
+                    response.setFlaggedFields(latestReject.getFlaggedFields());
+                }
+            }
+        }
+        return response;
     }
 
     @Override

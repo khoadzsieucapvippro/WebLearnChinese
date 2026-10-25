@@ -465,4 +465,35 @@ describe('Unit: SRS Flashcard & Writing Audit Fixes', () => {
       assert.strictEqual(controller.stats.totalReviewed, 0);
     });
   });
+
+  // ---------------------------------------------------------------------------
+  // AREA G: Multi-Account LocalStorage Progress & Note Isolation (P1-DATA-1)
+  // ---------------------------------------------------------------------------
+  describe('Area G: Multi-Account Progress & Note Isolation (P1-DATA-1)', () => {
+    test('isolates SRS progress and radical notes between different authenticated accounts on the same browser', () => {
+      const originalGetUser = authManager.getUser;
+      try {
+        // 1. Account 101 logs in and saves progress
+        authManager.getUser = () => ({ accountId: 101, emailOrPhone: 'user101@example.com', roles: ['Learner'] });
+        saveProgress('flashcard', { hsk1: { chapter_0: 9, lastChapterIdx: 0 } });
+
+        const acc101Progress = getProgress('flashcard');
+        assert.strictEqual(acc101Progress.hsk1?.chapter_0, 9);
+
+        // 2. Account 202 logs in on the same browser — must NOT inherit Account 101's progress
+        authManager.getUser = () => ({ accountId: 202, emailOrPhone: 'user202@example.com', roles: ['Learner'] });
+        const acc202Initial = getProgress('flashcard');
+        assert.deepStrictEqual(acc202Initial, {}, 'Account 202 must not read Account 101 progress');
+
+        saveProgress('flashcard', { hsk1: { chapter_0: 3, lastChapterIdx: 0 } });
+        assert.strictEqual(getProgress('flashcard').hsk1?.chapter_0, 3);
+
+        // 3. Switch back to Account 101 — must still have Account 101's progress (9) intact
+        authManager.getUser = () => ({ accountId: 101, emailOrPhone: 'user101@example.com', roles: ['Learner'] });
+        assert.strictEqual(getProgress('flashcard').hsk1?.chapter_0, 9, 'Account 101 progress must remain 9');
+      } finally {
+        authManager.getUser = originalGetUser;
+      }
+    });
+  });
 });

@@ -17,7 +17,7 @@
 import { authManager } from '../auth/auth-state.js';
 import { createSafeElement, clearContainer } from './security.js';
 import { showToast } from './ui.js';
-import { isDemoFallbackActive, isGitHubPagesEnvironment, isApiConfigured } from '../api/api.js';
+import { apiClient, isDemoFallbackActive, isGitHubPagesEnvironment, isApiConfigured } from '../api/api.js';
 
 export const MANAGEMENT_PAGE_SET = new Set([
   'management.html',
@@ -425,6 +425,12 @@ export function renderNavbarAuth(container) {
          window.location.pathname.endsWith('admin-lessons.html') ||
          window.location.pathname.endsWith('management.html') ||
          window.location.pathname.endsWith('admin-audit-logs.html'));
+
+      if (authManager.isAuthenticated()) {
+        try {
+          apiClient('/auth/logout', { method: 'POST', skipAuthRedirect: true }).catch(() => null);
+        } catch (_) {}
+      }
 
       authManager.logout(false);
 

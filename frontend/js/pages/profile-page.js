@@ -1059,6 +1059,25 @@ export function initAccountSecurity() {
         })
       });
 
+      // Refresh active session JWT after authorizationVersion increment on backend
+      const currentUser = authManager.getUser();
+      if (currentUser?.emailOrPhone) {
+        try {
+          const reloginData = await apiClient('/auth/login', {
+            method: 'POST',
+            body: JSON.stringify({
+              emailOrPhone: currentUser.emailOrPhone,
+              password: newPassword
+            }),
+            skipAuthRedirect: true
+          }).catch(() => null);
+          const sessionPayload = reloginData?.data || reloginData;
+          if (sessionPayload && typeof sessionPayload.token === 'string' && sessionPayload.token.trim()) {
+            authManager.setSession(sessionPayload);
+          }
+        } catch (_) {}
+      }
+
       // Reset form and clear password variables immediately (Zero Web Storage Exposure)
       form.reset();
       clearFieldErrors();

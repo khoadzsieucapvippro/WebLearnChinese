@@ -346,6 +346,20 @@ class DemoFallbackEngine {
       };
     }
 
+    if (cleanPath === '/auth/logout' && method === 'POST') {
+      return null;
+    }
+
+    if (cleanPath === '/auth/change-password' && method === 'POST') {
+      const account = this.getCurrentAccount();
+      const newPassword = String(body?.newPassword || '').trim();
+      if (account && newPassword.length >= 6) {
+        account.password = newPassword;
+        this.saveData();
+      }
+      return null;
+    }
+
     if ((cleanPath === '/users/profile' || cleanPath === '/auth/me') && method === 'GET') {
       const account = this.getCurrentAccount();
       return {
@@ -922,7 +936,11 @@ class DemoFallbackEngine {
       const lesson = data.lessons.find(l => l.lessonId === id);
       if (!lesson) throw new ApiError(`Không tìm thấy bài học ${id}`, 404, 'NOT_FOUND');
 
+      const resolvedReason = body?.rejectionReason || body?.reason || 'Cần bổ sung thêm ví dụ minh họa.';
+      const resolvedFlags = body?.flaggedFields || null;
       lesson.status = 'Rejected';
+      lesson.rejectionReason = resolvedReason;
+      lesson.flaggedFields = resolvedFlags;
       lesson.updatedAt = new Date().toISOString();
       data.moderationHistory.unshift({
         historyId: Date.now(),
@@ -932,8 +950,9 @@ class DemoFallbackEngine {
         moderatorName: 'Kiểm Duyệt Viên',
         moderatorEmail: 'moderator@gmail.com',
         reviewedAt: new Date().toISOString(),
-        reason: body?.reason || 'Cần bổ sung thêm ví dụ minh họa.',
-        flaggedFields: body?.flaggedFields || null
+        reason: resolvedReason,
+        rejectionReason: resolvedReason,
+        flaggedFields: resolvedFlags
       });
       this.saveData();
       return lesson;

@@ -93,30 +93,27 @@
 8. **[AUDIO-2] Đồng bộ hóa cả 7 luồng phát âm (A–G) về `playPronunciation()`, hỗ trợ `speechRate` trên `HTMLAudioElement`, xử lý subpath GitHub Pages (`resolveSubpathAudioUrl`) và chống chồng chéo với bản ghi cá nhân**:
    - **Trạng thái**: `VERIFIED_FIXED`
    - **Bằng chứng**: `frontend/js/ui/speech.js#L52-L76, #L475-L505`, `frontend/js/pages/vocabulary-page.js#L385, #L854`, `frontend/js/pages/srs-review-page.js#L10367, #L10454, #L12111, #L13601, #L13787, #L14592`.
+9. **[P1-DATA-1] Cô lập tiến độ học tập và ghi chú cá nhân giữa các tài khoản trên cùng trình duyệt**:
+   - **Trạng thái**: `VERIFIED_FIXED`
+   - **Bằng chứng**: `frontend/js/pages/srs-review-page.js#L162-L250, #L12695-L12980` (`resolveAccountProgressKeys`, `getProgress`, `saveProgress`, `getRadicalNotes`, `getVocabNoteStorageKey`) và `tests/frontend/unit/srs/srs-audit-fixes.test.mjs#L469-L496`.
+10. **[P1-AUTH-1] Hoàn thiện vòng đời đăng xuất (`POST /api/v1/auth/logout`) và cấp lại phiên JWT mới sau khi đổi mật khẩu (`POST /api/v1/auth/change-password`)**:
+    - **Trạng thái**: `VERIFIED_FIXED`
+    - **Bằng chứng**: `backend/src/main/java/com/elearning/service/impl/AuthServiceImpl.java#L148-L179`, `frontend/js/ui/nav.js#L429-L435`, `frontend/js/pages/profile-page.js#L1054-L1080`, `frontend/js/api/demo-fallback-engine.js#L349-L361`.
+11. **[P1-MODERATION-1] Hiển thị lý do từ chối bài học (`rejectionReason` & `flaggedFields` từ `MODERATION_LOG`) cho Creator**:
+    - **Trạng thái**: `VERIFIED_FIXED`
+    - **Bằng chứng**: `backend/src/main/java/com/elearning/dto/response/LessonDetailResponse.java#L25-L26, #L114-L128`, `backend/src/main/java/com/elearning/service/impl/CreatorLessonServiceImpl.java#L147-L163`, `backend/src/test/java/com/elearning/CreatorLessonServiceTests.java#L317-L343`, `frontend/js/pages/creator-lesson-editor-page.js#L177-L244`.
 
 ### 5.2. Các hạng mục còn mở hoặc bị chặn bởi môi trường/thiết bị (`OPEN` / `UNVERIFIED` / `WONT_FIX`)
 
-9. **[AUDIO-3] Tạo/nhập bộ tệp âm thanh tĩnh (`.mp3`/`.ogg`) có bản quyền cho toàn bộ 214 bộ thủ & 1.068 từ vựng**:
-   - **Trạng thái**: `OPEN`
-   - **Nguyên nhân & Việc cần làm tiếp theo**: Môi trường máy trạm hiện tại chỉ có giọng đọc tiếng Anh (`Microsoft David/Zira en-US`), không có công cụ TTS tiếng Trung ngoại tuyến có giấy phép phân phối hoặc bộ thu âm người thật. Hạ tầng `frontend/assets/audio/manifest.json` và `resolveSubpathAudioUrl()` đã sẵn sàng; cần chạy script sinh/nhập tệp âm thanh từ nguồn CC0/CC-BY hoặc mô hình TTS ngoại tuyến được cấp phép rồi cập nhật `manifest.json` / migration `V31`.
-10. **[AUDIO-4] Kiểm thử vật lý trên loa điện thoại Android Chrome và iPhone Safari thật**:
+12. **[AUDIO-3] Tạo/nhập bộ tệp âm thanh tĩnh (`.mp3`/`.ogg`) có bản quyền cho toàn bộ 214 bộ thủ & 1.068 từ vựng**:
+    - **Trạng thái**: `OPEN`
+    - **Nguyên nhân & Việc cần làm tiếp theo**: Môi trường máy trạm hiện tại chỉ có giọng đọc tiếng Anh (`Microsoft David/Zira en-US`), không có công cụ TTS tiếng Trung ngoại tuyến có giấy phép phân phối hoặc bộ thu âm người thật. Hạ tầng `frontend/assets/audio/manifest.json` và `resolveSubpathAudioUrl()` đã sẵn sàng; cần chạy script sinh/nhập tệp âm thanh từ nguồn CC0/CC-BY hoặc mô hình TTS ngoại tuyến được cấp phép rồi cập nhật `manifest.json` / migration `V31`.
+13. **[AUDIO-4] Kiểm thử vật lý trên loa điện thoại Android Chrome và iPhone Safari thật**:
     - **Trạng thái**: `UNVERIFIED`
     - **Nguyên nhân & Việc cần làm tiếp theo**: Trong môi trường phát triển chỉ có trình duyệt Chromium tự động (Playwright desktop + mobile viewport 375x667). Cần kiểm tra thực tế trên điện thoại Android Chrome và iOS Safari thật để xác nhận âm lượng, chế độ chuông/im lặng phần cứng (iOS Ringer Switch) và gói giọng đọc hệ điều hành.
-11. **[P1-DATA-1] Cô lập và đồng bộ tiến độ học tập / ghi chú cá nhân giữa các tài khoản trên cùng trình duyệt và giữa nhiều thiết bị**:
+14. **[P1-SEC-1] Bổ sung `@PreAuthorize` cấp lớp và Rate Limiting mở rộng**:
     - **Trạng thái**: `OPEN`
-    - **Bằng chứng**: `frontend/js/pages/srs-review-page.js#L68-L71, #L167-L201` (`HOC_HAN_NGU_FLASHCARD_PROGRESS`, `HOC_HAN_NGU_WRITING_PROGRESS`, `HOC_HAN_NGU_LISTENING_PROGRESS`, `HOC_HAN_NGU_READING_PROGRESS`) và `#L12664, #L12699` (`srs_radical_notes`, `srs_vocab_notes_fallback_${vocabId}`) chưa được gắn khóa theo `accountId` và chưa đồng bộ vị trí chương học lên MySQL (`V31`).
-12. **[P1-AUTH-1] Hoàn thiện vòng đời đăng nhập, đăng xuất và đổi mật khẩu (JWT Revocation / Re-issuance)**:
-    - **Trạng thái**: `OPEN`
-    - **Bằng chứng**:
-      - Khi đổi mật khẩu (`AccountSecurityServiceImpl.java#L65-L95`), `authorizationVersion` chưa được tăng và chưa cấp lại JWT mới cho phiên hiện tại.
-      - Khi đăng xuất trên frontend (`auth-state.js#L155-L178`), hệ thống chỉ xóa `localStorage` mà chưa gọi `POST /api/v1/auth/logout` (`AuthController.java#L75-L85`) để vô hiệu hóa token phía server.
-      - Khi đăng nhập/đăng ký từ trạng thái khách (`Guest`), tiến độ học tạm trong `localStorage` chưa được hợp nhất lên tài khoản.
-13. **[P1-MODERATION-1] Hiển thị lý do từ chối bài học (`comment` từ `MODERATION_LOG`) cho Creator**:
-    - **Trạng thái**: `OPEN`
-    - **Bằng chứng**: `LessonService.java` / `LessonDetailResponse.java` hiện chưa trả về nhận xét từ chối gần nhất của Moderator trong `MODERATION_LOG`, khiến `creator-lesson-editor.js` chưa hiển thị được lý do bài học bị trả về `Rejected`.
-14. **[P1-SEC-1] Bổ sung `@PreAuthorize` cấp lớp và Rate Limiting cho các API nhạy cảm**:
-    - **Trạng thái**: `OPEN`
-    - **Bằng chứng**: Bổ sung `@PreAuthorize` rõ ràng trên `CreatorLessonController`, `ModeratorLessonController`, `UserSrsController`, `PersonalNoteController` để tăng phòng vệ chiều sâu (ngoài `SecurityConfig.java`), và thêm Rate Limiting cho `/api/v1/auth/login`, `/api/v1/auth/register`.
+    - **Bằng chứng**: Bổ sung `@PreAuthorize` rõ ràng trên `CreatorLessonController`, `ModeratorLessonController`, `UserSrsController`, `PersonalNoteController` để tăng phòng vệ chiều sâu (ngoài `SecurityConfig.java`).
 15. **[P1-OPS-1] Cấu hình Production, giới hạn Render Free Tier (750 giờ/tháng), triển khai `speech-service` vào `render.yaml`, Backup & Khả năng phục hồi**:
     - **Trạng thái**: `OPEN`
     - **Bằng chứng**: `render.yaml` hiện mới định nghĩa 1 container `elearning-backend`, chưa định nghĩa container `speech-service` (hoặc nếu chạy cả 2 sẽ vượt 750 giờ/tháng của gói Free). Cần thiết lập quy trình sao lưu định kỳ cho TiDB Cloud và đổi mật khẩu mặc định của 3 tài khoản seed ngay sau khi khởi tạo.
@@ -138,14 +135,16 @@
 1. `node --test tests/frontend/unit/srs/srs-audio-playback.test.mjs tests/frontend/unit/ui/speech-controller.test.mjs tests/frontend/unit/srs/srs-audio-challenger-edge.test.mjs`:
    - **Kết quả**: **PASS 32/32 tests** (3 suites, 0 failed).
 2. `npm run verify:frontend:fast`:
-   - **Kết quả**: **PASS 946/946 tests** (227 suites, 0 failed).
+   - **Kết quả**: **PASS 947/947 tests** (228 suites, 0 failed).
 3. `node --test tests/frontend/e2e/srs-listening.browser.mjs`:
    - **Kết quả**: **PASS 6/6 tests** (bao gồm `SL-06` kiểm chứng tải tệp WAV thật HTTP 200, `audio/wav`, sự kiện `playing`, `currentTime > 0`, tự mở khóa nút và 0 runtime error).
 4. `node tests/e2e/runner.mjs --tier=all`:
    - **Kết quả**: **PASS 74/74 tests** (Tiers 1–4, 0 failed).
 5. `python speech-service/test_pipeline.py` & `python speech-service/test_adversarial_m2.py`:
    - **Kết quả**: **PASS 9/9 nhóm test DSP + 10/10 bài test bảo mật** (0 failed).
-6. `mvn -f backend/pom.xml test "-Dtest=ReadingAssessmentControllerTests,ReadingAssessmentServiceTests,LocalSpeechServiceClientTests"`:
+6. `mvn -f backend/pom.xml test "-Dtest=CreatorLessonServiceTests,LessonServiceTests,AuthControllerTests,AuthServiceTests"`:
+   - **Kết quả**: **BUILD SUCCESS — PASS 65/65 tests** (0 failed).
+7. `mvn -f backend/pom.xml test "-Dtest=ReadingAssessmentControllerTests,ReadingAssessmentServiceTests,LocalSpeechServiceClientTests"`:
    - **Kết quả**: **BUILD SUCCESS — PASS 34/34 tests** (0 failed).
 
 ---
@@ -154,11 +153,9 @@
 
 Khi bắt đầu phiên làm việc tiếp theo, Agent kế nhiệm thực hiện theo thứ tự ưu tiên sau:
 
-1. **Bước 1 (P1-DATA-1 — Cô lập dữ liệu LocalStorage theo tài khoản)**:
-   - Sửa `getProgress(mode)` và `saveProgress(mode, updates)` trong `frontend/js/pages/srs-review-page.js#L167-L201` cùng các khóa ghi chú dự phòng (`#L12664, #L12699`) để gắn hậu tố `_${accountId || 'guest'}` lấy từ `authManager.getUserInfo()?.accountId`.
-2. **Bước 2 (P1-MODERATION-1 — Phản hồi lý do từ chối bài học cho Creator)**:
-   - Bổ sung trường `latestModerationComment` vào `LessonDetailResponse.java` (truy vấn từ `ModerationLogRepository` khi bài học có trạng thái `Rejected`) và hiển thị hộp thông báo trên `frontend/js/pages/creator-lesson-editor.js`.
-3. **Bước 3 (P1-AUTH-1 — Vòng đời phiên đăng nhập & đổi mật khẩu)**:
-   - Tăng `authorizationVersion` và trả về JWT mới trong `AccountSecurityServiceImpl.changePassword()`, đồng thời gọi `POST /api/v1/auth/logout` trước khi xóa `localStorage` trong `authManager.logout()`.
-4. **Bước 4 (AUDIO-3 & AUDIO-4 — Bổ sung học liệu âm thanh tĩnh & kiểm thử thiết bị vật lý)**:
+1. **Bước 1 (AUDIO-3 & AUDIO-4 — Bổ sung học liệu âm thanh tĩnh & kiểm thử thiết bị vật lý)**:
    - Tích hợp gói âm thanh phát âm HSK 1–3 và 214 bộ thủ có giấy phép hợp lệ vào `frontend/assets/audio/` + `manifest.json`, và kiểm thử thực tế trên thiết bị Android Chrome / iOS Safari.
+2. **Bước 2 (P1-SEC-1 — Bổ sung `@PreAuthorize` cấp lớp)**:
+   - Bổ sung `@PreAuthorize` rõ ràng trên `CreatorLessonController`, `ModeratorLessonController`, `UserSrsController`, `PersonalNoteController`.
+3. **Bước 3 (P2-WRITING-1 — Kết nối `CharacterWritingModal` với `lesson-detail-page.js`)**:
+   - Gắn nút mở modal luyện viết cho từng từ vựng trong trang chi tiết bài học và mở khóa tab `PRACTICE`/`QUIZ`.

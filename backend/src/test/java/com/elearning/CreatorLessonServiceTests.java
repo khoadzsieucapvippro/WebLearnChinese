@@ -313,6 +313,34 @@ class CreatorLessonServiceTests {
             assertThat(response).isNotNull();
             assertThat(response.getTitle()).isEqualTo("Bài của B");
         }
+
+        @Test
+        @DisplayName("GIVEN Rejected lesson with ModerationLog WHEN getMyLessonById THEN populates rejectionReason and flaggedFields")
+        void testGetMyLessonById_rejectedIncludesModerationFeedback() {
+            when(accountRepository.findByEmailOrPhone("creator_a@example.com")).thenReturn(Optional.of(creatorA));
+
+            Lesson rejectedLesson = new Lesson("Bài bị từ chối", creatorA);
+            rejectedLesson.setLessonId(150L);
+            rejectedLesson.setStatus("Rejected");
+            when(lessonRepository.findById(150L)).thenReturn(Optional.of(rejectedLesson));
+            when(lessonVocabularyRepository.findByLessonIdWithVocabularyOrderAsc(150L)).thenReturn(List.of());
+
+            com.elearning.entity.ModerationLog log = new com.elearning.entity.ModerationLog(
+                    rejectedLesson,
+                    creatorB,
+                    "Rejected",
+                    "Cần sửa lại nghĩa Hán Việt ở từ số 2",
+                    "vocabularies"
+            );
+            when(moderationLogRepository.findByLesson_LessonIdOrderByCreatedAtDescLogIdDesc(150L))
+                    .thenReturn(List.of(log));
+
+            LessonDetailResponse response = creatorLessonService.getMyLessonById(150L);
+            assertThat(response).isNotNull();
+            assertThat(response.getStatus()).isEqualTo("Rejected");
+            assertThat(response.getRejectionReason()).isEqualTo("Cần sửa lại nghĩa Hán Việt ở từ số 2");
+            assertThat(response.getFlaggedFields()).isEqualTo("vocabularies");
+        }
     }
 
     @Nested

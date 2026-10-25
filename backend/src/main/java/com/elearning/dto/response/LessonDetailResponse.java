@@ -10,8 +10,9 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * Detailed Response DTO for public lesson exploration (GET /api/v1/lessons/{id}).
- * Contains public lesson metadata and an ordered list of vocabulary items.
+ * Detailed Response DTO for public lesson exploration (GET /api/v1/lessons/{id})
+ * and Creator Lesson Studio detail (GET /api/v1/creator/lessons/{id}).
+ * Contains lesson metadata, ordered vocabulary items, and optional rejection feedback.
  * Conforms to .agents/API.md section 2.3 and zero-entity-leak rules.
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -22,6 +23,8 @@ public class LessonDetailResponse {
     private String status;
     private Integer vocabularyCount;
     private List<LessonVocabItemResponse> vocabularies = new ArrayList<>();
+    private String rejectionReason;
+    private String flaggedFields;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -106,6 +109,22 @@ public class LessonDetailResponse {
 
     public void setVocabularies(List<LessonVocabItemResponse> vocabularies) {
         this.vocabularies = (vocabularies != null) ? vocabularies : new ArrayList<>();
+    }
+
+    public String getRejectionReason() {
+        return rejectionReason;
+    }
+
+    public void setRejectionReason(String rejectionReason) {
+        this.rejectionReason = rejectionReason;
+    }
+
+    public String getFlaggedFields() {
+        return flaggedFields;
+    }
+
+    public void setFlaggedFields(String flaggedFields) {
+        this.flaggedFields = flaggedFields;
     }
 
     public LocalDateTime getCreatedAt() {
