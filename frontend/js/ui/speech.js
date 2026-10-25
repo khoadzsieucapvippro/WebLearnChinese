@@ -135,6 +135,15 @@ export class SpeechController {
     /** @type {number} Timestamp of last cancel() call to debounce rapid successive clicks */
     this._lastCancelTimestamp = 0;
 
+    /** @type {Record<string, string>|null} Static audio manifest map by hanzi */
+    this._manifestHanziMap = null;
+
+    /** @type {Record<string, string>|null} Static audio manifest map by radicalId */
+    this._manifestRadicalsMap = null;
+
+    /** @type {boolean} Whether audio manifest has loaded */
+    this._manifestLoaded = false;
+
     /** @type {Object} Non-sensitive diagnostic snapshot of the last playback attempt */
     this._lastDiagnostics = {
       timestamp: null,
@@ -148,6 +157,35 @@ export class SpeechController {
     };
 
     this._initVoiceListener();
+    this._loadManifest();
+  }
+
+  /**
+   * Preloads the static audio manifest to auto-resolve audioUrl by Hanzi or Radical ID.
+   * @private
+   */
+  async _loadManifest() {
+    if (this._manifestLoaded || typeof window === 'undefined' || typeof fetch !== 'function') {
+      return;
+    }
+    try {
+      const manifestUrl = resolveSubpathAudioUrl('assets/audio/manifest.json');
+      const res = await fetch(manifestUrl);
+      if (res && res.ok) {
+        const data = await res.json();
+        if (data && typeof data === 'object') {
+          if (data.hanzi && typeof data.hanzi === 'object') {
+            this._manifestHanziMap = data.hanzi;
+          }
+          if (data.radicals && typeof data.radicals === 'object') {
+            this._manifestRadicalsMap = data.radicals;
+          }
+          this._manifestLoaded = true;
+        }
+      }
+    } catch (_) {
+      // Non-blocking: If fetch fails, speechController falls back gracefully
+    }
   }
 
   /**
@@ -775,7 +813,10 @@ export class SpeechController {
       cleanText = cleanText.split(/[()\/]/)[0].trim();
     }
 
-    const safeAudioUrl = rawAudioUrl ? resolveSubpathAudioUrl(rawAudioUrl) : null;
+    let safeAudioUrl = rawAudioUrl ? resolveSubpathAudioUrl(rawAudioUrl) : null;
+    if ((!safeAudioUrl || safeAudioUrl === 'about:blank') && cleanText && this._manifestHanziMap && this._manifestHanziMap[cleanText]) {
+      safeAudioUrl = resolveSubpathAudioUrl(this._manifestHanziMap[cleanText]);
+    }
     const hasValidAudio = Boolean(safeAudioUrl && safeAudioUrl !== 'about:blank');
 
     this._lastDiagnostics = {
