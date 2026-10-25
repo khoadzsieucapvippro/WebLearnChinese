@@ -102,18 +102,18 @@
 11. **[P1-MODERATION-1] Hiển thị lý do từ chối bài học (`rejectionReason` & `flaggedFields` từ `MODERATION_LOG`) cho Creator**:
     - **Trạng thái**: `VERIFIED_FIXED`
     - **Bằng chứng**: `backend/src/main/java/com/elearning/dto/response/LessonDetailResponse.java#L25-L26, #L114-L128`, `backend/src/main/java/com/elearning/service/impl/CreatorLessonServiceImpl.java#L147-L163`, `backend/src/test/java/com/elearning/CreatorLessonServiceTests.java#L317-L343`, `frontend/js/pages/creator-lesson-editor-page.js#L177-L244`.
+12. **[P1-SEC-1] Bổ sung `@PreAuthorize` cấp lớp (Defense-in-Depth) và Rate Limiting cho `/api/v1/auth/register`**:
+    - **Trạng thái**: `VERIFIED_FIXED`
+    - **Bằng chứng**: `CreatorLessonController.java#L42`, `ModeratorController.java#L34`, `SrsController.java#L31`, `PersonalNoteController.java#L38`, `UserSrsSettingController.java#L24`, `UserProfileController.java#L23`, `AuthController.java#L40-L50`.
 
 ### 5.2. Các hạng mục còn mở hoặc bị chặn bởi môi trường/thiết bị (`OPEN` / `UNVERIFIED` / `WONT_FIX`)
 
-12. **[AUDIO-3] Tạo/nhập bộ tệp âm thanh tĩnh (`.mp3`/`.ogg`) có bản quyền cho toàn bộ 214 bộ thủ & 1.068 từ vựng**:
+13. **[AUDIO-3] Tạo/nhập bộ tệp âm thanh tĩnh (`.mp3`/`.ogg`) có bản quyền cho toàn bộ 214 bộ thủ & 1.068 từ vựng**:
     - **Trạng thái**: `OPEN`
     - **Nguyên nhân & Việc cần làm tiếp theo**: Môi trường máy trạm hiện tại chỉ có giọng đọc tiếng Anh (`Microsoft David/Zira en-US`), không có công cụ TTS tiếng Trung ngoại tuyến có giấy phép phân phối hoặc bộ thu âm người thật. Hạ tầng `frontend/assets/audio/manifest.json` và `resolveSubpathAudioUrl()` đã sẵn sàng; cần chạy script sinh/nhập tệp âm thanh từ nguồn CC0/CC-BY hoặc mô hình TTS ngoại tuyến được cấp phép rồi cập nhật `manifest.json` / migration `V31`.
-13. **[AUDIO-4] Kiểm thử vật lý trên loa điện thoại Android Chrome và iPhone Safari thật**:
+14. **[AUDIO-4] Kiểm thử vật lý trên loa điện thoại Android Chrome và iPhone Safari thật**:
     - **Trạng thái**: `UNVERIFIED`
     - **Nguyên nhân & Việc cần làm tiếp theo**: Trong môi trường phát triển chỉ có trình duyệt Chromium tự động (Playwright desktop + mobile viewport 375x667). Cần kiểm tra thực tế trên điện thoại Android Chrome và iOS Safari thật để xác nhận âm lượng, chế độ chuông/im lặng phần cứng (iOS Ringer Switch) và gói giọng đọc hệ điều hành.
-14. **[P1-SEC-1] Bổ sung `@PreAuthorize` cấp lớp và Rate Limiting mở rộng**:
-    - **Trạng thái**: `OPEN`
-    - **Bằng chứng**: Bổ sung `@PreAuthorize` rõ ràng trên `CreatorLessonController`, `ModeratorLessonController`, `UserSrsController`, `PersonalNoteController` để tăng phòng vệ chiều sâu (ngoài `SecurityConfig.java`).
 15. **[P1-OPS-1] Cấu hình Production, giới hạn Render Free Tier (750 giờ/tháng), triển khai `speech-service` vào `render.yaml`, Backup & Khả năng phục hồi**:
     - **Trạng thái**: `OPEN`
     - **Bằng chứng**: `render.yaml` hiện mới định nghĩa 1 container `elearning-backend`, chưa định nghĩa container `speech-service` (hoặc nếu chạy cả 2 sẽ vượt 750 giờ/tháng của gói Free). Cần thiết lập quy trình sao lưu định kỳ cho TiDB Cloud và đổi mật khẩu mặc định của 3 tài khoản seed ngay sau khi khởi tạo.

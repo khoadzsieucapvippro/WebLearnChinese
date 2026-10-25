@@ -37,7 +37,17 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<ApiResponse<AuthResponse>> register(@Valid @RequestBody RegisterRequest request) {
+    public ResponseEntity<ApiResponse<AuthResponse>> register(
+            @Valid @RequestBody RegisterRequest request,
+            HttpServletRequest servletRequest) {
+        String clientIp = resolveClientIp(servletRequest);
+        if (!loginRateLimiter.tryAcquire(clientIp)) {
+            throw new BusinessException(
+                    ErrorCode.TOO_MANY_REQUESTS,
+                    "Quá nhiều yêu cầu đăng ký, vui lòng thử lại sau"
+            );
+        }
+
         AuthResponse response = authService.register(request);
         return ResponseEntity
                 .status(HttpStatus.CREATED)

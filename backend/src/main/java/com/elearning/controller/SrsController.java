@@ -8,6 +8,7 @@ import com.elearning.dto.response.StudyStatsResponse;
 import com.elearning.service.SrsService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,6 +28,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/v1/srs")
+@PreAuthorize("isAuthenticated()")
 public class SrsController {
 
     private final SrsService srsService;

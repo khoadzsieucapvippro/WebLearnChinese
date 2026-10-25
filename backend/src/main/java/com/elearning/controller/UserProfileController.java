@@ -6,6 +6,7 @@ import com.elearning.dto.response.UserProfileResponse;
 import com.elearning.service.UserProfileService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping("/api/v1/users/profile")
+@PreAuthorize("isAuthenticated()")
 public class UserProfileController {
 
     private final UserProfileService userProfileService;

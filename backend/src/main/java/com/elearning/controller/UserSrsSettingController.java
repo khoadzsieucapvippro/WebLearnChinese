@@ -6,6 +6,7 @@ import com.elearning.dto.response.UserSrsSettingResponse;
 import com.elearning.service.UserSrsSettingService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping("/api/v1/srs/settings")
+@PreAuthorize("isAuthenticated()")
 public class UserSrsSettingController {
 
     private final UserSrsSettingService userSrsSettingService;
