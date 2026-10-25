@@ -8,9 +8,13 @@
 
 ## 1. TRẠNG THÁI GIT & MÔI TRƯỜNG HIỆN TẠI
 
-- **Nhánh Git (`branch`)**: `main`
-- **Commit gốc (`HEAD`)**: `ccd9ef9`
-- **Trạng thái cây làm việc (`git status`)**: Chứa các bản vá P0 từ đợt rà soát độ trưởng thành (Request #1) và các bản vá hệ thống phát âm thanh trên điện thoại/máy tính (Request #2), chưa commit để bảo toàn quyền kiểm soát lịch sử Git của nhà phát triển.
+- **Nhánh Git (`branch`)**: `main` (đồng bộ với `origin/main`)
+- **Lịch sử Commit đã đẩy lên `origin/main`**:
+  - `ccd9ef9`: Baseline trước khi bàn giao.
+  - `b6ac456`: `fix(audio): harden multi-tier SpeechController, unify 7 speaker flows, and add AGENT_HANDOFF ledger` (Hoàn tất P0-1..P0-6 và AUDIO-1, AUDIO-2).
+  - `76a5c61`: `feat(p1): isolate account SRS progress/notes, expose lesson rejection feedback, and sync auth token lifecycle` (Hoàn tất P1-DATA-1, P1-MODERATION-1, P1-AUTH-1).
+  - `20dc105`: `feat(security): add class-level @PreAuthorize defense-in-depth and rate limit /auth/register (P1-SEC-1)` (Hoàn tất P1-SEC-1).
+- **Trạng thái cây làm việc (`git status`)**: Sạch (`working tree clean`), toàn bộ thay đổi đã được kiểm thử và đẩy lên `origin/main`.
 
 ---
 
@@ -117,9 +121,9 @@
 15. **[P1-OPS-1] Cấu hình Production, giới hạn Render Free Tier (750 giờ/tháng), triển khai `speech-service` vào `render.yaml`, Backup & Khả năng phục hồi**:
     - **Trạng thái**: `OPEN`
     - **Bằng chứng**: `render.yaml` hiện mới định nghĩa 1 container `elearning-backend`, chưa định nghĩa container `speech-service` (hoặc nếu chạy cả 2 sẽ vượt 750 giờ/tháng của gói Free). Cần thiết lập quy trình sao lưu định kỳ cho TiDB Cloud và đổi mật khẩu mặc định của 3 tài khoản seed ngay sau khi khởi tạo.
-16. **[P2-WRITING-1] Kết nối `CharacterWritingModal` với `lesson-detail-page.js` và mở rộng chế độ `PRACTICE`/`QUIZ` trên modal từ vựng/bộ thủ**:
+16. **[P2-WRITING-1] Mở rộng nút luyện viết chữ Hán trực tiếp trên trang chi tiết bài học (`lesson-detail-page.js`)**:
     - **Trạng thái**: `OPEN`
-    - **Bằng chứng**: `lesson-detail-page.js` đã import `CharacterWritingModal` nhưng chưa gắn nút mở modal luyện viết cho từng từ; `vocabulary-page.js#L1100` đang cấu hình `demoOnly: true`.
+    - **Bằng chứng & Lưu ý bất biến**: `lesson-detail-page.js#L28` đã import `openVocabWritingModal` từ `vocab-writing-modal.js` và có thể gắn thêm nút luyện viết nhanh trên từng dòng từ vựng nếu cần. **Lưu ý quan trọng**: Không được đổi `demoOnly: true` tại `vocabulary-page.js#L1100` vì bài kiểm thử E2E `tests/frontend/e2e/vocab-modal-refactor.browser.mjs#L223` bắt buộc modal chi tiết từ vựng hiển thị ở chế độ thu gọn (`demoOnly: true`, ẩn thanh tab).
 17. **[P2-SPEECH-1] Kiểm chứng chất lượng chấm thanh điệu của `speech-service` trên tập dữ liệu giọng người thật (300–500 mẫu)**:
     - **Trạng thái**: `OPEN`
     - **Bằng chứng**: `speech-service/test_pipeline.py` hiện kiểm thử bằng sóng âm tổng hợp (synthetic pitch contours); cần thu thập 300–500 mẫu giọng người học thật có gán nhãn để hiệu chuẩn ngưỡng điểm F0.
@@ -138,24 +142,32 @@
    - **Kết quả**: **PASS 947/947 tests** (228 suites, 0 failed).
 3. `node --test tests/frontend/e2e/srs-listening.browser.mjs`:
    - **Kết quả**: **PASS 6/6 tests** (bao gồm `SL-06` kiểm chứng tải tệp WAV thật HTTP 200, `audio/wav`, sự kiện `playing`, `currentTime > 0`, tự mở khóa nút và 0 runtime error).
-4. `node tests/e2e/runner.mjs --tier=all`:
+4. `node --test tests/frontend/e2e/lessons.browser.mjs` & `node --test tests/frontend/e2e/vocabulary.browser.mjs`:
+   - **Kết quả**: **PASS 11/11 tests** (`lessons.browser.mjs`) và **PASS 13/13 tests** (`vocabulary.browser.mjs`).
+5. `node tests/e2e/runner.mjs --tier=all`:
    - **Kết quả**: **PASS 74/74 tests** (Tiers 1–4, 0 failed).
-5. `python speech-service/test_pipeline.py` & `python speech-service/test_adversarial_m2.py`:
+6. `python speech-service/test_pipeline.py` & `python speech-service/test_adversarial_m2.py`:
    - **Kết quả**: **PASS 9/9 nhóm test DSP + 10/10 bài test bảo mật** (0 failed).
-6. `mvn -f backend/pom.xml test "-Dtest=CreatorLessonServiceTests,LessonServiceTests,AuthControllerTests,AuthServiceTests"`:
+7. `mvn -f backend/pom.xml test "-Dtest=CreatorLessonServiceTests,LessonServiceTests,AuthControllerTests,AuthServiceTests"`:
    - **Kết quả**: **BUILD SUCCESS — PASS 65/65 tests** (0 failed).
-7. `mvn -f backend/pom.xml test "-Dtest=ReadingAssessmentControllerTests,ReadingAssessmentServiceTests,LocalSpeechServiceClientTests"`:
+8. `mvn -f backend/pom.xml test "-Dtest=CreatorLessonControllerTests,ModeratorControllerTests,SrsControllerTests,PersonalNoteControllerTests,UserSrsSettingControllerTests,UserProfileControllerTests,AuthControllerRateLimitTests"`:
+   - **Kết quả**: **BUILD SUCCESS — PASS 71/71 tests** (0 failed).
+9. `mvn -f backend/pom.xml test "-Dtest=ReadingAssessmentControllerTests,ReadingAssessmentServiceTests,LocalSpeechServiceClientTests"`:
    - **Kết quả**: **BUILD SUCCESS — PASS 34/34 tests** (0 failed).
 
 ---
 
 ## 7. HƯỚNG DẪN BẮT ĐẦU NGAY CHO AGENT KẾ NHIỆM (NEXT STEPS)
 
-Khi bắt đầu phiên làm việc tiếp theo, Agent kế nhiệm thực hiện theo thứ tự ưu tiên sau:
+Toàn bộ các hạng mục **P0 (`P0-1`..`P0-6`)**, **Audio (`AUDIO-1`, `AUDIO-2`)** và **P1 cốt lõi (`P1-DATA-1`, `P1-AUTH-1`, `P1-MODERATION-1`, `P1-SEC-1`)** đã hoàn thành và đạt trạng thái `VERIFIED_FIXED`.
 
-1. **Bước 1 (AUDIO-3 & AUDIO-4 — Bổ sung học liệu âm thanh tĩnh & kiểm thử thiết bị vật lý)**:
-   - Tích hợp gói âm thanh phát âm HSK 1–3 và 214 bộ thủ có giấy phép hợp lệ vào `frontend/assets/audio/` + `manifest.json`, và kiểm thử thực tế trên thiết bị Android Chrome / iOS Safari.
-2. **Bước 2 (P1-SEC-1 — Bổ sung `@PreAuthorize` cấp lớp)**:
-   - Bổ sung `@PreAuthorize` rõ ràng trên `CreatorLessonController`, `ModeratorLessonController`, `UserSrsController`, `PersonalNoteController`.
-3. **Bước 3 (P2-WRITING-1 — Kết nối `CharacterWritingModal` với `lesson-detail-page.js`)**:
-   - Gắn nút mở modal luyện viết cho từng từ vựng trong trang chi tiết bài học và mở khóa tab `PRACTICE`/`QUIZ`.
+Khi bắt đầu phiên làm việc tiếp theo, Agent kế nhiệm chỉ cần tập trung vào các hạng mục phụ thuộc tài nguyên bên ngoài / vận hành sau:
+
+1. **Bước 1 (`AUDIO-3` & `AUDIO-4` — Học liệu âm thanh tĩnh & Kiểm thử thiết bị vật lý)**:
+   - Chạy công cụ tạo/nhập bộ tệp âm thanh phát âm chuẩn (`.mp3`/`.wav`) có bản quyền hợp lệ cho 214 bộ thủ và 1.068 từ vựng HSK 1–3 vào `frontend/assets/audio/`, đăng ký vào `frontend/assets/audio/manifest.json` và tạo migration `V31__populate_audio_urls.sql`.
+   - Kiểm thử trực tiếp trên loa ngoài của điện thoại Android Chrome và iPhone Safari thật (chú ý công tắc chuông vật lý Ringer Switch trên iOS).
+2. **Bước 2 (`P1-OPS-1` — Triển khai Production & Sao lưu dữ liệu)**:
+   - Bổ sung cấu hình triển khai cho `speech-service` (hoặc kiến trúc multi-container phù hợp giới hạn 750 giờ/tháng của Render Free Tier), thiết lập lịch sao lưu TiDB Cloud định kỳ và đổi mật khẩu mặc định của 3 tài khoản quản trị ngay khi khởi chạy môi trường thật.
+3. **Bước 3 (`P2-WRITING-1` & `P2-SPEECH-1` — Hoàn thiện nâng cao)**:
+   - Tích hợp nút mở `openVocabWritingModal` trên từng dòng từ vựng của `lesson-detail-page.js` (giữ nguyên `demoOnly: true` ở `vocabulary-page.js#L1100`).
+   - Hiệu chuẩn ngưỡng chấm điểm F0 của `speech-service` trên tập dữ liệu giọng người học thật.
