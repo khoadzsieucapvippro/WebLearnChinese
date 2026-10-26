@@ -281,6 +281,18 @@ describe('Browser E2E: SRS Review Redesign & Visual Invariants', () => {
     try {
       await setupMockAuth(page);
 
+      await page.route('**/api/v1/radicals*', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            code: 'SUCCESS',
+            message: 'OK',
+            data: { items: [], page: 0, size: 214, totalElements: 0, totalPages: 0 }
+          })
+        });
+      });
+
       await page.route('**/api/v1/srs/due*', async (route) => {
         await route.fulfill({
           status: 200,
@@ -289,10 +301,23 @@ describe('Browser E2E: SRS Review Redesign & Visual Invariants', () => {
             code: 'SUCCESS',
             message: 'OK',
             data: [
-              { itemType: 'VOCABULARY', itemId: 101, isDue: true },
-              { itemType: 'VOCABULARY', itemId: 102, isDue: true }
+              { itemType: 'VOCABULARY', itemId: 296, isDue: true },
+              { itemType: 'VOCABULARY', itemId: 505, isDue: true }
             ]
           })
+        });
+      });
+
+      await page.route('**/api/v1/lessons*', async (route) => {
+        const mockLessons = Array.from({ length: 15 }, (_, i) => ({
+          lessonId: i + 1,
+          title: `HSK 1 — Bài ${String(i + 1).padStart(2, '0')}`,
+          status: 'Approved'
+        }));
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ code: 'SUCCESS', message: 'OK', data: { items: mockLessons } })
         });
       });
 
@@ -313,9 +338,9 @@ describe('Browser E2E: SRS Review Redesign & Visual Invariants', () => {
       const activeId = await activeDeck.getAttribute('id');
       assert.strictEqual(activeId, 'groupTabHsk1', 'Active deck card must be groupTabHsk1');
 
-      // Verify stage grid has 10 topic cards
+      // Verify stage grid has 15 topic cards (standardized HSK 3.0 curriculum: 15 topics for HSK 1)
       const stageCards = await page.$$('.stage-card');
-      assert.strictEqual(stageCards.length, 10, 'HSK 1 must render 10 topic cards');
+      assert.strictEqual(stageCards.length, 15, 'HSK 1 must render 15 topic cards');
 
       // Verify equal height across row 1
       const heights = await Promise.all(stageCards.map(c => c.evaluate(el => el.getBoundingClientRect().height)));

@@ -263,14 +263,45 @@
         * Browser E2E `tests/frontend/e2e/admin-radicals.browser.mjs`: PASS 8/8 tests (8.47s).
         * `npm run verify:frontend:fast`: PASS 1,010/1,010 tests (244 suites, 0 failed, 12.69s) — tăng thêm 14 tests so với 996.
 
+22. **[CURRICULUM-SRS-1] Kiểm toán Toàn Diện 50 Bài Học HSK 3.0 & Hợp Đồng Chấm Điểm Thuật Toán SRS SM-2 (Lessons Curriculum & SRS Scoring Contracts)**:
+    - **Trạng thái**: `VERIFIED_FIXED`
+    - **Bằng chứng**:
+      - Kiểm toán 50 bài học chuẩn HSK 3.0 (`SEED_LESSONS` trong `demo-seed-data.js` và Flyway `V1..V30`):
+        * Đầy đủ đúng 50 bài học (HSK 1: 15 bài, HSK 2: 10 bài, HSK 3: 25 bài), 100% status `Approved`, có title và description chuẩn mực.
+        * Mỗi bài học chứa đúng 20 từ vựng (`vocabularyCount: 20`), phân bổ đủ 1.000 từ vựng cốt lõi; zero invalid hoặc broken vocabulary references (`vocabId > 0` và tồn tại trong `SEED_VOCABULARY`).
+        * `orderIndex` liên tục và duy nhất trong từng cấp độ (HSK 1: 1..15, HSK 2: 1..10, HSK 3: 1..25).
+      - Cấu trúc Stage & Topic SRS Review:
+        * Khớp chính xác với 50 bài học: `HSK1_TOPICS` (15 topics = 300 từ), `HSK2_TOPICS` (10 topics = 200 từ), `HSK3_TOPICS` (25 topics = 500 từ).
+        * 50 bộ thủ thông dụng chia thành 5 stages (mỗi stage 10 bộ thủ); 214 bộ thủ chia thành 11 stages (10 stages 20 bộ thủ + 1 stage 14 bộ thủ).
+      - Hợp đồng thuật toán SuperMemo SM-2 (`SrsCalculator.java` & `srs-review-page.js`):
+        * Rating 1 (Again): reset repetitions về 0, interval về 0 ngày để học lại ngay trong phiên.
+        * Rating 2 (Hard): giảm EF đi 0.14, tiến chu kỳ (rep 2 -> 6 ngày).
+        * Rating 3 (Good): duy trì EF (không đổi), tiến chu kỳ chuẩn (rep 1 -> 1 ngày, rep 2 -> 6 ngày, rep 3 -> ceil(6 * EF)).
+        * Rating 4 (Easy): tăng EF thêm 0.10, tiến chu kỳ chuẩn.
+        * Sàn Ease Factor: chặn cứng không bao giờ tụt dưới 1.30 (`Math.max(1.30, newEf)`).
+      - Cô lập tài khoản học tập & Giới hạn thẻ học:
+        * `validateSrsSettings` trong `srs-settings-page.js` chặn cứng `newCardsPerDay` trong dải `[1, 100]`, tự động từ chối số âm, 0, chuỗi không hợp lệ hoặc vượt quá 100.
+        * Phân tách tiền tố khóa Web Storage theo tài khoản (`resolveAccountProgressKeys`) đảm bảo không rò rỉ hàng đợi thẻ giữa các tài khoản khác nhau trên cùng một trình duyệt.
+      - Sửa lỗi bài test trực quan SRS Review (`tests/frontend/e2e/srs-review-visual.browser.mjs`):
+        * Cập nhật kỳ vọng số topic HSK 1 từ 10 lên 15 topics (khớp với chuẩn HSK 3.0 đã chuẩn hóa trong V30).
+        * Bổ sung mock routes `/api/v1/lessons*` và `/api/v1/radicals*` trong mock service worker của Playwright, ngăn chặn lỗi `net::ERR_CONNECTION_REFUSED` và giúp nút due cards hiển thị chuẩn xác trong hàng top của card tiến độ.
+      - Bộ kiểm thử tự động xác minh:
+        * Bổ sung test unit mới `tests/frontend/unit/srs/curriculum-and-srs-contracts-audit.test.mjs`: 12 bài test kiểm toán bài học, cấu trúc topics, hợp đồng SM-2 và cô lập tài khoản -> PASS 12/12 tests (6.0ms).
+        * Backend SM-2 test suite `mvn test "-Dtest=SrsCalculatorTests,TwoMinuteTestSrsCalculatorTests,UserSrsSettingDtoTests"`: PASS 79/79 tests (BUILD SUCCESS).
+        * Browser E2E `tests/frontend/e2e/srs-review-visual.browser.mjs`: PASS 5/5 tests (VR-01..VR-05).
+        * Browser E2E `tests/frontend/e2e/lessons.browser.mjs`: PASS 12/12 tests.
+        * Browser E2E `tests/frontend/e2e/srs-review.browser.mjs`: PASS 14/14 tests.
+        * `npm run verify:frontend:fast`: PASS 1,022/1,022 tests (249 suites, 0 failed, 16.18s) — tăng thêm 12 tests so với 1,010.
+        * `node tests/e2e/runner.mjs --tier=all`: PASS 74/74 tests (0.77s).
+
 ### 5.2. Các hạng mục còn mở hoặc bị chặn bởi môi trường/thiết bị (`OPEN` / `UNVERIFIED` / `WONT_FIX`)
 
-22. **[P2-SPEECH-1] Kiểm chứng chất lượng chấm thanh điệu của `speech-service` trên tập dữ liệu giọng người thật (300–500 mẫu)**:
+23. **[P2-SPEECH-1] Kiểm chứng chất lượng chấm thanh điệu của `speech-service` trên tập dữ liệu giọng người thật (300–500 mẫu)**:
     - **Trạng thái**: `OPEN`
     - **Bằng chứng & Kế hoạch tiếp theo**: `speech-service/test_pipeline.py` hiện kiểm thử bằng sóng âm tổng hợp (synthetic pitch contours) và vượt qua 9/9 nhóm test DSP cùng 10/10 bài test bảo mật. Cần thu thập 300–500 mẫu giọng người học thật có gán nhãn chuyên gia để tinh chỉnh ngưỡng điểm F0 khi triển khai quy mô lớn.
-23. **[WONT_FIX-1] Chuyển đổi luyện viết `HanziWriter` sang mô hình AI OCR/HWR nhận diện chữ viết tay tự do**:
+24. **[WONT_FIX-1] Chuyển đổi luyện viết `HanziWriter` sang mô hình AI OCR/HWR nhận diện chữ viết tay tự do**:
     - **Trạng thái**: `WONT_FIX` (Theo quyết định sản phẩm Mục I.1 của chủ dự án).
-24. **[WONT_FIX-2] Sử dụng dịch vụ Cloud TTS trả phí tại runtime hoặc lưu trữ lâu dài bản ghi âm người học**:
+25. **[WONT_FIX-2] Sử dụng dịch vụ Cloud TTS trả phí tại runtime hoặc lưu trữ lâu dài bản ghi âm người học**:
     - **Trạng thái**: `WONT_FIX` (Theo quyết định sản phẩm Mục I.3 của chủ dự án).
 
 ---
@@ -278,16 +309,22 @@
 ## 6. KẾT QUẢ KIỂM THỬ THỰC TẾ ĐÃ CHẠY
 
 1. `npm run verify:frontend:fast`:
-   - **Kết quả**: **PASS 1,010/1,010 tests** (244 suites, 0 failed, duration: 12.64s, wall time: 12.69s).
+   - **Kết quả**: **PASS 1,022/1,022 tests** (249 suites, 0 failed, duration: 16.12s, wall time: 16.18s).
 2. `node tests/e2e/runner.mjs --tier=all`:
-   - **Kết quả**: **PASS 74/74 tests** (Tiers 1–4, 0 failed, total wall time: 0.74s).
-     - Tier 1: 32 tests (169ms)
-     - Tier 2: 30 tests (231ms)
-     - Tier 3: 6 tests (172ms)
-     - Tier 4: 6 tests (169ms)
-3. `node --test tests/frontend/unit/radicals/kangxi-radicals-comprehensive-audit.test.mjs`:
+   - **Kết quả**: **PASS 74/74 tests** (Tiers 1–4, 0 failed, total wall time: 0.77s).
+     - Tier 1: 32 tests (176ms)
+     - Tier 2: 30 tests (232ms)
+     - Tier 3: 6 tests (177ms)
+     - Tier 4: 6 tests (184ms)
+3. `node --test tests/frontend/unit/srs/curriculum-and-srs-contracts-audit.test.mjs`:
+   - **Kết quả**: **PASS 12/12 tests** (5 suites, 0 failed, duration: 6.0ms; 50 bài học HSK 3.0, 1.000 từ vựng phân bổ, SM-2 calculator math contracts, card bounds [1, 100], account progress isolation).
+4. `mvn -f backend/pom.xml test "-Dtest=SrsCalculatorTests,TwoMinuteTestSrsCalculatorTests,UserSrsSettingDtoTests"`:
+   - **Kết quả**: **BUILD SUCCESS — PASS 79/79 tests** (0 failed; kiểm thử toàn diện thuật toán SM-2, floor 1.30, bounds [1, 100] trên Java Spring Boot backend).
+5. `node --test tests/frontend/e2e/srs-review-visual.browser.mjs`:
+   - **Kết quả**: **PASS 5/5 tests** (VR-01..VR-05, duration: 7.21s; 15 HSK 1 topics, compact due button layout, radical stages).
+6. `node --test tests/frontend/unit/radicals/kangxi-radicals-comprehensive-audit.test.mjs`:
    - **Kết quả**: **PASS 14/14 tests** (4 suites, 0 failed, duration: 40.8ms; kiểm toán toàn diện 214 bộ thủ Khang Hy, 523 CHAR_TO_RADICAL_MAP, 849 CHAR_TO_RADICALS_MAP, 1.068 từ vựng, phân loại kangxi_radical vs structural_component).
-4. `node --test tests/frontend/unit/srs/srs-audio-playback.test.mjs`:
+7. `node --test tests/frontend/unit/srs/srs-audio-playback.test.mjs`:
    - **Kết quả**: **PASS 22/22 tests** (0 failed, duration: 436ms; bao gồm Test 21 và Test 22 kiểm tra 100% độ phủ 214 bộ thủ Khang Hy và 1.068 từ vựng HSK 1–3 có tệp MP3 tồn tại trên đĩa và dung lượng > 100 bytes).
 5. `node --test tests/frontend/unit/srs/srs-skill-writing.test.mjs`:
    - **Kết quả**: **PASS 32/32 tests** (7 suites, 0 failed, duration: 1.20s; bao gồm xác minh độ phủ 100% 214 bộ thủ Khang Hy, 1.055 từ vựng HSK 1-3 và canonical fallback).

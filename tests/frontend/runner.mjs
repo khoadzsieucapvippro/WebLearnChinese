@@ -83,6 +83,7 @@ function resolveTestFiles(tier) {
     'tests/frontend/unit/srs/srs-audio-playback.test.mjs',
     'tests/frontend/unit/srs/srs-audio-server-mime.test.mjs',
     'tests/frontend/unit/srs/srs-audit-fixes.test.mjs',
+    'tests/frontend/unit/srs/curriculum-and-srs-contracts-audit.test.mjs',
     'tests/frontend/unit/vocabulary/vocabulary-pagination.test.mjs',
     'tests/frontend/unit/config/config.test.mjs',
     'tests/frontend/unit/lesson/creator-lessons.test.mjs',
