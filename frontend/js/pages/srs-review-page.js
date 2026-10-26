@@ -10809,20 +10809,20 @@ export class SrsReviewController {
     this.updateCurriculaShelfMetrics();
     this.renderCatalog();
 
-    // Auto-refresh due counts periodically (every 30s) so due badges appear without page refresh
+    // Auto-refresh due counts periodically (every 15s) so due badges and action buttons appear without page refresh
     if (!this.catalogDueRefreshInterval && typeof window !== 'undefined') {
       this.catalogDueRefreshInterval = setInterval(() => {
-        if (!document.hidden && this.currentView === 'catalog' && authManager.isAuthenticated()) {
+        if (!document.hidden && this.currentViewState === 'catalog' && authManager.isAuthenticated()) {
           this.fetchDueCounts();
         }
-      }, 30000);
+      }, 15000);
     }
   }
 
   /**
    * Returns from active session to catalog selection.
    */
-  backToSelection() {
+  async backToSelection() {
     this.activeAction = null;
     this.lessonId = null;
     this.radicalId = null;
@@ -10836,6 +10836,9 @@ export class SrsReviewController {
       group: this.activeGroup
     });
     this.showCatalogSelection();
+    if (authManager.isAuthenticated()) {
+      await this.fetchDueCounts();
+    }
   }
 
   /**
@@ -10902,6 +10905,9 @@ export class SrsReviewController {
   async fetchDueCounts() {
     if (!authManager.isAuthenticated()) return;
     try {
+      if (this.fullRadicalsCatalog.length === 0) {
+        await this.fetchRadicalsData();
+      }
       const cardTypeParam = this.activeMode === 'writing' ? 'WRITING' : (this.activeMode === 'listening' ? 'LISTENING' : 'READING');
       const [dueVocab, dueRadicals] = await Promise.all([
         apiClient('/srs/due', { params: { itemType: 'VOCABULARY', cardType: cardTypeParam } }).catch(() => []),
@@ -10912,6 +10918,9 @@ export class SrsReviewController {
         radicals: Array.isArray(dueRadicals) ? dueRadicals : []
       };
       this.updateCurriculaShelfMetrics();
+      if (this.currentViewState === 'catalog') {
+        this.renderCatalog();
+      }
     } catch (e) {}
   }
 
@@ -11305,6 +11314,16 @@ export class SrsReviewController {
       btnReview.addEventListener('click', () => opts.onReview());
       actionsBox.appendChild(btnReview);
 
+      if (opts.dueCount > 0 && typeof opts.onDue === 'function') {
+        const btnDue = document.createElement('button');
+        btnDue.type = 'button';
+        btnDue.className = 'btn btn-sm btn-outline-danger py-1 px-2 fw-semibold';
+        btnDue.textContent = `⚡ Ôn ${opts.dueCount} đến hạn`;
+        btnDue.title = `Ôn tập ${opts.dueCount} thẻ đã đến hạn`;
+        btnDue.addEventListener('click', () => opts.onDue());
+        actionsBox.appendChild(btnDue);
+      }
+
       const btnContinue = document.createElement('button');
       btnContinue.type = 'button';
       btnContinue.className = 'btn btn-sm btn-chinese-primary py-1 px-3 fw-semibold';
@@ -11320,10 +11339,20 @@ export class SrsReviewController {
       btnReview.addEventListener('click', () => opts.onReview());
       actionsBox.appendChild(btnReview);
 
-      const doneBadge = document.createElement('span');
-      doneBadge.className = 'badge bg-success-subtle text-success border py-1 px-2';
-      doneBadge.textContent = '✅ Đã hoàn thành';
-      actionsBox.appendChild(doneBadge);
+      if (opts.dueCount > 0 && typeof opts.onDue === 'function') {
+        const btnDue = document.createElement('button');
+        btnDue.type = 'button';
+        btnDue.className = 'btn btn-sm btn-chinese-primary py-1 px-3 fw-semibold';
+        btnDue.textContent = `⚡ Ôn ${opts.dueCount} ${opts.isHsk ? 'từ' : 'bộ'} đến hạn →`;
+        btnDue.title = `Ôn tập ${opts.dueCount} thẻ đã đến hạn`;
+        btnDue.addEventListener('click', () => opts.onDue());
+        actionsBox.appendChild(btnDue);
+      } else {
+        const doneBadge = document.createElement('span');
+        doneBadge.className = 'badge bg-success-subtle text-success border py-1 px-2';
+        doneBadge.textContent = '✅ Đã hoàn thành';
+        actionsBox.appendChild(doneBadge);
+      }
     }
 
     if (opts.extraButtonText && opts.extraButtonHref) {
@@ -12130,6 +12159,7 @@ export class SrsReviewController {
    * @param {'catalog'|'loading'|'auth'|'empty'|'error'|'active'|'completed'} state
    */
   setViewState(state) {
+    this.currentViewState = state;
     if (!this.dom) return;
 
     const states = {
