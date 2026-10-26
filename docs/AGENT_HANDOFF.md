@@ -275,3 +275,6 @@ Toàn bộ các hạng mục cốt lõi của dự án đã hoàn thành 100% v�
 2. **Kế hoạch Nghiên cứu & Mở rộng Dài hạn**:
    - **`[P2-SPEECH-1]`**: Khi dự án có điều kiện thu thập 300–500 mẫu phát âm thực tế từ người học tiếng Trung có gán nhãn của giáo viên bản ngữ, tiến hành đánh giá và tinh chỉnh sâu hơn các ngưỡng F0 của mô hình Chao 5-scale DSP trong `speech-service`.
    - **`[WONT_FIX-1] & [WONT_FIX-2]`**: Duy trì quyết định sản phẩm không chuyển sang AI OCR tự do (giữ nguyên luyện viết tuần tự HanziWriter) và không gọi Cloud TTS có phí tại runtime (bảo vệ quyền riêng tư Zero-Storage).
+3. **Bất Biến Kiểm Thử Đa Nền Tảng & Quy Tắc Chủ Động Hỏi Người Dùng (User Mandate Invariants)**:
+   - **Kiểm thử đa tầng & đa thiết bị**: Luôn kiểm thử đầy đủ Frontend (Fast static/unit), Backend (Spring Boot + FastAPI DSP), Full-stack E2E (Tiers 1–4) và thực tế trên Internet (GitHub Pages, Render, TiDB Cloud) trên cả máy tính (Desktop) và điện thoại di động (Mobile Pixel 7 Android & iPhone 14 iOS).
+   - **Cấm Treo Im Lặng (Zero-Silent-Block)**: Khi phát hiện thiếu bất kỳ môi trường kiểm thử nào (như thiếu tool ADB, thiếu máy ảo di động, thiếu tài khoản cloud, thiếu chứng chỉ hay cần tải phần mềm bổ sung), **tuyệt đối không được dừng lại im lặng hay phỏng đoán**. Phải hỏi người dùng ngay lập tức để người dùng xác nhận và hỗ trợ triển khai tức thì.

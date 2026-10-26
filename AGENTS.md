@@ -74,3 +74,24 @@ Khi thực thi bất kỳ lệnh hoặc tác vụ nền (background task) nào:
 - **Cấm Tự Phê Duyệt (Self-Review Prohibition)**: Creator không được phép tự phê duyệt hoặc tự từ chối bài học do chính mình tạo ra.
 - **Giới Hạn Thẻ SRS (Card Bounds)**: Tham số `newCardsPerDay` trong cài đặt học tập bị chặn cứng trong khoảng `[1, 100]`.
 - **Cấm Seeder Tài Khoản Trên Prod**: `app.demo.seed-accounts` bắt buộc phải là `false` trên môi trường Production (`render.yaml`).
+
+## 7. Bất Biến Kiểm Thử Toàn Diện Đa Nền Tảng (FE, BE, Full-Stack, Desktop & Mobile, Cloud)
+- **Kiểm Thử Toàn Diện 3 Tầng**:
+  * **Frontend (FE)**: `npm run verify:frontend:fast` (991+ static/unit tests), kiểm thử trình duyệt desktop và mobile viewport (360px..412px), zero horizontal overflow.
+  * **Backend (BE)**: `mvn test` (Spring Boot REST API, Spring Security, JWT, JPA, Flyway V1..V31), Python test pipeline (`speech-service/test_pipeline.py`).
+  * **Full-Stack & E2E**: `node tests/e2e/runner.mjs --tier=all` (74 tests Tiers 1–4).
+- **Môi Trường Thực Tế Đám Mây & Internet**:
+  * **GitHub**: GitHub Actions CI/CD (`deploy-pages.yml`) tự động deploy GitHub Pages khi push `main`.
+  * **Render**: Kiến trúc Single-Container (`Dockerfile.unified` + Supervisord) chạy backend và speech-service dưới 512MB RAM, monitor `/actuator/health`.
+  * **TiDB Cloud**: Database MySQL Serverless, collation `utf8mb4_unicode_ci`, tuân thủ cấu trúc khóa phi phân cụm (nonclustered).
+- **Kiểm Thử Thiết Bị Di Động (Mobile Testing)**:
+  * **Automated Mobile Emulation**: Bắt buộc chạy `node --test tests/frontend/e2e/mobile-keyboard.browser.mjs` với profile phần cứng thật: Google Pixel 7 (Android 14 Chrome, touch, DPR 2.625) và Apple iPhone 14 (iOS 16 Mobile Safari, touch, DPR 3.0). Kiểm tra touch targets (WCAG 2.2 >= 40px), chuỗi sự kiện IME hệ điều hành (`compositionstart` -> `update` -> `end` -> `input`), Latin fallback, và keyboard toggle.
+  * **Physical Mobile Device qua Wi-Fi**: Chạy `npm run serve:mobile` lắng nghe `0.0.0.0:3000` và hiển thị địa chỉ LAN Wi-Fi (ví dụ: `http://192.168.0.104:3000/srs-review.html?mode=listening`) để mở trực tiếp trên điện thoại thật.
+  * **Public Cloud Tunnel (4G/5G)**: Khi kiểm thử di động từ xa hoặc cloud browser, dùng `npx localtunnel --port 3000` để cấp URL HTTPS công khai.
+
+## 8. Bất Biến Chủ Động Hỏi Ý Kiến Người Dùng & Cấm Treo Im Lặng (Proactive User Inquiry & Zero-Silent-Block)
+- **Tuyệt Đối CẤM Treo Im Lặng (Zero-Silent-Block)**: Khi gặp tình huống thiếu môi trường kiểm thử (như thiếu máy ảo điện thoại, thiếu tool ADB, thiếu dependencies, thiếu chứng chỉ, thiếu quyền truy cập Cloud, hoặc cần tải thêm bất kỳ phần mềm nào), **tuyệt đối không được dừng lại im lặng, không được treo tiến trình, và không được tự ý phỏng đoán bỏ qua**.
+- **HỎI NGAY LẬP TỨC (Immediate Inquiry)**: Agent PHẢI chủ động hỏi người dùng ngay lập tức với định dạng rõ ràng:
+  1. *Vấn đề phát sinh / Môi trường còn thiếu*: Nêu chính xác công cụ/môi trường đang thiếu.
+  2. *Giải pháp đề xuất*: Đưa ra các phương án cụ thể (ví dụ: tải gói phần mềm nào, mở port LAN, chạy tunnel đám mây, hoặc cần người dùng xác nhận thao tác gì).
+  3. *Lời kêu gọi hành động*: Xin phép người dùng đồng ý để triển khai và thực hiện ngay lập tức mà không để gián đoạn công việc.
