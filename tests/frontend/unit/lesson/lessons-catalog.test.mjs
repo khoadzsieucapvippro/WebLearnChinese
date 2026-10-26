@@ -164,6 +164,23 @@ describe('Unit: Lesson Catalog & Lesson Detail Engine (Task 9C.1)', () => {
       assert.strictEqual(pag.startRecord, 0);
       assert.strictEqual(pag.endRecord, 0);
     });
+
+    test('calculates smart window pages (startPage, endPage) matching vocabulary catalog', () => {
+      // 50 items, 10 per page => 5 total pages (0, 1, 2, 3, 4)
+      const pagFirst = calculatePagination(0, 10, 50, 5, 5);
+      assert.strictEqual(pagFirst.startPage, 0);
+      assert.strictEqual(pagFirst.endPage, 4);
+
+      // Middle page of 10 pages: page 5 of 10 (window 5)
+      const pagMiddle = calculatePagination(5, 10, 100, 10, 5);
+      assert.strictEqual(pagMiddle.startPage, 3);
+      assert.strictEqual(pagMiddle.endPage, 7);
+
+      // Last page of 10 pages: page 9 of 10
+      const pagLast = calculatePagination(9, 10, 100, 10, 5);
+      assert.strictEqual(pagLast.startPage, 5);
+      assert.strictEqual(pagLast.endPage, 9);
+    });
   });
 
   describe('4. Date Presentation & Vietnamese Formatting', () => {

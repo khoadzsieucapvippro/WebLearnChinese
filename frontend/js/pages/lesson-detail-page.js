@@ -20,13 +20,12 @@
  */
 
 import { apiClient } from '../api/api.js';
-import { showLoading, showError, showToast, createSpeakerIcon, createSpeechButton, playPronunciation, speakHanzi } from '../ui/ui.js';
+import { showLoading, showError, createSpeakerIcon, createSpeechButton, playPronunciation, speakHanzi } from '../ui/ui.js';
 import { createSafeElement, clearContainer } from '../ui/security.js';
 import { initNavbarAuth } from '../ui/nav.js';
 import { formatLessonDate, sanitizeLessonTitle } from './lessons-page.js';
 import { openNotesModal } from '../ui/notes-modal.js';
 import { openVocabWritingModal } from '../ui/character-writing/vocab-writing-modal.js';
-import { authManager } from '../auth/auth-state.js';
 import { partitionRadicals } from './radicals-page.js';
 import { HSK1_TOPICS, HSK2_TOPICS, HSK3_TOPICS } from './srs-review-page.js';
 import { SEED_RADICALS, CHAR_TO_RADICAL_MAP, CHAR_TO_RADICALS_MAP } from '../api/demo-seed-data.js';

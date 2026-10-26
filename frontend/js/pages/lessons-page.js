@@ -73,7 +73,7 @@ export function parseLessonPageResponse(envelopeOrData) {
  *   endRecord: number
  * }}
  */
-export function calculatePagination(page, size, totalElements, totalPages) {
+export function calculatePagination(page, size, totalElements, totalPages, maxButtons = 5) {
   const safeTotalPages = Math.max(0, totalPages || 0);
   const safePage = Math.max(0, Math.min(page || 0, Math.max(0, safeTotalPages - 1)));
   const hasPrev = safePage > 0;
@@ -81,13 +81,21 @@ export function calculatePagination(page, size, totalElements, totalPages) {
   const startRecord = totalElements === 0 ? 0 : safePage * size + 1;
   const endRecord = Math.min((safePage + 1) * size, totalElements);
 
+  let startPage = Math.max(0, safePage - Math.floor(maxButtons / 2));
+  let endPage = Math.min(Math.max(0, safeTotalPages - 1), startPage + maxButtons - 1);
+  if (endPage - startPage < maxButtons - 1 && safeTotalPages > 0) {
+    startPage = Math.max(0, endPage - maxButtons + 1);
+  }
+
   return {
     currentPage: safePage,
     totalPages: safeTotalPages,
     hasPrev,
     hasNext,
     startRecord,
-    endRecord
+    endRecord,
+    startPage,
+    endPage
   };
 }
 
@@ -148,7 +156,6 @@ export class LessonsPageController {
       stateContainer: null,
       grid: null,
       pagination: null,
-      pageSizeSelect: null,
       resultCount: null
     };
   }
@@ -160,23 +167,10 @@ export class LessonsPageController {
     this.dom.stateContainer = document.getElementById('lessonsStateContainer');
     this.dom.grid = document.getElementById('lessonsGrid');
     this.dom.pagination = document.getElementById('lessonsPagination');
-    this.dom.pageSizeSelect = document.getElementById('pageSizeSelect');
     this.dom.resultCount = document.getElementById('lessonsResultCount');
 
     if (!this.dom.grid || !this.dom.stateContainer) {
       return;
-    }
-
-    // Bind page size change
-    if (this.dom.pageSizeSelect) {
-      this.dom.pageSizeSelect.addEventListener('change', (e) => {
-        const newSize = parseInt(e.target.value, 10);
-        if ([12, 20, 40].includes(newSize)) {
-          this.state.currentSize = newSize;
-          this.state.currentPage = 0;
-          this.loadLessons();
-        }
-      });
     }
 
     this.loadLessons();
@@ -345,87 +339,132 @@ export class LessonsPageController {
     clearContainer(this.dom.pagination);
 
     if (this.state.totalPages <= 1) {
+      this.dom.pagination.classList.add('d-none');
       return;
     }
+    this.dom.pagination.classList.remove('d-none');
 
-    const navList = createSafeElement('ul', {
-      className: 'pagination mb-0 gap-1 flex-wrap justify-content-center'
+    const pag = calculatePagination(
+      this.state.currentPage,
+      this.state.currentSize,
+      this.state.totalElements,
+      this.state.totalPages,
+      5
+    );
+
+    const controls = createSafeElement('div', {
+      className: 'pagination-controls',
+      attrs: { role: 'group', 'aria-label': 'Điều khiển chuyển trang bài học' }
     });
 
-    // Previous Button
-    const prevLi = createSafeElement('li', {
-      className: `page-item ${this.state.currentPage === 0 ? 'disabled' : ''}`
-    });
-    const prevBtn = createSafeElement('button', {
-      className: 'page-link',
-      text: '‹ Trước',
+    // 1. First Page Button (<<)
+    const firstBtn = createSafeElement('button', {
+      className: 'pagination-btn',
       attrs: {
         type: 'button',
-        id: 'lessonPaginationPrevBtn',
-        'aria-label': 'Trang trước',
-        ...(this.state.currentPage === 0 ? { disabled: 'true' } : {})
-      }
+        'aria-label': 'Trang đầu',
+        id: 'lessonPaginationFirstBtn'
+      },
+      text: '<<'
     });
-    if (this.state.currentPage > 0) {
-      prevBtn.addEventListener('click', () => {
-        this.state.currentPage--;
+    if (pag.currentPage === 0) {
+      firstBtn.setAttribute('disabled', 'true');
+      firstBtn.disabled = true;
+    } else {
+      firstBtn.addEventListener('click', () => {
+        this.state.currentPage = 0;
         this.loadLessons();
       });
     }
-    prevLi.appendChild(prevBtn);
-    navList.appendChild(prevLi);
+    controls.appendChild(firstBtn);
 
-    // Page Number Buttons
-    for (let i = 0; i < this.state.totalPages; i++) {
-      const isCurrent = i === this.state.currentPage;
-      const pageLi = createSafeElement('li', {
-        className: `page-item ${isCurrent ? 'active' : ''}`
+    // 2. Previous Button (<)
+    const prevBtn = createSafeElement('button', {
+      className: 'pagination-btn',
+      attrs: {
+        type: 'button',
+        'aria-label': 'Trang trước',
+        id: 'lessonPaginationPrevBtn'
+      },
+      text: '<'
+    });
+    if (!pag.hasPrev) {
+      prevBtn.setAttribute('disabled', 'true');
+      prevBtn.disabled = true;
+    } else {
+      prevBtn.addEventListener('click', () => {
+        this.state.currentPage = pag.currentPage - 1;
+        this.loadLessons();
       });
+    }
+    controls.appendChild(prevBtn);
+
+    // 3. Numbered Buttons (Smart Window)
+    for (let p = pag.startPage; p <= pag.endPage; p++) {
+      const isCurrent = p === pag.currentPage;
       const pageBtn = createSafeElement('button', {
-        className: 'page-link',
-        text: String(i + 1),
+        className: `pagination-btn ${isCurrent ? 'active' : ''}`,
         attrs: {
           type: 'button',
-          'aria-label': `Trang ${i + 1}`,
-          ...(isCurrent ? { 'aria-current': 'page' } : {})
-        }
+          'aria-label': `Trang ${p + 1}`,
+          'aria-current': isCurrent ? 'page' : 'false'
+        },
+        text: String(p + 1)
       });
 
       if (!isCurrent) {
         pageBtn.addEventListener('click', () => {
-          this.state.currentPage = i;
+          this.state.currentPage = p;
           this.loadLessons();
         });
       }
 
-      pageLi.appendChild(pageBtn);
-      navList.appendChild(pageLi);
+      controls.appendChild(pageBtn);
     }
 
-    // Next Button
-    const nextLi = createSafeElement('li', {
-      className: `page-item ${this.state.currentPage >= this.state.totalPages - 1 ? 'disabled' : ''}`
-    });
+    // 4. Next Button (>)
     const nextBtn = createSafeElement('button', {
-      className: 'page-link',
-      text: 'Sau ›',
+      className: 'pagination-btn',
       attrs: {
         type: 'button',
-        id: 'lessonPaginationNextBtn',
         'aria-label': 'Trang sau',
-        ...(this.state.currentPage >= this.state.totalPages - 1 ? { disabled: 'true' } : {})
-      }
+        id: 'lessonPaginationNextBtn'
+      },
+      text: '>'
     });
-    if (this.state.currentPage < this.state.totalPages - 1) {
+    if (!pag.hasNext) {
+      nextBtn.setAttribute('disabled', 'true');
+      nextBtn.disabled = true;
+    } else {
       nextBtn.addEventListener('click', () => {
-        this.state.currentPage++;
+        this.state.currentPage = pag.currentPage + 1;
         this.loadLessons();
       });
     }
-    nextLi.appendChild(nextBtn);
-    navList.appendChild(nextLi);
+    controls.appendChild(nextBtn);
 
-    this.dom.pagination.appendChild(navList);
+    // 5. Last Page Button (>>)
+    const lastBtn = createSafeElement('button', {
+      className: 'pagination-btn',
+      attrs: {
+        type: 'button',
+        'aria-label': 'Trang cuối',
+        id: 'lessonPaginationLastBtn'
+      },
+      text: '>>'
+    });
+    if (pag.currentPage >= pag.totalPages - 1) {
+      lastBtn.setAttribute('disabled', 'true');
+      lastBtn.disabled = true;
+    } else {
+      lastBtn.addEventListener('click', () => {
+        this.state.currentPage = pag.totalPages - 1;
+        this.loadLessons();
+      });
+    }
+    controls.appendChild(lastBtn);
+
+    this.dom.pagination.appendChild(controls);
   }
 
   /**

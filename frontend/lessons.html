@@ -78,14 +78,6 @@
   <main id="mainContent" class="py-4 py-md-5">
     <div class="container-xl">
 
-      <!-- Breadcrumb Navigation Landmark -->
-      <nav aria-label="Đường dẫn danh mục bài học" class="breadcrumb-nav mb-3">
-        <ol class="breadcrumb-custom">
-          <li><a href="index.html">Trang chủ</a></li>
-          <li aria-current="page">Bài học</li>
-        </ol>
-      </nav>
-      
       <!-- Academic Page Heading Section -->
       <section class="mb-4">
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
@@ -93,31 +85,9 @@
             <h1 id="lessonsPageHeading" class="h2 fw-bold text-dark mb-1">Danh Mục Bài Học Tiếng Trung</h1>
             <p class="text-secondary mb-0">Các giáo trình học tập đã được phê duyệt chính thức, sắp xếp theo lộ trình từ vựng chuẩn hóa.</p>
           </div>
-          
-          <!-- Page size selector & count badge & HSK switch link -->
-          <div class="d-flex align-items-center justify-content-between justify-content-md-end flex-wrap gap-2">
-            <a href="srs-review.html?group=hsk1" class="btn-chinese-secondary py-1 px-3 small text-decoration-none d-inline-flex align-items-center gap-1">
-              <span>Trung tâm Ôn tập</span>
-              <span aria-hidden="true">&rarr;</span>
-            </a>
-            <a href="vocabulary.html" class="btn-chinese-outline py-1 px-3 small text-decoration-none d-inline-flex align-items-center gap-1">
-              <span>Xem theo Cấp độ HSK</span>
-              <span aria-hidden="true">&rarr;</span>
-            </a>
-
-            <div class="d-flex align-items-center gap-2">
-              <label for="pageSizeSelect" class="small text-secondary fw-semibold text-nowrap">Hiển thị:</label>
-              <select id="pageSizeSelect" class="form-select form-select-sm" style="width: auto;">
-                <option value="12">12 / trang</option>
-                <option value="20" selected>20 / trang</option>
-                <option value="40">40 / trang</option>
-              </select>
-            </div>
-
-            <!-- Live Status Announcer for Screen Readers & Learners -->
-            <div id="lessonsResultCount" class="badge-status badge-status-approved text-nowrap" role="status" aria-live="polite">
-              Đang chuẩn bị...
-            </div>
+          <!-- Live Status Announcer for Screen Readers (Visually Hidden) -->
+          <div id="lessonsResultCount" class="visually-hidden" role="status" aria-live="polite">
+            Đang chuẩn bị...
           </div>
         </div>
       </section>

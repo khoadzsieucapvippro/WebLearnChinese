@@ -504,17 +504,15 @@ describe('Accessibility Verification: WCAG 2.2 AA Aligned', () => {
         assert.ok(sz.width >= 44 && sz.height >= 44, `Card dimensions ${sz.width}x${sz.height} must satisfy >= 44x44px`);
       }
 
-      // 2. Audit Page Size Select Label
-      const pageSizeSelect = page.locator('#pageSizeSelect');
-      const pageSizeLabel = page.locator('label[for="pageSizeSelect"]');
-      assert.ok(await pageSizeLabel.count() > 0, 'Page size select must have associated <label>');
+      // 2. Audit Absence of Page Size Select (clean toolbar)
+      assert.strictEqual(await page.$('#pageSizeSelect'), null, 'No page size select in catalog toolbar');
 
       // 3. Audit Live Status Announcer (aria-live="polite")
       const liveAnnouncer = page.locator('#lessonsResultCount');
       assert.strictEqual(await liveAnnouncer.getAttribute('aria-live'), 'polite', 'Live status announcer must have aria-live="polite"');
 
       // 4. Audit Pagination semantics (aria-current="page")
-      const currentPageBtn = page.locator('.page-link[aria-current="page"]');
+      const currentPageBtn = page.locator('.pagination-btn[aria-current="page"]');
       assert.strictEqual(await currentPageBtn.count(), 1, 'Current page must have aria-current="page"');
 
       // 5. Audit semantic <article> cards

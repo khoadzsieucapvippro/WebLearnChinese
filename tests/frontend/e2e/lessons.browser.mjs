@@ -251,8 +251,8 @@ describe('Browser E2E: Public Lessons & Lesson Detail (Task 9C.1)', () => {
     }
   });
 
-  // LB3: Pagination & Page Size Selection
-  test('LB3: Page size switcher and pagination navigate correctly', async () => {
+  // LB3: Standardized Pagination Navigation (First, Prev, Next, Last)
+  test('LB3: Standardized pagination controls navigate correctly and no pageSizeSelect', async () => {
     const { page, context, getRuntimeErrors } = await createMonitoredPage(browser);
     let requestedSize = 20;
     let requestedPage = 0;
@@ -282,20 +282,32 @@ describe('Browser E2E: Public Lessons & Lesson Detail (Task 9C.1)', () => {
       await page.goto(`${baseUrl}/lessons.html`, { waitUntil: 'domcontentloaded' });
       await page.waitForSelector('.lesson-card');
 
-      // Switch page size to 12
-      const sizeSelect = page.locator('#pageSizeSelect');
-      await sizeSelect.selectOption('12');
-      await page.waitForTimeout(100);
+      // Verify pageSizeSelect is removed from catalog toolbar
+      assert.strictEqual(await page.$('#pageSizeSelect'), null, 'No page size select in catalog toolbar');
 
-      assert.strictEqual(requestedSize, 12, 'Page size should be updated to 12');
-      assert.strictEqual(requestedPage, 0, 'Page index should reset to 0 upon size change');
-
-      // Click Next button
+      // Click Next button (>)
       const nextBtn = page.locator('#lessonPaginationNextBtn');
       await nextBtn.click();
       await page.waitForTimeout(100);
-
       assert.strictEqual(requestedPage, 1, 'Page index should advance to 1 on Next click');
+
+      // Click Last button (>>)
+      const lastBtn = page.locator('#lessonPaginationLastBtn');
+      await lastBtn.click();
+      await page.waitForTimeout(100);
+      assert.strictEqual(requestedPage, 2, 'Page index should advance to 2 (last page for 50 items/20 per page)');
+
+      // Click Prev button (<)
+      const prevBtn = page.locator('#lessonPaginationPrevBtn');
+      await prevBtn.click();
+      await page.waitForTimeout(100);
+      assert.strictEqual(requestedPage, 1, 'Page index should go back to 1 on Prev click');
+
+      // Click First button (<<)
+      const firstBtn = page.locator('#lessonPaginationFirstBtn');
+      await firstBtn.click();
+      await page.waitForTimeout(100);
+      assert.strictEqual(requestedPage, 0, 'Page index should return to 0 on First click');
 
       const errors = getRuntimeErrors();
       assert.strictEqual(errors.length, 0, `Runtime errors: ${errors.join('\n')}`);
