@@ -486,10 +486,11 @@ class DemoFallbackEngine {
       const page = parseInt(query.page || 0, 10);
       const size = parseInt(query.size || 20, 10);
       const search = (query.search || '').trim().toLowerCase();
-      const level = query.hskLevel ? parseInt(query.hskLevel, 10) : null;
+      const rawLevel = query.hsk !== undefined ? query.hsk : query.hskLevel;
+      const level = rawLevel !== undefined && rawLevel !== null && rawLevel !== '' ? parseInt(rawLevel, 10) : null;
 
       let items = [...data.vocabulary];
-      if (level) {
+      if (level !== null && !isNaN(level)) {
         items = items.filter(v => v.hskLevel === level);
       }
       if (search) {

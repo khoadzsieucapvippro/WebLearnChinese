@@ -23,7 +23,6 @@ import { initNavbarAuth } from '../ui/nav.js';
 import { createSafeElement, clearContainer, sanitizeResourceUrl, sanitizeNavigationUrl } from '../ui/security.js';
 import { setComponentState, createSpeakerIcon, createSpeechButton } from '../ui/ui.js';
 import { speechController, speakHanzi, playPronunciation, isSpeechSynthesisAvailable, SpeechState, resolveSubpathAudioUrl } from '../ui/speech.js';
-import { authManager } from '../auth/auth-state.js';
 import { VocabWritingOrchestrator } from '../ui/character-writing/vocab-writing-orchestrator.js';
 import { splitHanziCharacters } from '../ui/character-writing/stroke-data-loader.js';
 import { CHAR_TO_RADICAL_MAP, CHAR_TO_RADICALS_MAP } from '../api/demo-seed-data.js';
@@ -249,7 +248,6 @@ export class VocabularyPageController {
       pagination: document.getElementById('vocabPagination'),
       searchInput: document.getElementById('vocabSearchInput'),
       searchClearBtn: document.getElementById('searchClearBtn'),
-      pageSizeSelect: document.getElementById('pageSizeSelect'),
       resultCount: document.getElementById('vocabResultCount'),
 
       // HSK Level Tabs & Dynamic Category Header
@@ -259,15 +257,6 @@ export class VocabularyPageController {
       vocabCategoryBadge: document.getElementById('vocabCategoryBadge'),
       vocabPageHeading: document.getElementById('vocabPageHeading'),
       vocabPageSubheading: document.getElementById('vocabPageSubheading'),
-
-      // Learning Group Overview Elements
-      groupBanner: document.getElementById('vocabGroupBanner'),
-      groupTotalCount: document.getElementById('vocabGroupTotalCount'),
-      groupLearnedCount: document.getElementById('vocabGroupLearnedCount'),
-      groupDueCount: document.getElementById('vocabGroupDueCount'),
-      groupStatusBadge: document.getElementById('vocabGroupStatusBadge'),
-      vocabBtnSrsReview: document.getElementById('vocabBtnSrsReview'),
-      vocabBtnExploreLessons: document.getElementById('vocabBtnExploreLessons'),
 
       modal: document.getElementById('vocabDetailModal'),
       modalCloseBtn: document.getElementById('modalCloseBtn'),
@@ -316,15 +305,7 @@ export class VocabularyPageController {
       });
     }
 
-    // 3. Page size change handler
-    if (this.elements.pageSizeSelect) {
-      this.elements.pageSizeSelect.addEventListener('change', (e) => {
-        this.pageSize = parseInt(e.target.value, 10) || 20;
-        this.currentPage = 0; // Reset to first page
-        this.loadCatalog();
-      });
-    }
-
+    
     // 4. Modal close button (Top right X)
     if (this.elements.modalCloseBtn) {
       this.elements.modalCloseBtn.addEventListener('click', () => this.closeDetailModal());
@@ -419,49 +400,6 @@ export class VocabularyPageController {
     });
   }
 
-  /**
-   * Updates learning group overview banner and real learner metrics.
-   * 
-   * @param {number} totalElements
-   */
-  async updateGroupOverview(totalElements = 0) {
-    if (!this.elements.groupBanner) return;
-    let studyStats = null;
-    if (authManager.isAuthenticated()) {
-      try {
-        const statsRes = await apiClient('/srs/stats');
-        studyStats = (statsRes && statsRes.data) ? statsRes.data : statsRes;
-      } catch {
-        studyStats = null;
-      }
-    }
-
-    const metrics = calculateVocabGroupMetrics({
-      totalElements,
-      studyStats,
-      selectedHsk: this.selectedHsk
-    });
-
-    if (this.elements.groupTotalCount) {
-      this.elements.groupTotalCount.textContent = `${metrics.totalWords} từ`;
-    }
-    if (this.elements.groupLearnedCount) {
-      this.elements.groupLearnedCount.textContent = metrics.learnedWords !== null ? `${metrics.learnedWords} thẻ` : '—';
-    }
-    if (this.elements.groupDueCount) {
-      this.elements.groupDueCount.textContent = metrics.dueWords !== null ? `${metrics.dueWords} thẻ` : '—';
-    }
-    if (this.elements.groupStatusBadge) {
-      this.elements.groupStatusBadge.textContent = metrics.statusLabel;
-    }
-    if (this.elements.vocabBtnSrsReview) {
-      if (metrics.dueWords !== null && metrics.dueWords > 0) {
-        this.elements.vocabBtnSrsReview.textContent = `Ôn tập SRS (${metrics.dueWords} thẻ)`;
-      } else {
-        this.elements.vocabBtnSrsReview.textContent = 'Ôn tập SRS ngay';
-      }
-    }
-  }
 
   /**
    * Updates HSK tab styling, aria attributes, and headings without triggering reload.
@@ -708,7 +646,6 @@ export class VocabularyPageController {
         }
 
         this.updateResultCountBadge(0, 0);
-        this.updateGroupOverview(0);
         return;
       }
 
@@ -717,7 +654,6 @@ export class VocabularyPageController {
       this.renderGrid(parsed.items);
       this.renderPagination(parsed);
       this.updateResultCountBadge(parsed.items.length, parsed.totalElements);
-      this.updateGroupOverview(parsed.totalElements);
 
       // 8. URL Deep-Linking: Auto-open modal if target vocabId is specified
       if (typeof window !== 'undefined' && !this.initialDeepLinkHandled) {

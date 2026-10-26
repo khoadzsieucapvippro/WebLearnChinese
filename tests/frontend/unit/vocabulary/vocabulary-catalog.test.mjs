@@ -481,5 +481,31 @@ describe('Unit: Chinese Vocabulary Catalog & Logic Engine', () => {
     });
   });
 
-});
 
+  describe('13. Demo Fallback Engine HSK Query Parameter Compatibility (query.hsk & query.hskLevel)', () => {
+    test('filters vocabulary correctly when query.hsk is passed (matching vocabulary-page.js params)', async () => {
+      const { demoFallbackEngine } = await import('../../../../frontend/js/api/demo-fallback-engine.js');
+      const resHsk1 = await demoFallbackEngine.handleRequest('/vocabulary', { params: { hsk: '1', page: 0, size: 20 } });
+      assert.strictEqual(resHsk1.totalElements, 300, 'HSK 1 must have exactly 300 items');
+      assert.ok(resHsk1.items.every(v => v.hskLevel === 1), 'All items in HSK 1 page must have hskLevel === 1');
+
+      const resHsk2 = await demoFallbackEngine.handleRequest('/vocabulary', { params: { hsk: '2', page: 0, size: 20 } });
+      assert.strictEqual(resHsk2.totalElements, 200, 'HSK 2 must have exactly 200 items');
+      assert.ok(resHsk2.items.every(v => v.hskLevel === 2), 'All items in HSK 2 page must have hskLevel === 2');
+
+      const resHsk3 = await demoFallbackEngine.handleRequest('/vocabulary', { params: { hsk: '3', page: 0, size: 20 } });
+      assert.strictEqual(resHsk3.totalElements, 500, 'HSK 3 must have exactly 500 items');
+      assert.ok(resHsk3.items.every(v => v.hskLevel === 3), 'All items in HSK 3 page must have hskLevel === 3');
+
+      const resAll = await demoFallbackEngine.handleRequest('/vocabulary', { params: { page: 0, size: 20 } });
+      assert.strictEqual(resAll.totalElements, 1068, 'All items without hsk filter must equal 1068 total entries');
+    });
+
+    test('backward compatibility with query.hskLevel', async () => {
+      const { demoFallbackEngine } = await import('../../../../frontend/js/api/demo-fallback-engine.js');
+      const res = await demoFallbackEngine.handleRequest('/vocabulary', { params: { hskLevel: '1', page: 0, size: 20 } });
+      assert.strictEqual(res.totalElements, 300, 'query.hskLevel should also filter to 300 items');
+    });
+  });
+
+});
