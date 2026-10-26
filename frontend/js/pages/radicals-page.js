@@ -38,7 +38,7 @@
 
 import { apiClient, ApiError } from '../api/api.js';
 import { initNavbarAuth } from '../ui/nav.js';
-import { createSafeElement, clearContainer, sanitizeResourceUrl } from '../ui/security.js';
+import { createSafeElement, clearContainer } from '../ui/security.js';
 import { setComponentState, showToast, createSpeakerIcon, createSpeechButton, playPronunciation, speechController } from '../ui/ui.js';
 import { CharacterWritingModal } from '../ui/character-writing/character-writing-modal.js';
 
@@ -365,32 +365,6 @@ export function filterRadicals(rawQuery, items) {
 }
 
 /**
- * Backward compatibility helper for pagination calculations.
- * 
- * @param {number} totalItems 
- * @param {number} pageIndex 
- * @param {number} pageSize 
- * @returns {{ pageIndex: number, pageSize: number, totalPages: number, startIndex: number, endIndex: number }}
- */
-export function calculatePagination(totalItems, pageIndex, pageSize) {
-  const safeTotal = Math.max(0, Number(totalItems) || 0);
-  const safeSize = Math.max(1, Number(pageSize) || 214);
-  const totalPages = Math.max(1, Math.ceil(safeTotal / safeSize));
-  const clampedPage = Math.max(0, Math.min(Number(pageIndex) || 0, totalPages - 1));
-
-  const startIndex = clampedPage * safeSize;
-  const endIndex = Math.min(safeTotal, startIndex + safeSize);
-
-  return {
-    pageIndex: clampedPage,
-    pageSize: safeSize,
-    totalPages,
-    startIndex,
-    endIndex
-  };
-}
-
-/**
  * Speaks Chinese character using the centralized SpeechController.
  * 
  * @param {string} character 
@@ -697,7 +671,6 @@ export class RadicalsPageController {
       allRadicalsGrid: document.getElementById('allRadicalsGrid') || document.getElementById('remainingRadicalsGrid'),
       remainingRadicalsSection: document.getElementById('remainingRadicalsSection') || document.getElementById('allRadicalsSection'),
       remainingRadicalsGrid: document.getElementById('remainingRadicalsGrid') || document.getElementById('allRadicalsGrid'),
-      grid: document.getElementById('radicalGrid'), // Compat anchor
 
       // Detail Modal Elements
       modal: document.getElementById('radicalDetailModal'),
@@ -710,9 +683,6 @@ export class RadicalsPageController {
       modalRadicalMeaning: document.getElementById('modalRadicalMeaning'),
       modalRadicalExplanationContainer: document.getElementById('modalRadicalExplanationContainer'),
       modalRadicalExplanation: document.getElementById('modalRadicalExplanation'),
-      modalVideoWritingSection: document.getElementById('modalVideoWritingSection'),
-      modalVideoPlayer: document.getElementById('modalVideoPlayer'),
-      modalAudioPlayer: document.getElementById('modalAudioPlayer'),
       modalWritingSection: document.getElementById('modalWritingSection')
     };
   }
@@ -1341,23 +1311,6 @@ export class RadicalsPageController {
       });
     }
 
-    // 3. Stroke Writing Video Demonstration (Optional)
-    if (this.elements.modalVideoWritingSection && this.elements.modalVideoPlayer) {
-      const rawWriting = radical.videoWritingUrl;
-      const safeWriting = sanitizeResourceUrl(rawWriting);
-
-      if (rawWriting && safeWriting !== 'about:blank') {
-        this.elements.modalVideoPlayer.pause();
-        this.elements.modalVideoPlayer.src = safeWriting;
-        this.elements.modalVideoPlayer.load();
-        this.elements.modalVideoWritingSection.classList.remove('d-none');
-      } else {
-        this.elements.modalVideoPlayer.pause();
-        this.elements.modalVideoPlayer.removeAttribute('src');
-        this.elements.modalVideoWritingSection.classList.add('d-none');
-      }
-    }
-
     // 5. Open Dialog with Native Focus Management
     if (typeof this.elements.modal.showModal === 'function') {
       this.elements.modal.showModal();
@@ -1380,12 +1333,6 @@ export class RadicalsPageController {
 
     // 2. Stop audio & speech synthesis
     speechController.cancel();
-
-    // 3. Stop writing video
-    if (this.elements.modalVideoPlayer) {
-      this.elements.modalVideoPlayer.pause();
-      this.elements.modalVideoPlayer.removeAttribute('src');
-    }
 
     // 3b. Stop and clean up interactive writing modal session
     if (this.writingModal) {

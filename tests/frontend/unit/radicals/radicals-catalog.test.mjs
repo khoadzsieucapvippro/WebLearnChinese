@@ -33,7 +33,6 @@ import {
   validateRadicalDataset,
   partitionRadicals,
   filterRadicals,
-  calculatePagination,
   removeVietnameseDiacritics,
   normalizeSearchQuery,
   sanitizeYouTubeEmbedUrl,
