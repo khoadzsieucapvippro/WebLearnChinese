@@ -346,14 +346,40 @@ export class LessonDetailPageController {
     const activeChapter = this.chapter !== null ? this.chapter : 0;
     const shelfUrl = `srs-review.html?mode=${encodeURIComponent(this.mode)}&group=${encodeURIComponent(activeGroup)}`;
 
-    if (this.dom.btnBackToReview) this.dom.btnBackToReview.href = shelfUrl;
-    if (this.dom.btnBottomBackToShelf) this.dom.btnBottomBackToShelf.href = shelfUrl;
-    if (this.dom.breadcrumbReviewHub) this.dom.breadcrumbReviewHub.href = shelfUrl;
-
-    if (this.dom.breadcrumbGroupItem && this.dom.breadcrumbGroupLink && this.group) {
-      this.dom.breadcrumbGroupItem.classList.remove('d-none');
-      this.dom.breadcrumbGroupLink.href = shelfUrl;
-      this.dom.breadcrumbGroupLink.textContent = GROUP_LABELS[this.group] || this.group.toUpperCase();
+    if (this.group) {
+      if (this.dom.btnBackToReview) {
+        this.dom.btnBackToReview.href = shelfUrl;
+        this.dom.btnBackToReview.textContent = '← Quay lại Ôn tập';
+      }
+      if (this.dom.btnBottomBackToShelf) {
+        this.dom.btnBottomBackToShelf.href = shelfUrl;
+        this.dom.btnBottomBackToShelf.textContent = '← Về phòng ôn tập';
+      }
+      if (this.dom.breadcrumbReviewHub) {
+        this.dom.breadcrumbReviewHub.href = shelfUrl;
+        this.dom.breadcrumbReviewHub.textContent = 'Ôn tập';
+      }
+      if (this.dom.breadcrumbGroupItem && this.dom.breadcrumbGroupLink) {
+        this.dom.breadcrumbGroupItem.classList.remove('d-none');
+        this.dom.breadcrumbGroupLink.href = shelfUrl;
+        this.dom.breadcrumbGroupLink.textContent = GROUP_LABELS[this.group] || this.group.toUpperCase();
+      }
+    } else {
+      if (this.dom.btnBackToReview) {
+        this.dom.btnBackToReview.href = 'lessons.html';
+        this.dom.btnBackToReview.textContent = '← Danh mục Bài học';
+      }
+      if (this.dom.btnBottomBackToShelf) {
+        this.dom.btnBottomBackToShelf.href = 'lessons.html';
+        this.dom.btnBottomBackToShelf.textContent = '← Về danh mục bài học';
+      }
+      if (this.dom.breadcrumbReviewHub) {
+        this.dom.breadcrumbReviewHub.href = 'lessons.html';
+        this.dom.breadcrumbReviewHub.textContent = 'Bài học';
+      }
+      if (this.dom.breadcrumbGroupItem) {
+        this.dom.breadcrumbGroupItem.classList.add('d-none');
+      }
     }
 
     // 4 Modern Rooms Quick Launch Links
@@ -384,7 +410,7 @@ export class LessonDetailPageController {
       message: 'Mã bài học không hợp lệ hoặc thiếu thông tin định danh. Vui lòng chọn bài học từ danh mục bài học công khai.',
       retryText: 'Về danh mục bài học',
       onRetry: () => {
-        window.location.href = 'srs-review.html';
+        window.location.href = 'lessons.html';
       }
     });
 

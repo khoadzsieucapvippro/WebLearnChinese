@@ -64,6 +64,7 @@ function resolveTestFiles(tier) {
     'tests/frontend/unit/security/security.test.mjs',
     'tests/frontend/unit/ui/ui-primitives.test.mjs',
     'tests/frontend/unit/ui/homepage-audit.test.mjs',
+    'tests/frontend/unit/ui/nav-active-sync.test.mjs',
     'tests/frontend/unit/auth/auth-state.test.mjs',
     'tests/frontend/unit/api/api-client.test.mjs',
     'tests/frontend/unit/auth/auth-forms.test.mjs',

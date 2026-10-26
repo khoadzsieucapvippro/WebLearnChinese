@@ -480,17 +480,22 @@ export function renderNavbarAuth(container) {
   }
 }
 
-const REVIEW_HUB_SUBPAGES = new Set([
+export const REVIEW_HUB_SUBPAGES = new Set([
   'srs-review.html',
   'srs-dashboard.html',
+  'srs-settings.html'
+]);
+
+export const LESSON_HUB_SUBPAGES = new Set([
   'lessons.html',
   'lesson-detail.html'
 ]);
 
 /**
  * Synchronizes the active state and aria-current="page" on primary navbar links (.navbar-nav),
- * ensuring sub-pages of the Review Hub (srs-dashboard.html, lessons.html, lesson-detail.html)
- * highlight "Ôn tập" (srs-review.html).
+ * ensuring:
+ * - Lesson Hub sub-pages (lessons.html, lesson-detail.html) highlight "Bài học" (lessons.html).
+ * - Review Hub sub-pages (srs-review.html, srs-dashboard.html, srs-settings.html) highlight "Ôn tập" (srs-review.html).
  */
 export function syncActiveNavLinks() {
   if (typeof window === 'undefined' || typeof document === 'undefined' || !window.location) return;
@@ -502,6 +507,8 @@ export function syncActiveNavLinks() {
   let effectiveNavTarget = currentPage;
   if (REVIEW_HUB_SUBPAGES.has(currentPage)) {
     effectiveNavTarget = 'srs-review.html';
+  } else if (LESSON_HUB_SUBPAGES.has(currentPage)) {
+    effectiveNavTarget = 'lessons.html';
   } else if (currentPage.startsWith('creator-')) {
     effectiveNavTarget = 'creator-lessons.html';
   } else if (currentPage.startsWith('moderator-')) {
