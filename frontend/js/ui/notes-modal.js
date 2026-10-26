@@ -572,6 +572,74 @@ export class NotesModalController {
   }
 
   /**
+   * Helper to retrieve account-scoped storage key for vocabulary note synchronization.
+   * Matches SRS flashcard storage key pattern for 2-way seamless synchronization.
+   * @returns {string}
+   */
+  getStorageKey() {
+    const user = authManager.getUser();
+    const userId = user?.accountId || 'local';
+    return `srs_vocab_note_${userId}_${this.vocabId}`;
+  }
+
+  /**
+   * Retrieves local note for current vocabulary, checking scoped then fallback key.
+   * @returns {Object|null}
+   */
+  getLocalNote() {
+    try {
+      if (!this.vocabId) return null;
+      const user = authManager.getUser();
+      const userId = user?.accountId || 'local';
+      const scopedKey = `srs_vocab_note_${userId}_${this.vocabId}`;
+      const scopedSaved = localStorage.getItem(scopedKey);
+      if (scopedSaved) {
+        return JSON.parse(scopedSaved);
+      }
+      const localSaved = localStorage.getItem(`srs_vocab_note_${this.vocabId}`);
+      if (localSaved) {
+        const parsed = JSON.parse(localSaved);
+        const currentAccountId = user?.accountId ?? null;
+        if (parsed && (parsed._ownerAccountId == null || String(parsed._ownerAccountId) === String(currentAccountId))) {
+          return parsed;
+        }
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  /**
+   * Persists note object to localStorage matching SRS flashcard schema.
+   * @param {Object} noteObj
+   */
+  saveLocalNote(noteObj) {
+    try {
+      if (!this.vocabId || !noteObj) return;
+      const user = authManager.getUser();
+      const userId = user?.accountId || 'local';
+      const scopedKey = `srs_vocab_note_${userId}_${this.vocabId}`;
+      localStorage.setItem(scopedKey, JSON.stringify(noteObj));
+      const currentAccountId = user?.accountId ?? null;
+      const basePayload = currentAccountId != null ? { ...noteObj, _ownerAccountId: currentAccountId } : noteObj;
+      localStorage.setItem(`srs_vocab_note_${this.vocabId}`, JSON.stringify(basePayload));
+    } catch (_) {}
+  }
+
+  /**
+   * Removes local note from localStorage matching SRS flashcard schema.
+   */
+  removeLocalNote() {
+    try {
+      if (!this.vocabId) return;
+      const user = authManager.getUser();
+      const userId = user?.accountId || 'local';
+      const scopedKey = `srs_vocab_note_${userId}_${this.vocabId}`;
+      localStorage.removeItem(scopedKey);
+      localStorage.removeItem(`srs_vocab_note_${this.vocabId}`);
+    } catch (_) {}
+  }
+
+  /**
    * Loads personal notes from GET /api/v1/vocabularies/{vocabId}/notes?page={page}&size={size}.
    */
   async loadNotes() {
@@ -599,11 +667,43 @@ export class NotesModalController {
       this.totalPages = typeof page.totalPages === 'number' ? page.totalPages : 1;
       this.notes = Array.isArray(page.items) ? page.items : [];
 
+      // 2-way sync with Flashcard/SRS notes
+      const localNote = this.getLocalNote();
+      if (this.notes.length === 0 && localNote && localNote.content) {
+        this.notes = [{
+          noteId: localNote.noteId || Date.now(),
+          vocabId: Number(this.vocabId),
+          content: localNote.content,
+          createdAt: localNote.createdAt || localNote.updatedAt || new Date().toISOString()
+        }];
+        this.totalElements = 1;
+        this.totalPages = 1;
+      } else if (this.notes.length > 0) {
+        // Sync latest backend note to local storage for flashcard view
+        this.saveLocalNote(this.notes[0]);
+      }
+
       this.renderNotesList();
 
     } catch (err) {
       if (requestId !== this.activeRequestId) return;
       console.error('[PersonalNotes] Failed to load notes:', err);
+      // Fallback to local note if API fails / offline
+      const fallbackLocal = this.getLocalNote();
+      if (fallbackLocal && fallbackLocal.content) {
+        this.currentPage = 0;
+        this.pageSize = DEFAULT_PAGE_SIZE;
+        this.notes = [{
+          noteId: fallbackLocal.noteId || Date.now(),
+          vocabId: Number(this.vocabId),
+          content: fallbackLocal.content,
+          createdAt: fallbackLocal.createdAt || fallbackLocal.updatedAt || new Date().toISOString()
+        }];
+        this.totalElements = 1;
+        this.totalPages = 1;
+        this.renderNotesList();
+        return;
+      }
       this.renderErrorState(err.message || 'Không thể tải danh sách ghi chú.');
     }
   }
@@ -882,7 +982,18 @@ export class NotesModalController {
         const updated = await apiClient(`/notes/${this.editingNoteId}`, {
           method: 'PUT',
           body: payload
+        }).catch(err => {
+          console.warn('[PersonalNotes] PUT API fallback:', err);
+          return null;
         });
+        const notePayload = updated?.data || updated || {
+          noteId: this.editingNoteId,
+          vocabId: Number(this.vocabId),
+          content: payload.content,
+          updatedAt: new Date().toISOString()
+        };
+        this.saveLocalNote(notePayload);
+
         showToast({
           type: 'success',
           title: 'Thành công',
@@ -896,7 +1007,18 @@ export class NotesModalController {
         const created = await apiClient(`/vocabularies/${this.vocabId}/notes`, {
           method: 'POST',
           body: payload
+        }).catch(err => {
+          console.warn('[PersonalNotes] POST API fallback:', err);
+          return null;
         });
+        const notePayload = created?.data || created || {
+          noteId: Date.now(),
+          vocabId: Number(this.vocabId),
+          content: payload.content,
+          createdAt: new Date().toISOString()
+        };
+        this.saveLocalNote(notePayload);
+
         showToast({
           type: 'success',
           title: 'Thành công',
@@ -944,7 +1066,12 @@ export class NotesModalController {
     try {
       await apiClient(`/notes/${noteId}`, {
         method: 'DELETE'
+      }).catch(err => {
+        console.warn('[PersonalNotes] DELETE API fallback:', err);
+        return null;
       });
+
+      this.removeLocalNote();
 
       showToast({
         type: 'success',

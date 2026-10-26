@@ -267,17 +267,17 @@ export class VocabWritingOrchestrator {
       this.dom.statusText = statusText;
     } else {
       const footerRow = document.createElement('div');
-      footerRow.className = 'd-flex align-items-center justify-content-between mt-3 pt-2 border-top flex-wrap gap-2';
+      footerRow.className = 'd-flex align-items-center justify-content-end mt-3 pt-2 border-top flex-wrap gap-2';
 
       const statusText = document.createElement('div');
-      statusText.className = 'small text-muted flex-grow-1 text-center text-sm-start';
+      statusText.className = 'visually-hidden';
       statusText.setAttribute('role', 'status');
       statusText.setAttribute('aria-live', 'polite');
       statusText.textContent = 'Đang nạp dữ liệu nét chữ...';
       footerRow.appendChild(statusText);
       this.dom.statusText = statusText;
 
-      // Action buttons: Replay, Next Character & SRS Practice Shortcut
+      // Action buttons: Replay
       const actionsGroup = document.createElement('div');
       actionsGroup.className = 'd-flex align-items-center gap-2 ms-auto flex-wrap';
 
@@ -292,33 +292,6 @@ export class VocabWritingOrchestrator {
       });
       actionsGroup.appendChild(replayBtn);
       this.dom.replayBtn = replayBtn;
-
-      if (this.characters.length > 1) {
-        const nextBtn = document.createElement('button');
-        nextBtn.type = 'button';
-        nextBtn.className = 'btn btn-sm btn-chinese-secondary py-1 px-2';
-        nextBtn.textContent = 'Chữ kế &rarr;';
-        nextBtn.addEventListener('click', () => {
-          const nextIdx = (this.activeCharIndex + 1) % this.characters.length;
-          this.selectCharacter(nextIdx);
-        });
-        actionsGroup.appendChild(nextBtn);
-        this.dom.nextBtn = nextBtn;
-      }
-
-      // Shortcut: "Luyện viết từ này" -> srs-review.html?mode=writing&group=hsk1&vocabId=...
-      if (this.practiceUrl || (this.wordData && this.wordData.vocabId)) {
-        const group = this.wordData.hskLevel ? `hsk${this.wordData.hskLevel}` : 'hsk1';
-        const url = this.practiceUrl || `srs-review.html?mode=writing&group=${group}&vocabId=${encodeURIComponent(this.wordData.vocabId)}`;
-        const practiceLink = document.createElement('a');
-        practiceLink.className = 'btn btn-sm btn-chinese-primary py-1 px-2 d-inline-flex align-items-center gap-1 text-decoration-none';
-        practiceLink.href = sanitizeNavigationUrl(url);
-        practiceLink.textContent = '✍️ Luyện viết từ này';
-        practiceLink.title = 'Chuyển sang phòng Ôn tập SRS để luyện viết';
-        practiceLink.setAttribute('aria-label', `Luyện viết từ ${this.wordData.hanzi || ''} trong phòng Ôn tập SRS`);
-        actionsGroup.appendChild(practiceLink);
-        this.dom.practiceLink = practiceLink;
-      }
 
       footerRow.appendChild(actionsGroup);
       card.appendChild(footerRow);
@@ -439,13 +412,7 @@ export class VocabWritingOrchestrator {
     const boxWrapper = document.createElement('div');
     boxWrapper.className = 'd-flex flex-column align-items-center';
 
-    // Character label above canvas (Omitted in demoOnly / compact view)
-    if (!this.demoOnly && this.characters.length > 1) {
-      const label = document.createElement('span');
-      label.className = 'small fw-bold text-secondary mb-1';
-      label.textContent = `#${charIndex + 1}: ${character}`;
-      boxWrapper.appendChild(label);
-    }
+
 
     // Calligraphy Canvas Box with Rice Grid
     const canvasBox = document.createElement('div');

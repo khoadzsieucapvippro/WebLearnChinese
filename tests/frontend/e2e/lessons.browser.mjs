@@ -429,11 +429,9 @@ describe('Browser E2E: Public Lessons & Lesson Detail (Task 9C.1)', () => {
       await page.goto(`${baseUrl}/lesson-detail.html?id=1`, { waitUntil: 'domcontentloaded' });
       await page.waitForSelector('#lessonVocabList');
 
-      // Breadcrumbs
+      // Breadcrumbs removed per direct navigation UX design
       const breadcrumbNav = page.locator('nav[aria-label="Đường dẫn bài học"]');
-      assert.ok(await breadcrumbNav.isVisible(), 'Breadcrumb nav landmark must be visible');
-      const activeBreadcrumb = breadcrumbNav.locator('[aria-current="page"]');
-      assert.ok(await activeBreadcrumb.isVisible(), 'Active breadcrumb with aria-current="page" must exist');
+      assert.strictEqual(await breadcrumbNav.count(), 0, 'Breadcrumb nav landmark must be omitted');
 
       // Heading and Vocabulary count
       const heading = await page.locator('#lessonDetailHeading').textContent();
@@ -477,6 +475,9 @@ describe('Browser E2E: Public Lessons & Lesson Detail (Task 9C.1)', () => {
     const { page, context, getRuntimeErrors } = await createMonitoredPage(browser);
 
     try {
+      await page.route('**/audio/**', async (route) => {
+        await route.fulfill({ status: 200, contentType: 'audio/mpeg', body: '' });
+      });
       await page.route('**/api/v1/lessons/1**', async (route) => {
         await route.fulfill({
           status: 200,

@@ -77,16 +77,6 @@
   <main id="mainContent" class="py-4 py-md-5">
     <div class="container-xl">
 
-      <!-- Breadcrumb Navigation Landmark -->
-      <nav aria-label="Đường dẫn bài học" class="breadcrumb-nav">
-        <ol class="breadcrumb-custom detail-breadcrumb">
-          <li><a href="index.html">Trang chủ</a></li>
-          <li><a href="lessons.html" id="breadcrumbReviewHub">Bài học</a></li>
-          <li id="breadcrumbGroupItem" class="d-none"><a href="srs-review.html" id="breadcrumbGroupLink">Nhóm bài học</a></li>
-          <li id="breadcrumbLessonTitle" aria-current="page">Đang tải bài học...</li>
-        </ol>
-      </nav>
-
       <!-- 3-State UI Container (Loading / Error + Neutral 404 message) -->
       <div id="lessonDetailStateContainer" class="mb-4"></div>
 
@@ -150,7 +140,7 @@
                   <h3 class="h6 fw-bold mb-1">Luyện Viết</h3>
                   <p class="small text-muted mb-3">Tập viết từng nét chữ Hán thuận bút trên bảng vẽ tương tác.</p>
                 </div>
-                <a href="srs-review.html?mode=writing" id="btnLaunchWriting" class="btn-chinese-secondary py-2 px-3 text-decoration-none d-block">
+                <a href="srs-review.html?mode=writing" id="btnLaunchWriting" class="btn-chinese-primary py-2 px-3 text-decoration-none d-block">
                   Luyện Viết
                 </a>
               </div>
@@ -164,7 +154,7 @@
                   <h3 class="h6 fw-bold mb-1">Luyện Nghe</h3>
                   <p class="small text-muted mb-3">Luyện nghe phát âm chuẩn bản xứ và phản xạ nhận diện âm thanh.</p>
                 </div>
-                <a href="srs-review.html?mode=listening" id="btnLaunchListening" class="btn-chinese-secondary py-2 px-3 text-decoration-none d-block">
+                <a href="srs-review.html?mode=listening" id="btnLaunchListening" class="btn-chinese-primary py-2 px-3 text-decoration-none d-block">
                   Luyện Nghe
                 </a>
               </div>
@@ -178,7 +168,7 @@
                   <h3 class="h6 fw-bold mb-1">Luyện Đọc</h3>
                   <p class="small text-muted mb-3">Đọc to câu văn và nhận diện cao độ thanh điệu (Chao 5-scale).</p>
                 </div>
-                <a href="srs-review.html?mode=reading" id="btnLaunchReading" class="btn-chinese-secondary py-2 px-3 text-decoration-none d-block">
+                <a href="srs-review.html?mode=reading" id="btnLaunchReading" class="btn-chinese-primary py-2 px-3 text-decoration-none d-block">
                   Luyện Đọc
                 </a>
               </div>
@@ -195,20 +185,6 @@
 
           <!-- Semantic Ordered List for Learning Items -->
           <ol id="lessonVocabList" class="lesson-vocab-list" aria-label="Trình tự từ vựng bài học"></ol>
-        </section>
-
-        <!-- Modern Post-Study Action Banner -->
-        <section class="p-4 rounded-3 border bg-surface text-center mb-4">
-          <h3 class="h5 fw-bold text-dark mb-2">Sẵn sàng ghi nhớ và làm chủ nội dung này?</h3>
-          <p class="text-secondary small mb-3">Luyện tập theo thuật toán SuperMemo-2 tối ưu hóa trí nhớ dài hạn hoặc luyện tập tự do củng cố phản xạ.</p>
-          <div class="d-flex align-items-center justify-content-center gap-3 flex-wrap">
-            <a href="srs-review.html" id="btnStartPrimaryStudy" class="btn-chinese-primary py-2 px-4 text-decoration-none">
-              ▶ Bắt đầu luyện tập ngay &rarr;
-            </a>
-            <a href="lessons.html" id="btnBottomBackToShelf" class="btn-chinese-secondary py-2 px-3 text-decoration-none">
-              &larr; Về danh mục bài học
-            </a>
-          </div>
         </section>
 
       </div>
@@ -245,7 +221,7 @@
   <!-- Bootstrap 5.3.3 Bundle with Popper via CDN with Verified SRI -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 
-  <!-- Page Logic Module (ESM) -->
-  <script type="module" src="js/pages/lesson-detail-page.js"></script>
+  <!-- Page Logic Module (ESM with cache-busting version) -->
+  <script type="module" src="js/pages/lesson-detail-page.js?v=20261027_01"></script>
 </body>
 </html>

@@ -559,12 +559,9 @@ describe('Accessibility Verification: WCAG 2.2 AA Aligned', () => {
       await page.goto(`${baseUrl}/lesson-detail.html?id=1`, { waitUntil: 'domcontentloaded' });
       await page.waitForSelector('#lessonVocabList');
 
-      // 1. Audit Breadcrumb Navigation Landmark
+      // 1. Audit Redundant Breadcrumb Removed (Direct Navigation UX)
       const breadcrumbNav = page.locator('nav[aria-label="Đường dẫn bài học"]');
-      assert.strictEqual(await breadcrumbNav.count(), 1, 'Must have accessible breadcrumb navigation landmark');
-
-      const breadcrumbCurrent = page.locator('#breadcrumbLessonTitle[aria-current="page"]');
-      assert.strictEqual(await breadcrumbCurrent.count(), 1, 'Current breadcrumb item must have aria-current="page"');
+      assert.strictEqual(await breadcrumbNav.count(), 0, 'Redundant breadcrumb must be removed');
 
       // 2. Audit Semantic Ordered List
       const vocabList = page.locator('ol#lessonVocabList');

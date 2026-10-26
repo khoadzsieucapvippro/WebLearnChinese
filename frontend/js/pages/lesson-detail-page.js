@@ -555,16 +555,6 @@ export class LessonDetailPageController {
         text: rad.meaningVi || 'Đang cập nhật ý nghĩa'
       });
 
-      const linkBadge = createSafeElement('a', {
-        className: 'badge bg-light text-dark border text-decoration-none ms-2 align-middle',
-        attrs: {
-          href: radicalUrl,
-          title: `Tra cứu chi tiết bộ thủ ${rad.character || rad.hanzi || ''} trong 214 Bộ Thủ`
-        },
-        text: 'Tra bộ thủ ↗'
-      });
-      meaningDiv.appendChild(linkBadge);
-
       const strokeInfo = createSafeElement('div', {
         className: 'lesson-vocab-example text-muted small mt-1',
         text: `Số nét: ${rad.strokeCount || '--'} nét ${rad.isCommon50 ? '• Thuộc 50 bộ thủ thông dụng' : ''}`
@@ -581,6 +571,13 @@ export class LessonDetailPageController {
         className: 'btn-vocab-speech btn-chinese-secondary py-1 px-2 small',
         label: 'Nghe phát âm',
         iconOnly: true
+      });
+      speechBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const text = rad.character || rad.hanzi || '';
+        if (text) {
+          playPronunciation({ text, audioUrl: rad.audioUrl, button: speechBtn });
+        }
       });
 
       // Character Writing Practice Button (.lesson-vocab-writing-btn)
@@ -827,16 +824,6 @@ export class LessonDetailPageController {
         text: vocab.meaningVi || 'Chưa cập nhật nghĩa'
       });
 
-      const vocabLinkBadge = createSafeElement('a', {
-        className: 'badge bg-light text-dark border text-decoration-none ms-2 align-middle',
-        attrs: {
-          href: vocabUrl,
-          title: `Tra cứu từ '${vocab.hanzi || ''}' trong Từ Vựng`
-        },
-        text: 'Tra từ vựng ↗'
-      });
-      meaningDiv.appendChild(vocabLinkBadge);
-
       detailsDiv.appendChild(meaningDiv);
 
       // Constituent Radicals Section ("Bộ thủ cấu thành" trỏ thẳng đến 214 bộ thủ)
@@ -918,6 +905,13 @@ export class LessonDetailPageController {
         className: 'btn-vocab-speech btn-chinese-secondary py-1 px-2 small',
         label: 'Nghe phát âm',
         iconOnly: true
+      });
+      speechBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const text = vocab.hanzi || '';
+        if (text) {
+          playPronunciation({ text, audioUrl: vocab.audioUrl, button: speechBtn });
+        }
       });
 
       // Character Writing Practice Button (.lesson-vocab-writing-btn)
