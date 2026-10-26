@@ -168,6 +168,15 @@ export class SrsDashboardController {
 
     this.bindEvents();
     await this.loadDashboardData();
+
+    // Auto-refresh dashboard stats periodically (every 30s) so due cards surface automatically
+    if (typeof window !== 'undefined' && !this.autoRefreshInterval) {
+      this.autoRefreshInterval = setInterval(() => {
+        if (!document.hidden && authManager.isAuthenticated()) {
+          this.loadDashboardData().catch(() => {});
+        }
+      }, 30000);
+    }
   }
 
   /**

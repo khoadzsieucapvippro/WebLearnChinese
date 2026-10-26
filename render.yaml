@@ -57,6 +57,12 @@ services:
       - key: INTERNAL_SPEECH_TOKEN
         generateValue: true
 
+      # SRS 2-Minute Test Mode (temporarily lock canonical SM-2 for fast review testing)
+      - key: APP_SRS_TEST_MODE_ENABLED
+        value: "true"
+      - key: APP_SRS_TEST_INTERVAL_MINUTES
+        value: "2"
+
       # TiDB Cloud Serverless Connection Parameters
       - key: SPRING_DATASOURCE_URL
         sync: false

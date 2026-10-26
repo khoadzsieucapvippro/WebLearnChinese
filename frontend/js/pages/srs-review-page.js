@@ -10761,7 +10761,7 @@ export class SrsReviewController {
       if (authManager.isAuthenticated()) {
         try {
           const cardTypeParam = this.activeMode === 'writing' ? 'WRITING' : (this.activeMode === 'listening' ? 'LISTENING' : 'READING');
-          const dueCards = await apiClient('/srs/due', { params: { itemType: 'VOCABULARY', cardType: cardTypeParam } });
+          const dueCards = await apiClient('/srs/due', { params: { cardType: cardTypeParam } });
           if (Array.isArray(dueCards) && dueCards.length > 0) {
             this.mode = 'DUE_CARDS';
             this.initSessionQueue(dueCards, false);
@@ -10808,6 +10808,15 @@ export class SrsReviewController {
     this.syncToolbarUi();
     this.updateCurriculaShelfMetrics();
     this.renderCatalog();
+
+    // Auto-refresh due counts periodically (every 30s) so due badges appear without page refresh
+    if (!this.catalogDueRefreshInterval && typeof window !== 'undefined') {
+      this.catalogDueRefreshInterval = setInterval(() => {
+        if (!document.hidden && this.currentView === 'catalog' && authManager.isAuthenticated()) {
+          this.fetchDueCounts();
+        }
+      }, 30000);
+    }
   }
 
   /**
@@ -14874,6 +14883,10 @@ export class SrsReviewController {
    */
   destroy() {
     this.cleanupTimer();
+    if (this.catalogDueRefreshInterval) {
+      clearInterval(this.catalogDueRefreshInterval);
+      this.catalogDueRefreshInterval = null;
+    }
     this.destroyWritingEngines();
     this.destroyListeningIme();
     this.cleanUpReadingMedia();

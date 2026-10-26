@@ -77,7 +77,7 @@ public class SrsServiceImpl implements SrsService {
     private final Clock businessClock;
 
     @Value("${app.srs.test-mode.enabled:true}")
-    private boolean testModeEnabled = false;
+    private boolean testModeEnabled = true;
 
     @Value("${app.srs.test-mode.interval-minutes:2}")
     private int testIntervalMinutes = 2;
@@ -94,10 +94,29 @@ public class SrsServiceImpl implements SrsService {
             UserProfileRepository userProfileRepository,
             LessonRepository lessonRepository,
             LessonVocabularyRepository lessonVocabularyRepository,
+            @Value("${app.srs.test-mode.enabled:true}") boolean testModeEnabled,
+            @Value("${app.srs.test-mode.interval-minutes:2}") int testIntervalMinutes,
             Clock businessClock) {
         this(cardProgressRepository, reviewLogRepository, userSrsSettingRepository,
                 vocabularyRepository, radicalRepository, userProfileRepository,
                 lessonRepository, lessonVocabularyRepository, new SrsCalculator(), businessClock);
+        this.testModeEnabled = testModeEnabled;
+        this.testIntervalMinutes = testIntervalMinutes;
+    }
+
+    public SrsServiceImpl(
+            CardProgressRepository cardProgressRepository,
+            ReviewLogRepository reviewLogRepository,
+            UserSrsSettingRepository userSrsSettingRepository,
+            VocabularyRepository vocabularyRepository,
+            RadicalRepository radicalRepository,
+            UserProfileRepository userProfileRepository,
+            LessonRepository lessonRepository,
+            LessonVocabularyRepository lessonVocabularyRepository,
+            Clock businessClock) {
+        this(cardProgressRepository, reviewLogRepository, userSrsSettingRepository,
+                vocabularyRepository, radicalRepository, userProfileRepository,
+                lessonRepository, lessonVocabularyRepository, false, 2, businessClock);
     }
 
     public SrsServiceImpl(
@@ -121,6 +140,7 @@ public class SrsServiceImpl implements SrsService {
         this.lessonVocabularyRepository = lessonVocabularyRepository;
         this.srsCalculator = srsCalculator != null ? srsCalculator : new SrsCalculator();
         this.businessClock = businessClock != null ? businessClock : Clock.system(ZoneId.of(TimeConfig.DEFAULT_BUSINESS_TIMEZONE));
+        this.testModeEnabled = false;
     }
 
     public SrsServiceImpl(
