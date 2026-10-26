@@ -1532,7 +1532,8 @@ dialog:not([open]) {
   border-top: 1px solid var(--color-border);
 }
 
-#vocabPagination {
+#vocabPagination,
+#lessonsPagination {
   justify-content: flex-end;
 }
 
