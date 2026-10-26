@@ -906,7 +906,8 @@ describe('Browser E2E: Chinese Vocabulary Catalog & Search UI', () => {
       // On vocabulary.html, Từ vựng link has active class
       assert.strictEqual(await vocabLink.evaluate(el => el.classList.contains('active')), true);
 
-      assert.strictEqual(await lessonsLink.count(), 0, 'Bài học should no longer be a top-level navbar item');
+      assert.strictEqual(await lessonsLink.isVisible(), true, 'Bài học is a top-level navbar item between Từ vựng and Ôn tập');
+      assert.strictEqual((await lessonsLink.textContent()).trim(), 'Bài học');
 
       assert.strictEqual(await srsLink.isVisible(), true);
       assert.strictEqual((await srsLink.textContent()).trim(), 'Ôn tập');

@@ -90,14 +90,15 @@ flowchart TD
 ---
 
 ### CHẶNG 3: CHƯƠNG TRÌNH HỌC HSK 3.0
-#### `TASK-3.1`: 50 Bài Học Chuẩn HSK 3.0 & Chi Tiết Bài Học (`lessons.html`)
-- **Mục tiêu**: Đảm bảo 50 bài học hoạt động trơn tru, hiển thị đầy đủ 1.000 từ vựng.
+#### `TASK-3.1`: 50 Bài Học Chuẩn HSK 3.0 & Chi Tiết Bài Học (`lessons.html`, `lesson-detail.html`)
+- **Mục tiêu**: Đảm bảo 50 bài học hoạt động trơn tru, hiển thị đầy đủ 1.000 từ vựng và đồng bộ liên kết điều hướng trên thanh Navbar ngang.
 - **Tiêu chí kiểm tra**:
-  1. *Danh sách 50 bài học*: HSK 1 (15 bài), HSK 2 (10 bài), HSK 3 (25 bài). Tiến độ học tập (%) hiển thị đúng theo từng người dùng.
-  2. *Trang Chi tiết Bài học*:
+  1. *Điều hướng Navbar*: Đảm bảo mục "Bài học" hiển thị chuẩn xác ở vị trí giữa "Từ vựng" và "Ôn tập" trên tất cả các trang, gán `active` khi đang ở trang bài học.
+  2. *Danh sách 50 bài học*: HSK 1 (15 bài), HSK 2 (10 bài), HSK 3 (25 bài). Tiến độ học tập (%) hiển thị đúng theo từng người dùng.
+  3. *Trang Chi tiết Bài học (`lesson-detail.html`)*:
      - Đầy đủ 20 từ vựng cốt lõi của bài học kèm phát âm, Hán tự, Pinyin, nghĩa tiếng Việt chuẩn xác.
      - Nút luyện viết HanziWriter nhanh trên từng dòng từ vựng (`.lesson-vocab-writing-btn`).
-     - Nút "Bắt đầu ôn tập bài học này qua SRS" dẫn trực tiếp vào phòng ôn tập tương ứng.
+     - Cầu nối sang Ôn tập: Nút "Bắt đầu ôn tập bài học này qua SRS" dẫn trực tiếp vào phòng ôn tập tương ứng.
 
 ---
 
@@ -203,5 +204,5 @@ flowchart TD
 
 | Nhiệm vụ | Thời gian | Phát hiện của Agent | Ý kiến / Lỗi của Người Dùng | Hành động & Kết quả khắc phục |
 |---|---|---|---|---|
-| `TASK-1.1` (Trang chủ) | 2026-10-26 | Phát hiện 4 vấn đề: (1) Lẫn lộn chữ Phồn thể 學, 憶, 課, 準; (2) Thẻ mẫu thiếu tương tác âm thanh & tra cứu; (3) Cột 4 lộ trang dev ui-verification; (4) Lặp lại nhiều câu chữ & liên kết. | Đồng ý sửa toàn diện; chuyển kiểm chứng UI vào Admin; loại bỏ lặp; chuẩn hóa cột tính năng & trỏ đúng. | **ĐÃ KHẮC PHỤC TRIỆT ĐỂ**: (1) Chuẩn hóa 100% chữ Giản thể HSK (学, 课, 写, 忆); (2) Thêm nút loa phát âm xué (`vocab_0418.mp3`) + link tra từ vựng / luyện viết; (3) 4 Cột chuẩn hóa sư phạm (214 Bộ thủ, 50 Bài học, Luyện viết HanziWriter & IME, Ghi nhớ SRS SM-2); (4) Chuyển `ui-verification.html` vào phân hệ Quản trị Admin (`management.html` & sidebar); (5) Thích ứng động nút CTA theo trạng thái đăng nhập; (6) Viết mới `homepage-audit.test.mjs` (8 tests). PASS 1.030/1.030 fast tests, 74/74 E2E tests, 10/10 responsive tests. |
+| `TASK-1.1` (Trang chủ) | 2026-10-26 | Phát hiện 4 vấn đề: (1) Lẫn lộn chữ Phồn thể 學, 憶, 課, 準; (2) Thẻ mẫu thiếu tương tác âm thanh; (3) Cột 4 lộ trang dev ui-verification; (4) Lặp lại nhiều câu chữ & banner CTA. | (1) Xóa 2 phần khoanh đỏ: bỏ 2 nút phụ thẻ mẫu tự, xóa bỏ banner CTA cuối trang; (2) Chuẩn hóa 4 cột tính năng: Bộ thủ, Từ vựng, Bài học, Ôn tập SRS; (3) Đưa mục "Bài học" lên thanh Navbar ngang nằm giữa "Từ vựng" và "Ôn tập" trên toàn bộ 12 trang web. | **ĐÃ HOÀN TẤT & KHÓA CHẶT**: (1) Đã xóa 2 nút phụ dưới thẻ mẫu tự `学`; (2) Đã xóa bỏ toàn bộ khối banner CTA rườm rà ở cuối trang; (3) Chuẩn hóa 4 cột tính năng (214 Bộ thủ, 1.068 Từ vựng, 50 Bài học, Ôn tập SRS); (4) Đồng bộ mục "Bài học" lên Navbar giữa "Từ vựng" và "Ôn tập" trên 12 trang web; (5) Cập nhật `vocabulary.browser.mjs`, `homepage-audit.test.mjs`. PASS 1.029/1.029 fast tests, 12/12 lessons tests, 13/13 vocab tests, 5/5 foundation tests. |
 | `TASK-1.2` (Xác thực & Hồ sơ) | 2026-10-26 | Bắt đầu rà soát chuyên sâu login.html, register.html, profile.html | Chờ mở rà soát | Chuẩn bị dữ liệu rà soát |

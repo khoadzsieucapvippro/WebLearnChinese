@@ -70,12 +70,10 @@ export function initHeroSampleAudio() {
 }
 
 /**
- * Synchronizes hero and banner CTA buttons based on authentication status.
+ * Synchronizes hero CTA button based on authentication status.
  */
 export function syncHomepageSessionCtas() {
   const heroCtaBtn = document.getElementById('heroAuthCtaBtn');
-  const bannerCtaBtn = document.getElementById('bannerAuthCtaBtn');
-
   const isAuthenticated = authManager.isAuthenticated();
 
   if (heroCtaBtn) {
@@ -85,16 +83,6 @@ export function syncHomepageSessionCtas() {
     } else {
       heroCtaBtn.setAttribute('href', 'register.html');
       heroCtaBtn.textContent = 'Bắt đầu học ngay';
-    }
-  }
-
-  if (bannerCtaBtn) {
-    if (isAuthenticated) {
-      bannerCtaBtn.setAttribute('href', 'srs-dashboard.html');
-      bannerCtaBtn.textContent = 'Xem tiến độ học tập';
-    } else {
-      bannerCtaBtn.setAttribute('href', 'register.html');
-      bannerCtaBtn.textContent = 'Đăng ký tài khoản miễn phí';
     }
   }
 }

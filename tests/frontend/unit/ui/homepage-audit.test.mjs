@@ -6,25 +6,23 @@
  * Verifies:
  * 1. Simplified Chinese Characters across Homepage (HSK 3.0 Standard):
  *    - Hero sample character is '学' (not traditional '學').
- *    - Pillars use simplified glyphs: '部', '课', '写', '忆' (no traditional 憶, 課, 準).
+ *    - 4 pillars use simplified glyphs: '部', '词', '课', '忆'.
  * 2. Hero Interactive Elements:
  *    - Contains heroAudioBtn for pronouncing '学' (xué).
- *    - Contains dictionary link to 'vocabulary.html?search=学'.
- *    - Contains writing practice shortcut to 'srs-review.html?mode=writing'.
- * 3. Core Pedagogical Pillars (Zero Tech Leak):
- *    - Pillar 1: Radicals -> radicals.html
- *    - Pillar 2: Lessons -> lessons.html
- *    - Pillar 3: Writing -> srs-review.html?mode=writing
- *    - Pillar 4: Spaced Repetition SRS -> srs-review.html
+ * 3. 4 Core Pedagogical Pillars:
+ *    - Pillar 1: 214 Bộ Thủ -> radicals.html
+ *    - Pillar 2: Từ Vựng HSK -> vocabulary.html
+ *    - Pillar 3: 50 Bài Học -> lessons.html
+ *    - Pillar 4: Ôn Tập SRS -> srs-review.html
  *    - Zero links to dev page 'ui-verification.html' on homepage.
  * 4. Administration Section Gating:
  *    - 'ui-verification.html' is cleanly relocated under Admin section in management.html.
- * 5. Session-Aware CTA Buttons:
- *    - heroAuthCtaBtn and bannerAuthCtaBtn adapt between Guest and Authenticated states.
+ * 5. Session-Aware CTA Button Invariants:
+ *    - heroAuthCtaBtn adapts between Guest and Authenticated states.
  * =============================================================================
  */
 
-import { test, describe, beforeEach } from 'node:test';
+import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -44,10 +42,10 @@ describe('Unit: Homepage Comprehensive Audit & Refactoring (Task 1.1)', () => {
       assert.doesNotMatch(indexHtml, />學<\/div>/, 'Traditional 學 must not appear in hero sample');
     });
 
-    test('4 feature pillars use simplified HSK characters (部, 课, 写, 忆)', () => {
+    test('4 feature pillars use simplified HSK characters (部, 词, 课, 忆)', () => {
       assert.match(indexHtml, />部<\/span>/, 'Pillar 1 must use 部');
-      assert.match(indexHtml, />课<\/span>/, 'Pillar 2 must use simplified 课 (not traditional 課)');
-      assert.match(indexHtml, />写<\/span>/, 'Pillar 3 must use simplified 写');
+      assert.match(indexHtml, />词<\/span>/, 'Pillar 2 must use simplified 词');
+      assert.match(indexHtml, />课<\/span>/, 'Pillar 3 must use simplified 课 (not traditional 課)');
       assert.match(indexHtml, />忆<\/span>/, 'Pillar 4 must use simplified 忆 (not traditional 憶)');
 
       // Verify traditional versions are absent
@@ -62,19 +60,14 @@ describe('Unit: Homepage Comprehensive Audit & Refactoring (Task 1.1)', () => {
       assert.match(indexHtml, /id=["']heroAudioBtn["']/, 'Must include #heroAudioBtn button');
       assert.match(indexHtml, /aria-label=["'][^"']*xué[^"']*["']/, 'Must have accessible label for pronunciation');
     });
-
-    test('hero card contains dictionary lookup and writing shortcut links', () => {
-      assert.match(indexHtml, /href=["']vocabulary\.html\?search=学["']/, 'Must link to vocabulary search for 学');
-      assert.match(indexHtml, /href=["']srs-review\.html\?mode=writing["']/, 'Must link to writing practice');
-    });
   });
 
   describe('3. Core Pedagogical Pillars (Zero Developer Leak)', () => {
     test('pillars route to core learning features only', () => {
       assert.match(indexHtml, /href=["']radicals\.html["']/, 'Pillar 1 must route to radicals.html');
-      assert.match(indexHtml, /href=["']lessons\.html["']/, 'Pillar 2 must route to lessons.html');
-      assert.match(indexHtml, /href=["']srs-review\.html\?mode=writing["']/, 'Pillar 3 must route to srs writing');
-      assert.match(indexHtml, /href=["']srs-review\.html["']/, 'Pillar 4 must route to srs review');
+      assert.match(indexHtml, /href=["']vocabulary\.html["']/, 'Pillar 2 must route to vocabulary.html');
+      assert.match(indexHtml, /href=["']lessons\.html["']/, 'Pillar 3 must route to lessons.html');
+      assert.match(indexHtml, /href=["']srs-review\.html["']/, 'Pillar 4 must route to srs-review.html');
     });
 
     test('ui-verification.html is completely absent from homepage', () => {
@@ -87,10 +80,9 @@ describe('Unit: Homepage Comprehensive Audit & Refactoring (Task 1.1)', () => {
     });
   });
 
-  describe('4. Session-Aware CTA Buttons Invariants', () => {
-    test('homepage declares heroAuthCtaBtn and bannerAuthCtaBtn IDs for dynamic session adaptation', () => {
+  describe('4. Session-Aware CTA Button Invariants', () => {
+    test('homepage declares heroAuthCtaBtn ID for dynamic session adaptation', () => {
       assert.match(indexHtml, /id=["']heroAuthCtaBtn["']/, 'Hero CTA must declare id="heroAuthCtaBtn"');
-      assert.match(indexHtml, /id=["']bannerAuthCtaBtn["']/, 'Banner CTA must declare id="bannerAuthCtaBtn"');
     });
   });
 });
