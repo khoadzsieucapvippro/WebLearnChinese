@@ -318,7 +318,7 @@ export class LessonDetailPageController {
     const params = new URLSearchParams(window.location.search);
     const rawId = params.get('id');
     this.lessonId = validateLessonId(rawId);
-    this.group = params.get('group') || (this.lessonId ? 'hsk1' : null);
+    this.group = params.get('group') || null;
     const chapterParam = params.get('chapter');
     this.chapter = chapterParam !== null && !isNaN(parseInt(chapterParam, 10)) ? parseInt(chapterParam, 10) : null;
     this.mode = params.get('mode') || 'flashcard';

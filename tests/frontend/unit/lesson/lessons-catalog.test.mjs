@@ -789,5 +789,46 @@ describe('Unit: Lesson Catalog & Lesson Detail Engine (Task 9C.1)', () => {
       assert.strictEqual(writingBtn.getAttribute('aria-label'), 'Luyện viết cho bộ thủ 一');
       assert.strictEqual(writingBtn.children[0].textContent, '✍️');
     });
+
+    test('setupNavigationLinks correctly decouples public lessons from SRS review hub', () => {
+      setupMockDom();
+      const controller = new LessonDetailPageController();
+      controller.dom.btnBackToReview = new MockElement('a');
+      controller.dom.btnBottomBackToShelf = new MockElement('a');
+      controller.dom.breadcrumbReviewHub = new MockElement('a');
+      controller.dom.breadcrumbGroupItem = new MockElement('li');
+      controller.dom.breadcrumbGroupLink = new MockElement('a');
+      controller.dom.btnLaunchFlashcard = new MockElement('a');
+      controller.dom.btnLaunchWriting = new MockElement('a');
+      controller.dom.btnLaunchListening = new MockElement('a');
+      controller.dom.btnLaunchReading = new MockElement('a');
+      controller.dom.btnStartPrimaryStudy = new MockElement('a');
+
+      // 1. When navigated from public lesson catalog: this.group is null
+      controller.lessonId = 1;
+      controller.group = null;
+      controller.setupNavigationLinks();
+
+      assert.strictEqual(controller.dom.btnBackToReview.href, 'lessons.html');
+      assert.strictEqual(controller.dom.btnBackToReview.textContent, '← Danh mục Bài học');
+      assert.strictEqual(controller.dom.btnBottomBackToShelf.href, 'lessons.html');
+      assert.strictEqual(controller.dom.btnBottomBackToShelf.textContent, '← Về danh mục bài học');
+      assert.strictEqual(controller.dom.breadcrumbReviewHub.href, 'lessons.html');
+      assert.strictEqual(controller.dom.breadcrumbReviewHub.textContent, 'Bài học');
+      assert.strictEqual(controller.dom.breadcrumbGroupItem.classList.contains('d-none'), true);
+
+      // 2. When navigated from SRS review shelf: this.group is 'radicals50'
+      controller.group = 'radicals50';
+      controller.chapter = 0;
+      controller.setupNavigationLinks();
+
+      assert.strictEqual(controller.dom.btnBackToReview.href.includes('srs-review.html'), true);
+      assert.strictEqual(controller.dom.btnBackToReview.textContent, '← Quay lại Ôn tập');
+      assert.strictEqual(controller.dom.btnBottomBackToShelf.href.includes('srs-review.html'), true);
+      assert.strictEqual(controller.dom.btnBottomBackToShelf.textContent, '← Về phòng ôn tập');
+      assert.strictEqual(controller.dom.breadcrumbReviewHub.textContent, 'Ôn tập');
+      assert.strictEqual(controller.dom.breadcrumbGroupItem.classList.contains('d-none'), false);
+      assert.strictEqual(controller.dom.breadcrumbGroupLink.textContent, '50 Bộ thủ thông dụng');
+    });
   });
 });

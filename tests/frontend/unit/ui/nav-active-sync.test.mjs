@@ -187,15 +187,37 @@ describe('Unit: Navbar Active Link Synchronization & Tab Decoupling', () => {
       assert.strictEqual(linkHome.classList.contains('active'), false);
     });
 
-    test('On lesson-detail.html: "Bài học" is active, "Ôn tập" is strictly inactive', () => {
-      globalThis.window.location.pathname = '/lesson-detail.html';
+    test('On lesson-detail.html without group (or with ?id=1): "Bài học" is active, "Ôn tập" is strictly inactive', () => {
+      globalThis.window.location = { pathname: '/lesson-detail.html', search: '?id=1' };
       syncActiveNavLinks();
 
       assert.strictEqual(linkLessons.classList.contains('active'), true, 'Bài học must have .active on lesson detail');
       assert.strictEqual(linkLessons.getAttribute('aria-current'), 'page', 'Bài học must have aria-current="page"');
 
-      assert.strictEqual(linkSrs.classList.contains('active'), false, 'Ôn tập must not be active on lesson detail');
+      assert.strictEqual(linkSrs.classList.contains('active'), false, 'Ôn tập must not be active on lesson detail without group');
       assert.strictEqual(linkSrs.getAttribute('aria-current'), null);
+    });
+
+    test('On lesson-detail.html with ?group=radicals50: "Ôn tập" is active, "Bài học" is strictly inactive', () => {
+      globalThis.window.location = { pathname: '/lesson-detail.html', search: '?group=radicals50&chapter=0' };
+      syncActiveNavLinks();
+
+      assert.strictEqual(linkSrs.classList.contains('active'), true, 'Ôn tập must have .active when viewing radical stage detail');
+      assert.strictEqual(linkSrs.getAttribute('aria-current'), 'page', 'Ôn tập must have aria-current="page"');
+
+      assert.strictEqual(linkLessons.classList.contains('active'), false, 'Bài học must not be active when viewing radical stage detail');
+      assert.strictEqual(linkLessons.getAttribute('aria-current'), null);
+    });
+
+    test('On lesson-detail.html with ?group=hsk1: "Ôn tập" is active, "Bài học" is strictly inactive', () => {
+      globalThis.window.location = { pathname: '/lesson-detail.html', search: '?id=1&group=hsk1&chapter=0' };
+      syncActiveNavLinks();
+
+      assert.strictEqual(linkSrs.classList.contains('active'), true, 'Ôn tập must have .active when navigating from SRS Review shelf');
+      assert.strictEqual(linkSrs.getAttribute('aria-current'), 'page');
+
+      assert.strictEqual(linkLessons.classList.contains('active'), false, 'Bài học must not be active when navigating from SRS Review shelf');
+      assert.strictEqual(linkLessons.getAttribute('aria-current'), null);
     });
 
     test('On srs-review.html: "Ôn tập" is active, "Bài học" is strictly inactive', () => {

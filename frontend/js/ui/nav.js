@@ -509,6 +509,15 @@ export function syncActiveNavLinks() {
     effectiveNavTarget = 'srs-review.html';
   } else if (LESSON_HUB_SUBPAGES.has(currentPage)) {
     effectiveNavTarget = 'lessons.html';
+    // If on lesson-detail.html and group query param is present (navigated from SRS Review Hub)
+    if (currentPage === 'lesson-detail.html' && typeof window.location.search === 'string') {
+      try {
+        const searchParams = new URLSearchParams(window.location.search);
+        if (searchParams.has('group')) {
+          effectiveNavTarget = 'srs-review.html';
+        }
+      } catch (_) {}
+    }
   } else if (currentPage.startsWith('creator-')) {
     effectiveNavTarget = 'creator-lessons.html';
   } else if (currentPage.startsWith('moderator-')) {
