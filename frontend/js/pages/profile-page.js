@@ -36,7 +36,10 @@ export function processAvatarFile(file, maxDimension = 160) {
     }
     const validMimes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/gif'];
     const fileType = (file.type || '').toLowerCase();
-    if (!fileType || !validMimes.includes(fileType)) {
+    const fileName = (file.name || '').toLowerCase();
+    const hasValidExt = /\.(png|jpe?g|webp|gif)$/i.test(fileName);
+
+    if ((!fileType && !hasValidExt) || (fileType && !validMimes.includes(fileType) && !hasValidExt)) {
       return reject(new Error('Định dạng hình ảnh không được hỗ trợ. Vui lòng chọn tệp PNG, JPEG hoặc WebP.'));
     }
     if (file.size > 5 * 1024 * 1024) {
@@ -283,6 +286,11 @@ function renderProfileData(profile) {
   if (avatarUrlInput) {
     avatarUrlInput.value = profile?.avatarUrl || '';
   }
+
+  const avatarPendingBadge = document.getElementById('profileAvatarPendingBadge');
+  if (avatarPendingBadge) {
+    avatarPendingBadge.classList.add('d-none');
+  }
 }
 
 /**
@@ -300,41 +308,118 @@ function initProfileEditForm() {
   const saveBtn = document.getElementById('profileSaveBtn');
   const resetBtn = document.getElementById('profileResetBtn');
   const chooseFileBtn = document.getElementById('profileChooseFileBtn');
+  const formChooseFileBtn = document.getElementById('profileFormChooseFileBtn');
+  const cameraOverlayBtn = document.getElementById('profileCameraOverlayBtn');
   const fileInput = document.getElementById('profileAvatarFileInput');
   const removeAvatarBtn = document.getElementById('profileRemoveAvatarBtn');
   const avatarImg = document.getElementById('profileAvatarImg');
+  const avatarDropZone = document.getElementById('profileAvatarDropZone');
+  const avatarPendingBadge = document.getElementById('profileAvatarPendingBadge');
 
   let pendingCustomAvatar = null;
+
+  async function handleAvatarFile(file) {
+    if (!file) return;
+
+    try {
+      const dataUrl = await processAvatarFile(file);
+      pendingCustomAvatar = dataUrl;
+      setSafeAvatarSrc(avatarImg, dataUrl);
+      if (avatarUrlInput) {
+        avatarUrlInput.value = '';
+      }
+      if (avatarPendingBadge) {
+        avatarPendingBadge.textContent = 'Đã chọn ảnh mới (Chưa lưu)';
+        avatarPendingBadge.className = 'badge bg-warning-subtle text-warning-emphasis border border-warning-subtle small';
+        avatarPendingBadge.classList.remove('d-none');
+      }
+      showToast({
+        type: 'info',
+        title: 'Đã tải ảnh lên',
+        message: 'Ảnh đại diện đã được cập nhật bản xem trước. Nhấn "Lưu thay đổi" để áp dụng vào hồ sơ.'
+      });
+    } catch (err) {
+      showToast({
+        type: 'danger',
+        title: 'Lỗi tải ảnh',
+        message: err.message || 'Không thể xử lý tệp ảnh đã chọn.'
+      });
+    } finally {
+      if (fileInput) fileInput.value = '';
+    }
+  }
+
+  if (fileInput) {
+    fileInput.addEventListener('change', async (e) => {
+      const file = e.target.files?.[0];
+      if (file) {
+        await handleAvatarFile(file);
+      }
+    });
+  }
 
   if (chooseFileBtn && fileInput) {
     chooseFileBtn.addEventListener('click', () => {
       fileInput.click();
     });
+  }
 
-    fileInput.addEventListener('change', async (e) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
+  if (formChooseFileBtn && fileInput) {
+    formChooseFileBtn.addEventListener('click', () => {
+      fileInput.click();
+    });
+  }
 
-      try {
-        const dataUrl = await processAvatarFile(file);
-        pendingCustomAvatar = dataUrl;
-        setSafeAvatarSrc(avatarImg, dataUrl);
-        if (avatarUrlInput) {
-          avatarUrlInput.value = '';
-        }
-        showToast({
-          type: 'info',
-          title: 'Đã chọn ảnh đại diện',
-          message: 'Nhấn "Lưu thay đổi" để áp dụng ảnh đại diện mới vào hồ sơ.'
-        });
-      } catch (err) {
-        showToast({
-          type: 'danger',
-          title: 'Lỗi tải ảnh',
-          message: err.message || 'Không thể xử lý tệp ảnh đã chọn.'
-        });
-      } finally {
-        fileInput.value = '';
+  if (cameraOverlayBtn && fileInput) {
+    cameraOverlayBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      fileInput.click();
+    });
+  }
+
+  if (avatarDropZone && fileInput) {
+    avatarDropZone.addEventListener('click', (e) => {
+      if (e.target.closest('#profileCameraOverlayBtn')) return;
+      fileInput.click();
+    });
+
+    let dragCounter = 0;
+
+    avatarDropZone.addEventListener('dragenter', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dragCounter++;
+      avatarDropZone.classList.add('is-dragover');
+    });
+
+    avatarDropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (e.dataTransfer) {
+        e.dataTransfer.dropEffect = 'copy';
+      }
+      avatarDropZone.classList.add('is-dragover');
+    });
+
+    avatarDropZone.addEventListener('dragleave', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dragCounter--;
+      if (dragCounter <= 0) {
+        dragCounter = 0;
+        avatarDropZone.classList.remove('is-dragover');
+      }
+    });
+
+    avatarDropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dragCounter = 0;
+      avatarDropZone.classList.remove('is-dragover');
+
+      const droppedFiles = e.dataTransfer?.files;
+      if (droppedFiles && droppedFiles.length > 0) {
+        handleAvatarFile(droppedFiles[0]);
       }
     });
   }
@@ -346,10 +431,15 @@ function initProfileEditForm() {
       if (avatarUrlInput) {
         avatarUrlInput.value = '';
       }
+      if (avatarPendingBadge) {
+        avatarPendingBadge.textContent = 'Đã chọn ảnh mặc định (Chưa lưu)';
+        avatarPendingBadge.className = 'badge bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle small';
+        avatarPendingBadge.classList.remove('d-none');
+      }
       showToast({
         type: 'info',
         title: 'Ảnh đại diện mặc định',
-        message: 'Nhấn "Lưu thay đổi" để hoàn tất khôi phục biểu tượng mặc định.'
+        message: 'Đã khôi phục biểu tượng mặc định. Nhấn "Lưu thay đổi" để hoàn tất.'
       });
     });
   }
@@ -412,8 +502,14 @@ function initProfileEditForm() {
     }
 
     try {
-      const rawCandidate = avatarUrl.trim();
-      const payloadAvatarUrl = rawCandidate.length > 0 ? rawCandidate : null;
+      let payloadAvatarUrl = currentProfile?.avatarUrl ?? null;
+      if (pendingCustomAvatar === 'REMOVE') {
+        payloadAvatarUrl = null;
+      } else if (pendingCustomAvatar) {
+        payloadAvatarUrl = null;
+      } else if (avatarUrlInput && avatarUrl.trim().length > 0) {
+        payloadAvatarUrl = avatarUrl.trim();
+      }
 
       const updatedProfile = await apiClient('/users/profile', {
         method: 'PUT',
@@ -442,13 +538,17 @@ function initProfileEditForm() {
         } catch (_) {}
         authManager.updateUser({ avatarUrl: pendingCustomAvatar });
         pendingCustomAvatar = null;
-      } else if (payloadAvatarUrl) {
+      } else if (avatarUrlInput && avatarUrlInput.value.trim().length > 0) {
         try {
           if (typeof localStorage !== 'undefined') {
             localStorage.removeItem(`weblearnchinese_custom_avatar_${accountId}`);
           }
         } catch (_) {}
         authManager.updateUser({ avatarUrl: payloadAvatarUrl });
+      }
+
+      if (avatarPendingBadge) {
+        avatarPendingBadge.classList.add('d-none');
       }
 
       // Update UI
@@ -510,6 +610,13 @@ function initProfileEditForm() {
   if (resetBtn) {
     resetBtn.addEventListener('click', () => {
       clearErrors();
+      pendingCustomAvatar = null;
+      if (fileInput) {
+        fileInput.value = '';
+      }
+      if (avatarPendingBadge) {
+        avatarPendingBadge.classList.add('d-none');
+      }
       if (currentProfile) {
         renderProfileData(currentProfile);
       }

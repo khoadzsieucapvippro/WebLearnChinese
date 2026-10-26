@@ -80,28 +80,40 @@
           <div id="profileCard" class="card-chinese p-4 p-md-5 d-none">
             
             <!-- User Identity Header -->
-            <div class="d-flex flex-column flex-sm-row align-items-center align-items-sm-start gap-4 mb-4">
-              <!-- Avatar with fallback and file picker controls -->
-              <div class="d-flex flex-column align-items-center gap-2">
-                <div class="position-relative">
+            <div class="d-flex flex-column flex-sm-row align-items-center align-items-sm-start gap-4 mb-4 pb-2 border-bottom">
+              <!-- Avatar with fallback and local file upload controls -->
+              <div class="d-flex flex-column align-items-center text-center gap-2">
+                <div class="position-relative d-inline-block profile-avatar-wrapper" id="profileAvatarDropZone" title="Nhấn hoặc kéo thả ảnh để đổi ảnh đại diện">
                   <img 
                     id="profileAvatarImg" 
                     src="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2280%22 height=%2280%22 viewBox=%220 0 80 80%22><rect width=%2280%22 height=%2280%22 fill=%22%23F3EFEA%22 rx=%2240%22/><text x=%2250%25%22 y=%2255%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-family=%22sans-serif%22 font-size=%2232%22 fill=%22%2378716C%22>学</text></svg>" 
                     alt="Ảnh đại diện người dùng" 
-                    class="rounded-circle border shadow-sm"
-                    style="width: 84px; height: 84px; object-fit: cover;"
+                    class="rounded-circle border shadow-sm profile-avatar-img"
+                    style="width: 96px; height: 96px; object-fit: cover;"
                   >
-                </div>
-                <div class="d-flex gap-1">
-                  <button type="button" class="btn btn-sm btn-chinese-outline py-1 px-2" id="profileChooseFileBtn" title="Chọn ảnh đại diện từ thiết bị">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="me-1"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
-                    Chọn ảnh
-                  </button>
-                  <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-2" id="profileRemoveAvatarBtn" title="Xóa ảnh và dùng biểu tượng mặc định">
-                    Xóa
+                  <button type="button" class="profile-avatar-badge-btn" id="profileCameraOverlayBtn" title="Tải ảnh đại diện từ thiết bị" aria-label="Tải ảnh đại diện từ thiết bị">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                      <circle cx="12" cy="13" r="4"></circle>
+                    </svg>
                   </button>
                 </div>
+
+                <!-- Avatar Actions -->
+                <div class="d-flex gap-2">
+                  <button type="button" class="btn btn-sm btn-chinese-outline py-1 px-2 d-inline-flex align-items-center gap-1" id="profileChooseFileBtn" title="Chọn ảnh đại diện từ thiết bị">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                    <span>Tải ảnh lên</span>
+                  </button>
+                  <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-2 d-inline-flex align-items-center gap-1" id="profileRemoveAvatarBtn" title="Xóa ảnh và dùng biểu tượng mặc định">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                    <span>Xóa ảnh</span>
+                  </button>
+                </div>
+
+                <span id="profileAvatarPendingBadge" class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle d-none small">Ảnh mới (Chưa lưu)</span>
                 <input type="file" id="profileAvatarFileInput" accept="image/png, image/jpeg, image/webp" class="d-none" aria-label="Tải ảnh đại diện từ thiết bị">
+                <div class="text-secondary small" style="font-size: 0.725rem; max-width: 200px; line-height: 1.3;">PNG, JPG, WebP tối đa 5MB. Tự động cắt vuông.</div>
               </div>
 
               <!-- Identity Meta -->
@@ -163,7 +175,7 @@
                 <section aria-labelledby="profileEditHeading">
                   <div class="mb-4">
                     <h2 class="h5 fw-bold mb-1 text-dark" id="profileEditHeading">Chỉnh Sửa Thông Tin Cá Nhân</h2>
-                    <p class="text-secondary small mb-0">Cập nhật họ tên hiển thị và đường dẫn ảnh đại diện của bạn trên nền tảng.</p>
+                    <p class="text-secondary small mb-0">Cập nhật họ tên hiển thị và quản lý ảnh đại diện của bạn trên nền tảng.</p>
                   </div>
 
                   <!-- Profile Edit Global Alert -->
@@ -172,7 +184,7 @@
                   <!-- Profile Edit Form -->
                   <form id="profileEditForm" novalidate aria-labelledby="profileEditHeading">
                     <!-- Field: Full Name -->
-                    <div class="mb-3">
+                    <div class="mb-4">
                       <label for="profileFullNameInput" class="form-label fw-semibold">
                         Họ và tên <span class="text-danger" aria-hidden="true">*</span>
                       </label>
@@ -190,24 +202,21 @@
                       <div id="profileFullNameError" class="invalid-feedback d-none" role="alert"></div>
                     </div>
 
-                    <!-- Field: Avatar URL -->
-                    <div class="mb-4">
-                      <label for="profileAvatarUrlInput" class="form-label fw-semibold">
-                        Đường dẫn ảnh đại diện (Tùy chọn)
-                      </label>
-                      <input 
-                        type="url" 
-                        id="profileAvatarUrlInput" 
-                        name="avatarUrl" 
-                        class="form-control" 
-                        maxlength="500"
-                        placeholder="https://example.com/avatar.jpg"
-                        aria-describedby="profileAvatarUrlHelp profileAvatarUrlError"
-                      >
-                      <div id="profileAvatarUrlHelp" class="form-text text-secondary small">
-                        Bạn có thể nhấn "Chọn ảnh" ở trên để tải ảnh từ máy, hoặc dán URL hình ảnh http:// hoặc https:// hợp lệ (tối đa 500 ký tự).
+                    <!-- Avatar Management Info Box (Replaces old raw URL input) -->
+                    <div class="mb-4 p-3 rounded-3 border bg-light d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3">
+                      <div class="d-flex align-items-center gap-3">
+                        <div class="text-secondary flex-shrink-0" aria-hidden="true">
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                        </div>
+                        <div>
+                          <div class="fw-semibold text-dark small">Ảnh đại diện tài khoản</div>
+                          <div class="text-secondary small" style="font-size: 0.8rem;">Tải ảnh trực tiếp từ thư mục thiết bị (JPG, PNG, WebP tối đa 5MB). Hệ thống tự động căn chỉnh và cắt vuông hình ảnh.</div>
+                        </div>
                       </div>
-                      <div id="profileAvatarUrlError" class="invalid-feedback d-none" role="alert"></div>
+                      <button type="button" class="btn btn-sm btn-chinese-outline text-nowrap align-self-start align-self-sm-center d-inline-flex align-items-center gap-1" id="profileFormChooseFileBtn">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                        <span>Tải ảnh mới</span>
+                      </button>
                     </div>
 
                     <!-- Form Action Buttons -->

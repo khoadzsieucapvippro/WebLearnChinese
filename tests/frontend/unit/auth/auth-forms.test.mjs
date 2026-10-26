@@ -508,6 +508,12 @@ describe('Authentication Form Validation & Business Constraints', () => {
         () => processAvatarFile({ type: 'image/png', size: 6 * 1024 * 1024 }),
         /vượt quá giới hạn 5MB/
       );
+
+      // Rejects unsupported extension even if type is empty
+      await assert.rejects(
+        () => processAvatarFile({ type: '', name: 'document.txt', size: 200 }),
+        /Định dạng hình ảnh không được hỗ trợ/
+      );
     });
 
     test('verifies login.html contains updated labels, password toggle, and forgot password modal', async () => {
@@ -524,11 +530,16 @@ describe('Authentication Form Validation & Business Constraints', () => {
       assert.ok(html.includes('id="toggleRegPasswordBtn"'), 'Must have toggle password button');
     });
 
-    test('verifies profile.html contains device file picker controls and password toggles', async () => {
+    test('verifies profile.html contains device file picker controls, camera overlay, drag-and-drop, and removes avatar url text input', async () => {
       const html = await fsPromises.readFile('frontend/profile.html', 'utf8');
       assert.ok(html.includes('id="profileChooseFileBtn"'), 'Must have choose file button');
       assert.ok(html.includes('id="profileAvatarFileInput"'), 'Must have hidden file input');
       assert.ok(html.includes('id="profileRemoveAvatarBtn"'), 'Must have remove avatar button');
+      assert.ok(html.includes('id="profileCameraOverlayBtn"'), 'Must have camera overlay button');
+      assert.ok(html.includes('id="profileAvatarDropZone"'), 'Must have avatar drop zone');
+      assert.ok(html.includes('id="profileFormChooseFileBtn"'), 'Must have form choose file button');
+      assert.ok(html.includes('id="profileAvatarPendingBadge"'), 'Must have avatar pending badge');
+      assert.strictEqual(html.includes('id="profileAvatarUrlInput"'), false, 'Avatar URL text input must be completely removed');
       assert.ok(html.includes('id="toggleCurrentPasswordBtn"'), 'Must have toggle for current password');
       assert.ok(html.includes('id="toggleNewPasswordBtn"'), 'Must have toggle for new password');
       assert.ok(html.includes('id="toggleConfirmNewPasswordBtn"'), 'Must have toggle for confirm password');
