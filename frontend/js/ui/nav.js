@@ -32,7 +32,8 @@ export const MANAGEMENT_PAGE_SET = new Set([
   'admin-lessons.html',
   'admin-radicals.html',
   'admin-vocabulary.html',
-  'admin-audit-logs.html'
+  'admin-audit-logs.html',
+  'ui-verification.html'
 ]);
 
 /**

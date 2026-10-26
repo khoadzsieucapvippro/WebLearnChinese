@@ -190,6 +190,13 @@ export const MANAGEMENT_NAV_CONFIG = [
         href: 'admin-audit-logs.html',
         icon: '📋',
         matchPages: ['admin-audit-logs.html']
+      },
+      {
+        id: 'navMgmtAdminVerification',
+        label: 'Kiểm chứng UI & Kỹ thuật',
+        href: 'ui-verification.html',
+        icon: '🔬',
+        matchPages: ['ui-verification.html']
       }
     ]
   }
