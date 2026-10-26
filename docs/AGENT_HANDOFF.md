@@ -20,6 +20,7 @@
   - `f38320c`: `fix(keyboard): enrich pinyin dictionary completeness, support mobile OS IME and establish mobile testing environment` (Hoàn tất KEYBOARD-1).
   - `cf24b60`: `docs(governance): add cross-platform testing invariants and proactive user inquiry guardrail`.
   - `5979fd1`: `feat(writing): guarantee 100% stroke coverage and mobile viewport integrity for character writing` (Hoàn tất WRITING-STROKE-1 / Phương án 1).
+  - `2d6514e`: `feat(audio): verify 100% audio coverage across 214 radicals and 1068 vocabularies with subpath safety` (Hoàn tất AUDIO-COVERAGE-1 / Phương án 2).
 - **Trạng thái cây làm việc (`git status`)**: Toàn bộ thay đổi mã nguồn, dữ liệu tĩnh, cấu hình triển khai và kiểm thử tự động đã được tích hợp đầy đủ, vượt qua 100% bộ kiểm thử nghiệm thu.
 
 ---
@@ -237,14 +238,39 @@
         * Browser E2E `tests/frontend/e2e/srs-listening.browser.mjs`: PASS 8/8 tests (10.49s).
         * `npm run verify:frontend:fast`: PASS 996/996 tests (240 suites, 0 failed, 12.17s) — tăng thêm 2 tests so với baseline 994.
 
+21. **[RADICAL-COMPONENTS-1] Kiểm tra Toàn Diện Dữ Liệu Bộ Thủ Khang Hy & Phân Loại Cấu Phần Chữ Hán (Radical & Structural Components Audit)**:
+    - **Trạng thái**: `VERIFIED_FIXED`
+    - **Bằng chứng**:
+      - Rà soát toàn diện 214 bộ thủ Khang Hy (`SEED_RADICALS` trong `demo-seed-data.js`):
+        * Đầy đủ 214 bản ghi bộ thủ tuần tự liên tục từ 1 đến 214 (zero duplicate, zero gap).
+        * 100% bản ghi có đầy đủ các trường ngôn ngữ học bắt buộc: `character`, `pinyin`, `meaningHanViet`, `meaningVi`, `strokeCount` (nằm trong dải `[1, 17]`), `explanationVi` (chiết tự, mẹo nhớ sư phạm, zero generic placeholders), `audioUrl` (100% tệp MP3 vật lý tồn tại và hợp lệ), và stroke order JSON data (trực tiếp hoặc qua `RADICAL_VARIANT_CANONICAL_MAP`).
+        * Bất biến 50 Bộ Thủ Thông Dụng: Đúng 50 bộ thủ có `commonRank` từ 1..50 liên tục không trùng lặp; đúng 164 bộ thủ còn lại có `commonRank === null`.
+      - Rà soát tính toàn vẹn liên kết quan hệ (Relational Linkage Integrity):
+        * `CHAR_TO_RADICAL_MAP` (523 chữ Hán): 100% radical ID ánh xạ đều nằm trong khoảng `[1..214]`.
+        * `CHAR_TO_RADICALS_MAP` (849 chữ Hán): 100% constituent radical ID ánh xạ đều nằm trong khoảng `[1..214]`.
+        * `SEED_VOCABULARY` (1.068 từ vựng HSK 1–3): 100% các ID trong mảng `radicalIds` đều trỏ chính xác đến các bộ thủ hợp lệ trong `[1..214]`.
+      - Phân loại cấu phần chữ Hán (Radical vs Structural Component Classification):
+        * Tách biệt rõ ràng giữa bộ thủ tra cứu chính (`kangxi_radical` -> nhãn `Bộ [Tên]`) và thành phần cấu tạo (`structural_component` -> nhãn `Thành phần [Tên]`).
+      - Phát hiện & Sửa lỗi hiển thị preview trong modal chi tiết từ vựng (`frontend/js/pages/vocabulary-page.js#L1225-L1238`):
+        * Đối với từ đơn 1 chữ Hán (như `机`), ngăn chặn hiển thị nhãn thừa `Chữ 机` trong preview bộ thủ (`modalRadicalPreview`), khôi phục tính chính xác theo hợp đồng giao diện và giúp bài test `VR-NAV-01` trong `tests/frontend/e2e/vocab-to-radicals-navigation.browser.mjs` chuyển từ FAIL sang PASS hoàn toàn.
+        * Đối với từ ghép nhiều chữ Hán (như `电视机`, `学生`), nhãn `Chữ ${charInWord}` tiếp tục hiển thị chuẩn xác để chỉ định thành phần thuộc chữ Hán nào trong từ.
+      - Bộ kiểm thử tự động xác minh:
+        * Bổ sung bộ test unit mới `tests/frontend/unit/radicals/kangxi-radicals-comprehensive-audit.test.mjs`: 14 bài test chuyên sâu kiểm toán toàn diện bộ thủ, liên kết từ vựng, phân loại cấu phần và preview -> PASS 14/14 tests (40.8ms).
+        * Unit test `tests/frontend/unit/radicals/radicals-catalog.test.mjs`: PASS 64/64 tests (19.2ms).
+        * Unit test `tests/frontend/unit/admin/admin-radicals.test.mjs`: PASS 37/37 tests (8.4ms).
+        * Browser E2E `tests/frontend/e2e/radicals.browser.mjs`: PASS 15/15 tests (RCAT-01..RCAT-15, 13.57s).
+        * Browser E2E `tests/frontend/e2e/vocab-to-radicals-navigation.browser.mjs`: PASS 2/2 tests (VR-NAV-01, VR-NAV-02, 2.73s).
+        * Browser E2E `tests/frontend/e2e/admin-radicals.browser.mjs`: PASS 8/8 tests (8.47s).
+        * `npm run verify:frontend:fast`: PASS 1,010/1,010 tests (244 suites, 0 failed, 12.69s) — tăng thêm 14 tests so với 996.
+
 ### 5.2. Các hạng mục còn mở hoặc bị chặn bởi môi trường/thiết bị (`OPEN` / `UNVERIFIED` / `WONT_FIX`)
 
-21. **[P2-SPEECH-1] Kiểm chứng chất lượng chấm thanh điệu của `speech-service` trên tập dữ liệu giọng người thật (300–500 mẫu)**:
+22. **[P2-SPEECH-1] Kiểm chứng chất lượng chấm thanh điệu của `speech-service` trên tập dữ liệu giọng người thật (300–500 mẫu)**:
     - **Trạng thái**: `OPEN`
     - **Bằng chứng & Kế hoạch tiếp theo**: `speech-service/test_pipeline.py` hiện kiểm thử bằng sóng âm tổng hợp (synthetic pitch contours) và vượt qua 9/9 nhóm test DSP cùng 10/10 bài test bảo mật. Cần thu thập 300–500 mẫu giọng người học thật có gán nhãn chuyên gia để tinh chỉnh ngưỡng điểm F0 khi triển khai quy mô lớn.
-22. **[WONT_FIX-1] Chuyển đổi luyện viết `HanziWriter` sang mô hình AI OCR/HWR nhận diện chữ viết tay tự do**:
+23. **[WONT_FIX-1] Chuyển đổi luyện viết `HanziWriter` sang mô hình AI OCR/HWR nhận diện chữ viết tay tự do**:
     - **Trạng thái**: `WONT_FIX` (Theo quyết định sản phẩm Mục I.1 của chủ dự án).
-23. **[WONT_FIX-2] Sử dụng dịch vụ Cloud TTS trả phí tại runtime hoặc lưu trữ lâu dài bản ghi âm người học**:
+24. **[WONT_FIX-2] Sử dụng dịch vụ Cloud TTS trả phí tại runtime hoặc lưu trữ lâu dài bản ghi âm người học**:
     - **Trạng thái**: `WONT_FIX` (Theo quyết định sản phẩm Mục I.3 của chủ dự án).
 
 ---
@@ -252,17 +278,25 @@
 ## 6. KẾT QUẢ KIỂM THỬ THỰC TẾ ĐÃ CHẠY
 
 1. `npm run verify:frontend:fast`:
-   - **Kết quả**: **PASS 996/996 tests** (240 suites, 0 failed, duration: 12.17s, wall time: 12.24s).
+   - **Kết quả**: **PASS 1,010/1,010 tests** (244 suites, 0 failed, duration: 12.64s, wall time: 12.69s).
 2. `node tests/e2e/runner.mjs --tier=all`:
    - **Kết quả**: **PASS 74/74 tests** (Tiers 1–4, 0 failed, total wall time: 0.74s).
-     - Tier 1: 32 tests (184ms)
-     - Tier 2: 30 tests (208ms)
-     - Tier 3: 6 tests (176ms)
-     - Tier 4: 6 tests (172ms)
-3. `node --test tests/frontend/unit/srs/srs-audio-playback.test.mjs`:
+     - Tier 1: 32 tests (169ms)
+     - Tier 2: 30 tests (231ms)
+     - Tier 3: 6 tests (172ms)
+     - Tier 4: 6 tests (169ms)
+3. `node --test tests/frontend/unit/radicals/kangxi-radicals-comprehensive-audit.test.mjs`:
+   - **Kết quả**: **PASS 14/14 tests** (4 suites, 0 failed, duration: 40.8ms; kiểm toán toàn diện 214 bộ thủ Khang Hy, 523 CHAR_TO_RADICAL_MAP, 849 CHAR_TO_RADICALS_MAP, 1.068 từ vựng, phân loại kangxi_radical vs structural_component).
+4. `node --test tests/frontend/unit/srs/srs-audio-playback.test.mjs`:
    - **Kết quả**: **PASS 22/22 tests** (0 failed, duration: 436ms; bao gồm Test 21 và Test 22 kiểm tra 100% độ phủ 214 bộ thủ Khang Hy và 1.068 từ vựng HSK 1–3 có tệp MP3 tồn tại trên đĩa và dung lượng > 100 bytes).
-4. `node --test tests/frontend/unit/srs/srs-skill-writing.test.mjs`:
+5. `node --test tests/frontend/unit/srs/srs-skill-writing.test.mjs`:
    - **Kết quả**: **PASS 32/32 tests** (7 suites, 0 failed, duration: 1.20s; bao gồm xác minh độ phủ 100% 214 bộ thủ Khang Hy, 1.055 từ vựng HSK 1-3 và canonical fallback).
+6. `node --test tests/frontend/e2e/radicals.browser.mjs`:
+   - **Kết quả**: **PASS 15/15 tests** (RCAT-01..RCAT-15, duration: 13.57s; tabs 50/214, responsive 375px, keyboard nav, deep link ?id=75 & ?search=木).
+7. `node --test tests/frontend/e2e/vocab-to-radicals-navigation.browser.mjs`:
+   - **Kết quả**: **PASS 2/2 tests** (VR-NAV-01, VR-NAV-02, duration: 2.73s; preview cleanse and direct navigation).
+8. `node --test tests/frontend/e2e/admin-radicals.browser.mjs`:
+   - **Kết quả**: **PASS 8/8 tests** (RA-01..RA-08, duration: 8.47s; CRUD, role guard, conflict handling).
 4. `node --test tests/frontend/e2e/writing-mobile.browser.mjs`:
    - **Kết quả**: **PASS 3/3 tests** (WM-01..WM-03, duration: 9.81s; đo đạc thực tế trên 360px, 375px, 390px, 412px và 1024px).
 5. `node --test tests/frontend/e2e/mobile-keyboard.browser.mjs`:

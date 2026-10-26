@@ -69,6 +69,7 @@ function resolveTestFiles(tier) {
     'tests/frontend/unit/auth/profile-settings.test.mjs',
     'tests/frontend/unit/radicals/radicals-catalog.test.mjs',
     'tests/frontend/unit/radicals/character-writing.test.mjs',
+    'tests/frontend/unit/radicals/kangxi-radicals-comprehensive-audit.test.mjs',
     'tests/frontend/unit/vocabulary/vocabulary-catalog.test.mjs',
     'tests/frontend/unit/lesson/lessons-catalog.test.mjs',
     'tests/frontend/unit/notes/notes-modal.test.mjs',

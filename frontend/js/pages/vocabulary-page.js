@@ -1222,20 +1222,16 @@ export class VocabularyPageController {
     });
 
     radicalList.forEach((rad, idx) => {
-      // Identify corresponding Hanzi character (hanziChar)
-      let charInWord = rad.hanziChar;
-      if (!charInWord && this.currentModalVocab?.hanzi) {
-        const cleanHanzi = splitHanziCharacters(this.currentModalVocab.hanzi);
-        if (cleanHanzi.length === 1) {
-          charInWord = cleanHanzi[0];
-        } else {
-          // If multi-char word, find verified match in CHAR_TO_RADICALS_MAP or CHAR_TO_RADICAL_MAP
-          for (const ch of cleanHanzi) {
-            const chRads = (typeof CHAR_TO_RADICALS_MAP !== 'undefined' && CHAR_TO_RADICALS_MAP[ch]) || (CHAR_TO_RADICAL_MAP && CHAR_TO_RADICAL_MAP[ch] ? [CHAR_TO_RADICAL_MAP[ch]] : []);
-            if (chRads.includes(rad.radicalId)) {
-              charInWord = ch;
-              break;
-            }
+      // Identify corresponding Hanzi character (hanziChar) for multi-character compound words
+      const cleanHanzi = this.currentModalVocab?.hanzi ? splitHanziCharacters(this.currentModalVocab.hanzi) : [];
+      let charInWord = cleanHanzi.length > 1 ? rad.hanziChar : '';
+      if (!charInWord && cleanHanzi.length > 1) {
+        // If multi-char word, find verified match in CHAR_TO_RADICALS_MAP or CHAR_TO_RADICAL_MAP
+        for (const ch of cleanHanzi) {
+          const chRads = (typeof CHAR_TO_RADICALS_MAP !== 'undefined' && CHAR_TO_RADICALS_MAP[ch]) || (CHAR_TO_RADICAL_MAP && CHAR_TO_RADICAL_MAP[ch] ? [CHAR_TO_RADICAL_MAP[ch]] : []);
+          if (chRads.includes(rad.radicalId)) {
+            charInWord = ch;
+            break;
           }
         }
       }
