@@ -241,6 +241,10 @@ function renderProfileData(profile) {
   if (emailDisplay) {
     emailDisplay.textContent = profile?.emailOrPhone || '---';
   }
+  const emailInput = document.getElementById('profileEmailInput');
+  if (emailInput) {
+    emailInput.value = profile?.emailOrPhone || '';
+  }
   const settingsEmailDisplay = document.getElementById('settingsAccountEmailDisplay');
   if (settingsEmailDisplay) {
     settingsEmailDisplay.textContent = profile?.emailOrPhone || '---';
@@ -265,9 +269,12 @@ function renderProfileData(profile) {
     roleBadge.setAttribute('aria-label', `Vai trò tài khoản: ${getRoleLabel(primaryRole)}`);
   }
 
+  const avatarImgs = [
+    document.getElementById('profileAvatarImg'),
+    document.getElementById('profileHeaderAvatarImg')
+  ].filter(Boolean);
 
-
-  if (avatarImg) {
+  if (avatarImgs.length > 0) {
     const accountId = profile?.accountId || authManager.getUser()?.accountId || 'current';
     let customLocalAvatar = null;
     try {
@@ -276,7 +283,7 @@ function renderProfileData(profile) {
       }
     } catch (_) {}
     const avatarCandidate = customLocalAvatar || profile?.avatarUrl || authManager.getUser()?.avatarUrl;
-    setSafeAvatarSrc(avatarImg, avatarCandidate);
+    avatarImgs.forEach(img => setSafeAvatarSrc(img, avatarCandidate));
   }
 
   // Populate form fields
@@ -313,10 +320,16 @@ function initProfileEditForm() {
   const fileInput = document.getElementById('profileAvatarFileInput');
   const removeAvatarBtn = document.getElementById('profileRemoveAvatarBtn');
   const avatarImg = document.getElementById('profileAvatarImg');
+  const headerAvatarImg = document.getElementById('profileHeaderAvatarImg');
   const avatarDropZone = document.getElementById('profileAvatarDropZone');
   const avatarPendingBadge = document.getElementById('profileAvatarPendingBadge');
 
   let pendingCustomAvatar = null;
+
+  function updateAllAvatarPreviews(src) {
+    if (avatarImg) setSafeAvatarSrc(avatarImg, src);
+    if (headerAvatarImg) setSafeAvatarSrc(headerAvatarImg, src);
+  }
 
   async function handleAvatarFile(file) {
     if (!file) return;
@@ -324,7 +337,7 @@ function initProfileEditForm() {
     try {
       const dataUrl = await processAvatarFile(file);
       pendingCustomAvatar = dataUrl;
-      setSafeAvatarSrc(avatarImg, dataUrl);
+      updateAllAvatarPreviews(dataUrl);
       if (avatarUrlInput) {
         avatarUrlInput.value = '';
       }
@@ -427,7 +440,7 @@ function initProfileEditForm() {
   if (removeAvatarBtn) {
     removeAvatarBtn.addEventListener('click', () => {
       pendingCustomAvatar = 'REMOVE';
-      setSafeAvatarSrc(avatarImg, null);
+      updateAllAvatarPreviews(null);
       if (avatarUrlInput) {
         avatarUrlInput.value = '';
       }
@@ -619,6 +632,11 @@ function initProfileEditForm() {
       }
       if (currentProfile) {
         renderProfileData(currentProfile);
+      } else {
+        if (fullNameInput) fullNameInput.value = '';
+        const emailInput = document.getElementById('profileEmailInput');
+        if (emailInput) emailInput.value = '';
+        updateAllAvatarPreviews(null);
       }
     });
   }

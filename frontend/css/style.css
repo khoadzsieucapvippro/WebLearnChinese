@@ -5096,5 +5096,52 @@ a.lesson-vocab-hanzi:hover {
   box-shadow: 0 0 0 3px rgba(139, 38, 53, 0.35);
 }
 
+/* =============================================================================
+ * Profile Navigation Tabs & Neutral Gray Invariant (Zero Bootstrap Blue)
+ * ============================================================================= */
 
+#profileTabs.nav-tabs {
+  border-bottom: 2px solid var(--color-border);
+  gap: var(--space-2);
+}
 
+#profileTabs .nav-link {
+  color: #6c757d !important; /* Neutral gray - strictly NO Bootstrap blue (#0d6efd) */
+  background-color: transparent !important;
+  border: 1px solid transparent !important;
+  border-bottom: 2px solid transparent !important;
+  padding: 0.625rem 1.25rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
+}
+
+#profileTabs .nav-link:hover {
+  color: var(--color-text-primary, #2b2623) !important;
+  border-color: transparent transparent var(--color-border) transparent !important;
+  background-color: var(--color-surface-hover, rgba(0, 0, 0, 0.02)) !important;
+}
+
+#profileTabs .nav-link.active,
+#profileTabs .nav-link[aria-selected="true"] {
+  color: var(--color-primary, #8B2635) !important; /* Scholarly Cinnabar Red */
+  font-weight: 600;
+  background-color: var(--color-surface, #ffffff) !important;
+  border-color: var(--color-border) var(--color-border) #ffffff var(--color-border) !important;
+  border-bottom: 2px solid var(--color-primary, #8B2635) !important;
+}
+
+#profileTabs .nav-link:not(.active) {
+  color: #6c757d !important; /* Inactive tabs remain strictly neutral gray */
+}
+
+#profileTabs .nav-link:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+#profileTabs .nav-link:focus-visible {
+  outline: 2px solid var(--color-primary, #8B2635) !important;
+  outline-offset: -2px;
+}

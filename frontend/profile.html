@@ -79,55 +79,31 @@
           <!-- Profile Card (Populated upon successful load) -->
           <div id="profileCard" class="card-chinese p-4 p-md-5 d-none">
             
-            <!-- User Identity Header -->
-            <div class="d-flex flex-column flex-sm-row align-items-center align-items-sm-start gap-4 mb-4 pb-2 border-bottom">
-              <!-- Avatar with fallback and local file upload controls -->
-              <div class="d-flex flex-column align-items-center text-center gap-2">
-                <div class="position-relative d-inline-block profile-avatar-wrapper" id="profileAvatarDropZone" title="Nhấn hoặc kéo thả ảnh để đổi ảnh đại diện">
-                  <img 
-                    id="profileAvatarImg" 
-                    src="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2280%22 height=%2280%22 viewBox=%220 0 80 80%22><rect width=%2280%22 height=%2280%22 fill=%22%23F3EFEA%22 rx=%2240%22/><text x=%2250%25%22 y=%2255%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-family=%22sans-serif%22 font-size=%2232%22 fill=%22%2378716C%22>学</text></svg>" 
-                    alt="Ảnh đại diện người dùng" 
-                    class="rounded-circle border shadow-sm profile-avatar-img"
-                    style="width: 96px; height: 96px; object-fit: cover;"
-                  >
-                  <button type="button" class="profile-avatar-badge-btn" id="profileCameraOverlayBtn" title="Tải ảnh đại diện từ thiết bị" aria-label="Tải ảnh đại diện từ thiết bị">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
-                      <circle cx="12" cy="13" r="4"></circle>
-                    </svg>
-                  </button>
-                </div>
-
-                <!-- Avatar Actions -->
-                <div class="d-flex gap-2">
-                  <button type="button" class="btn btn-sm btn-chinese-outline py-1 px-2 d-inline-flex align-items-center gap-1" id="profileChooseFileBtn" title="Chọn ảnh đại diện từ thiết bị">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
-                    <span>Tải ảnh lên</span>
-                  </button>
-                  <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-2 d-inline-flex align-items-center gap-1" id="profileRemoveAvatarBtn" title="Xóa ảnh và dùng biểu tượng mặc định">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                    <span>Xóa ảnh</span>
-                  </button>
-                </div>
-
-                <span id="profileAvatarPendingBadge" class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle d-none small">Ảnh mới (Chưa lưu)</span>
-                <input type="file" id="profileAvatarFileInput" accept="image/png, image/jpeg, image/webp" class="d-none" aria-label="Tải ảnh đại diện từ thiết bị">
-                <div class="text-secondary small" style="font-size: 0.725rem; max-width: 200px; line-height: 1.3;">PNG, JPG, WebP tối đa 5MB. Tự động cắt vuông.</div>
+            <!-- User Identity Header (Top Identity Card) -->
+            <div class="d-flex align-items-center gap-3 p-3 p-md-4 mb-4 rounded-3 border bg-light shadow-sm">
+              <!-- Clean avatar circle (学) -->
+              <div class="profile-header-avatar-circle flex-shrink-0">
+                <img 
+                  id="profileHeaderAvatarImg" 
+                  src="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2280%22 height=%2280%22 viewBox=%220 0 80 80%22><rect width=%2280%22 height=%2280%22 fill=%22%23F3EFEA%22 rx=%2240%22/><text x=%2250%25%22 y=%2255%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-family=%22sans-serif%22 font-size=%2232%22 fill=%22%2378716C%22>学</text></svg>" 
+                  alt="Ảnh đại diện người dùng" 
+                  class="rounded-circle border shadow-sm profile-avatar-img"
+                  style="width: 64px; height: 64px; object-fit: cover;"
+                >
               </div>
 
               <!-- Identity Meta -->
-              <div class="text-center text-sm-start flex-grow-1">
-                <h1 id="profileFullNameDisplay" class="h4 fw-bold mb-1">Đang tải hồ sơ...</h1>
-                <p id="profileEmailDisplay" class="text-secondary small mb-2">---</p>
-                <div class="d-flex flex-wrap justify-content-center justify-content-sm-start gap-2">
+              <div class="flex-grow-1 min-w-0">
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                  <h1 id="profileFullNameDisplay" class="h5 fw-bold mb-0 text-dark text-truncate">Đang tải hồ sơ...</h1>
                   <span id="profileRoleBadge" class="badge-status badge-status-draft">Học viên</span>
                 </div>
+                <div id="profileEmailDisplay" class="text-secondary small mt-1 text-truncate">---</div>
               </div>
             </div>
 
             <!-- Navigation Tabs (IA: Thông tin cá nhân | Cài đặt) -->
-            <ul class="nav nav-tabs mb-4" id="profileTabs" role="tablist" aria-label="Mục hồ sơ người dùng">
+            <ul class="nav nav-tabs mb-4 profile-nav-tabs" id="profileTabs" role="tablist" aria-label="Mục hồ sơ người dùng">
               <li class="nav-item" role="presentation">
                 <button 
                   class="nav-link active fw-semibold" 
@@ -175,7 +151,7 @@
                 <section aria-labelledby="profileEditHeading">
                   <div class="mb-4">
                     <h2 class="h5 fw-bold mb-1 text-dark" id="profileEditHeading">Chỉnh Sửa Thông Tin Cá Nhân</h2>
-                    <p class="text-secondary small mb-0">Cập nhật họ tên hiển thị và quản lý ảnh đại diện của bạn trên nền tảng.</p>
+                    <p class="text-secondary small mb-0">Cập nhật thông tin hiển thị và ảnh đại diện của bạn trên hệ thống.</p>
                   </div>
 
                   <!-- Profile Edit Global Alert -->
@@ -183,41 +159,99 @@
 
                   <!-- Profile Edit Form -->
                   <form id="profileEditForm" novalidate aria-labelledby="profileEditHeading">
-                    <!-- Field: Full Name -->
+                    
+                    <!-- Ảnh đại diện Section -->
                     <div class="mb-4">
-                      <label for="profileFullNameInput" class="form-label fw-semibold">
-                        Họ và tên <span class="text-danger" aria-hidden="true">*</span>
-                      </label>
-                      <input 
-                        type="text" 
-                        id="profileFullNameInput" 
-                        name="fullName" 
-                        class="form-control" 
-                        autocomplete="name"
-                        required 
-                        aria-required="true"
-                        maxlength="100"
-                        aria-describedby="profileFullNameError"
-                      >
-                      <div id="profileFullNameError" class="invalid-feedback d-none" role="alert"></div>
+                      <label class="form-label fw-semibold text-dark mb-2">Ảnh đại diện</label>
+                      <div class="d-flex align-items-center gap-3 flex-wrap flex-sm-nowrap">
+                        <!-- Left: Avatar Preview Circle/Box (~80px) -->
+                        <div class="position-relative d-inline-block flex-shrink-0 profile-avatar-wrapper" id="profileAvatarDropZone" title="Nhấn hoặc kéo thả ảnh để đổi ảnh đại diện">
+                          <img 
+                            id="profileAvatarImg" 
+                            src="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2280%22 height=%2280%22 viewBox=%220 0 80 80%22><rect width=%2280%22 height=%2280%22 fill=%22%23F3EFEA%22 rx=%228%22/><text x=%2250%25%22 y=%2255%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-family=%22sans-serif%22 font-size=%2232%22 fill=%22%2378716C%22>学</text></svg>" 
+                            alt="Ảnh đại diện người dùng" 
+                            class="rounded-3 border shadow-sm profile-avatar-img"
+                            style="width: 80px; height: 80px; object-fit: cover;"
+                          >
+                          <button type="button" class="profile-avatar-badge-btn" id="profileCameraOverlayBtn" title="Tải ảnh đại diện từ thiết bị" aria-label="Tải ảnh đại diện từ thiết bị">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                              <circle cx="12" cy="13" r="4"></circle>
+                            </svg>
+                          </button>
+                        </div>
+
+                        <!-- Right: Buttons and Format Specification -->
+                        <div class="d-flex flex-column gap-2">
+                          <div class="d-flex align-items-center gap-2 flex-wrap">
+                            <button type="button" class="btn btn-sm btn-chinese-primary py-1 px-3 d-inline-flex align-items-center gap-1" id="profileChooseFileBtn" title="Chọn ảnh đại diện từ thiết bị">
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="1" y1="3" x2="12" y2="15"></line></svg>
+                              <span>Tải ảnh mới</span>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-3 d-inline-flex align-items-center gap-1" id="profileRemoveAvatarBtn" title="Xóa ảnh và dùng biểu tượng mặc định">
+                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                              <span>Xóa ảnh</span>
+                            </button>
+                            <span id="profileAvatarPendingBadge" class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle d-none small">Ảnh mới (Chưa lưu)</span>
+                          </div>
+                          <div class="text-secondary small">Định dạng JPG, PNG, WebP (Tối đa 5MB).</div>
+                        </div>
+
+                        <input type="file" id="profileAvatarFileInput" accept="image/png, image/jpeg, image/webp" class="d-none" aria-label="Tải ảnh đại diện từ thiết bị">
+                        <button type="button" id="profileFormChooseFileBtn" class="d-none" aria-hidden="true" tabindex="-1"></button>
+                      </div>
                     </div>
 
-                    <!-- Avatar Management Info Box (Replaces old raw URL input) -->
-                    <div class="mb-4 p-3 rounded-3 border bg-light d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3">
-                      <div class="d-flex align-items-center gap-3">
-                        <div class="text-secondary flex-shrink-0" aria-hidden="true">
-                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
-                        </div>
-                        <div>
-                          <div class="fw-semibold text-dark small">Ảnh đại diện tài khoản</div>
-                          <div class="text-secondary small" style="font-size: 0.8rem;">Tải ảnh trực tiếp từ thư mục thiết bị (JPG, PNG, WebP tối đa 5MB). Hệ thống tự động căn chỉnh và cắt vuông hình ảnh.</div>
+                    <!-- Input Fields (2-column layout on desktop: row g-3) -->
+                    <div class="row g-3 mb-4">
+                      <!-- Column 1: Họ và tên * -->
+                      <div class="col-12 col-md-6">
+                        <label for="profileFullNameInput" class="form-label fw-semibold text-dark">
+                          Họ và tên <span class="text-danger" aria-hidden="true">*</span>
+                        </label>
+                        <input 
+                          type="text" 
+                          id="profileFullNameInput" 
+                          name="fullName" 
+                          class="form-control" 
+                          autocomplete="name"
+                          required 
+                          aria-required="true"
+                          maxlength="100"
+                          aria-describedby="profileFullNameError"
+                          placeholder="Nhập họ và tên"
+                        >
+                        <div id="profileFullNameError" class="invalid-feedback d-none" role="alert"></div>
+                      </div>
+
+                      <!-- Column 2: Email đăng nhập (Readonly/Disabled with lock icon) -->
+                      <div class="col-12 col-md-6">
+                        <label for="profileEmailInput" class="form-label fw-semibold text-dark">
+                          Email đăng nhập <span class="text-secondary small fw-normal">(🔒 Không đổi)</span>
+                        </label>
+                        <div class="input-group">
+                          <span class="input-group-text bg-light text-secondary border-end-0" aria-hidden="true">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                            </svg>
+                          </span>
+                          <input 
+                            type="email" 
+                            id="profileEmailInput" 
+                            class="form-control bg-light border-start-0 text-muted" 
+                            readonly 
+                            disabled 
+                            value="" 
+                            placeholder="email@example.com"
+                            aria-label="Email đăng nhập (🔒 Không đổi)"
+                          >
                         </div>
                       </div>
-                      <button type="button" class="btn btn-sm btn-chinese-outline text-nowrap align-self-start align-self-sm-center d-inline-flex align-items-center gap-1" id="profileFormChooseFileBtn">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-                        <span>Tải ảnh mới</span>
-                      </button>
                     </div>
+
+                    <!-- Divider Line -->
+                    <hr class="my-4 border-secondary-subtle">
 
                     <!-- Form Action Buttons -->
                     <div class="d-flex align-items-center gap-2">
@@ -225,7 +259,7 @@
                         <span class="btn-text">Lưu thay đổi</span>
                         <span class="spinner-border spinner-border-sm d-none" aria-hidden="true"></span>
                       </button>
-                      <button type="button" id="profileResetBtn" class="btn-chinese-outline py-2 px-3">
+                      <button type="button" id="profileResetBtn" class="btn btn-outline-secondary py-2 px-3">
                         Khôi phục
                       </button>
                     </div>
