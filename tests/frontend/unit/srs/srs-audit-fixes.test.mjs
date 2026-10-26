@@ -84,8 +84,21 @@ if (typeof global.document === 'undefined') {
       style: {},
       textContent: '',
       disabled: false,
-      addEventListener: () => {},
-      removeEventListener: () => {},
+      title: '',
+      type: 'button',
+      addEventListener: (evt, fn) => {
+        if (!elObj._listeners) elObj._listeners = new Map();
+        if (!elObj._listeners.has(evt)) elObj._listeners.set(evt, []);
+        elObj._listeners.get(evt).push(fn);
+      },
+      removeEventListener: (evt, fn) => {
+        if (!elObj._listeners?.has(evt)) return;
+        elObj._listeners.set(evt, elObj._listeners.get(evt).filter(cb => cb !== fn));
+      },
+      click: (e = { stopPropagation: () => {} }) => {
+        const list = elObj._listeners?.get('click') || [];
+        list.forEach(fn => fn(e));
+      },
       replaceChildren: (...newChildren) => {
         children.length = 0;
         if (newChildren.length > 0) children.push(...newChildren);
@@ -111,7 +124,24 @@ if (typeof global.document === 'undefined') {
         }
         return null;
       },
-      querySelectorAll: () => []
+      querySelectorAll: (selector) => {
+        const results = [];
+        function collect(node) {
+          if (!node) return;
+          if (selector.startsWith('#') && node.id === selector.slice(1)) results.push(node);
+          else if (selector.startsWith('.') && node.classList?.contains(selector.slice(1))) results.push(node);
+          else if (node.tagName && selector.toUpperCase() === node.tagName) results.push(node);
+          if (Array.isArray(node.children)) {
+            for (const child of node.children) {
+              collect(child);
+            }
+          }
+        }
+        for (const ch of children) {
+          collect(ch);
+        }
+        return results;
+      }
     };
     return elObj;
   }
@@ -124,6 +154,7 @@ if (typeof global.document === 'undefined') {
     querySelectorAll: () => [],
     createElement: (tag) => makeEl(tag),
     createElementNS: (ns, tag) => makeEl(tag),
+    createTextNode: (txt) => ({ textContent: String(txt) }),
     addEventListener: () => {},
     removeEventListener: () => {}
   };
@@ -494,6 +525,182 @@ describe('Unit: SRS Flashcard & Writing Audit Fixes', () => {
       } finally {
         authManager.getUser = originalGetUser;
       }
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // AREA H: Stage Card Due Badge & Action Box Invariant (createChapterCard)
+  // ---------------------------------------------------------------------------
+  describe('Area H: Stage Card Due Badge & Action Box Invariant (createChapterCard)', () => {
+    test('incompleted chapter with due cards renders top due button and NO duplicate in action box', () => {
+      const controller = new SrsReviewController();
+      let dueFired = false;
+      const card = controller.createChapterCard({
+        title: 'Chặng 03 — Bộ thủ 21 đến 30',
+        totalCount: 10,
+        itemLabel: 'bộ',
+        dueCount: 1,
+        learnedCount: 1,
+        stoppedIndex: 1,
+        onDue: () => { dueFired = true; },
+        onReview: () => {},
+        onContinue: () => {}
+      });
+
+      // 1. Top progress due slot has compact button
+      const topDueBtn = card.querySelector('.srs-btn-due-compact');
+      assert.ok(topDueBtn, 'Top due button must exist above progress bar');
+      assert.strictEqual(topDueBtn.textContent, '⚡ Ôn 1 bộ đến hạn');
+
+      // 2. Action box must NOT contain redundant due button
+      const actionsBox = card.querySelector('.srs-chapter-actions');
+      assert.ok(actionsBox, 'Action buttons container must exist');
+      const actionButtons = actionsBox.querySelectorAll('button');
+      assert.strictEqual(actionButtons.length, 2, 'Must have exactly 2 buttons: Học lại and Học tiếp');
+      assert.strictEqual(actionButtons[0].textContent, '↻ Học lại');
+      assert.ok(actionButtons[1].textContent.includes('Học tiếp'), 'Must have Học tiếp button');
+
+      // 3. Verify no button in actionsBox contains "đến hạn"
+      actionButtons.forEach(btn => {
+        assert.ok(!btn.textContent.includes('đến hạn'), `Action button must not duplicate due button: "${btn.textContent}"`);
+      });
+
+      // 4. Clicking top due button fires onDue callback
+      topDueBtn.click();
+      assert.strictEqual(dueFired, true, 'Clicking compact due button must trigger onDue callback');
+    });
+
+    test('completed chapter with due cards renders top due button and NO duplicate in action box', () => {
+      const controller = new SrsReviewController();
+      let dueFired = false;
+      const card = controller.createChapterCard({
+        title: 'Chặng 01 — Bộ thủ 1 đến 10',
+        totalCount: 10,
+        itemLabel: 'bộ',
+        dueCount: 3,
+        learnedCount: 10,
+        onDue: () => { dueFired = true; },
+        onReview: () => {}
+      });
+
+      // 1. Top progress due slot has compact button
+      const topDueBtn = card.querySelector('.srs-btn-due-compact');
+      assert.ok(topDueBtn, 'Top due button must exist on completed chapter when dueCount > 0');
+      assert.strictEqual(topDueBtn.textContent, '⚡ Ôn 3 bộ đến hạn');
+
+      // 2. Action box must have Học lại and Đã hoàn thành badge, but NO duplicate due button
+      const actionsBox = card.querySelector('.srs-chapter-actions');
+      assert.ok(actionsBox);
+      const actionButtons = actionsBox.querySelectorAll('button');
+      assert.strictEqual(actionButtons.length, 1, 'Completed chapter must only have 1 action button: Học lại');
+      assert.strictEqual(actionButtons[0].textContent, '↻ Học lại');
+
+      const doneBadge = actionsBox.querySelector('.badge');
+      assert.ok(doneBadge, 'Completed chapter must retain "Đã hoàn thành" badge in action box');
+      assert.strictEqual(doneBadge.textContent, '✅ Đã hoàn thành');
+
+      // 3. Verify action box has NO button containing "đến hạn"
+      actionButtons.forEach(btn => {
+        assert.ok(!btn.textContent.includes('đến hạn'), `Action box must not contain due button: "${btn.textContent}"`);
+      });
+
+      // 4. Clicking top due button fires onDue callback
+      topDueBtn.click();
+      assert.strictEqual(dueFired, true, 'Clicking compact due button on completed chapter must trigger onDue callback');
+    });
+
+    test('completed chapter with 0 due cards does NOT render top due button', () => {
+      const controller = new SrsReviewController();
+      const card = controller.createChapterCard({
+        title: 'Chặng 02 — Bộ thủ 11 đến 20',
+        totalCount: 10,
+        itemLabel: 'bộ',
+        dueCount: 0,
+        learnedCount: 10,
+        onDue: null,
+        onReview: () => {}
+      });
+
+      // 1. Top progress due slot must be empty
+      const topDueBtn = card.querySelector('.srs-btn-due-compact');
+      assert.strictEqual(topDueBtn, null, 'No due button when dueCount is 0');
+
+      // 2. Action box must have Học lại and Đã hoàn thành badge
+      const actionsBox = card.querySelector('.srs-chapter-actions');
+      const doneBadge = actionsBox.querySelector('.badge');
+      assert.ok(doneBadge);
+      assert.strictEqual(doneBadge.textContent, '✅ Đã hoàn thành');
+    });
+
+    test('HSK topic card renders correct unit label ("từ") in compact due button', () => {
+      const controller = new SrsReviewController();
+      const card = controller.createChapterCard({
+        isHsk: true,
+        title: 'HSK 1 — Bài 01: Chào hỏi',
+        totalCount: 15,
+        itemLabel: 'từ vựng',
+        dueCount: 4,
+        learnedCount: 15,
+        onDue: () => {},
+        onReview: () => {}
+      });
+
+      const topDueBtn = card.querySelector('.srs-btn-due-compact');
+      assert.ok(topDueBtn);
+      assert.strictEqual(topDueBtn.textContent, '⚡ Ôn 4 từ đến hạn');
+    });
+
+    test('handles string numeric dueCount and infers unit label from itemLabel without isHsk', () => {
+      const controller = new SrsReviewController();
+      const card = controller.createChapterCard({
+        title: 'Chủ đề từ vựng tổng hợp',
+        totalCount: 20,
+        itemLabel: 'từ vựng',
+        dueCount: '5',
+        learnedCount: 20,
+        onDue: () => {},
+        onReview: () => {}
+      });
+
+      const topDueBtn = card.querySelector('.srs-btn-due-compact');
+      assert.ok(topDueBtn);
+      assert.strictEqual(topDueBtn.textContent, '⚡ Ôn 5 từ đến hạn');
+      assert.strictEqual(topDueBtn.getAttribute('aria-label'), 'Chỉ ôn 5 từ đã đến hạn');
+    });
+
+    test('normalizeRadicalCard safely handles objects with id or itemId fallback without producing NaN', () => {
+      const controller = new SrsReviewController();
+      const cardFromRadicalId = controller.normalizeRadicalCard({ radicalId: 75, character: '木' });
+      assert.strictEqual(cardFromRadicalId.itemId, 75);
+
+      const cardFromId = controller.normalizeRadicalCard({ id: 85, character: '水' });
+      assert.strictEqual(cardFromId.itemId, 85);
+      assert.ok(!Number.isNaN(cardFromId.itemId));
+
+      const cardFromItemId = controller.normalizeRadicalCard({ itemId: 18, character: '刀' });
+      assert.strictEqual(cardFromItemId.itemId, 18);
+      assert.ok(!Number.isNaN(cardFromItemId.itemId));
+    });
+
+    test('isRadicalDue and isVocabDue handle polymorphic IDs and string types safely', () => {
+      const controller = new SrsReviewController();
+      controller.dueItemsCache = {
+        radicals: [{ itemId: 18 }, { radicalId: 75 }, { id: '85' }],
+        vocab: [{ itemId: 101 }, { vocabId: '202' }, { id: 303 }]
+      };
+
+      assert.strictEqual(controller.isRadicalDue(18), true);
+      assert.strictEqual(controller.isRadicalDue('18'), true);
+      assert.strictEqual(controller.isRadicalDue(75), true);
+      assert.strictEqual(controller.isRadicalDue('85'), true);
+      assert.strictEqual(controller.isRadicalDue(999), false);
+      assert.strictEqual(controller.isRadicalDue(null), false);
+
+      assert.strictEqual(controller.isVocabDue(101), true);
+      assert.strictEqual(controller.isVocabDue('202'), true);
+      assert.strictEqual(controller.isVocabDue(303), true);
+      assert.strictEqual(controller.isVocabDue(999), false);
+      assert.strictEqual(controller.isVocabDue(undefined), false);
     });
   });
 });

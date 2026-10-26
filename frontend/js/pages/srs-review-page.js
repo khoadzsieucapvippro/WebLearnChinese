@@ -10930,8 +10930,12 @@ export class SrsReviewController {
    * @returns {boolean}
    */
   isRadicalDue(radicalId) {
-    if (!this.dueItemsCache?.radicals) return false;
-    return this.dueItemsCache.radicals.some(r => Number(r.itemId) === Number(radicalId));
+    if (!this.dueItemsCache?.radicals || radicalId == null) return false;
+    const targetId = Number(radicalId);
+    return this.dueItemsCache.radicals.some(r => {
+      const id = r.itemId ?? r.radicalId ?? r.id;
+      return id != null && Number(id) === targetId;
+    });
   }
 
   /**
@@ -10940,8 +10944,12 @@ export class SrsReviewController {
    * @returns {boolean}
    */
   isVocabDue(vocabId) {
-    if (!this.dueItemsCache?.vocab) return false;
-    return this.dueItemsCache.vocab.some(v => Number(v.itemId) === Number(vocabId));
+    if (!this.dueItemsCache?.vocab || vocabId == null) return false;
+    const targetId = Number(vocabId);
+    return this.dueItemsCache.vocab.some(v => {
+      const id = v.itemId ?? v.vocabId ?? v.id;
+      return id != null && Number(id) === targetId;
+    });
   }
 
   /**
@@ -10953,8 +10961,8 @@ export class SrsReviewController {
     if (!item) return false;
     if (item.isDue) return true;
     if (item.nextReviewAt && new Date(item.nextReviewAt) <= new Date()) return true;
-    if ((item.itemType || '').toUpperCase() === 'RADICAL') return this.isRadicalDue(item.itemId);
-    return this.isVocabDue(item.itemId);
+    if ((item.itemType || '').toUpperCase() === 'RADICAL') return this.isRadicalDue(item.itemId ?? item.radicalId ?? item.id);
+    return this.isVocabDue(item.itemId ?? item.vocabId ?? item.id);
   }
 
   /**
@@ -10987,7 +10995,7 @@ export class SrsReviewController {
   updateCurriculaShelfMetrics() {
     // 1. 50 Radicals
     const rad50List = this.commonRadicals.length > 0 ? this.commonRadicals : this.fullRadicalsCatalog.slice(0, 50);
-    const due50 = rad50List.filter(r => this.isRadicalDue(r.radicalId)).length;
+    const due50 = rad50List.filter(r => this.isRadicalDue(r.radicalId ?? r.id ?? r.itemId)).length;
     const learned50 = this.getGroupLearnedCount('radicals50', 50);
     const badge50 = document.getElementById('deckDueBadge_radicals50');
     if (badge50) {
@@ -11006,7 +11014,7 @@ export class SrsReviewController {
 
     // 2. 214 Radicals
     const total214 = this.fullRadicalsCatalog.length || 214;
-    const due214 = this.fullRadicalsCatalog.filter(r => this.isRadicalDue(r.radicalId)).length;
+    const due214 = this.fullRadicalsCatalog.filter(r => this.isRadicalDue(r.radicalId ?? r.id ?? r.itemId)).length;
     const learned214 = this.getGroupLearnedCount('radicals214', total214);
     const badge214 = document.getElementById('deckDueBadge_radicals214');
     if (badge214) {
@@ -11243,12 +11251,15 @@ export class SrsReviewController {
 
     const dueSlot = document.createElement('div');
     dueSlot.className = 'srs-progress-due-slot d-flex align-items-center justify-content-end';
-    if (opts.dueCount > 0 && typeof opts.onDue === 'function') {
+    const numDue = Number(opts.dueCount) || 0;
+    if (numDue > 0 && typeof opts.onDue === 'function') {
+      const unitLabel = opts.isHsk || (opts.itemLabel && opts.itemLabel.includes('từ')) ? 'từ' : (opts.itemLabel || 'bộ');
       const btnDue = document.createElement('button');
       btnDue.type = 'button';
       btnDue.className = 'btn btn-sm btn-outline-danger py-0 px-2 fw-semibold srs-btn-due-compact';
-      btnDue.textContent = `⚡ Ôn ${opts.dueCount} ${opts.isHsk ? 'từ' : 'bộ'} đến hạn`;
-      btnDue.title = `Chỉ ôn ${opts.dueCount} thẻ đã đến hạn`;
+      btnDue.textContent = `⚡ Ôn ${numDue} ${unitLabel} đến hạn`;
+      btnDue.title = `Chỉ ôn ${numDue} thẻ đã đến hạn`;
+      btnDue.setAttribute('aria-label', `Chỉ ôn ${numDue} ${unitLabel} đã đến hạn`);
       btnDue.addEventListener('click', (e) => {
         e.stopPropagation();
         opts.onDue();
@@ -11314,16 +11325,6 @@ export class SrsReviewController {
       btnReview.addEventListener('click', () => opts.onReview());
       actionsBox.appendChild(btnReview);
 
-      if (opts.dueCount > 0 && typeof opts.onDue === 'function') {
-        const btnDue = document.createElement('button');
-        btnDue.type = 'button';
-        btnDue.className = 'btn btn-sm btn-outline-danger py-1 px-2 fw-semibold';
-        btnDue.textContent = `⚡ Ôn ${opts.dueCount} đến hạn`;
-        btnDue.title = `Ôn tập ${opts.dueCount} thẻ đã đến hạn`;
-        btnDue.addEventListener('click', () => opts.onDue());
-        actionsBox.appendChild(btnDue);
-      }
-
       const btnContinue = document.createElement('button');
       btnContinue.type = 'button';
       btnContinue.className = 'btn btn-sm btn-chinese-primary py-1 px-3 fw-semibold';
@@ -11339,20 +11340,10 @@ export class SrsReviewController {
       btnReview.addEventListener('click', () => opts.onReview());
       actionsBox.appendChild(btnReview);
 
-      if (opts.dueCount > 0 && typeof opts.onDue === 'function') {
-        const btnDue = document.createElement('button');
-        btnDue.type = 'button';
-        btnDue.className = 'btn btn-sm btn-chinese-primary py-1 px-3 fw-semibold';
-        btnDue.textContent = `⚡ Ôn ${opts.dueCount} ${opts.isHsk ? 'từ' : 'bộ'} đến hạn →`;
-        btnDue.title = `Ôn tập ${opts.dueCount} thẻ đã đến hạn`;
-        btnDue.addEventListener('click', () => opts.onDue());
-        actionsBox.appendChild(btnDue);
-      } else {
-        const doneBadge = document.createElement('span');
-        doneBadge.className = 'badge bg-success-subtle text-success border py-1 px-2';
-        doneBadge.textContent = '✅ Đã hoàn thành';
-        actionsBox.appendChild(doneBadge);
-      }
+      const doneBadge = document.createElement('span');
+      doneBadge.className = 'badge bg-success-subtle text-success border py-1 px-2';
+      doneBadge.textContent = '✅ Đã hoàn thành';
+      actionsBox.appendChild(doneBadge);
     }
 
     if (opts.extraButtonText && opts.extraButtonHref) {
@@ -11399,7 +11390,7 @@ export class SrsReviewController {
 
       const chapKey = `chapter_${i}`;
       const savedIndex = progress[chapKey] || 0;
-      const dueCount = chapterRadicals.filter(r => this.isRadicalDue(r.radicalId)).length;
+      const dueCount = chapterRadicals.filter(r => this.isRadicalDue(r.radicalId ?? r.id ?? r.itemId)).length;
       const learnedCount = Math.min(10, savedIndex);
 
       let stoppedItemText = null;
@@ -11517,7 +11508,7 @@ export class SrsReviewController {
 
       const chapKey = `chapter_${i}`;
       const savedIndex = progress[chapKey] || 0;
-      const dueCount = chapterRadicals.filter(r => this.isRadicalDue(r.radicalId)).length;
+      const dueCount = chapterRadicals.filter(r => this.isRadicalDue(r.radicalId ?? r.id ?? r.itemId)).length;
       const learnedCount = Math.min(chapterRadicals.length, savedIndex);
 
       let stoppedItemText = null;
@@ -11709,7 +11700,7 @@ export class SrsReviewController {
 
       const topicKey = `topic_${effectiveLessonId}`;
       const savedIndex = progress[topicKey] || 0;
-      const dueCount = vocabList.filter(v => this.isVocabDue(v.vocabId || v.itemId || v.id)).length;
+      const dueCount = vocabList.filter(v => this.isVocabDue(v.vocabId ?? v.itemId ?? v.id)).length;
       const learnedCount = Math.min(vocabCount, savedIndex);
 
       let stoppedItemText = null;
@@ -12074,9 +12065,10 @@ export class SrsReviewController {
    * @returns {Object}
    */
   normalizeRadicalCard(r) {
+    const rawId = r?.radicalId ?? r?.id ?? r?.itemId;
     return {
       itemType: 'RADICAL',
-      itemId: Number(r.radicalId),
+      itemId: rawId != null ? Number(rawId) : 1,
       hanzi: r.character || '',
       character: r.character || '',
       pinyin: r.pinyin || '',
