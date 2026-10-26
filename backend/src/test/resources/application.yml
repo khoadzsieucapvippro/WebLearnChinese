@@ -64,6 +64,10 @@ app:
     login:
       max-attempts: ${APP_RATE_LIMIT_LOGIN_MAX_ATTEMPTS:10}
       window-seconds: ${APP_RATE_LIMIT_LOGIN_WINDOW_SECONDS:60}
+  srs:
+    test-mode:
+      enabled: ${APP_SRS_TEST_MODE_ENABLED:false} # Mặc định automated tests backend chạy canonical SM-2
+      interval-minutes: ${APP_SRS_TEST_INTERVAL_MINUTES:2}
 
 management:
   endpoints:

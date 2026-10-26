@@ -1203,32 +1203,58 @@ class DemoFallbackEngine {
         data.srsCards.push(card);
       }
 
-      // SM-2 Spaced Repetition Algorithm
+      // =========================================================================
+      // [CHẾ ĐỘ TEST SRS 2 PHÚT] TẠM THỜI KHÓA THUẬT TOÁN GỐC SM-2
+      // Thẻ đến hạn sau khoảng 2 phút để người dùng có thể xem và ôn lại ngay khi test.
+      // Thuật toán gốc SM-2 bên dưới vẫn được lưu giữ nguyên vẹn 100%.
+      // Khi muốn mở khóa lại thuật toán gốc SM-2, chỉ cần đặt SRS_TEST_MODE_2MIN = false.
+      // =========================================================================
+      const SRS_TEST_MODE_2MIN = true;
+
       card.isNew = false;
       let easeFactor = card.easeFactor || 2.5;
       let repetitions = card.repetitions || 0;
       let intervalDays = card.intervalDays || 0;
 
-      if (rating >= 3) {
-        if (repetitions === 0) {
+      if (SRS_TEST_MODE_2MIN) {
+        if (rating >= 2) {
+          repetitions += 1;
           intervalDays = 1;
-        } else if (repetitions === 1) {
-          intervalDays = 6;
+          // Đến hạn sau đúng 2 phút (2 * 60 * 1000 ms) để xem và ôn lại được ngay
+          card.nextReviewAt = new Date(Date.now() + 2 * 60 * 1000).toISOString();
         } else {
-          intervalDays = Math.round(intervalDays * easeFactor);
+          // Again (1): Đến hạn ngay lập tức để học lại
+          repetitions = 0;
+          intervalDays = 0;
+          card.nextReviewAt = new Date().toISOString();
         }
-        repetitions += 1;
+        easeFactor = Math.max(1.3, easeFactor + (0.1 - (5 - rating) * (0.08 + (5 - rating) * 0.02)));
+        card.repetitions = repetitions;
+        card.easeFactor = parseFloat(easeFactor.toFixed(2));
+        card.intervalDays = intervalDays;
       } else {
-        repetitions = 0;
-        intervalDays = 1;
+        // [THUẬT TOÁN GỐC SM-2] ĐƯỢC LƯU GIỮ NGUYÊN VẸN 100%
+        if (rating >= 3) {
+          if (repetitions === 0) {
+            intervalDays = 1;
+          } else if (repetitions === 1) {
+            intervalDays = 6;
+          } else {
+            intervalDays = Math.round(intervalDays * easeFactor);
+          }
+          repetitions += 1;
+        } else {
+          repetitions = 0;
+          intervalDays = 1;
+        }
+
+        easeFactor = Math.max(1.3, easeFactor + (0.1 - (5 - rating) * (0.08 + (5 - rating) * 0.02)));
+
+        card.repetitions = repetitions;
+        card.easeFactor = parseFloat(easeFactor.toFixed(2));
+        card.intervalDays = intervalDays;
+        card.nextReviewAt = new Date(Date.now() + intervalDays * 86400000).toISOString();
       }
-
-      easeFactor = Math.max(1.3, easeFactor + (0.1 - (5 - rating) * (0.08 + (5 - rating) * 0.02)));
-
-      card.repetitions = repetitions;
-      card.easeFactor = parseFloat(easeFactor.toFixed(2));
-      card.intervalDays = intervalDays;
-      card.nextReviewAt = new Date(Date.now() + intervalDays * 86400000).toISOString();
 
       data.srsReviews.push({
         reviewId: Date.now(),

@@ -22,6 +22,8 @@ import com.elearning.service.SrsService;
 import com.elearning.service.srs.ReviewRating;
 import com.elearning.service.srs.SrsCalculationResult;
 import com.elearning.service.srs.SrsCalculator;
+import com.elearning.service.srs.TwoMinuteTestSrsCalculator;
+import org.springframework.beans.factory.annotation.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.elearning.config.TimeConfig;
@@ -73,6 +75,14 @@ public class SrsServiceImpl implements SrsService {
     private final LessonVocabularyRepository lessonVocabularyRepository;
     private final SrsCalculator srsCalculator;
     private final Clock businessClock;
+
+    @Value("${app.srs.test-mode.enabled:true}")
+    private boolean testModeEnabled = false;
+
+    @Value("${app.srs.test-mode.interval-minutes:2}")
+    private int testIntervalMinutes = 2;
+
+    private final TwoMinuteTestSrsCalculator testCalculator = new TwoMinuteTestSrsCalculator();
 
     @Autowired
     public SrsServiceImpl(
@@ -580,15 +590,40 @@ public class SrsServiceImpl implements SrsService {
 
         // 9. Delegate to pure mathematical SrsCalculator
         ReviewRating ratingEnum = ReviewRating.fromValue(request.getRating());
-        SrsCalculationResult calcResult = srsCalculator.calculate(currentEf, intervalBefore, currentRepetitions, ratingEnum);
-
-        // 10. Calculate next_review_at
         LocalDateTime reviewedAt = LocalDateTime.now(businessClock);
-        if (calcResult.intervalDays() == 0) {
-            progress.setNextReviewAt(reviewedAt); // due immediately for relearning today
+
+        SrsCalculationResult calcResult;
+        LocalDateTime nextReviewTime;
+
+        if (testModeEnabled) {
+            // =========================================================================
+            // [CHẾ ĐỘ TEST SRS 2 PHÚT] TẠM THỜI KHÓA THUẬT TOÁN GỐC SM-2
+            // Sử dụng thuật toán kiểm thử: Thẻ đến hạn sau khoảng 2 phút để kiểm tra và ôn lại ngay.
+            // Để mở khóa lại thuật toán gốc SM-2, cấu hình: app.srs.test-mode.enabled=false
+            // =========================================================================
+            calcResult = testCalculator.calculate(currentEf, intervalBefore, currentRepetitions, ratingEnum, testIntervalMinutes);
+            if (ratingEnum == ReviewRating.AGAIN) {
+                nextReviewTime = reviewedAt; // Học lại ngay
+            } else {
+                nextReviewTime = reviewedAt.plusMinutes(testIntervalMinutes); // Đến hạn sau khoảng 2 phút!
+            }
+            log.info("[SRS TEST-MODE 2 PHÚT] Tạm thời khóa thuật toán gốc SM-2 để test SRS: " +
+                            "user_id={}, itemType={}, itemId={}, cardType={}, rating={}, nextReviewAt sau {} phút: {}",
+                    user.getUserId(), itemTypeUpper, request.getItemId(), cardTypeUpper, ratingEnum, testIntervalMinutes, nextReviewTime);
         } else {
-            progress.setNextReviewAt(reviewedAt.plusDays(calcResult.intervalDays()));
+            // =========================================================================
+            // [THUẬT TOÁN GỐC SM-2] ĐƯỢC LƯU GIỮ NGUYÊN VẸN 100% (Tính theo ngày)
+            // =========================================================================
+            calcResult = srsCalculator.calculate(currentEf, intervalBefore, currentRepetitions, ratingEnum);
+            if (calcResult.intervalDays() == 0) {
+                nextReviewTime = reviewedAt; // due immediately for relearning today
+            } else {
+                nextReviewTime = reviewedAt.plusDays(calcResult.intervalDays());
+            }
         }
+
+        // 10. Gán next_review_at
+        progress.setNextReviewAt(nextReviewTime);
 
         // 11. Update CardProgress state
         progress.setEaseFactor(calcResult.easeFactor());
@@ -713,5 +748,21 @@ public class SrsServiceImpl implements SrsService {
 
     private long countNewCardsIntroducedTodayWithLock(UserProfile user, String itemType, LocalDateTime startOfDay) {
         return reviewLogRepository.countNewItemsIntroducedToday(user, itemType, startOfDay);
+    }
+
+    public boolean isTestModeEnabled() {
+        return testModeEnabled;
+    }
+
+    public void setTestModeEnabled(boolean testModeEnabled) {
+        this.testModeEnabled = testModeEnabled;
+    }
+
+    public int getTestIntervalMinutes() {
+        return testIntervalMinutes;
+    }
+
+    public void setTestIntervalMinutes(int testIntervalMinutes) {
+        this.testIntervalMinutes = testIntervalMinutes;
     }
 }

@@ -80,6 +80,13 @@ app:
     login:
       max-attempts: ${APP_RATE_LIMIT_LOGIN_MAX_ATTEMPTS:10}
       window-seconds: ${APP_RATE_LIMIT_LOGIN_WINDOW_SECONDS:60}
+  srs:
+    test-mode:
+      # Tạm thời khóa thuật toán gốc SM-2 (tính theo ngày), kích hoạt thuật toán test 2 phút
+      # để xem và ôn lại được các từ đến hạn sau 2 phút.
+      # Để mở khóa lại thuật toán gốc SM-2, đổi thành false (hoặc APP_SRS_TEST_MODE_ENABLED=false)
+      enabled: ${APP_SRS_TEST_MODE_ENABLED:true}
+      interval-minutes: ${APP_SRS_TEST_INTERVAL_MINUTES:2}
 
 management:
   endpoints:
