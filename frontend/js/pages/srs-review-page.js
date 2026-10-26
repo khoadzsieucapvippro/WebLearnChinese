@@ -9875,6 +9875,7 @@ export class SrsReviewController {
     this.listeningIme = null;
     this.hasCompletedListeningForCurrentCard = false;
     this.isSubmittingListening = false;
+    this._autoPlayedListeningCardKey = null;
 
     // Dedicated Reading Room state
     this.readingRecorder = null;
@@ -9945,7 +9946,10 @@ export class SrsReviewController {
     // Bound Event Handlers
     this.onKeydown = this.handleKeydown.bind(this);
     this.onPopState = this.handlePopState.bind(this);
-    this.onUnload = this.cleanupTimer.bind(this);
+    this.onUnload = () => {
+      this.cleanupTimer();
+      speechController.cancel();
+    };
   }
 
   /**
@@ -10091,6 +10095,7 @@ export class SrsReviewController {
       listeningRoom: document.getElementById('srsListeningRoom'),
       listeningRoomBadge: document.getElementById('listeningRoomBadge'),
       btnListeningPlayAudio: document.getElementById('btnListeningPlayAudio'),
+      listeningSpeakerHint: document.getElementById('listeningSpeakerHint'),
       listeningAnswerInput: document.getElementById('listeningAnswerInput'),
       listeningCompletionNotice: document.getElementById('listeningCompletionNotice'),
       listeningErrorNotice: document.getElementById('listeningErrorNotice'),
@@ -10419,6 +10424,7 @@ export class SrsReviewController {
       this.dom.btnListeningPlayAudio.addEventListener('click', (e) => {
         e.stopPropagation();
         this.playPronunciation(this.dom.btnListeningPlayAudio);
+        this.setListeningSpeakerHint(false);
       });
     }
     if (this.dom.btnListeningCheck) {
@@ -10705,6 +10711,10 @@ export class SrsReviewController {
    */
   switchMode(mode) {
     if (this.activeMode === mode) return;
+    speechController.cancel();
+    if (mode !== 'listening') {
+      this._autoPlayedListeningCardKey = null;
+    }
     this.activeMode = mode;
     this.syncToolbarUi();
     updateReviewUrl({
@@ -10798,6 +10808,8 @@ export class SrsReviewController {
     this.destroyWritingEngines();
     this.destroyListeningIme();
     this.cleanUpReadingMedia();
+    speechController.cancel();
+    this._autoPlayedListeningCardKey = null;
     this.sessionQueue = [];
     this.currentIndex = 0;
     this.currentChapterTitle = '';
@@ -12117,6 +12129,7 @@ export class SrsReviewController {
     this.destroyWritingEngines();
     this.destroyListeningIme();
     this.cleanUpReadingMedia();
+    this._autoPlayedListeningCardKey = null;
 
     if (!Array.isArray(cards) || cards.length === 0) {
       this.setViewState('empty');
@@ -13617,6 +13630,9 @@ export class SrsReviewController {
       this.dom.btnListeningPlayAudio.classList.remove('is-speaking');
     }
 
+    if (this.dom.listeningSpeakerHint) {
+      this.dom.listeningSpeakerHint.textContent = 'Bấm loa để nghe phát âm';
+    }
 
     // Focus input field
     if (this.dom.listeningAnswerInput) {
@@ -13625,6 +13641,46 @@ export class SrsReviewController {
           this.dom.listeningAnswerInput?.focus();
         } catch (e) {}
       }, 50);
+    }
+
+    // Auto-play pronunciation exactly once per newly presented card
+    const cardKey = `${this.currentIndex}_${card.itemType || 'VOCABULARY'}_${card.itemId}`;
+    if (this._autoPlayedListeningCardKey !== cardKey) {
+      this._autoPlayedListeningCardKey = cardKey;
+      this.autoPlayListeningCard();
+    }
+  }
+
+  /**
+   * Automatically plays pronunciation once when a new listening card is displayed.
+   * Gracefully handles browser autoplay restrictions without uncaught rejections or blocking the session.
+   */
+  async autoPlayListeningCard() {
+    if (this.activeMode !== 'listening') return;
+
+    try {
+      const res = await this.playPronunciation(this.dom.btnListeningPlayAudio, { isAutoPlay: true });
+      if (res && res.autoplayBlocked) {
+        this.setListeningSpeakerHint(true);
+      } else if (res && res.success) {
+        this.setListeningSpeakerHint(false);
+      }
+    } catch (err) {
+      console.warn('[SRS Listening] Auto-play encountered an error:', err);
+      this.setListeningSpeakerHint(true);
+    }
+  }
+
+  /**
+   * Updates listening speaker button hint based on autoplay status.
+   * @param {boolean} isBlocked
+   */
+  setListeningSpeakerHint(isBlocked = false) {
+    if (!this.dom.listeningSpeakerHint) return;
+    if (isBlocked) {
+      this.dom.listeningSpeakerHint.textContent = 'Trình duyệt chặn tự động phát. Hãy bấm loa để nghe.';
+    } else {
+      this.dom.listeningSpeakerHint.textContent = 'Bấm loa để nghe lại';
     }
   }
 
@@ -14709,8 +14765,9 @@ export class SrsReviewController {
    * Plays pronunciation audio for current card.
    * Executes synchronously to preserve browser Transient User Activation.
    * @param {HTMLElement|null} triggerButton
+   * @param {Object} [options={}]
    */
-  playPronunciation(triggerButton = null) {
+  playPronunciation(triggerButton = null, options = {}) {
     if (this.currentUserAudioElement) {
       try {
         this.currentUserAudioElement.pause();
@@ -14747,7 +14804,8 @@ export class SrsReviewController {
     const res = playPronunciation({
       text: textToSpeak,
       audioUrl: audioUrl,
-      button: triggerButton
+      button: triggerButton,
+      ...options
     });
     return (res && typeof res.then === 'function') ? res : Promise.resolve(res);
   }
@@ -14858,6 +14916,8 @@ export class SrsReviewController {
     this.destroyWritingEngines();
     this.destroyListeningIme();
     this.cleanUpReadingMedia();
+    speechController.cancel();
+    this._autoPlayedListeningCardKey = null;
     this.setViewState('completed');
 
     if (this.dom.completedTitle) {

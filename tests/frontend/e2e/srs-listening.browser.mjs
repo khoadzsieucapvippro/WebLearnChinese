@@ -497,4 +497,113 @@ describe('Browser E2E: SRS Listening Room & Pinyin IME', () => {
     }
   });
 
+  test('SL-07: Automatic audio playback on card transition in browser without clicking speaker button', async () => {
+    const { page, context, getRuntimeErrors } = await createMonitoredPage(browser);
+    try {
+      await setupListeningMockBackend(page);
+
+      // Give both card 1 and card 2 real WAV audio assets
+      const mockRadicals = createMockRadicals();
+      mockRadicals[0].audioUrl = '/assets/audio/fixtures/diagnostic-tone.wav';
+      mockRadicals[1].audioUrl = '/assets/audio/fixtures/diagnostic-tone.wav';
+
+      await page.route('**/api/v1/radicals*', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            code: 'SUCCESS',
+            message: 'OK',
+            data: {
+              items: mockRadicals,
+              page: 0,
+              size: 50,
+              totalElements: 50,
+              totalPages: 1
+            }
+          })
+        });
+      });
+
+      await page.addInitScript(() => {
+        window.__autoPlayProbe = {
+          playCalls: 0,
+          createdSources: []
+        };
+        const NativeAudio = window.Audio;
+        window.Audio = function(src) {
+          const el = new NativeAudio(src);
+          window.__autoPlayProbe.createdSources.push(src);
+          const origPlay = el.play.bind(el);
+          el.play = function() {
+            window.__autoPlayProbe.playCalls++;
+            return origPlay();
+          };
+          return el;
+        };
+      });
+
+      await page.goto(`${baseUrl}/srs-review.html?mode=listening&group=radicals50&action=continue`, {
+        waitUntil: 'domcontentloaded'
+      });
+
+      await page.locator('#srsListeningRoom').waitFor({ state: 'visible', timeout: 5000 });
+
+      // Verify Card 1 triggered play() on load
+      const initialPlayCalls = await page.evaluate(() => window.__autoPlayProbe.playCalls);
+      assert.ok(initialPlayCalls >= 1, 'Card 1 must automatically call play() on initial display');
+
+      // Answer Card 1 correctly
+      const answerInput = page.locator('#listeningAnswerInput');
+      await answerInput.fill('一');
+      await page.locator('#btnListeningCheck').click();
+      await page.waitForTimeout(200);
+
+      // Verify Next button unlocked
+      const nextBtn = page.locator('#btnListeningNext');
+      assert.ok(!((await nextBtn.getAttribute('class')) || '').includes('writing-next-hidden'));
+
+      const playCallsBeforeNext = await page.evaluate(() => window.__autoPlayProbe.playCalls);
+
+      // Click Next to advance to Card 2
+      await nextBtn.click();
+      await page.waitForTimeout(500);
+
+      // Verify card 2 progress
+      const progressText = await page.locator('#srsProgressText').textContent();
+      assert.ok(progressText.includes('Thẻ 2'), 'Must advance to card 2');
+
+      // Verify Card 2 automatically called play() upon transition without clicking speaker
+      const playCallsAfterNext = await page.evaluate(() => window.__autoPlayProbe.playCalls);
+      assert.ok(
+        playCallsAfterNext > playCallsBeforeNext,
+        `Card 2 must automatically dispatch play() on transition (before: ${playCallsBeforeNext}, after: ${playCallsAfterNext})`
+      );
+
+      // Verify speaker hint is present and updated
+      const hintText = await page.locator('#listeningSpeakerHint').textContent();
+      assert.ok(
+        hintText.includes('Bấm loa để nghe lại') || hintText.includes('Bấm loa để nghe phát âm') || hintText.includes('Trình duyệt chặn'),
+        `Speaker hint must be present, got "${hintText}"`
+      );
+
+      // Verify speaker button remains interactive to replay
+      const speakerBtn = page.locator('#btnListeningPlayAudio');
+      assert.strictEqual(await speakerBtn.isDisabled(), false, 'Speaker button must be interactive for manual replay');
+
+      // Verify manual replay increments playCalls
+      await speakerBtn.click();
+      await page.waitForTimeout(300);
+      const playCallsAfterManualClick = await page.evaluate(() => window.__autoPlayProbe.playCalls);
+      assert.ok(
+        playCallsAfterManualClick > playCallsAfterNext,
+        'Clicking speaker manually must trigger pronunciation playback again'
+      );
+
+      assert.strictEqual(getRuntimeErrors().length, 0, 'Zero runtime errors');
+    } finally {
+      await context.close();
+    }
+  });
+
 });

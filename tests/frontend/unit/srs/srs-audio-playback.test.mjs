@@ -717,4 +717,27 @@ describe('Unit: SRS Audio Playback Lifecycle & 3-Tier Fallback (R1)', () => {
       globalThis.localStorage = origStorage;
     }
   });
+
+  test('20. Autoplay protection: When isAutoPlay is true and browser blocks audio, unlocks UI cleanly without Tier 2 fallback or toast alerts', async () => {
+    MockAudioElement.shouldReject = true;
+    MockAudioElement.rejectReason = 'NotAllowedError';
+
+    const controller = new SpeechController({ toastFn: mockToastFn });
+    const btn = new MockButton('btn-autoplay');
+
+    const result = await controller.playPronunciation({
+      text: '你好',
+      audioUrl: 'https://cdn.example.com/audio/nihao.mp3',
+      button: btn,
+      isAutoPlay: true
+    });
+
+    assert.strictEqual(result.success, false);
+    assert.strictEqual(result.autoplayBlocked, true);
+    assert.strictEqual(mockSynth.speakCallCount, 0, 'Autoplay block must NOT cascade to Web Speech Tier 2');
+    assert.strictEqual(toastCalls.length, 0, 'Autoplay block must NOT trigger annoying toast alerts');
+    assert.strictEqual(btn.disabled, false, 'Button must unlock cleanly');
+    assert.strictEqual(btn.classList.has('is-speaking'), false);
+    assert.strictEqual(controller.state, SpeechState.IDLE);
+  });
 });

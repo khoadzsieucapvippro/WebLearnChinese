@@ -713,4 +713,182 @@ describe('Unit: SRS Listening Room & Pinyin IME Engine', () => {
     });
   });
 
+  describe('7. Automatic Audio Playback on Card Display (Auto-Play Invariants)', () => {
+    function setupControllerForListening(cards = [
+      { itemId: 1, itemType: 'VOCABULARY', hanzi: '你' },
+      { itemId: 2, itemType: 'VOCABULARY', hanzi: '好' }
+    ]) {
+      const controller = new SrsReviewController();
+      controller.activeMode = 'listening';
+      controller.sessionQueue = cards.map(c => ({ card: c, againAttempts: 0 }));
+      controller.currentIndex = 0;
+      controller.dom = {
+        listeningRoomBadge: makeEl('span'),
+        listeningCompletionNotice: makeEl('div'),
+        listeningErrorNotice: makeEl('div'),
+        listeningAnswerInput: makeEl('input'),
+        btnListeningCheck: makeEl('button'),
+        btnListeningNext: makeEl('button'),
+        btnListeningPlayAudio: makeEl('button'),
+        listeningSpeakerHint: makeEl('span'),
+        listeningImeContainer: makeEl('div')
+      };
+      return controller;
+    }
+
+    test('1. First card auto-play: Automatically triggers pronunciation exactly once on initial card render', async () => {
+      const controller = setupControllerForListening();
+      const calls = [];
+      controller.playPronunciation = (btn, opts) => {
+        calls.push({ btn, opts });
+        return Promise.resolve({ success: true, method: 'audio_file' });
+      };
+
+      const card = controller.sessionQueue[0].card;
+      await controller.renderListeningRoomCard(card);
+
+      assert.strictEqual(calls.length, 1, 'playPronunciation must be called exactly once on card render');
+      assert.strictEqual(calls[0].opts?.isAutoPlay, true, 'isAutoPlay option must be true');
+      assert.strictEqual(calls[0].btn, controller.dom.btnListeningPlayAudio, 'Trigger button must be btnListeningPlayAudio');
+      assert.strictEqual(controller._autoPlayedListeningCardKey, '0_VOCABULARY_1', 'Card key must be recorded');
+      assert.strictEqual(controller.dom.listeningSpeakerHint.textContent, 'Bấm loa để nghe lại');
+    });
+
+    test('2. Next card transition: Automatically triggers pronunciation once for the new card', async () => {
+      const controller = setupControllerForListening();
+      const calls = [];
+      controller.playPronunciation = (btn, opts) => {
+        calls.push({ btn, opts });
+        return Promise.resolve({ success: true, method: 'audio_file' });
+      };
+
+      // Render card 1
+      await controller.renderListeningRoomCard(controller.sessionQueue[0].card);
+      assert.strictEqual(calls.length, 1);
+
+      // Advance to card 2
+      controller.currentIndex = 1;
+      await controller.renderListeningRoomCard(controller.sessionQueue[1].card);
+
+      assert.strictEqual(calls.length, 2, 'New card must trigger auto-play');
+      assert.strictEqual(calls[1].opts?.isAutoPlay, true);
+      assert.strictEqual(controller._autoPlayedListeningCardKey, '1_VOCABULARY_2');
+    });
+
+    test('3. Zero replay on re-renders: Re-rendering same card does NOT re-trigger auto-play', async () => {
+      const controller = setupControllerForListening();
+      const calls = [];
+      controller.playPronunciation = (btn, opts) => {
+        calls.push({ btn, opts });
+        return Promise.resolve({ success: true, method: 'audio_file' });
+      };
+
+      const card = controller.sessionQueue[0].card;
+      await controller.renderListeningRoomCard(card);
+      assert.strictEqual(calls.length, 1);
+
+      // Simulate re-rendering the same card (e.g. window resize or parent re-render)
+      await controller.renderListeningRoomCard(card);
+      await controller.renderListeningRoomCard(card);
+
+      assert.strictEqual(calls.length, 1, 'Subsequent renders of the same card must NOT re-dispatch auto-play');
+    });
+
+    test('4. Manual speaker click: Replays current card audio without changing progress or auto-play state', async () => {
+      const controller = setupControllerForListening();
+      const calls = [];
+      controller.playPronunciation = (btn, opts) => {
+        calls.push({ btn, opts });
+        return Promise.resolve({ success: true, method: 'audio_file' });
+      };
+
+      const card = controller.sessionQueue[0].card;
+      await controller.renderListeningRoomCard(card);
+      assert.strictEqual(calls.length, 1);
+
+      // Simulate learner clicking the speaker button to replay
+      controller.playPronunciation(controller.dom.btnListeningPlayAudio);
+
+      assert.strictEqual(calls.length, 2, 'Manual click must trigger pronunciation');
+      assert.strictEqual(calls[1].opts?.isAutoPlay, undefined, 'Manual replay does not set isAutoPlay: true');
+      assert.strictEqual(controller.currentIndex, 0, 'Current index must not change');
+      assert.strictEqual(controller.hasCompletedListeningForCurrentCard, false, 'Card completion must not change');
+      assert.strictEqual(controller._autoPlayedListeningCardKey, '0_VOCABULARY_1', 'Auto-play key remains unchanged');
+    });
+
+    test('5. Autoplay rejection resilience: Gracefully handles NotAllowedError without uncaught exception and shows hint', async () => {
+      const controller = setupControllerForListening();
+      controller.playPronunciation = (btn, opts) => {
+        return Promise.resolve({
+          success: false,
+          method: 'audio_file',
+          autoplayBlocked: true,
+          message: 'Autoplay blocked by browser policy'
+        });
+      };
+
+      const card = controller.sessionQueue[0].card;
+      await controller.renderListeningRoomCard(card);
+
+      // Verify no uncaught exception and hint guides learner to tap speaker
+      assert.ok(
+        controller.dom.listeningSpeakerHint.textContent.includes('Trình duyệt chặn tự động phát'),
+        'Speaker hint must inform user that autoplay was blocked'
+      );
+      assert.strictEqual(controller.dom.btnListeningPlayAudio.disabled, false, 'Speaker button must remain enabled');
+      assert.strictEqual(controller.dom.listeningAnswerInput.disabled, false, 'Input must remain enabled');
+    });
+
+    test('6. Session re-init resets auto-play key so first card of new session plays', () => {
+      const controller = setupControllerForListening();
+      controller._autoPlayedListeningCardKey = '0_VOCABULARY_1';
+
+      // Re-init with new cards
+      controller.initSessionQueue([
+        { itemId: 99, itemType: 'VOCABULARY', hanzi: '水' }
+      ]);
+
+      // Card key must be updated to the new session's first card, shedding the old session key
+      assert.strictEqual(
+        controller._autoPlayedListeningCardKey,
+        '0_VOCABULARY_99',
+        'initSessionQueue must reset and re-evaluate auto-play key for the new session'
+      );
+
+      // Re-init with empty cards returns immediately with null auto-play key
+      controller.initSessionQueue([]);
+      assert.strictEqual(
+        controller._autoPlayedListeningCardKey,
+        null,
+        'Empty session queue leaves _autoPlayedListeningCardKey as null'
+      );
+    });
+
+    test('7. Mode switching away from listening resets auto-play key', () => {
+      const controller = setupControllerForListening();
+      controller._autoPlayedListeningCardKey = '0_VOCABULARY_1';
+
+      controller.switchMode('writing');
+
+      assert.strictEqual(
+        controller._autoPlayedListeningCardKey,
+        null,
+        'switchMode to non-listening must reset _autoPlayedListeningCardKey'
+      );
+    });
+
+    test('8. showCatalogSelection resets auto-play key', () => {
+      const controller = setupControllerForListening();
+      controller._autoPlayedListeningCardKey = '0_VOCABULARY_1';
+
+      controller.showCatalogSelection();
+
+      assert.strictEqual(
+        controller._autoPlayedListeningCardKey,
+        null,
+        'showCatalogSelection must reset _autoPlayedListeningCardKey'
+      );
+    });
+  });
+
 });

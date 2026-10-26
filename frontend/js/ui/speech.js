@@ -322,6 +322,26 @@ export class SpeechController {
   }
 
   /**
+   * Detects whether an error indicates audio autoplay was blocked by browser policy without user gesture.
+   * @param {any} err
+   * @returns {boolean}
+   * @private
+   */
+  _isAutoplayBlocked(err) {
+    if (!err) return false;
+    const name = err.name || '';
+    const msg = String(err.message || '').toLowerCase();
+    const code = String(err.code || '').toLowerCase();
+    return name === 'NotAllowedError' ||
+      msg.includes('notallowederror') ||
+      msg.includes('not allowed') ||
+      msg.includes("user didn't interact") ||
+      msg.includes('interact with the document first') ||
+      msg.includes('autoplay') ||
+      code === 'notallowederror';
+  }
+
+  /**
    * Returns a non-sensitive diagnostic snapshot for troubleshooting mobile/desktop audio.
    * Strictly excludes tokens, credentials, and private user data.
    *
@@ -785,6 +805,7 @@ export class SpeechController {
     let pitch = 1.0;
     let onEnd = null;
     let onError = null;
+    let isAutoPlay = false;
 
     if (typeof target === 'string') {
       rawText = target;
@@ -796,6 +817,7 @@ export class SpeechController {
         pitch = options.pitch ?? 1.0;
         onEnd = options.onEnd || null;
         onError = options.onError || null;
+        isAutoPlay = Boolean(options.isAutoPlay);
       }
     } else if (target && typeof target === 'object') {
       rawText = target.text || target.hanzi || target.character || '';
@@ -806,6 +828,7 @@ export class SpeechController {
       pitch = target.pitch ?? options.pitch ?? 1.0;
       onEnd = target.onEnd || options.onEnd || null;
       onError = target.onError || options.onError || null;
+      isAutoPlay = Boolean(target.isAutoPlay ?? options.isAutoPlay);
     }
 
     let cleanText = (typeof rawText === 'string') ? rawText.trim() : '';
@@ -901,7 +924,7 @@ export class SpeechController {
         if (settled) return;
         settled = true;
         this._activeAudioSettle = null;
-        this._cleanup(!result.success);
+        this._cleanup(!result.success && !result.autoplayBlocked);
         if (promiseResolve) {
           promiseResolve(result);
           promiseResolve = null;
@@ -925,6 +948,8 @@ export class SpeechController {
         finish({ success: true, method: 'audio_file' });
       };
 
+      const isAutoplayBlocked = (err) => this._isAutoplayBlocked(err);
+
       let fallbackInitiated = false;
       const handleAudioError = (e) => {
         // Ignore AbortError when playback was intentionally stopped by pause()/cancel()
@@ -934,6 +959,26 @@ export class SpeechController {
           finish({ success: false, method: 'audio_file', message: 'Playback canceled' });
           return;
         }
+
+        // When autoplay is blocked by browser policy without user gesture:
+        if (isAutoPlay && isAutoplayBlocked(e)) {
+          this._lastDiagnostics.audioPlayResult = 'autoplay_blocked';
+          this._lastDiagnostics.audioErrorName = 'NotAllowedError';
+          this._lastDiagnostics.fallbackReason = 'Autoplay blocked by browser policy';
+          this._activeAudio = null;
+          this._activeAudioSettle = null;
+          if (typeof onError === 'function') {
+            try { onError(e); } catch (_) {}
+          }
+          finish({
+            success: false,
+            method: 'audio_file',
+            autoplayBlocked: true,
+            message: 'Autoplay blocked by browser policy'
+          });
+          return;
+        }
+
         if (fallbackInitiated) return;
         fallbackInitiated = true;
 
@@ -952,7 +997,8 @@ export class SpeechController {
           pitch,
           onEnd,
           onError,
-          reason: e?.message || 'Audio playback failed'
+          reason: e?.message || 'Audio playback failed',
+          isAutoPlay
         }).then(finish);
       };
 
@@ -1005,7 +1051,8 @@ export class SpeechController {
       pitch,
       onEnd,
       onError,
-      reason: hasValidAudio ? 'Audio constructor unavailable' : 'No audioUrl provided'
+      reason: hasValidAudio ? 'Audio constructor unavailable' : 'No audioUrl provided',
+      isAutoPlay
     });
   }
 
@@ -1015,7 +1062,7 @@ export class SpeechController {
    * when the browser enumerates voices, preventing silent fake playback on mobile/desktop.
    * @private
    */
-  _executeTier2OrTier3({ cleanText, button, lang, rate, pitch, onEnd, onError, reason }) {
+  _executeTier2OrTier3({ cleanText, button, lang, rate, pitch, onEnd, onError, reason, isAutoPlay = false }) {
     if (cleanText && isSpeechSynthesisAvailable()) {
       const synth = window.speechSynthesis;
       const initialVoices = this._getAvailableVoices();
@@ -1059,7 +1106,9 @@ export class SpeechController {
               onError,
               title: 'Thiếu giọng đọc tiếng Trung',
               toastMessage: 'Thiết bị hoặc trình duyệt chưa cài đặt gói giọng đọc tiếng Trung (zh-CN).',
-              message: 'Chinese voice unavailable'
+              message: 'Chinese voice unavailable',
+              suppressToast: isAutoPlay,
+              isAutoPlay
             }).then((res) => {
               if (promiseResolve) {
                 promiseResolve(res);
@@ -1077,6 +1126,7 @@ export class SpeechController {
             pitch,
             onEnd,
             onError,
+            isAutoPlay,
             promiseResolve: (res) => {
               if (promiseResolve) {
                 promiseResolve(res);
@@ -1098,7 +1148,9 @@ export class SpeechController {
           onError,
           title: 'Thiếu giọng đọc tiếng Trung',
           toastMessage: 'Thiết bị hoặc trình duyệt chưa cài đặt gói giọng đọc tiếng Trung (zh-CN).',
-          message: 'Chinese voice unavailable'
+          message: 'Chinese voice unavailable',
+          suppressToast: isAutoPlay,
+          isAutoPlay
         });
       }
 
@@ -1118,6 +1170,7 @@ export class SpeechController {
         pitch,
         onEnd,
         onError,
+        isAutoPlay,
         promiseResolve: (res) => {
           if (promiseResolve) {
             promiseResolve(res);
@@ -1132,7 +1185,8 @@ export class SpeechController {
           button,
           onError,
           message: 'Web Speech dispatch returned false',
-          suppressToast: true
+          suppressToast: true,
+          isAutoPlay
         });
       }
 
@@ -1142,14 +1196,14 @@ export class SpeechController {
     // TIER 3: Informative Toast Fallback (Never fail silently!)
     this._lastDiagnostics.method = 'ui_fallback';
     this._lastDiagnostics.fallbackReason = reason || 'speech_synthesis_unavailable';
-    return this._executeTier3ToastFallback({ button, onError, message: reason });
+    return this._executeTier3ToastFallback({ button, onError, message: reason, suppressToast: isAutoPlay, isAutoPlay });
   }
 
   /**
    * Internal helper to wire Tier 2 callbacks and invoke _speakUtterance.
    * @private
    */
-  _dispatchTier2Speech({ cleanText, button, lang, rate, pitch, onEnd, onError, promiseResolve }) {
+  _dispatchTier2Speech({ cleanText, button, lang, rate, pitch, onEnd, onError, promiseResolve, isAutoPlay = false }) {
     this._lastDiagnostics.method = 'web_speech';
     this._activeSpeechSettle = (result) => {
       promiseResolve(result);
@@ -1167,6 +1221,7 @@ export class SpeechController {
       this._activeSpeechSettle = null;
       const errType = e?.error || 'unknown';
       const isCanceled = (errType === 'canceled' || errType === 'interrupted');
+      const isAutoplayBlock = isAutoPlay && (errType === 'not-allowed' || this._isAutoplayBlocked(e));
 
       if (typeof onError === 'function') {
         try { onError(e); } catch (_) {}
@@ -1174,7 +1229,8 @@ export class SpeechController {
       promiseResolve({
         success: false,
         method: isCanceled ? 'web_speech' : 'ui_fallback',
-        message: isCanceled ? 'Speech canceled' : (e?.error || e?.message || 'Speech synthesis error')
+        autoplayBlocked: Boolean(isAutoplayBlock),
+        message: isCanceled ? 'Speech canceled' : (isAutoplayBlock ? 'Autoplay blocked by browser policy' : (e?.error || e?.message || 'Speech synthesis error'))
       });
     };
 
@@ -1192,6 +1248,7 @@ export class SpeechController {
       promiseResolve({
         success: false,
         method: 'ui_fallback',
+        autoplayBlocked: Boolean(isAutoPlay),
         message: 'Web Speech dispatch returned false'
       });
     }
@@ -1209,10 +1266,11 @@ export class SpeechController {
     title = 'Không thể phát âm thanh',
     toastMessage = 'Không tìm thấy file phát âm và thiết bị chưa hỗ trợ tổng hợp giọng nói tiếng Trung.',
     message = '',
-    suppressToast = false
+    suppressToast = false,
+    isAutoPlay = false
   }) {
     this._cleanup(true);
-    if (!suppressToast) {
+    if (!suppressToast && !isAutoPlay) {
       this._showThrottledToast(title, toastMessage, 'warning');
     }
     if (typeof onError === 'function') {
@@ -1221,6 +1279,7 @@ export class SpeechController {
     const res = {
       success: false,
       method: 'ui_fallback',
+      autoplayBlocked: Boolean(isAutoPlay),
       message: message || 'Audio and Web Speech both unavailable'
     };
     const prom = Promise.resolve(res);

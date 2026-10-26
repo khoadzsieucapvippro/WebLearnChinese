@@ -148,6 +148,25 @@
       - Khắc phục các rào cản trên trình duyệt di động (Android Chrome, iOS Safari):
         * Kích hoạt phát âm đồng bộ ngay trong user gesture (Transient User Activation), không dùng `await` trước lệnh phát.
         * Tự động chuyển đổi đường dẫn an toàn trên mọi môi trường qua `resolveSubpathAudioUrl()` (hỗ trợ subpath `/WebLearnChinese/` trên GitHub Pages và `/` trên local/custom domain).
+
+17. **[AUDIO-5] Chức năng Luyện nghe: Tự động phát âm thanh khi hiển thị thẻ (Listening Room Auto-Play Invariant)**:
+    - **Trạng thái**: `VERIFIED_FIXED`
+    - **Bằng chứng**:
+      - `frontend/js/pages/srs-review-page.js#L9878, #L9949-L9952, #L10098, #L10427-L10432, #L10714-L10718, #L10811-L10813, #L12132, #L13633-L13685, #L14770-L14810, #L14920`:
+        * Theo dõi định danh thẻ hiện tại qua `_autoPlayedListeningCardKey = `${this.currentIndex}_${card.itemType}_${card.itemId}``.
+        * Tự động phát âm thanh của thẻ tương ứng đúng 1 lần khi thẻ mới thực sự được hiển thị (`autoPlayListeningCard()`).
+        * Ngăn chặn hoàn toàn phát lặp khi re-render giao diện, cập nhật input, gõ Virtual IME, bấm "Kiểm tra" hoặc bộ đếm thời gian phản xạ (Reaction Timer).
+        * Bảo toàn nút loa nghe lại (`#btnListeningPlayAudio`) cho phép người học chủ động nghe lại bất cứ lúc nào mà không thay đổi đáp án, điểm số hay tiến độ học tập.
+        * Chống phát âm chồng lấn: Tự động hủy âm thanh cũ (`speechController.cancel()`) ngay khi chuyển thẻ (`renderCurrentCard`), chuyển chế độ (`switchMode`), thoát danh mục (`showCatalogSelection`), hoàn thành phiên (`showCompletedState`), hoặc rời trang (`onUnload`).
+      - `frontend/js/ui/speech.js#L324-L342, #L808, #L820, #L831, #L927, #L951-L979, #L1000, #L1054, #L1065, #L1190-L1233, #L1269-L1285`:
+        * Hỗ trợ cờ `isAutoPlay: true` và cơ chế nhận diện chặn phát tự động `_isAutoplayBlocked(err)` (`NotAllowedError`).
+        * Khi trình duyệt chặn autoplay do thiếu transient user activation, hệ thống không rơi vào cascade Tier 2 / Tier 3, không bắn Toast cảnh báo lỗi làm phiền người học, giải phóng nút loa ngay lập tức (`disabled: false`) và trả về `autoplayBlocked: true`.
+        * `SrsReviewController` hiển thị thông báo hướng dẫn trực quan tại `#listeningSpeakerHint`: *"Trình duyệt chặn tự động phát. Hãy bấm loa để nghe."* Khi người học bấm loa một lần, transient user activation được kích hoạt, các thẻ tiếp theo tự động phát bình thường.
+      - `frontend/srs-review.html#L551`: Gán ID định danh `#listeningSpeakerHint` cho nhãn hướng dẫn dưới nút loa luyện nghe.
+      - Kiểm thử xác minh:
+        * 8 bài unit test chuyên sâu trong `tests/frontend/unit/srs/srs-skill-listening.test.mjs` (Suite 7: Auto-Play Invariants).
+        * Bài unit test số 20 trong `tests/frontend/unit/srs/srs-audio-playback.test.mjs` (xác minh `isAutoPlay` và NotAllowedError unlock UI).
+        * Bài test trình duyệt thật `SL-07` trong `tests/frontend/e2e/srs-listening.browser.mjs` (xác minh Chromium thật gọi `play()` tự động khi chuyển từ Card 1 sang Card 2 và nút loa mở khóa nghe lại).
         * Cơ chế chống treo nút (Anti-lock Safety Timer): Nếu trình duyệt di động hoặc hệ điều hành nuốt sự kiện `ended`/`error` (hoặc do gạt nút im lặng phần cứng trên iOS), bộ định thời an toàn 5.000ms tự động giải phóng trạng thái `aria-busy` và class `.is-speaking`.
         * Cam kết Zero-Hang Promise: `playPronunciation()` luôn trả về Promise chắc chắn settle (resolve/catch), xử lý mượt mà khi `Audio` constructor throw hoặc `play()` promise không giải quyết.
       - Kiểm thử bao phủ: `tests/frontend/unit/srs/srs-audio-playback.test.mjs` (19 bài test), `tests/frontend/unit/srs/srs-audio-stress.test.mjs` (21 bài test: spam 10-20 click, đổi nút liên tục, lật thẻ đột ngột, chuyển thẻ 50 lần), `tests/frontend/unit/srs/srs-audio-adversarial.test.mjs` (kiểm chứng zero-hang), và `tests/frontend/e2e/srs-listening.browser.mjs` (`SL-06` phát âm thanh thật qua HTTP 200, playing event, currentTime > 0).
@@ -167,19 +186,21 @@
 ## 6. KẾT QUẢ KIỂM THỬ THỰC TẾ ĐÃ CHẠY
 
 1. `npm run verify:frontend:fast`:
-   - **Kết quả**: **PASS 949/949 tests** (228 suites, 0 failed, duration: 8.23s, wall time: 8.30s).
+   - **Kết quả**: **PASS 980/980 tests** (238 suites, 0 failed, duration: 11.78s, wall time: 11.84s).
 2. `node tests/e2e/runner.mjs --tier=all`:
-   - **Kết quả**: **PASS 74/74 tests** (Tiers 1–4, 0 failed, total wall time: 0.88s).
-     - Tier 1: 32 tests (263ms)
-     - Tier 2: 30 tests (237ms)
-     - Tier 3: 6 tests (192ms)
-     - Tier 4: 6 tests (189ms)
+   - **Kết quả**: **PASS 74/74 tests** (Tiers 1–4, 0 failed, total wall time: 0.81s).
+     - Tier 1: 32 tests (190ms)
+     - Tier 2: 30 tests (254ms)
+     - Tier 3: 6 tests (174ms)
+     - Tier 4: 6 tests (191ms)
 3. `python tests/verify-audio-assets-deep.py`:
    - **Kết quả**: **VERDICT: APPROVE** (1.282/1.282 tệp MP3 vật lý verified trên đĩa: 214 bộ thủ + 1.068 từ vựng, 13.73 MB, 100% tệp > 1.000B, valid sync header `0xFFFB`, 0 dead link trong `manifest.json`, 100% polyphone map & radical sanitization verified).
 4. `node --test tests/frontend/unit/srs/srs-audio-playback.test.mjs tests/frontend/unit/srs/srs-audio-stress.test.mjs tests/frontend/unit/srs/srs-audio-adversarial.test.mjs`:
-   - **Kết quả**: **PASS 40/40 tests** (7 suites, 0 failed, duration: 616.33ms).
-5. `node --test tests/frontend/e2e/srs-listening.browser.mjs`:
-   - **Kết quả**: **PASS 6/6 tests** (bao gồm `SL-06` tải và phát tệp âm thanh thật qua HTTP 200, sự kiện `playing`, `currentTime > 0`, tự mở khóa nút; duration: 7.19s).
+   - **Kết quả**: **PASS 41/41 tests** (7 suites, 0 failed; bao gồm Test 20 xác minh autoplay protection và không cascade/toast lỗi).
+5. `node --test tests/frontend/unit/srs/srs-skill-listening.test.mjs`:
+   - **Kết quả**: **PASS 29/29 tests** (7 suites, 0 failed; bao gồm 8 bài test Suite 7 xác minh toàn diện các bất biến auto-play trên Listening Room).
+6. `node --test tests/frontend/e2e/srs-listening.browser.mjs`:
+   - **Kết quả**: **PASS 7/7 tests** (bao gồm `SL-06` phát âm thanh WAV thật và `SL-07` tự động kích hoạt phát âm khi chuyển từ Card 1 sang Card 2 trong Chromium thật mà không cần bấm loa; duration: 9.04s).
 6. `node --test tests/frontend/e2e/lessons.browser.mjs`:
    - **Kết quả**: **PASS 12/12 tests** (bao gồm `LB10` responsive 375px và `LB12` kích hoạt modal luyện viết HanziWriter `.lesson-vocab-writing-btn`, mount canvas, đóng modal; duration: 9.05s).
 7. `node --test tests/frontend/e2e/vocabulary.browser.mjs`:
