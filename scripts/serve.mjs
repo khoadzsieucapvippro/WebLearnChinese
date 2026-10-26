@@ -2,6 +2,7 @@ import http from 'node:http';
 import https from 'node:https';
 import fs from 'node:fs';
 import path from 'node:path';
+import os from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { DEV_CSP_POLICY } from '../tests/frontend/utils/static-server.mjs';
 
@@ -230,8 +231,28 @@ function startServer() {
     }
   });
 
+  function getLanIp() {
+    try {
+      const ifaces = os.networkInterfaces();
+      for (const name of Object.keys(ifaces)) {
+        for (const net of ifaces[name] || []) {
+          if (net.family === 'IPv4' && !net.internal) {
+            return net.address;
+          }
+        }
+      }
+    } catch (_) {}
+    return '127.0.0.1';
+  }
+
   server.listen(PORT, '0.0.0.0', () => {
-    console.log(`Frontend server running at http://localhost:${PORT}`);
+    const lanIp = getLanIp();
+    console.log(`\n=============================================================`);
+    console.log(` WebLearnChinese Frontend Server Active`);
+    console.log(`   > Local:   http://localhost:${PORT}`);
+    console.log(`   > Mobile:  http://${lanIp}:${PORT} (Mở trên điện thoại cùng Wi-Fi)`);
+    console.log(`   > Review:  http://${lanIp}:${PORT}/srs-review.html?mode=listening`);
+    console.log(`=============================================================\n`);
   });
 }
 

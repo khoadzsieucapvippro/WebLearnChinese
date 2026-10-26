@@ -40,6 +40,8 @@ export class PinyinImeComponent {
 
     // Bound listeners for clean destruction
     this.handleInputKeydown = this.onInputKeydown.bind(this);
+    this.handleBeforeInput = this.onBeforeInput.bind(this);
+    this.handleInputEvent = this.onInputEvent.bind(this);
     this.handleCompositionStart = this.onCompositionStart.bind(this);
     this.handleCompositionUpdate = this.onCompositionUpdate.bind(this);
     this.handleCompositionEnd = this.onCompositionEnd.bind(this);
@@ -69,11 +71,13 @@ export class PinyinImeComponent {
   }
 
   /**
-   * Attaches physical keyboard & composition listeners to targetInput.
+   * Attaches physical keyboard, input, & composition listeners to targetInput.
    */
   attachInputListeners() {
     if (!this.targetInput) return;
     this.targetInput.addEventListener('keydown', this.handleInputKeydown);
+    this.targetInput.addEventListener('beforeinput', this.handleBeforeInput);
+    this.targetInput.addEventListener('input', this.handleInputEvent);
     this.targetInput.addEventListener('compositionstart', this.handleCompositionStart);
     this.targetInput.addEventListener('compositionupdate', this.handleCompositionUpdate);
     this.targetInput.addEventListener('compositionend', this.handleCompositionEnd);
@@ -85,9 +89,67 @@ export class PinyinImeComponent {
   detachInputListeners() {
     if (!this.targetInput) return;
     this.targetInput.removeEventListener('keydown', this.handleInputKeydown);
+    this.targetInput.removeEventListener('beforeinput', this.handleBeforeInput);
+    this.targetInput.removeEventListener('input', this.handleInputEvent);
     this.targetInput.removeEventListener('compositionstart', this.handleCompositionStart);
     this.targetInput.removeEventListener('compositionupdate', this.handleCompositionUpdate);
     this.targetInput.removeEventListener('compositionend', this.handleCompositionEnd);
+  }
+
+  /**
+   * Modern mobile/desktop beforeinput handler.
+   * @param {InputEvent} e
+   */
+  onBeforeInput(e) {
+    if (this.targetInput?.disabled) return;
+    // Let OS IME proceed without interference
+    if (this.isOsComposing || e?.isComposing) {
+      return;
+    }
+  }
+
+  /**
+   * Unified input event handler.
+   * Handles direct mobile OS keyboard entry, IME candidate selection, and Latin fallback.
+   * @param {InputEvent} e
+   */
+  onInputEvent(e) {
+    if (this.targetInput?.disabled) return;
+
+    // 1. If OS IME is actively composing (e.g. typing in Gboard / iOS Chinese IME),
+    // do not interfere with the native composition session
+    if (this.isOsComposing || e?.isComposing) {
+      return;
+    }
+
+    const val = this.targetInput?.value || '';
+
+    // 2. If the input contains Chinese characters, clear any leftover virtual composition buffer
+    // because user has successfully entered Hanzi via OS IME / handwriting / voice / paste
+    if (/[\u4E00-\u9FFF\u3400-\u4DBF\uF900-\uFAFF\u2E80-\u2EFF]/.test(val)) {
+      if (this.compositionBuffer.length > 0) {
+        this.clearBuffer();
+      }
+      if (typeof this.onCommit === 'function') {
+        this.onCommit(val);
+      }
+      return;
+    }
+
+    // 3. Mobile Latin fallback: When typing on mobile software keyboard without native Chinese IME
+    // (Android keyCode 229 or unintercepted a-z input), extract Latin characters and populate candidate strip
+    if (/^[a-zA-Z\s]+$/.test(val)) {
+      const clean = cleanPinyin(val);
+      if (clean !== this.compositionBuffer) {
+        this.compositionBuffer = clean;
+        this.currentPage = 0;
+        this.selectedIndex = 0;
+        this.refreshCandidates();
+      }
+    } else if (!val && this.compositionBuffer.length > 0) {
+      // Input was cleared externally
+      this.clearBuffer();
+    }
   }
 
   onCompositionStart() {
@@ -99,8 +161,12 @@ export class PinyinImeComponent {
     this.isOsComposing = true;
   }
 
-  onCompositionEnd() {
+  onCompositionEnd(e) {
     this.isOsComposing = false;
+    this.clearBuffer();
+    if (typeof this.onCommit === 'function' && e?.data) {
+      this.onCommit(e.data);
+    }
   }
 
   /**
@@ -187,9 +253,9 @@ export class PinyinImeComponent {
         return;
       }
     } else {
-      // 4. Buffer is empty: Enter triggers submission
+      // 4. Buffer is empty: Enter triggers submission ONLY when not composing with OS IME
       if (key === 'Enter') {
-        if (typeof this.onSubmit === 'function') {
+        if (!this.isOsComposing && !e.isComposing && e.keyCode !== 229 && typeof this.onSubmit === 'function') {
           e.preventDefault();
           this.onSubmit();
         }
@@ -294,17 +360,34 @@ export class PinyinImeComponent {
     if (!candidate || !this.targetInput || this.targetInput.disabled) return;
 
     const input = this.targetInput;
-    const start = input.selectionStart ?? input.value.length;
-    const end = input.selectionEnd ?? input.value.length;
+    const val = input.value;
 
-    const before = input.value.slice(0, start);
-    const after = input.value.slice(end);
+    // If input consists purely of Latin characters matching current composition buffer (mobile Latin fallback),
+    // replace the Latin buffer with the chosen Chinese candidate
+    if (this.compositionBuffer && /^[a-zA-Z\s]+$/.test(val)) {
+      input.value = candidate;
+      const newCursor = candidate.length;
+      if (typeof input.setSelectionRange === 'function') {
+        input.setSelectionRange(newCursor, newCursor);
+      }
+    } else {
+      const start = input.selectionStart ?? val.length;
+      const end = input.selectionEnd ?? val.length;
 
-    input.value = before + candidate + after;
+      let before = val.slice(0, start);
+      const after = val.slice(end);
 
-    const newCursor = start + candidate.length;
-    if (typeof input.setSelectionRange === 'function') {
-      input.setSelectionRange(newCursor, newCursor);
+      // If text directly preceding cursor ends with current composition buffer, strip the buffer
+      if (this.compositionBuffer && before.toLowerCase().endsWith(this.compositionBuffer.toLowerCase())) {
+        before = before.slice(0, before.length - this.compositionBuffer.length);
+      }
+
+      input.value = before + candidate + after;
+
+      const newCursor = before.length + candidate.length;
+      if (typeof input.setSelectionRange === 'function') {
+        input.setSelectionRange(newCursor, newCursor);
+      }
     }
 
     this.clearBuffer();
@@ -591,6 +674,7 @@ export class PinyinImeComponent {
       pageCandidates.forEach((candidate, idx) => {
         const itemBtn = document.createElement('button');
         itemBtn.type = 'button';
+        itemBtn.id = `pinyinCandidate-${idx}`;
         const isSelected = idx === this.selectedIndex;
         itemBtn.className = `btn btn-sm pinyin-candidate-item text-nowrap d-inline-flex align-items-center ${
           isSelected ? 'is-selected' : ''

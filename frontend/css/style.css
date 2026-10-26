@@ -4560,6 +4560,7 @@ a.lesson-vocab-hanzi:hover {
   height: 40px;
   min-height: 40px;
   max-width: 44px;
+  min-width: 0;
   flex: 1 1 0px;
   padding: 0;
   display: inline-flex;
@@ -4678,15 +4679,21 @@ a.lesson-vocab-hanzi:hover {
     border-radius: 10px;
   }
 
+  .pinyin-ime-wrapper {
+    padding: var(--space-2);
+  }
+
   .pinyin-key-row {
     gap: 3px;
     margin-bottom: 4px;
   }
 
   .pinyin-key {
-    height: 38px;
-    min-height: 38px;
-    font-size: 0.85rem;
+    height: 42px;
+    min-height: 42px;
+    min-width: 0;
+    font-size: 0.875rem;
+    touch-action: manipulation;
   }
 
   .pinyin-key-action {

@@ -3792,6 +3792,3379 @@ export function segmentPinyin(pinyin) {
   return backtrack(0) ? res : [clean];
 }
 
+
+// =============================================================================
+// CURRICULUM VOCABULARY & RADICAL ENRICHMENT ENGINE
+// Automatically ensures 100% of curriculum words and radicals can be typed
+// =============================================================================
+
+export const MISSING_SINGLE_CHARS = {
+  "zu": [
+    "租"
+  ],
+  "jiao": [
+    "饺",
+    "蕉"
+  ],
+  "yi": [
+    "椅",
+    "姨",
+    "议"
+  ],
+  "shi": [
+    "室",
+    "始",
+    "适"
+  ],
+  "shu": [
+    "舒",
+    "束"
+  ],
+  "ji": [
+    "激",
+    "绩",
+    "季"
+  ],
+  "ling": [
+    "凌"
+  ],
+  "fu": [
+    "附"
+  ],
+  "ju": [
+    "据"
+  ],
+  "ma": [
+    "码"
+  ],
+  "liang": [
+    "辆"
+  ],
+  "pi": [
+    "啤"
+  ],
+  "wei": [
+    "卫"
+  ],
+  "guan": [
+    "惯"
+  ],
+  "zao": [
+    "澡"
+  ],
+  "yin": [
+    "饮"
+  ],
+  "gu": [
+    "顾"
+  ],
+  "su": [
+    "玊"
+  ],
+  "yu": [
+    "玊"
+  ],
+  "lu": [
+    "卤"
+  ],
+  "min": [
+    "黾"
+  ]
+};
+export const RADICAL_VARIANTS = {
+  "ren": [
+    "亻"
+  ],
+  "dao": [
+    "刂"
+  ],
+  "xin": [
+    "忄"
+  ],
+  "shou": [
+    "扌"
+  ],
+  "shui": [
+    "氵"
+  ],
+  "huo": [
+    "灬"
+  ],
+  "quan": [
+    "犭"
+  ],
+  "shi": [
+    "礻"
+  ],
+  "zhu": [
+    "⺮"
+  ],
+  "mi": [
+    "糹",
+    "纟"
+  ],
+  "qiang": [
+    "丬"
+  ],
+  "niu": [
+    "牜"
+  ],
+  "pi": [
+    "匹"
+  ]
+};
+export const CURRICULUM_WORDS = {
+  "ai": [
+    "爱",
+    "矮"
+  ],
+  "aihao": [
+    "爱好"
+  ],
+  "ba": [
+    "八",
+    "吧",
+    "把"
+  ],
+  "baba": [
+    "爸爸"
+  ],
+  "bai": [
+    "白",
+    "百"
+  ],
+  "baitian": [
+    "白天"
+  ],
+  "ban": [
+    "班",
+    "半",
+    "搬",
+    "办"
+  ],
+  "bannian": [
+    "半年"
+  ],
+  "bantian": [
+    "半天"
+  ],
+  "bang": [
+    "帮"
+  ],
+  "bangmang": [
+    "帮忙"
+  ],
+  "bao": [
+    "包",
+    "饱",
+    "勹"
+  ],
+  "baozi": [
+    "包子"
+  ],
+  "bei": [
+    "杯",
+    "北",
+    "被",
+    "貝",
+    "贝"
+  ],
+  "beizi": [
+    "杯子"
+  ],
+  "beibian": [
+    "北边"
+  ],
+  "beijing": [
+    "北京"
+  ],
+  "ben": [
+    "本"
+  ],
+  "benzi": [
+    "本子"
+  ],
+  "bi": [
+    "比",
+    "笔",
+    "匕",
+    "鼻"
+  ],
+  "bie": [
+    "别"
+  ],
+  "biede": [
+    "别的"
+  ],
+  "bieren": [
+    "别人"
+  ],
+  "bing": [
+    "病",
+    "冰",
+    "冫"
+  ],
+  "bingren": [
+    "病人"
+  ],
+  "buda": [
+    "不大"
+  ],
+  "budui": [
+    "不对"
+  ],
+  "bukeqi": [
+    "不客气"
+  ],
+  "buyong": [
+    "不用"
+  ],
+  "bu": [
+    "不",
+    "卜"
+  ],
+  "cai": [
+    "菜",
+    "才"
+  ],
+  "cha": [
+    "茶",
+    "差",
+    "查"
+  ],
+  "chang": [
+    "常",
+    "唱",
+    "长",
+    "尝",
+    "長",
+    "镸",
+    "鬯"
+  ],
+  "changchang": [
+    "常常"
+  ],
+  "changge": [
+    "唱歌"
+  ],
+  "che": [
+    "车",
+    "屮",
+    "車"
+  ],
+  "chepiao": [
+    "车票"
+  ],
+  "cheshang": [
+    "车上"
+  ],
+  "chezhan": [
+    "车站"
+  ],
+  "chi": [
+    "吃",
+    "彳",
+    "赤",
+    "齒",
+    "歯",
+    "齿"
+  ],
+  "chifan": [
+    "吃饭"
+  ],
+  "chu": [
+    "出"
+  ],
+  "chulai": [
+    "出来"
+  ],
+  "chuqu": [
+    "出去"
+  ],
+  "chuan": [
+    "穿",
+    "船",
+    "巛",
+    "舛"
+  ],
+  "chuang": [
+    "床"
+  ],
+  "ci": [
+    "次",
+    "词"
+  ],
+  "cong": [
+    "从"
+  ],
+  "cuo": [
+    "错"
+  ],
+  "da": [
+    "打",
+    "大"
+  ],
+  "dache": [
+    "打车"
+  ],
+  "dadianhua": [
+    "打电话"
+  ],
+  "dakai": [
+    "打开"
+  ],
+  "daqiu": [
+    "打球"
+  ],
+  "daxue": [
+    "大学"
+  ],
+  "daxuesheng": [
+    "大学生"
+  ],
+  "dao": [
+    "到",
+    "刀",
+    "刂"
+  ],
+  "dedao": [
+    "得到"
+  ],
+  "de": [
+    "地",
+    "的",
+    "得"
+  ],
+  "deng": [
+    "等",
+    "灯"
+  ],
+  "di": [
+    "地",
+    "第"
+  ],
+  "didian": [
+    "地点"
+  ],
+  "difang": [
+    "地方"
+  ],
+  "dishang": [
+    "地上"
+  ],
+  "ditu": [
+    "地图"
+  ],
+  "didi": [
+    "弟弟"
+  ],
+  "dian": [
+    "点",
+    "电",
+    "店"
+  ],
+  "dianhua": [
+    "电话"
+  ],
+  "diannao": [
+    "电脑"
+  ],
+  "dianshi": [
+    "电视"
+  ],
+  "dianshiji": [
+    "电视机"
+  ],
+  "dianying": [
+    "电影"
+  ],
+  "dianyingyuan": [
+    "电影院"
+  ],
+  "dong": [
+    "东",
+    "动",
+    "懂"
+  ],
+  "dongbian": [
+    "东边"
+  ],
+  "dongxi": [
+    "东西"
+  ],
+  "dongzuo": [
+    "动作"
+  ],
+  "dou": [
+    "都",
+    "斗",
+    "豆",
+    "鬥"
+  ],
+  "du": [
+    "读"
+  ],
+  "dushu": [
+    "读书"
+  ],
+  "dui": [
+    "对"
+  ],
+  "duibuqi": [
+    "对不起"
+  ],
+  "duo": [
+    "多"
+  ],
+  "duoshao": [
+    "多少"
+  ],
+  "e": [
+    "饿"
+  ],
+  "erzi": [
+    "儿子"
+  ],
+  "er": [
+    "二",
+    "儿",
+    "而",
+    "耳"
+  ],
+  "fan": [
+    "饭"
+  ],
+  "fandian": [
+    "饭店"
+  ],
+  "fangjian": [
+    "房间"
+  ],
+  "fangzi": [
+    "房子"
+  ],
+  "fang": [
+    "放",
+    "匚",
+    "方"
+  ],
+  "fangjia": [
+    "放假"
+  ],
+  "fangxue": [
+    "放学"
+  ],
+  "fei": [
+    "飞",
+    "非",
+    "飛"
+  ],
+  "feiji": [
+    "飞机"
+  ],
+  "feichang": [
+    "非常"
+  ],
+  "fen": [
+    "分"
+  ],
+  "feng": [
+    "风",
+    "封",
+    "風",
+    "凬"
+  ],
+  "gan": [
+    "干",
+    "甘"
+  ],
+  "ganjing": [
+    "干净"
+  ],
+  "gao": [
+    "高"
+  ],
+  "gaoxing": [
+    "高兴"
+  ],
+  "gaosu": [
+    "告诉"
+  ],
+  "gege": [
+    "哥哥"
+  ],
+  "ge": [
+    "歌",
+    "个",
+    "戈",
+    "革"
+  ],
+  "gei": [
+    "给"
+  ],
+  "gen": [
+    "跟",
+    "艮"
+  ],
+  "gongren": [
+    "工人"
+  ],
+  "gongzuo": [
+    "工作"
+  ],
+  "guan": [
+    "关"
+  ],
+  "guanshang": [
+    "关上"
+  ],
+  "gui": [
+    "贵",
+    "鬼",
+    "龜",
+    "亀",
+    "龟"
+  ],
+  "guo": [
+    "国",
+    "过"
+  ],
+  "guojia": [
+    "国家"
+  ],
+  "guowai": [
+    "国外"
+  ],
+  "hai": [
+    "还",
+    "海"
+  ],
+  "haishi": [
+    "还是"
+  ],
+  "haiyou": [
+    "还有"
+  ],
+  "haizi": [
+    "孩子"
+  ],
+  "hanyu": [
+    "汉语"
+  ],
+  "hanzi": [
+    "汉字"
+  ],
+  "hao": [
+    "好",
+    "号"
+  ],
+  "haochi": [
+    "好吃"
+  ],
+  "haokan": [
+    "好看"
+  ],
+  "haoting": [
+    "好听"
+  ],
+  "haowanr": [
+    "好玩儿"
+  ],
+  "he": [
+    "喝",
+    "和",
+    "河",
+    "禾"
+  ],
+  "hen": [
+    "很"
+  ],
+  "hou": [
+    "后"
+  ],
+  "houbian": [
+    "后边"
+  ],
+  "houtian": [
+    "后天"
+  ],
+  "hua": [
+    "花",
+    "话",
+    "画"
+  ],
+  "huai": [
+    "坏"
+  ],
+  "huan": [
+    "还",
+    "换"
+  ],
+  "hui": [
+    "回",
+    "会"
+  ],
+  "huida": [
+    "回答"
+  ],
+  "huidao": [
+    "回到"
+  ],
+  "huijia": [
+    "回家"
+  ],
+  "huilai": [
+    "回来"
+  ],
+  "huiqu": [
+    "回去"
+  ],
+  "huoche": [
+    "火车"
+  ],
+  "jichang": [
+    "机场"
+  ],
+  "jipiao": [
+    "机票"
+  ],
+  "jidan": [
+    "鸡蛋"
+  ],
+  "ji": [
+    "几",
+    "记",
+    "鸡",
+    "极",
+    "急",
+    "季",
+    "己",
+    "彐"
+  ],
+  "jide": [
+    "记得"
+  ],
+  "jizhu": [
+    "记住"
+  ],
+  "jia": [
+    "家",
+    "加"
+  ],
+  "jiali": [
+    "家里"
+  ],
+  "jiaren": [
+    "家人"
+  ],
+  "jian": [
+    "间",
+    "见",
+    "件",
+    "見"
+  ],
+  "jianmian": [
+    "见面"
+  ],
+  "jiao": [
+    "教",
+    "叫",
+    "角",
+    "脚"
+  ],
+  "jiaoxuelou": [
+    "教学楼"
+  ],
+  "jiejie": [
+    "姐姐"
+  ],
+  "jieshao": [
+    "介绍"
+  ],
+  "jinnian": [
+    "今年"
+  ],
+  "jintian": [
+    "今天"
+  ],
+  "jin": [
+    "进",
+    "近",
+    "斤",
+    "巾",
+    "金",
+    "釒",
+    "钅"
+  ],
+  "jinlai": [
+    "进来"
+  ],
+  "jinqu": [
+    "进去"
+  ],
+  "jiu": [
+    "九",
+    "就",
+    "久",
+    "酒",
+    "旧",
+    "臼",
+    "韭"
+  ],
+  "juede": [
+    "觉得"
+  ],
+  "kai": [
+    "开"
+  ],
+  "kaiche": [
+    "开车"
+  ],
+  "kaihui": [
+    "开会"
+  ],
+  "kaiwanxiao": [
+    "开玩笑"
+  ],
+  "kan": [
+    "看",
+    "凵"
+  ],
+  "kanbing": [
+    "看病"
+  ],
+  "kandao": [
+    "看到"
+  ],
+  "kanjian": [
+    "看见"
+  ],
+  "kao": [
+    "考"
+  ],
+  "kaoshi": [
+    "考试"
+  ],
+  "ke": [
+    "渴",
+    "课",
+    "可",
+    "刻"
+  ],
+  "keben": [
+    "课本"
+  ],
+  "kewen": [
+    "课文"
+  ],
+  "kou": [
+    "口"
+  ],
+  "kuai": [
+    "块",
+    "快"
+  ],
+  "lai": [
+    "来"
+  ],
+  "laidao": [
+    "来到"
+  ],
+  "lao": [
+    "老"
+  ],
+  "laoren": [
+    "老人"
+  ],
+  "laoshi": [
+    "老师"
+  ],
+  "le": [
+    "了"
+  ],
+  "lei": [
+    "累",
+    "耒"
+  ],
+  "leng": [
+    "冷"
+  ],
+  "li": [
+    "里",
+    "离",
+    "力",
+    "立",
+    "隶",
+    "鬲"
+  ],
+  "libian": [
+    "里边"
+  ],
+  "liang": [
+    "两",
+    "辆"
+  ],
+  "ling": [
+    "零"
+  ],
+  "liu": [
+    "六"
+  ],
+  "lou": [
+    "楼"
+  ],
+  "loushang": [
+    "楼上"
+  ],
+  "louxia": [
+    "楼下"
+  ],
+  "lu": [
+    "路",
+    "鹵",
+    "卤",
+    "鹿"
+  ],
+  "lukou": [
+    "路口"
+  ],
+  "lushang": [
+    "路上"
+  ],
+  "mama": [
+    "妈妈"
+  ],
+  "malu": [
+    "马路"
+  ],
+  "mashang": [
+    "马上"
+  ],
+  "ma": [
+    "吗",
+    "马",
+    "馬",
+    "麻"
+  ],
+  "mai": [
+    "买",
+    "卖",
+    "麥",
+    "麦"
+  ],
+  "man": [
+    "慢"
+  ],
+  "mang": [
+    "忙"
+  ],
+  "mao": [
+    "毛",
+    "猫",
+    "矛"
+  ],
+  "mei": [
+    "没",
+    "每"
+  ],
+  "meiguanxi": [
+    "没关系"
+  ],
+  "meishenme": [
+    "没什么"
+  ],
+  "meishir": [
+    "没事儿"
+  ],
+  "meiyou": [
+    "没有"
+  ],
+  "meimei": [
+    "妹妹"
+  ],
+  "men": [
+    "门",
+    "们",
+    "門"
+  ],
+  "menkou": [
+    "门口"
+  ],
+  "menpiao": [
+    "门票"
+  ],
+  "mifan": [
+    "米饭"
+  ],
+  "mianbao": [
+    "面包"
+  ],
+  "miantiaor": [
+    "面条儿"
+  ],
+  "mingzi": [
+    "名字"
+  ],
+  "mingbai": [
+    "明白"
+  ],
+  "mingnian": [
+    "明年"
+  ],
+  "mingtian": [
+    "明天"
+  ],
+  "na": [
+    "拿",
+    "哪",
+    "那"
+  ],
+  "nabian": [
+    "那边"
+  ],
+  "nali": [
+    "那里",
+    "哪里"
+  ],
+  "nar": [
+    "那儿",
+    "哪儿"
+  ],
+  "naxie": [
+    "那些",
+    "哪些"
+  ],
+  "nai": [
+    "奶"
+  ],
+  "nainai": [
+    "奶奶"
+  ],
+  "nan": [
+    "男",
+    "南",
+    "难"
+  ],
+  "nanhair": [
+    "男孩儿"
+  ],
+  "nanpengyou": [
+    "男朋友"
+  ],
+  "nanren": [
+    "男人"
+  ],
+  "nansheng": [
+    "男生"
+  ],
+  "nanbian": [
+    "南边"
+  ],
+  "ne": [
+    "呢",
+    "疒"
+  ],
+  "neng": [
+    "能"
+  ],
+  "ni": [
+    "你"
+  ],
+  "nimen": [
+    "你们"
+  ],
+  "nian": [
+    "年"
+  ],
+  "nin": [
+    "您"
+  ],
+  "niunai": [
+    "牛奶"
+  ],
+  "nv": [
+    "女"
+  ],
+  "nver": [
+    "女儿"
+  ],
+  "nvhair": [
+    "女孩儿"
+  ],
+  "nvpengyou": [
+    "女朋友"
+  ],
+  "nvren": [
+    "女人"
+  ],
+  "nvsheng": [
+    "女生"
+  ],
+  "pangbian": [
+    "旁边"
+  ],
+  "pao": [
+    "跑"
+  ],
+  "pengyou": [
+    "朋友"
+  ],
+  "piao": [
+    "票"
+  ],
+  "qi": [
+    "七",
+    "起",
+    "骑",
+    "气",
+    "齊",
+    "斉",
+    "齐"
+  ],
+  "qichuang": [
+    "起床"
+  ],
+  "qilai": [
+    "起来"
+  ],
+  "qiche": [
+    "汽车"
+  ],
+  "qian": [
+    "前",
+    "钱",
+    "千",
+    "欠"
+  ],
+  "qianbian": [
+    "前边"
+  ],
+  "qiantian": [
+    "前天"
+  ],
+  "qianbao": [
+    "钱包"
+  ],
+  "qing": [
+    "请",
+    "晴",
+    "青",
+    "靑"
+  ],
+  "qingjia": [
+    "请假"
+  ],
+  "qingjin": [
+    "请进"
+  ],
+  "qingzuo": [
+    "请坐"
+  ],
+  "qiu": [
+    "球"
+  ],
+  "qu": [
+    "去"
+  ],
+  "qunian": [
+    "去年"
+  ],
+  "re": [
+    "热"
+  ],
+  "ren": [
+    "人",
+    "亻"
+  ],
+  "renshi": [
+    "认识"
+  ],
+  "renzhen": [
+    "认真"
+  ],
+  "ri": [
+    "日"
+  ],
+  "riqi": [
+    "日期"
+  ],
+  "rou": [
+    "肉",
+    "禸"
+  ],
+  "san": [
+    "三",
+    "伞"
+  ],
+  "shan": [
+    "山",
+    "彡"
+  ],
+  "shangchang": [
+    "商场"
+  ],
+  "shangdian": [
+    "商店"
+  ],
+  "shang": [
+    "上"
+  ],
+  "shangban": [
+    "上班"
+  ],
+  "shangbian": [
+    "上边"
+  ],
+  "shangche": [
+    "上车"
+  ],
+  "shangci": [
+    "上次"
+  ],
+  "shangke": [
+    "上课"
+  ],
+  "shangwang": [
+    "上网"
+  ],
+  "shangwu": [
+    "上午"
+  ],
+  "shangxue": [
+    "上学"
+  ],
+  "shao": [
+    "少"
+  ],
+  "sheishui": [
+    "谁"
+  ],
+  "shenshang": [
+    "身上"
+  ],
+  "shenti": [
+    "身体"
+  ],
+  "shengbing": [
+    "生病"
+  ],
+  "shengqi": [
+    "生气"
+  ],
+  "shengri": [
+    "生日"
+  ],
+  "shi": [
+    "十",
+    "事",
+    "试",
+    "是",
+    "时",
+    "市",
+    "室",
+    "士",
+    "尸",
+    "氏",
+    "矢",
+    "石",
+    "示",
+    "礻",
+    "豕",
+    "食",
+    "飠",
+    "饣"
+  ],
+  "shihou": [
+    "时候"
+  ],
+  "shijian": [
+    "时间"
+  ],
+  "shibushi": [
+    "是不是"
+  ],
+  "shou": [
+    "手",
+    "收",
+    "受",
+    "瘦",
+    "扌",
+    "首"
+  ],
+  "shouji": [
+    "手机"
+  ],
+  "shu": [
+    "书",
+    "树",
+    "殳",
+    "黍",
+    "鼠"
+  ],
+  "shubao": [
+    "书包"
+  ],
+  "shudian": [
+    "书店"
+  ],
+  "shui": [
+    "水",
+    "睡",
+    "氵"
+  ],
+  "shuiguo": [
+    "水果"
+  ],
+  "shuijiao": [
+    "睡觉"
+  ],
+  "shuo": [
+    "说"
+  ],
+  "shuohua": [
+    "说话"
+  ],
+  "si": [
+    "四",
+    "厶"
+  ],
+  "song": [
+    "送"
+  ],
+  "sui": [
+    "岁",
+    "夊"
+  ],
+  "ta": [
+    "他",
+    "她",
+    "它"
+  ],
+  "tamen": [
+    "他们",
+    "她们",
+    "它们"
+  ],
+  "tai": [
+    "太"
+  ],
+  "tian": [
+    "天",
+    "甜",
+    "田"
+  ],
+  "tianqi": [
+    "天气"
+  ],
+  "ting": [
+    "听",
+    "挺"
+  ],
+  "tingdao": [
+    "听到"
+  ],
+  "tingjian": [
+    "听见"
+  ],
+  "tingxie": [
+    "听写"
+  ],
+  "tongxue": [
+    "同学"
+  ],
+  "tushuguan": [
+    "图书馆"
+  ],
+  "wai": [
+    "外"
+  ],
+  "waibian": [
+    "外边"
+  ],
+  "waiguo": [
+    "外国"
+  ],
+  "waiyu": [
+    "外语"
+  ],
+  "wanr": [
+    "玩儿"
+  ],
+  "wan": [
+    "晚",
+    "玩",
+    "完",
+    "万",
+    "碗"
+  ],
+  "wanfan": [
+    "晚饭"
+  ],
+  "wanshang": [
+    "晚上"
+  ],
+  "wangshang": [
+    "网上"
+  ],
+  "wangyou": [
+    "网友"
+  ],
+  "wang": [
+    "忘",
+    "往",
+    "尢",
+    "网",
+    "罒",
+    "罓"
+  ],
+  "wangji": [
+    "忘记"
+  ],
+  "wen": [
+    "问",
+    "文"
+  ],
+  "wo": [
+    "我"
+  ],
+  "women": [
+    "我们"
+  ],
+  "wu": [
+    "五",
+    "无",
+    "毋"
+  ],
+  "wufan": [
+    "午饭"
+  ],
+  "xi": [
+    "西",
+    "洗",
+    "夕"
+  ],
+  "xibian": [
+    "西边"
+  ],
+  "xishoujian": [
+    "洗手间"
+  ],
+  "xihuan": [
+    "喜欢"
+  ],
+  "xia": [
+    "下"
+  ],
+  "xiaban": [
+    "下班"
+  ],
+  "xiabian": [
+    "下边"
+  ],
+  "xiache": [
+    "下车"
+  ],
+  "xiaci": [
+    "下次"
+  ],
+  "xiake": [
+    "下课"
+  ],
+  "xiawu": [
+    "下午"
+  ],
+  "xiayu": [
+    "下雨"
+  ],
+  "xian": [
+    "先"
+  ],
+  "xiansheng": [
+    "先生"
+  ],
+  "xianzai": [
+    "现在"
+  ],
+  "xiang": [
+    "想",
+    "向",
+    "像",
+    "香"
+  ],
+  "xiao": [
+    "小",
+    "笑"
+  ],
+  "xiaohair": [
+    "小孩儿"
+  ],
+  "xiaojie": [
+    "小姐"
+  ],
+  "xiaopengyou": [
+    "小朋友"
+  ],
+  "xiaoshi": [
+    "小时"
+  ],
+  "xiaoxue": [
+    "小学"
+  ],
+  "xiaoxuesheng": [
+    "小学生"
+  ],
+  "xie": [
+    "写",
+    "些",
+    "鞋"
+  ],
+  "xiexie": [
+    "谢谢"
+  ],
+  "xin": [
+    "新",
+    "信",
+    "心",
+    "忄",
+    "辛"
+  ],
+  "xinnian": [
+    "新年"
+  ],
+  "xingqi": [
+    "星期"
+  ],
+  "xingqiri": [
+    "星期日"
+  ],
+  "xingqitian": [
+    "星期天"
+  ],
+  "xing": [
+    "行",
+    "姓"
+  ],
+  "xiuxi": [
+    "休息"
+  ],
+  "xue": [
+    "学",
+    "雪",
+    "穴",
+    "血"
+  ],
+  "xuesheng": [
+    "学生"
+  ],
+  "xuexi": [
+    "学习"
+  ],
+  "xuexiao": [
+    "学校"
+  ],
+  "xueyuan": [
+    "学院"
+  ],
+  "yao": [
+    "要",
+    "药",
+    "幺",
+    "爻"
+  ],
+  "yeye": [
+    "爷爷"
+  ],
+  "ye": [
+    "也",
+    "页",
+    "頁"
+  ],
+  "yi": [
+    "一",
+    "乙",
+    "弋",
+    "衣",
+    "衤",
+    "邑",
+    "阝"
+  ],
+  "yifu": [
+    "衣服"
+  ],
+  "yisheng": [
+    "医生"
+  ],
+  "yiyuan": [
+    "医院"
+  ],
+  "yiban": [
+    "一半",
+    "一般"
+  ],
+  "yihuir": [
+    "一会儿"
+  ],
+  "yikuair": [
+    "一块儿"
+  ],
+  "yixiar": [
+    "一下儿"
+  ],
+  "yiyang": [
+    "一样"
+  ],
+  "yibian": [
+    "一边"
+  ],
+  "yidianr": [
+    "一点儿"
+  ],
+  "yiqi": [
+    "一起"
+  ],
+  "yixie": [
+    "一些"
+  ],
+  "yong": [
+    "用"
+  ],
+  "you": [
+    "有",
+    "右",
+    "游",
+    "又",
+    "酉"
+  ],
+  "youde": [
+    "有的"
+  ],
+  "youming": [
+    "有名"
+  ],
+  "youshihou": [
+    "有时候"
+  ],
+  "youxie": [
+    "有些"
+  ],
+  "youyong": [
+    "有用",
+    "游泳"
+  ],
+  "youbian": [
+    "右边"
+  ],
+  "yu": [
+    "雨",
+    "鱼",
+    "玉",
+    "王",
+    "玊",
+    "羽",
+    "聿",
+    "魚"
+  ],
+  "yuan": [
+    "元",
+    "远",
+    "园",
+    "员"
+  ],
+  "yue": [
+    "月",
+    "越",
+    "曰",
+    "龠"
+  ],
+  "zai": [
+    "再",
+    "在"
+  ],
+  "zaijian": [
+    "再见"
+  ],
+  "zaijia": [
+    "在家"
+  ],
+  "zao": [
+    "早"
+  ],
+  "zaofan": [
+    "早饭"
+  ],
+  "zaoshang": [
+    "早上"
+  ],
+  "zhan": [
+    "站"
+  ],
+  "zhao": [
+    "找",
+    "照",
+    "爪"
+  ],
+  "zhaodao": [
+    "找到"
+  ],
+  "zhe": [
+    "这",
+    "着"
+  ],
+  "zhebian": [
+    "这边"
+  ],
+  "zheli": [
+    "这里"
+  ],
+  "zher": [
+    "这儿"
+  ],
+  "zhexie": [
+    "这些"
+  ],
+  "zhen": [
+    "真"
+  ],
+  "zhende": [
+    "真的"
+  ],
+  "zheng": [
+    "正"
+  ],
+  "zhengzai": [
+    "正在"
+  ],
+  "zhidao": [
+    "知道",
+    "直到"
+  ],
+  "zhishi": [
+    "知识",
+    "只是"
+  ],
+  "zhong": [
+    "中",
+    "重",
+    "种"
+  ],
+  "zhongguo": [
+    "中国"
+  ],
+  "zhongjian": [
+    "中间"
+  ],
+  "zhongwen": [
+    "中文"
+  ],
+  "zhongwu": [
+    "中午"
+  ],
+  "zhongxue": [
+    "中学"
+  ],
+  "zhongxuesheng": [
+    "中学生"
+  ],
+  "zhongyao": [
+    "重要"
+  ],
+  "zhu": [
+    "住",
+    "丶",
+    "竹",
+    "⺮"
+  ],
+  "zhunbei": [
+    "准备"
+  ],
+  "zhuozi": [
+    "桌子"
+  ],
+  "zi": [
+    "字",
+    "子",
+    "自"
+  ],
+  "zou": [
+    "走"
+  ],
+  "zoulu": [
+    "走路"
+  ],
+  "zui": [
+    "最",
+    "嘴"
+  ],
+  "zuihao": [
+    "最好"
+  ],
+  "zuihou": [
+    "最后"
+  ],
+  "zuotian": [
+    "昨天"
+  ],
+  "zuo": [
+    "左",
+    "坐",
+    "做"
+  ],
+  "zuobian": [
+    "左边"
+  ],
+  "zuoxia": [
+    "坐下"
+  ],
+  "ganshenme": [
+    "干什么"
+  ],
+  "qingwen": [
+    "请问"
+  ],
+  "shenme": [
+    "什么"
+  ],
+  "zenme": [
+    "怎么"
+  ],
+  "bian": [
+    "边",
+    "变",
+    "遍",
+    "釆"
+  ],
+  "buyao": [
+    "不要"
+  ],
+  "chaoshi": [
+    "超市"
+  ],
+  "chuzuche": [
+    "出租车"
+  ],
+  "dajia": [
+    "大家"
+  ],
+  "fenzhong": [
+    "分钟"
+  ],
+  "gongsi": [
+    "公司"
+  ],
+  "gou": [
+    "狗"
+  ],
+  "jiaozi": [
+    "饺子"
+  ],
+  "keyi": [
+    "可以"
+  ],
+  "meishi": [
+    "没事"
+  ],
+  "nage": [
+    "哪个",
+    "那个"
+  ],
+  "nihao": [
+    "你好"
+  ],
+  "nvshi": [
+    "女士"
+  ],
+  "pianyi": [
+    "便宜"
+  ],
+  "piaoliang": [
+    "漂亮"
+  ],
+  "pingguo": [
+    "苹果"
+  ],
+  "wei": [
+    "喂",
+    "位",
+    "为",
+    "囗",
+    "韋",
+    "韦"
+  ],
+  "wenti": [
+    "问题"
+  ],
+  "yixia": [
+    "一下",
+    "以下"
+  ],
+  "yizi": [
+    "椅子"
+  ],
+  "youdianr": [
+    "有点儿"
+  ],
+  "zenmeyang": [
+    "怎么样"
+  ],
+  "zhege": [
+    "这个"
+  ],
+  "zhi": [
+    "只",
+    "纸",
+    "夂",
+    "支",
+    "止",
+    "至",
+    "豸",
+    "黹"
+  ],
+  "zuofan": [
+    "做饭"
+  ],
+  "a": [
+    "啊"
+  ],
+  "baise": [
+    "白色"
+  ],
+  "bucuo": [
+    "不错"
+  ],
+  "buhaoyisi": [
+    "不好意思"
+  ],
+  "chuguo": [
+    "出国"
+  ],
+  "chumen": [
+    "出门"
+  ],
+  "congxiao": [
+    "从小"
+  ],
+  "dan": [
+    "但"
+  ],
+  "danshi": [
+    "但是"
+  ],
+  "ditie": [
+    "地铁"
+  ],
+  "fanguan": [
+    "饭馆"
+  ],
+  "gaozhong": [
+    "高中"
+  ],
+  "gezi": [
+    "个子"
+  ],
+  "gongjiaoche": [
+    "公交车"
+  ],
+  "guolai": [
+    "过来"
+  ],
+  "guonian": [
+    "过年"
+  ],
+  "guoqu": [
+    "过去"
+  ],
+  "heise": [
+    "黑色"
+  ],
+  "hongcha": [
+    "红茶"
+  ],
+  "hongse": [
+    "红色"
+  ],
+  "houmian": [
+    "后面"
+  ],
+  "jiaoshi": [
+    "教室"
+  ],
+  "jingchang": [
+    "经常"
+  ],
+  "jiudian": [
+    "酒店"
+  ],
+  "kafei": [
+    "咖啡"
+  ],
+  "kaishi": [
+    "开始"
+  ],
+  "kaixue": [
+    "开学"
+  ],
+  "keneng": [
+    "可能"
+  ],
+  "kuzi": [
+    "裤子"
+  ],
+  "kuaile": [
+    "快乐"
+  ],
+  "kuaiyao": [
+    "快要"
+  ],
+  "lanqiu": [
+    "篮球"
+  ],
+  "limian": [
+    "里面"
+  ],
+  "lvyou": [
+    "旅游"
+  ],
+  "lvcha": [
+    "绿茶"
+  ],
+  "lvse": [
+    "绿色"
+  ],
+  "meiyisi": [
+    "没意思"
+  ],
+  "mian": [
+    "面",
+    "宀",
+    "靣"
+  ],
+  "ming": [
+    "名"
+  ],
+  "name": [
+    "那么"
+  ],
+  "nayang": [
+    "那样"
+  ],
+  "naicha": [
+    "奶茶"
+  ],
+  "niao": [
+    "鸟",
+    "鳥"
+  ],
+  "paobu": [
+    "跑步"
+  ],
+  "qizi": [
+    "妻子"
+  ],
+  "qianmian": [
+    "前面"
+  ],
+  "rang": [
+    "让"
+  ],
+  "shanglai": [
+    "上来"
+  ],
+  "shangmian": [
+    "上面"
+  ],
+  "shangqu": [
+    "上去"
+  ],
+  "shiqing": [
+    "事情"
+  ],
+  "shoubiao": [
+    "手表"
+  ],
+  "shufu": [
+    "舒服"
+  ],
+  "suiran": [
+    "虽然"
+  ],
+  "suoyi": [
+    "所以"
+  ],
+  "teng": [
+    "疼"
+  ],
+  "ti": [
+    "踢",
+    "题"
+  ],
+  "tiao": [
+    "条",
+    "跳"
+  ],
+  "tiaowu": [
+    "跳舞"
+  ],
+  "tou": [
+    "头",
+    "亠"
+  ],
+  "waimian": [
+    "外面"
+  ],
+  "weishenme": [
+    "为什么"
+  ],
+  "xiwang": [
+    "希望"
+  ],
+  "xialai": [
+    "下来"
+  ],
+  "xiamian": [
+    "下面"
+  ],
+  "xiaqu": [
+    "下去"
+  ],
+  "xiaoshihou": [
+    "小时候"
+  ],
+  "xingming": [
+    "姓名"
+  ],
+  "yanse": [
+    "颜色"
+  ],
+  "yanjing": [
+    "眼睛"
+  ],
+  "yaodian": [
+    "药店"
+  ],
+  "yijing": [
+    "已经"
+  ],
+  "yisi": [
+    "意思"
+  ],
+  "yin": [
+    "阴",
+    "廴",
+    "音"
+  ],
+  "yinwei": [
+    "因为"
+  ],
+  "youyisi": [
+    "有意思"
+  ],
+  "youshi": [
+    "有时"
+  ],
+  "yundong": [
+    "运动"
+  ],
+  "zhangfu": [
+    "丈夫"
+  ],
+  "zheme": [
+    "这么"
+  ],
+  "zheyang": [
+    "这样"
+  ],
+  "zhou": [
+    "周",
+    "舟"
+  ],
+  "ziji": [
+    "自己"
+  ],
+  "zuqiu": [
+    "足球"
+  ],
+  "ayi": [
+    "阿姨"
+  ],
+  "airen": [
+    "爱人"
+  ],
+  "anjing": [
+    "安静"
+  ],
+  "anquan": [
+    "安全"
+  ],
+  "banji": [
+    "班级"
+  ],
+  "banjia": [
+    "搬家"
+  ],
+  "banfa": [
+    "办法"
+  ],
+  "bangongshi": [
+    "办公室"
+  ],
+  "bangzhu": [
+    "帮助"
+  ],
+  "baozhi": [
+    "报纸"
+  ],
+  "beifang": [
+    "北方"
+  ],
+  "biji": [
+    "笔记"
+  ],
+  "bijiao": [
+    "比较"
+  ],
+  "bijiben": [
+    "笔记本"
+  ],
+  "biru": [
+    "比如"
+  ],
+  "bisai": [
+    "比赛"
+  ],
+  "bixu": [
+    "必须"
+  ],
+  "biancheng": [
+    "变成"
+  ],
+  "bianhua": [
+    "变化"
+  ],
+  "biaoyan": [
+    "表演"
+  ],
+  "binguan": [
+    "宾馆"
+  ],
+  "bingjiling": [
+    "冰激凌"
+  ],
+  "bingxiang": [
+    "冰箱"
+  ],
+  "budan": [
+    "不但"
+  ],
+  "bujian": [
+    "不见"
+  ],
+  "butong": [
+    "不同"
+  ],
+  "bujiu": [
+    "不久"
+  ],
+  "buxing": [
+    "不行"
+  ],
+  "caidan": [
+    "菜单"
+  ],
+  "canjia": [
+    "参加"
+  ],
+  "cao": [
+    "草",
+    "艸",
+    "艹"
+  ],
+  "caodi": [
+    "草地"
+  ],
+  "ceng": [
+    "层"
+  ],
+  "chabuduo": [
+    "差不多"
+  ],
+  "changjian": [
+    "常见"
+  ],
+  "changyong": [
+    "常用"
+  ],
+  "chenshan": [
+    "衬衫"
+  ],
+  "chengji": [
+    "成绩"
+  ],
+  "chengshi": [
+    "城市"
+  ],
+  "chidao": [
+    "迟到"
+  ],
+  "chufa": [
+    "出发"
+  ],
+  "chusheng": [
+    "出生"
+  ],
+  "chuyuan": [
+    "出院"
+  ],
+  "chuzhong": [
+    "初中"
+  ],
+  "chule": [
+    "除了"
+  ],
+  "chuntian": [
+    "春天"
+  ],
+  "cidian": [
+    "词典"
+  ],
+  "congming": [
+    "聪明"
+  ],
+  "dasao": [
+    "打扫"
+  ],
+  "dasuan": [
+    "打算"
+  ],
+  "dagai": [
+    "大概"
+  ],
+  "daren": [
+    "大人"
+  ],
+  "daxiao": [
+    "大小"
+  ],
+  "daxiongmao": [
+    "大熊猫"
+  ],
+  "dayi": [
+    "大衣"
+  ],
+  "dai": [
+    "带",
+    "歹"
+  ],
+  "danxin": [
+    "担心"
+  ],
+  "dangao": [
+    "蛋糕"
+  ],
+  "dangran": [
+    "当然"
+  ],
+  "daochu": [
+    "到处"
+  ],
+  "defen": [
+    "得分"
+  ],
+  "dehua": [
+    "的话"
+  ],
+  "dei": [
+    "得"
+  ],
+  "dianti": [
+    "电梯"
+  ],
+  "dianzishu": [
+    "电子书"
+  ],
+  "diu": [
+    "丢"
+  ],
+  "dongbei": [
+    "东北"
+  ],
+  "dongfang": [
+    "东方"
+  ],
+  "dongnan": [
+    "东南"
+  ],
+  "dongtian": [
+    "冬天"
+  ],
+  "dongde": [
+    "懂得"
+  ],
+  "dongwu": [
+    "动物"
+  ],
+  "dongwuyuan": [
+    "动物园"
+  ],
+  "duan": [
+    "短",
+    "段"
+  ],
+  "duanku": [
+    "短裤"
+  ],
+  "duanlian": [
+    "锻炼"
+  ],
+  "duihua": [
+    "对话"
+  ],
+  "erqie": [
+    "而且"
+  ],
+  "erduo": [
+    "耳朵"
+  ],
+  "erji": [
+    "耳机"
+  ],
+  "fa": [
+    "发"
+  ],
+  "fashao": [
+    "发烧"
+  ],
+  "fasheng": [
+    "发生"
+  ],
+  "faxian": [
+    "发现"
+  ],
+  "fazhan": [
+    "发展"
+  ],
+  "fangbian": [
+    "方便"
+  ],
+  "fangbianmian": [
+    "方便面"
+  ],
+  "fangfa": [
+    "方法"
+  ],
+  "fangxiang": [
+    "方向"
+  ],
+  "fangxin": [
+    "放心"
+  ],
+  "fenkai": [
+    "分开"
+  ],
+  "fuqi": [
+    "夫妻"
+  ],
+  "fuwu": [
+    "服务"
+  ],
+  "fujin": [
+    "附近"
+  ],
+  "fuxi": [
+    "复习"
+  ],
+  "gai": [
+    "该"
+  ],
+  "ganxingqu": [
+    "感兴趣"
+  ],
+  "gandao": [
+    "感到"
+  ],
+  "ganmao": [
+    "感冒"
+  ],
+  "gang": [
+    "刚"
+  ],
+  "gangcai": [
+    "刚才"
+  ],
+  "ganggang": [
+    "刚刚"
+  ],
+  "gaotie": [
+    "高铁"
+  ],
+  "genju": [
+    "根据"
+  ],
+  "geng": [
+    "更"
+  ],
+  "gongjin": [
+    "公斤"
+  ],
+  "gongyuan": [
+    "公园"
+  ],
+  "gongzuori": [
+    "工作日"
+  ],
+  "gushi": [
+    "故事"
+  ],
+  "gua": [
+    "刮",
+    "瓜"
+  ],
+  "guanji": [
+    "关机"
+  ],
+  "guanxi": [
+    "关系"
+  ],
+  "guanxin": [
+    "关心"
+  ],
+  "guanyu": [
+    "关于"
+  ],
+  "guanzhu": [
+    "关注"
+  ],
+  "guojie": [
+    "过节"
+  ],
+  "haipa": [
+    "害怕"
+  ],
+  "haoduo": [
+    "好多"
+  ],
+  "haojiu": [
+    "好久"
+  ],
+  "haoxiang": [
+    "好像"
+  ],
+  "haoma": [
+    "号码"
+  ],
+  "heshi": [
+    "合适"
+  ],
+  "heiban": [
+    "黑板"
+  ],
+  "honglvdeng": [
+    "红绿灯"
+  ],
+  "houlai": [
+    "后来"
+  ],
+  "hounian": [
+    "后年"
+  ],
+  "huzhao": [
+    "护照"
+  ],
+  "huayuan": [
+    "花园"
+  ],
+  "huajia": [
+    "画家"
+  ],
+  "huanying": [
+    "欢迎"
+  ],
+  "huanjing": [
+    "环境"
+  ],
+  "huangse": [
+    "黄色"
+  ],
+  "huiyi": [
+    "会议"
+  ],
+  "huo": [
+    "或",
+    "火",
+    "灬"
+  ],
+  "huozhe": [
+    "或者"
+  ],
+  "jihu": [
+    "几乎"
+  ],
+  "jihui": [
+    "机会"
+  ],
+  "jijie": [
+    "季节"
+  ],
+  "jiaqi": [
+    "假期"
+  ],
+  "jianchi": [
+    "坚持"
+  ],
+  "jiancha": [
+    "检查"
+  ],
+  "jiandan": [
+    "简单"
+  ],
+  "jianpiao": [
+    "检票"
+  ],
+  "jiankang": [
+    "健康"
+  ],
+  "jiang": [
+    "讲"
+  ],
+  "jie": [
+    "接",
+    "街",
+    "节",
+    "借",
+    "卩"
+  ],
+  "jiehun": [
+    "结婚"
+  ],
+  "jiemu": [
+    "节目"
+  ],
+  "jieri": [
+    "节日"
+  ],
+  "jieshu": [
+    "结束"
+  ],
+  "jiejue": [
+    "解决"
+  ],
+  "jiemei": [
+    "姐妹"
+  ],
+  "jingguo": [
+    "经过"
+  ],
+  "jingli": [
+    "经理"
+  ],
+  "ju": [
+    "句"
+  ],
+  "juzi": [
+    "句子"
+  ],
+  "jueding": [
+    "决定"
+  ],
+  "ka": [
+    "卡"
+  ],
+  "kaihua": [
+    "开花"
+  ],
+  "kaiji": [
+    "开机"
+  ],
+  "kaixin": [
+    "开心"
+  ],
+  "kanlai": [
+    "看来"
+  ],
+  "keai": [
+    "可爱"
+  ],
+  "keshi": [
+    "可是"
+  ],
+  "keren": [
+    "客人"
+  ],
+  "kongtiao": [
+    "空调"
+  ],
+  "ku": [
+    "哭"
+  ],
+  "kuaizi": [
+    "筷子"
+  ],
+  "kuangquanshui": [
+    "矿泉水"
+  ],
+  "laizi": [
+    "来自"
+  ],
+  "lan": [
+    "蓝"
+  ],
+  "likai": [
+    "离开"
+  ],
+  "liwu": [
+    "礼物"
+  ],
+  "lishi": [
+    "历史"
+  ],
+  "lian": [
+    "脸",
+    "练"
+  ],
+  "lianxi": [
+    "练习"
+  ],
+  "liangkuai": [
+    "凉快"
+  ],
+  "liao": [
+    "聊"
+  ],
+  "liaotianr": [
+    "聊天儿"
+  ],
+  "liaojie": [
+    "了解"
+  ],
+  "linju": [
+    "邻居"
+  ],
+  "liuxue": [
+    "留学"
+  ],
+  "liuxuesheng": [
+    "留学生"
+  ],
+  "louti": [
+    "楼梯"
+  ],
+  "lubian": [
+    "路边"
+  ],
+  "manyi": [
+    "满意"
+  ],
+  "mi": [
+    "米",
+    "冖",
+    "糸",
+    "糹",
+    "纟"
+  ],
+  "mianqian": [
+    "面前"
+  ],
+  "mingdan": [
+    "名单"
+  ],
+  "mingren": [
+    "名人"
+  ],
+  "nanfang": [
+    "南方"
+  ],
+  "nanguo": [
+    "难过"
+  ],
+  "nankan": [
+    "难看"
+  ],
+  "nanti": [
+    "难题"
+  ],
+  "nanting": [
+    "难听"
+  ],
+  "nianji": [
+    "年级"
+  ],
+  "nianqing": [
+    "年轻"
+  ],
+  "niu": [
+    "牛",
+    "牜"
+  ],
+  "nuli": [
+    "努力"
+  ],
+  "pa": [
+    "爬",
+    "怕"
+  ],
+  "paizhao": [
+    "拍照"
+  ],
+  "panzi": [
+    "盘子"
+  ],
+  "pang": [
+    "胖"
+  ],
+  "pijiu": [
+    "啤酒"
+  ],
+  "pingshi": [
+    "平时"
+  ],
+  "pingzi": [
+    "瓶子"
+  ],
+  "qiguai": [
+    "奇怪"
+  ],
+  "qishi": [
+    "其实"
+  ],
+  "qita": [
+    "其他"
+  ],
+  "qifei": [
+    "起飞"
+  ],
+  "qianbi": [
+    "铅笔"
+  ],
+  "qiannian": [
+    "前年"
+  ],
+  "qingchu": [
+    "清楚"
+  ],
+  "qingke": [
+    "请客"
+  ],
+  "qiutian": [
+    "秋天"
+  ],
+  "qiuchang": [
+    "球场"
+  ],
+  "qunzi": [
+    "裙子"
+  ],
+  "ranhou": [
+    "然后"
+  ],
+  "reqing": [
+    "热情"
+  ],
+  "rende": [
+    "认得"
+  ],
+  "renwei": [
+    "认为"
+  ],
+  "rongyi": [
+    "容易"
+  ],
+  "ruguo": [
+    "如果"
+  ],
+  "sao": [
+    "扫"
+  ],
+  "shafa": [
+    "沙发"
+  ],
+  "shangyi": [
+    "上衣"
+  ],
+  "shaozi": [
+    "勺子"
+  ],
+  "shenbian": [
+    "身边"
+  ],
+  "shengao": [
+    "身高"
+  ],
+  "sheng": [
+    "声",
+    "生"
+  ],
+  "shenghuo": [
+    "生活"
+  ],
+  "shengyin": [
+    "声音"
+  ],
+  "shijie": [
+    "世界"
+  ],
+  "shoudao": [
+    "收到",
+    "受到"
+  ],
+  "shushu": [
+    "叔叔"
+  ],
+  "shuxue": [
+    "数学"
+  ],
+  "shua": [
+    "刷"
+  ],
+  "shuang": [
+    "双"
+  ],
+  "shuiping": [
+    "水平"
+  ],
+  "siji": [
+    "司机",
+    "四季"
+  ],
+  "taiyang": [
+    "太阳"
+  ],
+  "tang": [
+    "糖"
+  ],
+  "tebie": [
+    "特别"
+  ],
+  "tigao": [
+    "提高"
+  ],
+  "tiyu": [
+    "体育"
+  ],
+  "tiyuguan": [
+    "体育馆"
+  ],
+  "tingshuo": [
+    "听说"
+  ],
+  "tongshi": [
+    "同事"
+  ],
+  "tongyi": [
+    "同意"
+  ],
+  "toufa": [
+    "头发"
+  ],
+  "turan": [
+    "突然"
+  ],
+  "tui": [
+    "腿"
+  ],
+  "waidi": [
+    "外地"
+  ],
+  "waimai": [
+    "外卖"
+  ],
+  "wancheng": [
+    "完成"
+  ],
+  "wandian": [
+    "晚点"
+  ],
+  "wanhui": [
+    "晚会"
+  ],
+  "wangqiu": [
+    "网球"
+  ],
+  "wangzhan": [
+    "网站"
+  ],
+  "weile": [
+    "为了"
+  ],
+  "weishengjian": [
+    "卫生间"
+  ],
+  "wenhua": [
+    "文化"
+  ],
+  "wuzi": [
+    "屋子"
+  ],
+  "xibei": [
+    "西北"
+  ],
+  "xifang": [
+    "西方"
+  ],
+  "xigua": [
+    "西瓜"
+  ],
+  "xinan": [
+    "西南"
+  ],
+  "xiguan": [
+    "习惯"
+  ],
+  "xiai": [
+    "喜爱"
+  ],
+  "xiyiji": [
+    "洗衣机"
+  ],
+  "xizao": [
+    "洗澡"
+  ],
+  "xiatian": [
+    "夏天"
+  ],
+  "xiangjiao": [
+    "香蕉"
+  ],
+  "xiangxin": [
+    "相信"
+  ],
+  "xiangzi": [
+    "箱子"
+  ],
+  "xiangji": [
+    "相机"
+  ],
+  "xiaoqu": [
+    "小区"
+  ],
+  "xiaoxin": [
+    "小心"
+  ],
+  "xiaoyuan": [
+    "校园"
+  ],
+  "xiaozhang": [
+    "校长"
+  ],
+  "xinli": [
+    "心里"
+  ],
+  "xinwen": [
+    "新闻"
+  ],
+  "xinxian": [
+    "新鲜"
+  ],
+  "xinyongka": [
+    "信用卡"
+  ],
+  "xingli": [
+    "行李"
+  ],
+  "xingqu": [
+    "兴趣"
+  ],
+  "xiujia": [
+    "休假"
+  ],
+  "xuyao": [
+    "需要"
+  ],
+  "xuan": [
+    "选",
+    "玄"
+  ],
+  "xuanze": [
+    "选择"
+  ],
+  "xueqi": [
+    "学期"
+  ],
+  "ya": [
+    "牙",
+    "襾"
+  ],
+  "yashua": [
+    "牙刷"
+  ],
+  "yang": [
+    "羊",
+    "养"
+  ],
+  "yaoqiu": [
+    "要求"
+  ],
+  "yiding": [
+    "一定"
+  ],
+  "yigong": [
+    "一共"
+  ],
+  "yihou": [
+    "以后"
+  ],
+  "yiqian": [
+    "以前"
+  ],
+  "yishang": [
+    "以上"
+  ],
+  "yiwai": [
+    "以外"
+  ],
+  "yiwei": [
+    "以为"
+  ],
+  "yizhi": [
+    "一直"
+  ],
+  "yinyue": [
+    "音乐"
+  ],
+  "yinhang": [
+    "银行"
+  ],
+  "yinhangka": [
+    "银行卡"
+  ],
+  "yinliao": [
+    "饮料"
+  ],
+  "yinggai": [
+    "应该"
+  ],
+  "yingxiang": [
+    "影响"
+  ],
+  "youjian": [
+    "邮件"
+  ],
+  "youke": [
+    "游客"
+  ],
+  "youxi": [
+    "游戏"
+  ],
+  "youxiang": [
+    "邮箱"
+  ],
+  "youguan": [
+    "有关"
+  ],
+  "yumaoqiu": [
+    "羽毛球"
+  ],
+  "yuyan": [
+    "语言"
+  ],
+  "yuyi": [
+    "雨衣"
+  ],
+  "yudao": [
+    "遇到"
+  ],
+  "yujian": [
+    "遇见"
+  ],
+  "yuanyi": [
+    "愿意"
+  ],
+  "yueliang": [
+    "月亮"
+  ],
+  "yundonghui": [
+    "运动会"
+  ],
+  "yundongyuan": [
+    "运动员"
+  ],
+  "zanmen": [
+    "咱们"
+  ],
+  "zang": [
+    "脏"
+  ],
+  "zenmeban": [
+    "怎么办"
+  ],
+  "zenyang": [
+    "怎样"
+  ],
+  "zhang": [
+    "张",
+    "长"
+  ],
+  "zhaoji": [
+    "着急"
+  ],
+  "zhaogu": [
+    "照顾"
+  ],
+  "zhaopian": [
+    "照片"
+  ],
+  "zhaoxiang": [
+    "照相"
+  ],
+  "zhineng": [
+    "只能"
+  ],
+  "zhiyao": [
+    "只要"
+  ],
+  "zhiyou": [
+    "只有"
+  ],
+  "zhongyu": [
+    "终于"
+  ],
+  "zhoumo": [
+    "周末"
+  ],
+  "zhuyao": [
+    "主要"
+  ],
+  "zhuyi": [
+    "注意"
+  ],
+  "zhuyuan": [
+    "住院"
+  ],
+  "zidian": [
+    "字典"
+  ],
+  "zixingche": [
+    "自行车"
+  ],
+  "zong": [
+    "总"
+  ],
+  "zongshi": [
+    "总是"
+  ],
+  "zuijin": [
+    "最近"
+  ],
+  "zuoke": [
+    "做客"
+  ],
+  "zuoye": [
+    "作业"
+  ],
+  "gun": [
+    "丨"
+  ],
+  "pie": [
+    "丿"
+  ],
+  "jue": [
+    "亅"
+  ],
+  "ru": [
+    "入"
+  ],
+  "jiong": [
+    "冂"
+  ],
+  "xixi": [
+    "匸"
+  ],
+  "han": [
+    "厂"
+  ],
+  "tu": [
+    "土"
+  ],
+  "cun": [
+    "寸"
+  ],
+  "gong": [
+    "工",
+    "廾",
+    "弓"
+  ],
+  "yan": [
+    "广",
+    "言",
+    "訁",
+    "讠"
+  ],
+  "hu": [
+    "戶",
+    "虍"
+  ],
+  "pu": [
+    "攴",
+    "攵"
+  ],
+  "mu": [
+    "木",
+    "目"
+  ],
+  "fu": [
+    "父",
+    "阜",
+    "阝"
+  ],
+  "qiang": [
+    "爿",
+    "丬"
+  ],
+  "pian": [
+    "片"
+  ],
+  "quan": [
+    "犬",
+    "犭"
+  ],
+  "wa": [
+    "瓦"
+  ],
+  "pi": [
+    "疋",
+    "匹",
+    "皮"
+  ],
+  "bo": [
+    "癶"
+  ],
+  "min": [
+    "皿",
+    "黽",
+    "黾"
+  ],
+  "fou": [
+    "缶"
+  ],
+  "chen": [
+    "臣",
+    "辰"
+  ],
+  "she": [
+    "舌"
+  ],
+  "se": [
+    "色"
+  ],
+  "chong": [
+    "虫"
+  ],
+  "gu": [
+    "谷",
+    "骨",
+    "鼓"
+  ],
+  "zu": [
+    "足"
+  ],
+  "shen": [
+    "身"
+  ],
+  "chuo": [
+    "辵",
+    "辶"
+  ],
+  "zhui": [
+    "隹"
+  ],
+  "biao": [
+    "髟"
+  ],
+  "huang": [
+    "黄"
+  ],
+  "hei": [
+    "黑",
+    "黒"
+  ],
+  "ding": [
+    "鼎"
+  ],
+  "long": [
+    "龍",
+    "龙",
+    "竜"
+  ]
+};
+
+/**
+ * Enriches the dictionary with single characters, radical variants and compound words.
+ */
+export function initializeDictionaryEnrichment() {
+  // 1. Missing single chars
+  for (const [key, chars] of Object.entries(MISSING_SINGLE_CHARS)) {
+    if (!PINYIN_DICT[key]) PINYIN_DICT[key] = [];
+    for (const c of chars) {
+      if (!PINYIN_DICT[key].includes(c)) {
+        PINYIN_DICT[key].unshift(c);
+      }
+    }
+  }
+
+  // 2. Curriculum compound words
+  for (const [key, words] of Object.entries(CURRICULUM_WORDS)) {
+    if (!PINYIN_DICT[key]) PINYIN_DICT[key] = [];
+    for (const w of words) {
+      if (!PINYIN_DICT[key].includes(w)) {
+        PINYIN_DICT[key].unshift(w);
+      }
+    }
+  }
+
+  // 3. Radical variants (placed at front so they appear immediately on candidate pages)
+  for (const [key, chars] of Object.entries(RADICAL_VARIANTS)) {
+    if (!PINYIN_DICT[key]) PINYIN_DICT[key] = [];
+    for (const c of chars) {
+      const idx = PINYIN_DICT[key].indexOf(c);
+      if (idx !== -1) {
+        PINYIN_DICT[key].splice(idx, 1);
+      }
+      PINYIN_DICT[key].unshift(c);
+    }
+  }
+
+  // Ensure fundamental frequency character '一' retains top priority for 'yi'
+  if (Array.isArray(PINYIN_DICT['yi'])) {
+    const yiIdx = PINYIN_DICT['yi'].indexOf('一');
+    if (yiIdx > 0) {
+      PINYIN_DICT['yi'].splice(yiIdx, 1);
+      PINYIN_DICT['yi'].unshift('一');
+    }
+  }
+}
+
+// Execute initial enrichment immediately on module load
+initializeDictionaryEnrichment();
+
+/**
+ * Runtime dynamic enrichment: Allows adding custom words/cards from API.
+ * @param {Array<{ hanzi?: string, character?: string, pinyin?: string }>} items
+ */
+export function enrichPinyinDict(items) {
+  if (!Array.isArray(items)) return;
+  for (const item of items) {
+    const hanzi = item?.hanzi || item?.character;
+    const pinyin = item?.pinyin;
+    if (!hanzi || !pinyin) continue;
+    const clean = cleanPinyin(pinyin);
+    if (!clean) continue;
+    if (!PINYIN_DICT[clean]) PINYIN_DICT[clean] = [];
+    if (!PINYIN_DICT[clean].includes(hanzi)) {
+      PINYIN_DICT[clean].unshift(hanzi);
+    }
+    if (hanzi.includes('(') || hanzi.includes('/')) {
+      const base = hanzi.split(/[()\/]/)[0].trim();
+      if (base && !PINYIN_DICT[clean].includes(base)) {
+        PINYIN_DICT[clean].push(base);
+      }
+      const variants = hanzi.match(/[\u4E00-\u9FFF\u3400-\u4DBF\uF900-\uFAFF\u2E80-\u2EFF]/g) || [];
+      for (const v of variants) {
+        if (v && !PINYIN_DICT[clean].includes(v)) {
+          PINYIN_DICT[clean].push(v);
+        }
+      }
+    }
+  }
+}
+
 /**
  * Looks up Chinese character/word candidates for a given pinyin query.
  * @param {string} query
@@ -3812,7 +7185,7 @@ export function lookupPinyin(query, maxResults = 20) {
     }
   }
 
-  // 1. Exact match
+  // 1. Exact match in PINYIN_DICT (single characters and full compound words)
   if (PINYIN_DICT[clean]) {
     for (const ch of PINYIN_DICT[clean]) {
       pushCandidate(ch);
@@ -3824,8 +7197,8 @@ export function lookupPinyin(query, maxResults = 20) {
   const segments = segmentPinyin(clean);
   if (segments.length > 1) {
     if (segments.length === 2) {
-      const seg0 = (PINYIN_DICT[segments[0]] || []).slice(0, 4);
-      const seg1 = (PINYIN_DICT[segments[1]] || []).slice(0, 4);
+      const seg0 = (PINYIN_DICT[segments[0]] || []).slice(0, 8);
+      const seg1 = (PINYIN_DICT[segments[1]] || []).slice(0, 8);
       for (const c0 of seg0) {
         for (const c1 of seg1) {
           pushCandidate(c0 + c1);
@@ -3846,10 +7219,8 @@ export function lookupPinyin(query, maxResults = 20) {
     for (const [key, list] of Object.entries(PINYIN_DICT)) {
       if (key !== clean && key.startsWith(clean)) {
         for (const item of list) {
-          if (item.length > 1) {
-            pushCandidate(item);
-            if (candidates.length >= maxResults) return candidates;
-          }
+          pushCandidate(item);
+          if (candidates.length >= maxResults) return candidates;
         }
       }
     }

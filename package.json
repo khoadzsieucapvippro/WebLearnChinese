@@ -14,7 +14,9 @@
     "verify:frontend:gate": "node tests/frontend/runner.mjs --tier=gate",
     "verify:frontend": "node tests/frontend/runner.mjs --tier=full",
     "verify:backend:integration": "node tests/frontend/integration/backend-integration.mjs",
-    "verify:fullstack": "node tests/fullstack/runner.mjs"
+    "verify:fullstack": "node tests/fullstack/runner.mjs",
+    "serve:mobile": "node scripts/serve.mjs",
+    "test:mobile:keyboard": "node --test tests/frontend/e2e/mobile-keyboard.browser.mjs"
   },
   "devDependencies": {
     "playwright-core": "^1.57.0"

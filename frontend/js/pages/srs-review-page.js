@@ -47,7 +47,7 @@ import { splitHanziCharacters, loadStrokeData } from '../ui/character-writing/st
 import { createRiceGridSvg } from '../ui/character-writing/vocab-writing-orchestrator.js';
 import { removeVietnameseDiacritics, partitionRadicals } from './radicals-page.js';
 import { PinyinImeComponent } from '../ui/pinyin-ime/pinyin-ime-engine.js';
-import { lookupPinyin, cleanPinyin } from '../ui/pinyin-ime/pinyin-dict.js';
+import { lookupPinyin, cleanPinyin, enrichPinyinDict } from '../ui/pinyin-ime/pinyin-dict.js';
 
 export {
   createSpeakerIcon,
@@ -60,7 +60,8 @@ export {
   VocabWritingOrchestrator,
   PinyinImeComponent,
   lookupPinyin,
-  cleanPinyin
+  cleanPinyin,
+  enrichPinyinDict
 };
 
 export const MAX_AGAIN_REVIEWS_PER_CARD = 3;
@@ -13621,6 +13622,13 @@ export class SrsReviewController {
           }
         }
       });
+
+      // Ensure current card's Hanzi & Pinyin are guaranteed present in the IME candidate dictionary
+      if (card && (card.hanzi || card.character) && card.pinyin) {
+        enrichPinyinDict([
+          { hanzi: card.hanzi || card.character, pinyin: card.pinyin }
+        ]);
+      }
     }
 
     // Unlock and reset speaker button so it is always interactive for the learner
@@ -13692,6 +13700,11 @@ export class SrsReviewController {
     if (!this.sessionQueue || this.currentIndex >= this.sessionQueue.length) return;
     const card = this.sessionQueue[this.currentIndex]?.card;
     if (!card) return;
+
+    // Guard: Do NOT submit while learner is actively composing text via OS IME on mobile/desktop
+    if (this.listeningIme?.isOsComposing || this.dom.listeningAnswerInput?.isComposing) {
+      return;
+    }
 
     const rawInput = this.dom.listeningAnswerInput ? this.dom.listeningAnswerInput.value : '';
     const expected = card.hanzi || card.character || '';

@@ -15,6 +15,7 @@
 
 import { test, describe, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 
 // Mock localStorage for Node test environment
 if (typeof globalThis.localStorage === 'undefined') {
@@ -142,7 +143,7 @@ import {
   buildReviewPayload,
   SrsReviewController
 } from '../../../../frontend/js/pages/srs-review-page.js';
-import { lookupPinyin, cleanPinyin } from '../../../../frontend/js/ui/pinyin-ime/pinyin-dict.js';
+import { lookupPinyin, cleanPinyin, enrichPinyinDict, PINYIN_DICT } from '../../../../frontend/js/ui/pinyin-ime/pinyin-dict.js';
 import { PinyinImeComponent } from '../../../../frontend/js/ui/pinyin-ime/pinyin-ime-engine.js';
 
 describe('Unit: SRS Listening Room & Pinyin IME Engine', () => {
@@ -713,28 +714,38 @@ describe('Unit: SRS Listening Room & Pinyin IME Engine', () => {
     });
   });
 
+  function setupControllerForListening(cards = [
+    { itemId: 1, itemType: 'VOCABULARY', hanzi: '你' },
+    { itemId: 2, itemType: 'VOCABULARY', hanzi: '好' }
+  ]) {
+    const controller = new SrsReviewController();
+    controller.activeMode = 'listening';
+    controller.sessionQueue = cards.map(c => ({ card: c, againAttempts: 0 }));
+    controller.currentIndex = 0;
+    controller.playPronunciation = () => Promise.resolve({ success: true, method: 'audio_file' });
+    controller.renderCatalog = () => {};
+    controller.renderWritingRoomCard = () => {};
+    controller.renderReadingRoomCard = () => {};
+    controller.renderFlashcardCard = () => {};
+    controller.startReactionTimer = () => {};
+    const input = makeEl('input');
+    input.setAttribute('inputmode', 'text');
+    input.setAttribute('lang', 'zh-Hans');
+    controller.dom = {
+      listeningRoomBadge: makeEl('span'),
+      listeningCompletionNotice: makeEl('div'),
+      listeningErrorNotice: makeEl('div'),
+      listeningAnswerInput: input,
+      btnListeningCheck: makeEl('button'),
+      btnListeningNext: makeEl('button'),
+      btnListeningPlayAudio: makeEl('button'),
+      listeningSpeakerHint: makeEl('span'),
+      listeningImeContainer: makeEl('div')
+    };
+    return controller;
+  }
+
   describe('7. Automatic Audio Playback on Card Display (Auto-Play Invariants)', () => {
-    function setupControllerForListening(cards = [
-      { itemId: 1, itemType: 'VOCABULARY', hanzi: '你' },
-      { itemId: 2, itemType: 'VOCABULARY', hanzi: '好' }
-    ]) {
-      const controller = new SrsReviewController();
-      controller.activeMode = 'listening';
-      controller.sessionQueue = cards.map(c => ({ card: c, againAttempts: 0 }));
-      controller.currentIndex = 0;
-      controller.dom = {
-        listeningRoomBadge: makeEl('span'),
-        listeningCompletionNotice: makeEl('div'),
-        listeningErrorNotice: makeEl('div'),
-        listeningAnswerInput: makeEl('input'),
-        btnListeningCheck: makeEl('button'),
-        btnListeningNext: makeEl('button'),
-        btnListeningPlayAudio: makeEl('button'),
-        listeningSpeakerHint: makeEl('span'),
-        listeningImeContainer: makeEl('div')
-      };
-      return controller;
-    }
 
     test('1. First card auto-play: Automatically triggers pronunciation exactly once on initial card render', async () => {
       const controller = setupControllerForListening();
@@ -888,6 +899,248 @@ describe('Unit: SRS Listening Room & Pinyin IME Engine', () => {
         null,
         'showCatalogSelection must reset _autoPlayedListeningCardKey'
       );
+    });
+  });
+
+  describe('8. Group A – Keyboard Data Completeness & Compound Word Lookup (Nhóm A)', () => {
+    test('1. Compound words lookup: All previously missing curriculum words are found via exact pinyin', () => {
+      const sampleCurriculumWords = [
+        { word: '出租车', pinyin: 'chūzūchē' },
+        { word: '开始', pinyin: 'kāishǐ' },
+        { word: '超市', pinyin: 'chāoshì' },
+        { word: '舒服', pinyin: 'shūfu' },
+        { word: '饺子', pinyin: 'jiǎozi' },
+        { word: '椅子', pinyin: 'yǐzi' },
+        { word: '女士', pinyin: 'nǚshì' },
+        { word: '教室', pinyin: 'jiàoshì' },
+        { word: '不好意思', pinyin: 'bù hǎoyìsi' },
+        { word: '公交车', pinyin: 'gōngjiāochē' },
+        { word: '冰激凌', pinyin: 'bīngjīlíng' },
+        { word: '卫生间', pinyin: 'wèishēngjiān' }
+      ];
+
+      for (const item of sampleCurriculumWords) {
+        const candidates = lookupPinyin(item.pinyin, 10);
+        assert.ok(
+          candidates.includes(item.word),
+          `Word "${item.word}" (pinyin: ${item.pinyin}) must be returned in lookup candidates, got: ${JSON.stringify(candidates)}`
+        );
+      }
+    });
+
+    test('2. Single characters lookup: All 28 previously missing characters are present and searchable', () => {
+      const missingChars = [
+        { char: '租', pinyin: 'zu' },
+        { char: '饺', pinyin: 'jiao' },
+        { char: '椅', pinyin: 'yi' },
+        { char: '室', pinyin: 'shi' },
+        { char: '始', pinyin: 'shi' },
+        { char: '舒', pinyin: 'shu' },
+        { char: '姨', pinyin: 'yi' },
+        { char: '激', pinyin: 'ji' },
+        { char: '凌', pinyin: 'ling' },
+        { char: '绩', pinyin: 'ji' },
+        { char: '附', pinyin: 'fu' },
+        { char: '据', pinyin: 'ju' },
+        { char: '码', pinyin: 'ma' },
+        { char: '适', pinyin: 'shi' },
+        { char: '议', pinyin: 'yi' },
+        { char: '季', pinyin: 'ji' },
+        { char: '束', pinyin: 'shu' },
+        { char: '辆', pinyin: 'liang' },
+        { char: '啤', pinyin: 'pi' },
+        { char: '卫', pinyin: 'wei' },
+        { char: '惯', pinyin: 'guan' },
+        { char: '澡', pinyin: 'zao' },
+        { char: '蕉', pinyin: 'jiao' },
+        { char: '饮', pinyin: 'yin' },
+        { char: '顾', pinyin: 'gu' },
+        { char: '玊', pinyin: 'yu' },
+        { char: '卤', pinyin: 'lu' },
+        { char: '黾', pinyin: 'min' }
+      ];
+
+      for (const item of missingChars) {
+        const candidates = lookupPinyin(item.pinyin, 20);
+        assert.ok(
+          candidates.includes(item.char),
+          `Character "${item.char}" must be present for pinyin "${item.pinyin}", got: ${JSON.stringify(candidates)}`
+        );
+      }
+    });
+
+    test('3. Radical variants lookup: Radicals with alternate forms are searchable', () => {
+      const radicalVariants = [
+        { char: '亻', pinyin: 'ren' },
+        { char: '刂', pinyin: 'dao' },
+        { char: '忄', pinyin: 'xin' },
+        { char: '扌', pinyin: 'shou' },
+        { char: '氵', pinyin: 'shui' },
+        { char: '灬', pinyin: 'huo' },
+        { char: '犭', pinyin: 'quan' },
+        { char: '礻', pinyin: 'shi' },
+        { char: '⺮', pinyin: 'zhu' },
+        { char: '纟', pinyin: 'mi' }
+      ];
+
+      for (const item of radicalVariants) {
+        const candidates = lookupPinyin(item.pinyin, 20);
+        assert.ok(
+          candidates.includes(item.char),
+          `Radical variant "${item.char}" must be found for pinyin "${item.pinyin}"`
+        );
+      }
+    });
+
+    test('4. Runtime dynamic enrichment: enrichPinyinDict adds new words and immediately reflects in lookup', () => {
+      const customWord = '人工智能';
+      const customPinyin = 'rén gōng zhì néng';
+
+      enrichPinyinDict([{ hanzi: customWord, pinyin: customPinyin }]);
+      const candidates = lookupPinyin(customPinyin, 10);
+      assert.ok(candidates.includes(customWord), 'Dynamic word must be returned after enrichPinyinDict');
+    });
+
+    test('5. Pinyin with tones, uppercase, and spaces are properly normalized', () => {
+      assert.ok(lookupPinyin('Chū Zū Chē', 10).includes('出租车'));
+      assert.ok(lookupPinyin('kāi shǐ', 10).includes('开始'));
+      assert.ok(lookupPinyin('NǙ SHÌ', 10).includes('女士'));
+    });
+  });
+
+  describe('9. Group B – Mobile OS Default Keyboard & Chinese IME Input (Nhóm B)', () => {
+    test('1. Input element attributes: Has inputmode="text" and lang="zh-Hans"', () => {
+      const html = fs.readFileSync('frontend/srs-review.html', 'utf8');
+      assert.ok(html.includes('id="listeningAnswerInput"'), 'srs-review.html must contain listeningAnswerInput');
+      assert.ok(html.includes('inputmode="text"'), 'listeningAnswerInput must declare inputmode="text" for mobile keyboards');
+      assert.ok(html.includes('lang="zh-Hans"'), 'listeningAnswerInput must declare lang="zh-Hans"');
+
+      const controller = setupControllerForListening();
+      assert.strictEqual(controller.dom.listeningAnswerInput.disabled, false, 'Input must not be disabled');
+    });
+
+    test('2. Native Chinese IME simulation (compositionstart -> compositionupdate -> compositionend -> input)', () => {
+      const mountEl = makeEl('div');
+      const input = makeEl('input');
+      let committedChar = null;
+
+      const ime = new PinyinImeComponent({
+        containerMount: mountEl,
+        targetInput: input,
+        onCommit: (char) => { committedChar = char; }
+      });
+
+      // User starts typing pinyin on mobile Gboard / iOS Chinese IME
+      input.dispatchEvent({ type: 'compositionstart' });
+      assert.strictEqual(ime.isOsComposing, true, 'isOsComposing must be true during OS IME composition');
+      assert.strictEqual(ime.compositionBuffer, '', 'Virtual buffer must be clear during OS IME');
+
+      input.dispatchEvent({ type: 'compositionupdate', data: 'ni' });
+      assert.strictEqual(ime.isOsComposing, true);
+
+      // User selects Chinese character "你" from mobile keyboard suggestion
+      input.value = '你';
+      input.dispatchEvent({ type: 'compositionend', data: '你' });
+      assert.strictEqual(ime.isOsComposing, false, 'isOsComposing must reset to false after compositionend');
+      assert.strictEqual(committedChar, '你', 'onCommit must receive the committed character');
+
+      // Subsequent input event
+      input.dispatchEvent({ type: 'input' });
+      assert.strictEqual(input.value, '你', 'Input value must retain the Chinese character');
+      assert.strictEqual(verifyListeningAnswer(input.value, '你'), true, 'Answer verification must pass');
+    });
+
+    test('3. Composition submission guard: checkListeningAnswer does not submit while composing', async () => {
+      const controller = setupControllerForListening();
+      await controller.renderListeningRoomCard(controller.sessionQueue[0].card);
+      controller.listeningIme.isOsComposing = true;
+      controller.dom.listeningAnswerInput.value = 'ni';
+
+      controller.checkListeningAnswer();
+
+      assert.strictEqual(
+        controller.hasCompletedListeningForCurrentCard,
+        false,
+        'checkListeningAnswer must not mark completed while composing'
+      );
+      assert.strictEqual(
+        controller.dom.listeningAnswerInput.classList.contains('is-valid'),
+        false,
+        'Should not validate answer while composing'
+      );
+    });
+
+    test('4. Mobile Latin fallback: Typing pinyin via default mobile keyboard updates candidates and commits cleanly', () => {
+      const mountEl = makeEl('div');
+      const input = makeEl('input');
+      const ime = new PinyinImeComponent({
+        containerMount: mountEl,
+        targetInput: input
+      });
+
+      // Simulate typing Latin pinyin "kaishi" on mobile keyboard (where keydown keyCode is 229)
+      input.value = 'kaishi';
+      input.dispatchEvent({ type: 'input' });
+
+      assert.strictEqual(ime.compositionBuffer, 'kaishi', 'Latin input must populate compositionBuffer');
+      assert.ok(ime.candidates.includes('开始'), 'Candidates must include "开始"');
+
+      // Learner taps the "开始" candidate on website candidates bar
+      ime.commitCandidate('开始');
+
+      assert.strictEqual(input.value, '开始', 'Candidate must replace the Latin pinyin buffer');
+      assert.strictEqual(ime.compositionBuffer, '', 'Buffer must be cleared after commit');
+    });
+
+    test('5. Multi-character and sentence input: Replacing and appending text works seamlessly', () => {
+      const mountEl = makeEl('div');
+      const input = makeEl('input');
+      const ime = new PinyinImeComponent({
+        containerMount: mountEl,
+        targetInput: input
+      });
+
+      // Type first word
+      input.value = 'ni';
+      input.dispatchEvent({ type: 'input' });
+      ime.commitCandidate('你');
+      assert.strictEqual(input.value, '你');
+
+      // Type second word
+      input.value = '你好';
+      input.dispatchEvent({ type: 'input' });
+      assert.strictEqual(input.value, '你好');
+      assert.strictEqual(ime.compositionBuffer, '', 'Chinese characters do not populate Latin buffer');
+
+      // Backspace removes one character
+      input.value = '你';
+      input.dispatchEvent({ type: 'input' });
+      assert.strictEqual(input.value, '你');
+    });
+
+    test('6. Keyboard toggle preserves candidates bar while hiding virtual keys', () => {
+      const mountEl = makeEl('div');
+      const input = makeEl('input');
+      const ime = new PinyinImeComponent({
+        containerMount: mountEl,
+        targetInput: input
+      });
+
+      assert.strictEqual(ime.isKeyboardVisible, true);
+      assert.strictEqual(ime.dom.keyboardWrapper.classList.contains('d-none'), false);
+
+      // User toggles to hide virtual keyboard on mobile to free up screen space
+      ime.toggleKeyboardVisibility();
+      assert.strictEqual(ime.isKeyboardVisible, false);
+      assert.strictEqual(ime.dom.keyboardWrapper.classList.contains('d-none'), true);
+      assert.strictEqual(ime.dom.candidatesBar.classList.contains('d-none'), false, 'Candidates bar must remain visible');
+
+      // Can still select candidates even when virtual keyboard keys are hidden
+      input.value = 'ren';
+      input.dispatchEvent({ type: 'input' });
+      assert.ok(ime.candidates.includes('人'));
+      ime.commitCandidate('人');
+      assert.strictEqual(input.value, '人');
     });
   });
 

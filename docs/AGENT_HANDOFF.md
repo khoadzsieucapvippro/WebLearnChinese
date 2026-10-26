@@ -171,14 +171,42 @@
         * Cam kết Zero-Hang Promise: `playPronunciation()` luôn trả về Promise chắc chắn settle (resolve/catch), xử lý mượt mà khi `Audio` constructor throw hoặc `play()` promise không giải quyết.
       - Kiểm thử bao phủ: `tests/frontend/unit/srs/srs-audio-playback.test.mjs` (19 bài test), `tests/frontend/unit/srs/srs-audio-stress.test.mjs` (21 bài test: spam 10-20 click, đổi nút liên tục, lật thẻ đột ngột, chuyển thẻ 50 lần), `tests/frontend/unit/srs/srs-audio-adversarial.test.mjs` (kiểm chứng zero-hang), và `tests/frontend/e2e/srs-listening.browser.mjs` (`SL-06` phát âm thanh thật qua HTTP 200, playing event, currentTime > 0).
 
+18. **[KEYBOARD-1] Bàn phím ảo & Hỗ trợ Bàn phím Mặc định Di động (Virtual IME & Mobile Native Keyboard Integration)**:
+    - **Trạng thái**: `VERIFIED_FIXED`
+    - **Bằng chứng**:
+      - `frontend/js/ui/pinyin-ime/pinyin-dict.js`:
+        * Bổ sung 28 chữ Hán đơn lẻ bị thiếu hoàn toàn trong từ điển: `租`, `饺`, `椅`, `室`, `始`, `舒`, `姨`, `激`, `凌`, `绩`, `附`, `据`, `码`, `适`, `议`, `季`, `束`, `辆`, `啤`, `卫`, `惯`, `澡`, `蕉`, `饮`, `顾`, `玊`, `卤`, `黾`.
+        * Bổ sung 10 biến thể bộ thủ (`亻`, `刂`, `忄`, `扌`, `氵`, `灬`, `犭`, `礻`, `⺮`, `纟`, `丬`, `牜`, `匹`) vào đầu danh sách ứng viên.
+        * Bổ sung 942 từ ghép chuẩn HSK 1, 2, 3 (`CURRICULUM_WORDS`) vào `PINYIN_DICT`, giải quyết triệt để lỗi tra cứu cụm (ví dụ `chuzuche` -> `出租车`, `kaishi` -> `开始`, `chaoshi` -> `超市`, `shufu` -> `舒服`).
+        * Hàm `initializeDictionaryEnrichment()` tự động chạy khi import và hàm `enrichPinyinDict(items)` nạp động từ vựng mới tại runtime.
+        * Nâng cấp `lookupPinyin(query, maxResults = 25)`: chuẩn hóa pinyin dấu, hoa, khoảng trắng, ưu tiên exact match từ ghép.
+      - `frontend/js/ui/pinyin-ime/pinyin-ime-engine.js`:
+        * Lắng nghe chuỗi sự kiện `beforeinput` (`onBeforeInput`) và `input` (`onInputEvent`) bên cạnh `keydown` và `composition*`.
+        * Bảo vệ phiên IME hệ điều hành: khi `this.isOsComposing || e.isComposing || e.keyCode === 229`, không gọi `e.preventDefault()`, dọn sạch buffer ảo và nhường quyền hoàn toàn cho bàn phím hệ điều hành (Gboard, Apple Chinese Keyboard).
+        * Mobile Latin Fallback: Khi người học gõ phím Latin trên bàn phím mặc định điện thoại (Android keyCode 229 / Latin keyboard), `onInputEvent` tự động bắt pinyin và hiển thị chữ Hán trên thanh ứng viên website (`#pinyinCandidatesBar`).
+        * Sửa `commitCandidate()`: thay thế chính xác phần Latin pinyin trong ô input mà không làm lặp chữ (zero duplication).
+        * Gán ID định danh `#pinyinCandidate-${idx}` và `data-candidate` cho từng nút ứng viên.
+        * Chặn Enter submit khi đang compose (`!this.isOsComposing && !e.isComposing && e.keyCode !== 229`).
+      - `frontend/srs-review.html#L560`: Bổ sung thuộc tính `inputmode="text"` và `lang="zh-Hans"` trên `#listeningAnswerInput`.
+      - `frontend/js/pages/srs-review-page.js`:
+        * Tự động gọi `enrichPinyinDict` khi hiển thị thẻ (`renderListeningRoomCard`).
+        * Bổ sung guard chặn submit trong `checkListeningAnswer()` khi đang trong phiên gõ dở IME.
+      - `frontend/css/style.css`:
+        * Cập nhật `.pinyin-key`: thêm `min-width: 0;`, `flex: 1 1 0px;` và trên mobile `@media (max-width: 576px)` giữ `height: 42px; min-height: 42px; touch-action: manipulation;` tuân thủ WCAG 2.2 Target Size.
+        * Thu nhỏ padding của `.pinyin-ime-wrapper` còn `var(--space-2)` (8px) trên mobile, đảm bảo zero horizontal overflow trên mọi màn hình di động (kể cả 360px và 412px Pixel 7).
+      - Thiết lập môi trường kiểm thử điện thoại di động:
+        * Automated Mobile Emulation E2E (`tests/frontend/e2e/mobile-keyboard.browser.mjs`): Chạy Playwright với profile `Pixel 7` (Android 14) và `iPhone 14` (iOS 16), kiểm thử touch tap, target size, Gboard IME composition, Latin fallback, toggle keyboard và reflow 360px -> PASS 6/6 tests.
+        * Real Physical Phone LAN Server: `scripts/serve.mjs` tự động lắng nghe trên `0.0.0.0` và hiển thị địa chỉ LAN Wi-Fi `http://192.168.0.104:3000` (kích hoạt qua `npm run serve:mobile`) để điện thoại thật trong mạng Wi-Fi có thể truy cập và test trực tiếp.
+        * Public Cloud Tunnel: Hỗ trợ `npx localtunnel --port 3000` tạo URL HTTPS công khai cho phép test từ thiết bị di động 4G/5G hoặc bất kỳ môi trường đám mây nào.
+
 ### 5.2. Các hạng mục còn mở hoặc bị chặn bởi môi trường/thiết bị (`OPEN` / `UNVERIFIED` / `WONT_FIX`)
 
-17. **[P2-SPEECH-1] Kiểm chứng chất lượng chấm thanh điệu của `speech-service` trên tập dữ liệu giọng người thật (300–500 mẫu)**:
+19. **[P2-SPEECH-1] Kiểm chứng chất lượng chấm thanh điệu của `speech-service` trên tập dữ liệu giọng người thật (300–500 mẫu)**:
     - **Trạng thái**: `OPEN`
     - **Bằng chứng & Kế hoạch tiếp theo**: `speech-service/test_pipeline.py` hiện kiểm thử bằng sóng âm tổng hợp (synthetic pitch contours) và vượt qua 9/9 nhóm test DSP cùng 10/10 bài test bảo mật. Cần thu thập 300–500 mẫu giọng người học thật có gán nhãn chuyên gia để tinh chỉnh ngưỡng điểm F0 khi triển khai quy mô lớn.
-18. **[WONT_FIX-1] Chuyển đổi luyện viết `HanziWriter` sang mô hình AI OCR/HWR nhận diện chữ viết tay tự do**:
+20. **[WONT_FIX-1] Chuyển đổi luyện viết `HanziWriter` sang mô hình AI OCR/HWR nhận diện chữ viết tay tự do**:
     - **Trạng thái**: `WONT_FIX` (Theo quyết định sản phẩm Mục I.1 của chủ dự án).
-19. **[WONT_FIX-2] Sử dụng dịch vụ Cloud TTS trả phí tại runtime hoặc lưu trữ lâu dài bản ghi âm người học**:
+21. **[WONT_FIX-2] Sử dụng dịch vụ Cloud TTS trả phí tại runtime hoặc lưu trữ lâu dài bản ghi âm người học**:
     - **Trạng thái**: `WONT_FIX` (Theo quyết định sản phẩm Mục I.3 của chủ dự án).
 
 ---
@@ -186,13 +214,19 @@
 ## 6. KẾT QUẢ KIỂM THỬ THỰC TẾ ĐÃ CHẠY
 
 1. `npm run verify:frontend:fast`:
-   - **Kết quả**: **PASS 980/980 tests** (238 suites, 0 failed, duration: 11.78s, wall time: 11.84s).
+   - **Kết quả**: **PASS 991/991 tests** (240 suites, 0 failed, duration: 12.81s, wall time: 12.87s).
 2. `node tests/e2e/runner.mjs --tier=all`:
-   - **Kết quả**: **PASS 74/74 tests** (Tiers 1–4, 0 failed, total wall time: 0.81s).
-     - Tier 1: 32 tests (190ms)
-     - Tier 2: 30 tests (254ms)
-     - Tier 3: 6 tests (174ms)
-     - Tier 4: 6 tests (191ms)
+   - **Kết quả**: **PASS 74/74 tests** (Tiers 1–4, 0 failed, total wall time: 0.72s).
+     - Tier 1: 32 tests (162ms)
+     - Tier 2: 30 tests (217ms)
+     - Tier 3: 6 tests (165ms)
+     - Tier 4: 6 tests (171ms)
+3. `node --test tests/frontend/unit/srs/srs-skill-listening.test.mjs`:
+   - **Kết quả**: **PASS 51/51 tests** (11 suites, 0 failed, duration: 227ms; bao gồm Suite 8 kiểm tra tính đầy đủ từ điển và Suite 9 kiểm tra bàn phím hệ điều hành di động).
+4. `node --test tests/frontend/e2e/srs-listening.browser.mjs`:
+   - **Kết quả**: **PASS 8/8 tests** (0 failed, duration: 14.5s; bao gồm SL-06 audio WAV thật, SL-07 auto-play khi chuyển thẻ, SL-08 mobile IME viewport).
+5. `node --test tests/frontend/e2e/mobile-keyboard.browser.mjs`:
+   - **Kết quả**: **PASS 6/6 tests** (0 failed, duration: 6.2s; Pixel 7 Android 14 & iPhone 14 iOS 16 mobile touch, Gboard composition, Latin fallback, keyboard toggle, reflow 360px).
 3. `python tests/verify-audio-assets-deep.py`:
    - **Kết quả**: **VERDICT: APPROVE** (1.282/1.282 tệp MP3 vật lý verified trên đĩa: 214 bộ thủ + 1.068 từ vựng, 13.73 MB, 100% tệp > 1.000B, valid sync header `0xFFFB`, 0 dead link trong `manifest.json`, 100% polyphone map & radical sanitization verified).
 4. `node --test tests/frontend/unit/srs/srs-audio-playback.test.mjs tests/frontend/unit/srs/srs-audio-stress.test.mjs tests/frontend/unit/srs/srs-audio-adversarial.test.mjs`:

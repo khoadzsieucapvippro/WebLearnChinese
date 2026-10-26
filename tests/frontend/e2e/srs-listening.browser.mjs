@@ -606,4 +606,82 @@ describe('Browser E2E: SRS Listening Room & Pinyin IME', () => {
     }
   });
 
+
+  test('SL-08: Mobile OS Keyboard & Chinese IME integration with responsive virtual keypad', async () => {
+    const { page, context, getRuntimeErrors } = await createMonitoredPage(browser, {
+      viewport: { width: 375, height: 667 },
+      isMobile: true,
+      hasTouch: true
+    });
+
+    try {
+      await setupListeningMockBackend(page);
+      await page.goto(`${baseUrl}/srs-review.html?mode=listening&group=radicals50&action=continue`, {
+        waitUntil: 'domcontentloaded'
+      });
+
+      await page.locator('#srsListeningRoom').waitFor({ state: 'visible', timeout: 5000 });
+
+      const answerInput = page.locator('#listeningAnswerInput');
+      await answerInput.waitFor({ state: 'visible' });
+
+      // 1. Verify input element attributes for mobile virtual keyboard
+      const inputMode = await answerInput.getAttribute('inputmode');
+      const lang = await answerInput.getAttribute('lang');
+      assert.strictEqual(inputMode, 'text', 'Input must declare inputmode="text" for mobile keyboards');
+      assert.strictEqual(lang, 'zh-Hans', 'Input must declare lang="zh-Hans"');
+
+      // 2. Verify virtual key target size on mobile (WCAG 2.2 Target Size)
+      const keyHeight = await page.evaluate(() => {
+        const key = document.querySelector('.pinyin-key');
+        return key ? key.getBoundingClientRect().height : 0;
+      });
+      assert.ok(keyHeight >= 40, `Virtual keys on mobile must be >= 40px tall (got ${keyHeight}px)`);
+
+      // 3. Simulate mobile keyboard Latin typing fallback
+      await answerInput.click();
+      await answerInput.fill('yi');
+      await page.waitForTimeout(200);
+
+      // Verify candidates bar displays Chinese candidates for "yi"
+      const candidatesCount = await page.locator('.pinyin-candidate-item').count();
+      assert.ok(candidatesCount > 0, 'Candidate items must appear when typing pinyin');
+
+      // Click first candidate "一"
+      const firstCandidate = page.locator('.pinyin-candidate-item').first();
+      await firstCandidate.click();
+      await page.waitForTimeout(200);
+
+      // Verify input value was replaced with Chinese character "一"
+      const val = await answerInput.inputValue();
+      assert.strictEqual(val, '一', 'Candidate must replace the typed pinyin buffer');
+
+      // 4. Test keyboard visibility toggle on mobile
+      const toggleBtn = page.locator('.btn-toggle-pinyin-keyboard');
+      await toggleBtn.click();
+      await page.waitForTimeout(200);
+
+      // Virtual keys should be hidden, candidates bar should still be visible
+      const keyboardHidden = await page.locator('.pinyin-virtual-keyboard').evaluate(el => el.classList.contains('d-none'));
+      const candidatesVisible = await page.locator('.pinyin-candidates-bar').isVisible();
+      assert.strictEqual(keyboardHidden, true, 'Virtual keys must be hidden when toggled');
+      assert.strictEqual(candidatesVisible, true, 'Candidates strip must remain visible');
+
+      // Toggle back
+      await toggleBtn.click();
+      await page.waitForTimeout(200);
+
+      // 5. Submit answer and verify correct
+      await page.locator('#btnListeningCheck').click();
+      await page.waitForTimeout(300);
+
+      const completionNotice = page.locator('#listeningCompletionNotice');
+      assert.strictEqual(await completionNotice.isVisible(), true, 'Must complete listening card successfully');
+
+      assert.strictEqual(getRuntimeErrors().length, 0, 'Zero runtime errors');
+    } finally {
+      await context.close();
+    }
+  });
+
 });
