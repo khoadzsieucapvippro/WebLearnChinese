@@ -16,6 +16,10 @@
   - `20dc105`: `feat(security): add class-level @PreAuthorize defense-in-depth and rate limit /auth/register (P1-SEC-1)` (Hoàn tất P1-SEC-1).
   - `1e2ae59`: `docs(handoff): update commit history, test ledger, and remaining next steps in AGENT_HANDOFF.md`.
   - `34ae300`: `feat: complete production readiness upgrades (M1 writing modal, M2 Render free ops, M3 static audio pipeline, M4 ledger sync)` (Hoàn tất P2-WRITING-1, P1-OPS-1, AUDIO-3, AUDIO-4, và Milestone 4).
+  - `f50c9ef`: `feat(audio): auto-play audio on listening card display with single-execution guard` (Hoàn tất AUDIO-5).
+  - `f38320c`: `fix(keyboard): enrich pinyin dictionary completeness, support mobile OS IME and establish mobile testing environment` (Hoàn tất KEYBOARD-1).
+  - `cf24b60`: `docs(governance): add cross-platform testing invariants and proactive user inquiry guardrail`.
+  - `5979fd1`: `feat(writing): guarantee 100% stroke coverage and mobile viewport integrity for character writing` (Hoàn tất WRITING-STROKE-1 / Phương án 1).
 - **Trạng thái cây làm việc (`git status`)**: Toàn bộ thay đổi mã nguồn, dữ liệu tĩnh, cấu hình triển khai và kiểm thử tự động đã được tích hợp đầy đủ, vượt qua 100% bộ kiểm thử nghiệm thu.
 
 ---
@@ -216,14 +220,31 @@
         * `npm run verify:frontend:fast`: PASS 994/994 tests (240 suites, 0 failed, 13.28s).
         * `node tests/e2e/runner.mjs --tier=all`: PASS 74/74 tests (0.77s).
 
+20. **[AUDIO-COVERAGE-1] Kiểm tra Toàn Diện Độ Phủ Âm Thanh & Chuẩn Hóa Subpath Audio URL Resolution (Audio Corpus 100% Integrity & Subpath Safety)**:
+    - **Trạng thái**: `VERIFIED_FIXED`
+    - **Bằng chứng**:
+      - Kho tệp âm thanh thực tế trên đĩa (`frontend/assets/audio/`):
+        * Đầy đủ **1.282 tệp MP3** (tổng 14.55 MB, 100% dung lượng > 100 bytes, zero corrupted / zero 0-byte).
+        * `frontend/assets/audio/radicals/`: **Đúng 214/214 tệp MP3** tương ứng 214 bộ thủ Khang Hy (`radical_001.mp3` .. `radical_214.mp3`).
+        * `frontend/assets/audio/vocabulary/`: **Đúng 1.068/1.068 tệp MP3** tương ứng 1.068 từ vựng HSK 1–3 (`vocab_0001.mp3` .. `vocab_1076.mp3`).
+        * `frontend/assets/audio/manifest.json`: Ánh xạ 214 radicals và 1.233 hanzi entries, 100% tệp trỏ đến tệp tồn tại trên đĩa.
+      - Cơ sở dữ liệu Flyway `V31` & `V32`: 214 câu lệnh `UPDATE` radicals và 1.068 câu lệnh `UPDATE` vocabularies đều trỏ chính xác đến các tệp MP3 thực tế trên đĩa.
+      - Sửa lỗi subpath audio URL resolution trên GitHub Pages trong `frontend/js/pages/vocabulary-page.js#L25, #L1391`:
+        * `setupAudioPlayer()` sử dụng `resolveSubpathAudioUrl(rawAudioUrl)` thay vì chỉ `sanitizeResourceUrl(rawAudioUrl)`, đảm bảo thẻ `<audio>` trong modal chi tiết từ vựng tự động thêm tiền tố `/WebLearnChinese/` khi chạy trên GitHub Pages, ngăn chặn triệt để lỗi 404 Not Found.
+      - Bộ kiểm thử tự động xác minh:
+        * Unit test `tests/frontend/unit/srs/srs-audio-playback.test.mjs`: Bổ sung Test 21 & Test 22 kiểm tra tự động 100% độ phủ âm thanh của 214 bộ thủ và 1.068 từ vựng với tệp MP3 vật lý trên đĩa (kích thước > 100 bytes) -> PASS 22/22 tests (436ms).
+        * Unit test audio suite mở rộng (`srs-audio-stress.test.mjs`, `srs-audio-adversarial.test.mjs`, `srs-audio-challenger-edge.test.mjs`, `srs-audio-server-mime.test.mjs`): PASS 43/43 tests (658ms).
+        * Browser E2E `tests/frontend/e2e/srs-listening.browser.mjs`: PASS 8/8 tests (10.49s).
+        * `npm run verify:frontend:fast`: PASS 996/996 tests (240 suites, 0 failed, 12.17s) — tăng thêm 2 tests so với baseline 994.
+
 ### 5.2. Các hạng mục còn mở hoặc bị chặn bởi môi trường/thiết bị (`OPEN` / `UNVERIFIED` / `WONT_FIX`)
 
-20. **[P2-SPEECH-1] Kiểm chứng chất lượng chấm thanh điệu của `speech-service` trên tập dữ liệu giọng người thật (300–500 mẫu)**:
+21. **[P2-SPEECH-1] Kiểm chứng chất lượng chấm thanh điệu của `speech-service` trên tập dữ liệu giọng người thật (300–500 mẫu)**:
     - **Trạng thái**: `OPEN`
     - **Bằng chứng & Kế hoạch tiếp theo**: `speech-service/test_pipeline.py` hiện kiểm thử bằng sóng âm tổng hợp (synthetic pitch contours) và vượt qua 9/9 nhóm test DSP cùng 10/10 bài test bảo mật. Cần thu thập 300–500 mẫu giọng người học thật có gán nhãn chuyên gia để tinh chỉnh ngưỡng điểm F0 khi triển khai quy mô lớn.
-21. **[WONT_FIX-1] Chuyển đổi luyện viết `HanziWriter` sang mô hình AI OCR/HWR nhận diện chữ viết tay tự do**:
+22. **[WONT_FIX-1] Chuyển đổi luyện viết `HanziWriter` sang mô hình AI OCR/HWR nhận diện chữ viết tay tự do**:
     - **Trạng thái**: `WONT_FIX` (Theo quyết định sản phẩm Mục I.1 của chủ dự án).
-22. **[WONT_FIX-2] Sử dụng dịch vụ Cloud TTS trả phí tại runtime hoặc lưu trữ lâu dài bản ghi âm người học**:
+23. **[WONT_FIX-2] Sử dụng dịch vụ Cloud TTS trả phí tại runtime hoặc lưu trữ lâu dài bản ghi âm người học**:
     - **Trạng thái**: `WONT_FIX` (Theo quyết định sản phẩm Mục I.3 của chủ dự án).
 
 ---
@@ -231,14 +252,16 @@
 ## 6. KẾT QUẢ KIỂM THỬ THỰC TẾ ĐÃ CHẠY
 
 1. `npm run verify:frontend:fast`:
-   - **Kết quả**: **PASS 994/994 tests** (240 suites, 0 failed, duration: 13.21s, wall time: 13.28s).
+   - **Kết quả**: **PASS 996/996 tests** (240 suites, 0 failed, duration: 12.17s, wall time: 12.24s).
 2. `node tests/e2e/runner.mjs --tier=all`:
-   - **Kết quả**: **PASS 74/74 tests** (Tiers 1–4, 0 failed, total wall time: 0.77s).
-     - Tier 1: 32 tests (191ms)
-     - Tier 2: 30 tests (219ms)
-     - Tier 3: 6 tests (184ms)
-     - Tier 4: 6 tests (173ms)
-3. `node --test tests/frontend/unit/srs/srs-skill-writing.test.mjs`:
+   - **Kết quả**: **PASS 74/74 tests** (Tiers 1–4, 0 failed, total wall time: 0.74s).
+     - Tier 1: 32 tests (184ms)
+     - Tier 2: 30 tests (208ms)
+     - Tier 3: 6 tests (176ms)
+     - Tier 4: 6 tests (172ms)
+3. `node --test tests/frontend/unit/srs/srs-audio-playback.test.mjs`:
+   - **Kết quả**: **PASS 22/22 tests** (0 failed, duration: 436ms; bao gồm Test 21 và Test 22 kiểm tra 100% độ phủ 214 bộ thủ Khang Hy và 1.068 từ vựng HSK 1–3 có tệp MP3 tồn tại trên đĩa và dung lượng > 100 bytes).
+4. `node --test tests/frontend/unit/srs/srs-skill-writing.test.mjs`:
    - **Kết quả**: **PASS 32/32 tests** (7 suites, 0 failed, duration: 1.20s; bao gồm xác minh độ phủ 100% 214 bộ thủ Khang Hy, 1.055 từ vựng HSK 1-3 và canonical fallback).
 4. `node --test tests/frontend/e2e/writing-mobile.browser.mjs`:
    - **Kết quả**: **PASS 3/3 tests** (WM-01..WM-03, duration: 9.81s; đo đạc thực tế trên 360px, 375px, 390px, 412px và 1024px).

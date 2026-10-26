@@ -21,6 +21,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { SpeechController, SpeechState, resolveSubpathAudioUrl } from '../../../../frontend/js/ui/speech.js';
+import { SEED_RADICALS, SEED_VOCABULARY } from '../../../../frontend/js/api/demo-seed-data.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -739,5 +740,29 @@ describe('Unit: SRS Audio Playback Lifecycle & 3-Tier Fallback (R1)', () => {
     assert.strictEqual(btn.disabled, false, 'Button must unlock cleanly');
     assert.strictEqual(btn.classList.has('is-speaking'), false);
     assert.strictEqual(controller.state, SpeechState.IDLE);
+  });
+
+  test('21. Guarantees 100% audio URL coverage and disk existence across all 214 Kangxi radicals', () => {
+    assert.strictEqual(SEED_RADICALS.length, 214, 'Must contain all 214 Kangxi radicals');
+    for (const r of SEED_RADICALS) {
+      assert.ok(r.audioUrl, `Radical ${r.radicalId} (${r.character}) must have audioUrl`);
+      const relPath = r.audioUrl.replace(/^\//, '').replace(/^assets\//, 'assets/');
+      const absPath = path.join(FRONTEND_DIR, relPath);
+      assert.ok(fs.existsSync(absPath), `Audio file must exist on disk for radical ${r.radicalId}: ${relPath}`);
+      const stat = fs.statSync(absPath);
+      assert.ok(stat.size > 100, `Audio file for radical ${r.radicalId} must be non-empty valid media`);
+    }
+  });
+
+  test('22. Guarantees 100% audio URL coverage and disk existence across all 1,068 HSK 1-3 vocabularies', () => {
+    assert.ok(SEED_VOCABULARY.length >= 1068, 'Must contain at least 1,068 curriculum vocabulary items');
+    for (const v of SEED_VOCABULARY) {
+      assert.ok(v.audioUrl, `Vocabulary ${v.vocabId} (${v.hanzi}) must have audioUrl`);
+      const relPath = v.audioUrl.replace(/^\//, '').replace(/^assets\//, 'assets/');
+      const absPath = path.join(FRONTEND_DIR, relPath);
+      assert.ok(fs.existsSync(absPath), `Audio file must exist on disk for vocab ${v.vocabId}: ${relPath}`);
+      const stat = fs.statSync(absPath);
+      assert.ok(stat.size > 100, `Audio file for vocab ${v.vocabId} must be non-empty valid media`);
+    }
   });
 });

@@ -22,7 +22,7 @@ import { apiClient, ApiError } from '../api/api.js';
 import { initNavbarAuth } from '../ui/nav.js';
 import { createSafeElement, clearContainer, sanitizeResourceUrl, sanitizeNavigationUrl } from '../ui/security.js';
 import { setComponentState, createSpeakerIcon, createSpeechButton } from '../ui/ui.js';
-import { speechController, speakHanzi, playPronunciation, isSpeechSynthesisAvailable, SpeechState } from '../ui/speech.js';
+import { speechController, speakHanzi, playPronunciation, isSpeechSynthesisAvailable, SpeechState, resolveSubpathAudioUrl } from '../ui/speech.js';
 import { authManager } from '../auth/auth-state.js';
 import { VocabWritingOrchestrator } from '../ui/character-writing/vocab-writing-orchestrator.js';
 import { splitHanziCharacters } from '../ui/character-writing/stroke-data-loader.js';
@@ -1388,7 +1388,7 @@ export class VocabularyPageController {
   setupAudioPlayer(rawAudioUrl) {
     if (!this.elements.modalAudioSection || !this.elements.modalAudioPlayer) return;
 
-    const safeUrl = sanitizeResourceUrl(rawAudioUrl);
+    const safeUrl = resolveSubpathAudioUrl(rawAudioUrl);
     if (rawAudioUrl && safeUrl !== 'about:blank') {
       this.elements.modalAudioPlayer.pause();
       this.elements.modalAudioPlayer.src = safeUrl;
