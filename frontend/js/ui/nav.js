@@ -15,7 +15,7 @@
  */
 
 import { authManager } from '../auth/auth-state.js';
-import { createSafeElement, clearContainer } from './security.js';
+import { createSafeElement, clearContainer, sanitizeResourceUrl } from './security.js';
 import { showToast } from './ui.js';
 import { apiClient, isDemoFallbackActive, isGitHubPagesEnvironment, isApiConfigured } from '../api/api.js';
 
@@ -298,6 +298,34 @@ export function renderNavbarAuth(container) {
       ]
     });
 
+    // Resolve user avatar (custom local or online URL)
+    const accountId = user?.accountId || 'current';
+    let userAvatarUrl = user?.avatarUrl || null;
+    if (!userAvatarUrl) {
+      try {
+        if (typeof localStorage !== 'undefined') {
+          userAvatarUrl = localStorage.getItem(`weblearnchinese_custom_avatar_${accountId}`);
+        }
+      } catch (_) {}
+    }
+    const safeAvatar = userAvatarUrl ? sanitizeResourceUrl(userAvatarUrl) : null;
+    const hasValidAvatar = safeAvatar && safeAvatar !== 'about:blank';
+
+    const avatarNode = hasValidAvatar
+      ? createSafeElement('img', {
+          className: 'nav-user-avatar-img',
+          attrs: {
+            src: safeAvatar,
+            alt: `Ảnh của ${displayName}`,
+            'aria-hidden': 'true'
+          }
+        })
+      : createSafeElement('span', {
+          className: 'nav-user-avatar',
+          text: initial,
+          attrs: { 'aria-hidden': 'true' }
+        });
+
     // Dropdown Trigger Button (Disclosure Pattern)
     const dropdownTrigger = createSafeElement('button', {
       className: 'nav-account-trigger btn py-1 px-2 d-inline-flex align-items-center gap-2',
@@ -309,11 +337,7 @@ export function renderNavbarAuth(container) {
         'aria-label': `Tài khoản ${displayName} — Nhấn để mở menu phân hệ`
       },
       children: [
-        createSafeElement('span', {
-          className: 'nav-user-avatar',
-          text: initial,
-          attrs: { 'aria-hidden': 'true' }
-        }),
+        avatarNode,
         createSafeElement('span', {
           className: 'nav-user-name fw-semibold',
           text: displayName,

@@ -17,7 +17,7 @@
 import { apiClient, ApiError, parseFieldErrors } from '../api/api.js';
 import { authManager } from '../auth/auth-state.js';
 import { initNavbarAuth } from '../ui/nav.js';
-import { showToast } from '../ui/ui.js';
+import { showToast, setupPasswordToggle } from '../ui/ui.js';
 
 /**
  * Resolves the application base URL (directory containing HTML pages).
@@ -317,6 +317,10 @@ function initLoginForm() {
   const submitBtn = document.getElementById('loginSubmitBtn');
   const globalAlert = document.getElementById('loginGlobalAlert');
   const statusNotice = document.getElementById('loginStatusNotice');
+  const toggleLoginPasswordBtn = document.getElementById('toggleLoginPasswordBtn');
+  if (toggleLoginPasswordBtn && passwordInput) {
+    setupPasswordToggle(toggleLoginPasswordBtn, passwordInput);
+  }
 
   // Check URL parameters for contextual messages
   if (typeof window !== 'undefined' && window.location?.search) {
@@ -439,6 +443,10 @@ function initRegisterForm() {
   const passwordError = document.getElementById('regPasswordError');
   const submitBtn = document.getElementById('registerSubmitBtn');
   const globalAlert = document.getElementById('registerGlobalAlert');
+  const toggleRegPasswordBtn = document.getElementById('toggleRegPasswordBtn');
+  if (toggleRegPasswordBtn && passwordInput) {
+    setupPasswordToggle(toggleRegPasswordBtn, passwordInput);
+  }
 
   let isSubmitting = false;
 

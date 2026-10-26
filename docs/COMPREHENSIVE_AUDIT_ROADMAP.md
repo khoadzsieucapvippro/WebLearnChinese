@@ -23,7 +23,7 @@ flowchart TD
 | Chặng | Mã | Nhiệm vụ | Phạm vi tệp liên quan | Trạng thái |
 |---|---|---|---|---|
 | **Chặng 1: Khám phá & Nhận diện** | `TASK-1.1` | Trang chủ & Nhận diện thương hiệu | `index.html`, `main.css`, `header.css` | ✅ Hoàn thành |
-| | `TASK-1.2` | Xác thực, Đăng ký, Đăng nhập & Hồ sơ cá nhân | `login.html`, `register.html`, `profile.html`, `auth-state.js` | 🔄 Đang rà soát |
+| | `TASK-1.2` | Xác thực, Đăng ký, Đăng nhập & Hồ sơ cá nhân | `login.html`, `register.html`, `profile.html`, `auth-state.js` | ✅ Hoàn thành |
 | **Chặng 2: Thư viện Học liệu** | `TASK-2.1` | Danh mục & Chi tiết Từ vựng (1.068 từ HSK 1–3) | `vocabulary.html`, `vocabulary-page.js`, modal từ vựng | ⏳ Chờ duyệt |
 | | `TASK-2.2` | Tra cứu 214 Bộ thủ Khang Hy & Cấu phần chữ Hán | `radicals.html`, `radicals-page.js`, modal bộ thủ | ⏳ Chờ duyệt |
 | **Chặng 3: Chương trình Học** | `TASK-3.1` | 50 Bài học chuẩn HSK 3.0 & Chi tiết bài học | `lessons.html`, `lessons-page.js`, modal luyện viết | ⏳ Chờ duyệt |
@@ -57,11 +57,13 @@ flowchart TD
   5. *Liên kết hành động (CTA)*: Nút "Học thử ngay", "Khám phá từ vựng" chuyển trang đúng và không bị lỗi đường dẫn khi chạy trên subpath.
 
 #### `TASK-1.2`: Xác Thực, Đăng Ký, Đăng Nhập & Hồ Sơ Cá Nhân (`login.html`, `register.html`, `profile.html`)
-- **Mục tiêu**: Bảo mật và trải nghiệm đăng nhập mượt mà, thông báo lỗi tiếng Việt dễ hiểu.
-- **Tiêu chí kiểm tra**:
-  1. *Form Validation*: Kiểm tra định dạng email, độ dài mật khẩu (>= 6 ký tự), xác nhận mật khẩu khớp.
-  2. *Bảo mật Mật khẩu*: Tuyệt đối không lưu mật khẩu trong `localStorage` hay `sessionStorage` (Zero Storage Leak). Nút ẩn/hiện mật khẩu hoạt động trơn tru.
-  3. *Trang Profile*: Xem thông tin người dùng, đổi mật khẩu an toàn, cài đặt âm lượng/phát âm, gỡ bỏ khu vực workspace admin (chuyển sang `management.html`).
+- **Mục tiêu**: Bảo mật và trải nghiệm đăng nhập mượt mà theo chuẩn quốc tế (NIST SP 800-63B, Nielsen Norman Group, OWASP), thông báo lỗi tiếng Việt dễ hiểu.
+- **Tiêu chí & Hạng mục đã hoàn thiện**:
+  1. *Chuẩn Hóa Kênh Định Danh*: Nhãn và input đổi thành "Email đăng nhập" / "Email đăng ký" (placeholder: `name@example.com`), loại bỏ kỳ vọng SMS OTP khi hệ thống không có SMS gateway.
+  2. *Nút Ẩn/Hiện Mật Khẩu (Show/Hide Toggle 👁️)*: Triển khai theo chuẩn NIST SP 800-63B & NN/g trên cả 3 trang: Đăng nhập (`login.html`), Đăng ký (`register.html`), Đổi mật khẩu (`profile.html`).
+  3. *Lối Thoát Khi Quên Mật Khẩu*: Tích hợp liên kết và Modal "Khôi phục mật khẩu" chuẩn WCAG 2.2 trên `login.html`.
+  4. *Tải Ảnh Đại Diện Từ Thư Mục Thiết Bị*: Bổ sung nút chọn ảnh từ máy (`FileReader` + tự động crop/resize 160x160 qua HTML5 canvas chống tràn bộ nhớ và bảo mật EXIF), nút xóa ảnh đại diện, đồng bộ hiển thị ảnh avatar trên cả thanh Navbar và trang Hồ sơ.
+  5. *Bảo Vệ Giới Hạn SRS Thẻ*: Đồng bộ thuộc tính `max="100"` trên `profile.html` tuân thủ nghiêm ngặt Invariant 6 (`[1, 100]`).
 
 ---
 

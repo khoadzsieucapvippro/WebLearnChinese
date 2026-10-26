@@ -23,8 +23,11 @@ import {
 
 import { 
   validateProfileForm, 
-  formatCreatedAt 
+  formatCreatedAt,
+  processAvatarFile
 } from '../../../../frontend/js/pages/profile-page.js';
+import { setupPasswordToggle } from '../../../../frontend/js/ui/ui.js';
+import fsPromises from 'node:fs/promises';
 
 import { 
   getRoleLabel, 
@@ -105,6 +108,10 @@ class MockElement {
     if (selector.startsWith('#')) {
       const id = selector.slice(1);
       return this._findChild(el => el.getAttribute?.('id') === id);
+    }
+    if (selector.startsWith('.')) {
+      const cls = selector.slice(1);
+      return this._findChild(el => el.classList?.contains?.(cls));
     }
     return null;
   }
@@ -447,6 +454,86 @@ describe('Authentication Form Validation & Business Constraints', () => {
       assert.strictEqual(mgmtBtn.textContent, 'Khu vực quản lý');
       assert.ok(mgmtBtn.getAttribute('href').includes('management.html'));
     });
+  });
+
+  describe('Password Visibility Toggle & Device Avatar Processing (TASK-1.2)', () => {
+
+    test('setupPasswordToggle toggles input type between password and text', () => {
+      const input = new MockElement('input');
+      input.type = 'password';
+
+      const eye = new MockElement('svg');
+      eye.className = 'eye-icon';
+      const eyeOff = new MockElement('svg');
+      eyeOff.className = 'eye-off-icon d-none';
+
+      const btn = new MockElement('button');
+      btn.appendChild(eye);
+      btn.appendChild(eyeOff);
+
+      setupPasswordToggle(btn, input);
+
+      // Trigger click
+      const clickHandlers = btn.eventListeners.get('click');
+      assert.ok(clickHandlers && clickHandlers.size > 0, 'Click listener must be registered');
+      const clickFn = Array.from(clickHandlers)[0];
+
+      // First click: password -> text
+      clickFn();
+      assert.strictEqual(input.type, 'text');
+      assert.strictEqual(btn.getAttribute('aria-label'), 'Ẩn mật khẩu');
+      assert.ok(eye.classList.contains('d-none'));
+      assert.strictEqual(eyeOff.classList.contains('d-none'), false);
+
+      // Second click: text -> password
+      clickFn();
+      assert.strictEqual(input.type, 'password');
+      assert.strictEqual(btn.getAttribute('aria-label'), 'Hiện mật khẩu');
+      assert.strictEqual(eye.classList.contains('d-none'), false);
+      assert.ok(eyeOff.classList.contains('d-none'));
+    });
+
+    test('processAvatarFile rejects non-image or invalid files', async () => {
+      await assert.rejects(
+        () => processAvatarFile(null),
+        /chọn một tệp hình ảnh/
+      );
+
+      await assert.rejects(
+        () => processAvatarFile({ type: 'application/pdf', size: 100 }),
+        /Định dạng hình ảnh không được hỗ trợ/
+      );
+
+      await assert.rejects(
+        () => processAvatarFile({ type: 'image/png', size: 6 * 1024 * 1024 }),
+        /vượt quá giới hạn 5MB/
+      );
+    });
+
+    test('verifies login.html contains updated labels, password toggle, and forgot password modal', async () => {
+      const html = await fsPromises.readFile('frontend/login.html', 'utf8');
+      assert.ok(html.includes('Email đăng nhập'), 'Label must be Email đăng nhập');
+      assert.ok(html.includes('id="toggleLoginPasswordBtn"'), 'Must have toggle password button');
+      assert.ok(html.includes('Quên mật khẩu?'), 'Must have forgot password link');
+      assert.ok(html.includes('id="forgotPasswordModal"'), 'Must have forgot password modal');
+    });
+
+    test('verifies register.html contains updated labels and password toggle', async () => {
+      const html = await fsPromises.readFile('frontend/register.html', 'utf8');
+      assert.ok(html.includes('Email đăng ký'), 'Label must be Email đăng ký');
+      assert.ok(html.includes('id="toggleRegPasswordBtn"'), 'Must have toggle password button');
+    });
+
+    test('verifies profile.html contains device file picker controls and password toggles', async () => {
+      const html = await fsPromises.readFile('frontend/profile.html', 'utf8');
+      assert.ok(html.includes('id="profileChooseFileBtn"'), 'Must have choose file button');
+      assert.ok(html.includes('id="profileAvatarFileInput"'), 'Must have hidden file input');
+      assert.ok(html.includes('id="profileRemoveAvatarBtn"'), 'Must have remove avatar button');
+      assert.ok(html.includes('id="toggleCurrentPasswordBtn"'), 'Must have toggle for current password');
+      assert.ok(html.includes('id="toggleNewPasswordBtn"'), 'Must have toggle for new password');
+      assert.ok(html.includes('id="toggleConfirmNewPasswordBtn"'), 'Must have toggle for confirm password');
+    });
+
   });
 
 });

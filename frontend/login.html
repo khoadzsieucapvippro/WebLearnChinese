@@ -98,7 +98,7 @@
               <!-- Field: Email or Phone -->
               <div class="mb-3">
                 <label for="loginEmail" class="form-label fw-semibold">
-                  Email hoặc Số điện thoại <span class="text-danger" aria-hidden="true">*</span>
+                  Email đăng nhập <span class="text-danger" aria-hidden="true">*</span>
                 </label>
                 <input 
                   type="text" 
@@ -109,27 +109,50 @@
                   required 
                   aria-required="true"
                   aria-describedby="loginEmailError"
-                  placeholder="name@example.com hoặc 0912345678"
+                  placeholder="name@example.com"
                 >
                 <div id="loginEmailError" class="invalid-feedback d-none" role="alert"></div>
               </div>
 
               <!-- Field: Password -->
               <div class="mb-4">
-                <label for="loginPassword" class="form-label fw-semibold">
-                  Mật khẩu <span class="text-danger" aria-hidden="true">*</span>
-                </label>
-                <input 
-                  type="password" 
-                  id="loginPassword" 
-                  name="password" 
-                  class="form-control" 
-                  autocomplete="current-password" 
-                  required 
-                  aria-required="true"
-                  aria-describedby="loginPasswordError"
-                  placeholder="Nhập mật khẩu"
-                >
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <label for="loginPassword" class="form-label fw-semibold mb-0">
+                    Mật khẩu <span class="text-danger" aria-hidden="true">*</span>
+                  </label>
+                  <a href="#forgotPasswordModal" class="small text-decoration-none" data-bs-toggle="modal" data-bs-target="#forgotPasswordModal" style="color: var(--color-accent-primary);">
+                    Quên mật khẩu?
+                  </a>
+                </div>
+                <div class="input-group">
+                  <input 
+                    type="password" 
+                    id="loginPassword" 
+                    name="password" 
+                    class="form-control" 
+                    autocomplete="current-password" 
+                    required 
+                    aria-required="true"
+                    aria-describedby="loginPasswordError"
+                    placeholder="Nhập mật khẩu"
+                  >
+                  <button 
+                    class="btn btn-outline-secondary toggle-password-btn" 
+                    type="button" 
+                    id="toggleLoginPasswordBtn"
+                    aria-label="Hiện mật khẩu"
+                    title="Hiện mật khẩu"
+                  >
+                    <svg class="eye-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                    <svg class="eye-off-icon d-none" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                      <line x1="1" y1="1" x2="23" y2="23"></line>
+                    </svg>
+                  </button>
+                </div>
                 <div id="loginPasswordError" class="invalid-feedback d-none" role="alert"></div>
               </div>
 
@@ -151,6 +174,37 @@
       </div>
     </div>
   </main>
+
+
+  <!-- Modal Khôi Phục Mật Khẩu (WCAG 2.2 Modal Dialog) -->
+  <div class="modal fade" id="forgotPasswordModal" tabindex="-1" aria-labelledby="forgotPasswordModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content card-chinese border-0 shadow">
+        <div class="modal-header border-bottom">
+          <h5 class="modal-title fw-bold" id="forgotPasswordModalLabel">Khôi Phục Mật Khẩu</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+        </div>
+        <div class="modal-body p-4">
+          <p class="text-secondary small mb-3">
+            Để đảm bảo an toàn tài khoản học viên, hệ thống áp dụng cơ chế xác thực bảo mật tập trung.
+          </p>
+          <div class="alert alert-info small d-flex align-items-start gap-2 mb-3">
+            <span aria-hidden="true">ℹ️</span>
+            <div>
+              Nếu bạn quên mật khẩu, vui lòng liên hệ ban quản trị để được hỗ trợ đặt lại mật khẩu an toàn:
+              <div class="mt-2 fw-bold text-dark">support@weblearnchinese.edu.vn</div>
+            </div>
+          </div>
+          <p class="text-secondary small mb-0">
+            Hệ thống sẽ xác minh danh tính và hỗ trợ đặt lại mật khẩu trong thời gian sớm nhất.
+          </p>
+        </div>
+        <div class="modal-footer border-top">
+          <button type="button" class="btn-chinese-primary py-2 px-4" data-bs-dismiss="modal">Đã hiểu</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Global Toast Notification Container (WCAG 2.2 SC 4.1.3) -->
   <div id="toastContainer" class="toast-container-custom" role="status" aria-live="polite" aria-atomic="true"></div>

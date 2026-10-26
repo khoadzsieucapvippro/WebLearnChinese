@@ -17,8 +17,77 @@
 import { apiClient, ApiError, parseFieldErrors } from '../api/api.js';
 import { authManager } from '../auth/auth-state.js';
 import { initNavbarAuth, getRoleLabel, getRoleBadgeClass, getPrimaryRole } from '../ui/nav.js';
-import { setComponentState, showToast } from '../ui/ui.js';
+import { setComponentState, showToast, setupPasswordToggle } from '../ui/ui.js';
 import { sanitizeResourceUrl, createSafeElement, clearContainer } from '../ui/security.js';
+
+
+/**
+ * Reads and optimizes an image File from local device/folder.
+ * Downscales to square thumbnail (default 160x160) and encodes as JPEG data URL.
+ * 
+ * @param {File} file 
+ * @param {number} [maxDimension=160]
+ * @returns {Promise<string>} safe raster data URL
+ */
+export function processAvatarFile(file, maxDimension = 160) {
+  return new Promise((resolve, reject) => {
+    if (!file) {
+      return reject(new Error('Vui lòng chọn một tệp hình ảnh.'));
+    }
+    const validMimes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/gif'];
+    const fileType = (file.type || '').toLowerCase();
+    if (!fileType || !validMimes.includes(fileType)) {
+      return reject(new Error('Định dạng hình ảnh không được hỗ trợ. Vui lòng chọn tệp PNG, JPEG hoặc WebP.'));
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      return reject(new Error('Kích thước ảnh vượt quá giới hạn 5MB. Vui lòng chọn ảnh nhỏ hơn.'));
+    }
+
+    if (typeof FileReader === 'undefined') {
+      return reject(new Error('Trình duyệt không hỗ trợ FileReader API.'));
+    }
+
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('Không thể đọc tệp hình ảnh từ thiết bị.'));
+    reader.onload = (e) => {
+      const result = e.target?.result;
+      if (!result || typeof result !== 'string') {
+        return reject(new Error('Dữ liệu ảnh rỗng hoặc không hợp lệ.'));
+      }
+
+      if (typeof Image === 'undefined' || typeof document === 'undefined' || !document.createElement) {
+        return resolve(result);
+      }
+
+      const img = new Image();
+      img.onerror = () => reject(new Error('Không thể phân tích dữ liệu hình ảnh đã chọn.'));
+      img.onload = () => {
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = maxDimension;
+          canvas.height = maxDimension;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            return resolve(result);
+          }
+
+          // Center crop to square
+          const minSide = Math.min(img.naturalWidth || img.width, img.naturalHeight || img.height);
+          const sx = ((img.naturalWidth || img.width) - minSide) / 2;
+          const sy = ((img.naturalHeight || img.height) - minSide) / 2;
+
+          ctx.drawImage(img, sx, sy, minSide, minSide, 0, 0, maxDimension, maxDimension);
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+          resolve(compressedDataUrl);
+        } catch (_) {
+          resolve(result);
+        }
+      };
+      img.src = result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
 
 const DEFAULT_AVATAR_PLACEHOLDER = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80"><rect width="80" height="80" fill="%23F3EFEA" rx="40"/><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="32" fill="%2378716C">学</text></svg>';
 
@@ -196,7 +265,15 @@ function renderProfileData(profile) {
 
 
   if (avatarImg) {
-    setSafeAvatarSrc(avatarImg, profile?.avatarUrl);
+    const accountId = profile?.accountId || authManager.getUser()?.accountId || 'current';
+    let customLocalAvatar = null;
+    try {
+      if (typeof localStorage !== 'undefined') {
+        customLocalAvatar = localStorage.getItem(`weblearnchinese_custom_avatar_${accountId}`);
+      }
+    } catch (_) {}
+    const avatarCandidate = customLocalAvatar || profile?.avatarUrl || authManager.getUser()?.avatarUrl;
+    setSafeAvatarSrc(avatarImg, avatarCandidate);
   }
 
   // Populate form fields
@@ -222,6 +299,60 @@ function initProfileEditForm() {
   const globalAlert = document.getElementById('profileGlobalAlert');
   const saveBtn = document.getElementById('profileSaveBtn');
   const resetBtn = document.getElementById('profileResetBtn');
+  const chooseFileBtn = document.getElementById('profileChooseFileBtn');
+  const fileInput = document.getElementById('profileAvatarFileInput');
+  const removeAvatarBtn = document.getElementById('profileRemoveAvatarBtn');
+  const avatarImg = document.getElementById('profileAvatarImg');
+
+  let pendingCustomAvatar = null;
+
+  if (chooseFileBtn && fileInput) {
+    chooseFileBtn.addEventListener('click', () => {
+      fileInput.click();
+    });
+
+    fileInput.addEventListener('change', async (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      try {
+        const dataUrl = await processAvatarFile(file);
+        pendingCustomAvatar = dataUrl;
+        setSafeAvatarSrc(avatarImg, dataUrl);
+        if (avatarUrlInput) {
+          avatarUrlInput.value = '';
+        }
+        showToast({
+          type: 'info',
+          title: 'Đã chọn ảnh đại diện',
+          message: 'Nhấn "Lưu thay đổi" để áp dụng ảnh đại diện mới vào hồ sơ.'
+        });
+      } catch (err) {
+        showToast({
+          type: 'danger',
+          title: 'Lỗi tải ảnh',
+          message: err.message || 'Không thể xử lý tệp ảnh đã chọn.'
+        });
+      } finally {
+        fileInput.value = '';
+      }
+    });
+  }
+
+  if (removeAvatarBtn) {
+    removeAvatarBtn.addEventListener('click', () => {
+      pendingCustomAvatar = 'REMOVE';
+      setSafeAvatarSrc(avatarImg, null);
+      if (avatarUrlInput) {
+        avatarUrlInput.value = '';
+      }
+      showToast({
+        type: 'info',
+        title: 'Ảnh đại diện mặc định',
+        message: 'Nhấn "Lưu thay đổi" để hoàn tất khôi phục biểu tượng mặc định.'
+      });
+    });
+  }
 
   function clearErrors() {
     [fullNameInput, avatarUrlInput].forEach(inp => {
@@ -281,15 +412,44 @@ function initProfileEditForm() {
     }
 
     try {
+      const rawCandidate = avatarUrl.trim();
+      const payloadAvatarUrl = rawCandidate.length > 0 ? rawCandidate : null;
+
       const updatedProfile = await apiClient('/users/profile', {
         method: 'PUT',
         body: {
           fullName: fullName.trim(),
-          avatarUrl: avatarUrl.trim() || null
+          avatarUrl: payloadAvatarUrl
         }
       });
 
       currentProfile = updatedProfile;
+
+      const accountId = updatedProfile.accountId || authManager.getUser()?.accountId || 'current';
+      if (pendingCustomAvatar === 'REMOVE') {
+        try {
+          if (typeof localStorage !== 'undefined') {
+            localStorage.removeItem(`weblearnchinese_custom_avatar_${accountId}`);
+          }
+        } catch (_) {}
+        authManager.updateUser({ avatarUrl: null });
+        pendingCustomAvatar = null;
+      } else if (pendingCustomAvatar) {
+        try {
+          if (typeof localStorage !== 'undefined') {
+            localStorage.setItem(`weblearnchinese_custom_avatar_${accountId}`, pendingCustomAvatar);
+          }
+        } catch (_) {}
+        authManager.updateUser({ avatarUrl: pendingCustomAvatar });
+        pendingCustomAvatar = null;
+      } else if (payloadAvatarUrl) {
+        try {
+          if (typeof localStorage !== 'undefined') {
+            localStorage.removeItem(`weblearnchinese_custom_avatar_${accountId}`);
+          }
+        } catch (_) {}
+        authManager.updateUser({ avatarUrl: payloadAvatarUrl });
+      }
 
       // Update UI
       renderProfileData(updatedProfile);
@@ -301,7 +461,7 @@ function initProfileEditForm() {
       showToast({
         type: 'success',
         title: 'Cập nhật thành công',
-        message: 'Thông tin hồ sơ cá nhân đã được lưu thành công.'
+        message: 'Thông tin hồ sơ cá nhân và ảnh đại diện đã được lưu thành công.'
       });
 
     } catch (err) {
@@ -975,6 +1135,19 @@ export function initAccountSecurity() {
   const currentInput = document.getElementById('currentPasswordInput');
   const newInput = document.getElementById('newPasswordInput');
   const confirmInput = document.getElementById('confirmNewPasswordInput');
+
+  const toggleCurrentBtn = document.getElementById('toggleCurrentPasswordBtn');
+  if (toggleCurrentBtn && currentInput) {
+    setupPasswordToggle(toggleCurrentBtn, currentInput);
+  }
+  const toggleNewBtn = document.getElementById('toggleNewPasswordBtn');
+  if (toggleNewBtn && newInput) {
+    setupPasswordToggle(toggleNewBtn, newInput);
+  }
+  const toggleConfirmBtn = document.getElementById('toggleConfirmNewPasswordBtn');
+  if (toggleConfirmBtn && confirmInput) {
+    setupPasswordToggle(toggleConfirmBtn, confirmInput);
+  }
   const submitBtn = document.getElementById('btnChangePassword');
   const resetBtn = document.getElementById('btnResetPasswordForm');
   const globalAlert = document.getElementById('changePasswordGlobalAlert');

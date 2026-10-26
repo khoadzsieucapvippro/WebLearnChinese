@@ -512,6 +512,40 @@ export function createSpeechButton({
   return btn;
 }
 
+
+/**
+ * Attaches accessible show/hide password toggle behavior to a button and input.
+ * Supports both mouse and keyboard accessibility (WCAG 2.2 SC 4.1.2).
+ * 
+ * @param {HTMLButtonElement|null} buttonEl - toggle trigger button
+ * @param {HTMLInputElement|null} inputEl - target password input
+ */
+export function setupPasswordToggle(buttonEl, inputEl) {
+  if (!buttonEl || !inputEl) return;
+
+  buttonEl.addEventListener('click', () => {
+    const isPassword = inputEl.type === 'password';
+    inputEl.type = isPassword ? 'text' : 'password';
+
+    const eyeIcon = buttonEl.querySelector('.eye-icon');
+    const eyeOffIcon = buttonEl.querySelector('.eye-off-icon');
+
+    if (eyeIcon && eyeOffIcon) {
+      if (isPassword) {
+        eyeIcon.classList.add('d-none');
+        eyeOffIcon.classList.remove('d-none');
+      } else {
+        eyeIcon.classList.remove('d-none');
+        eyeOffIcon.classList.add('d-none');
+      }
+    }
+
+    const label = isPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu';
+    buttonEl.setAttribute('aria-label', label);
+    buttonEl.setAttribute('title', label);
+  });
+}
+
 // Re-export speech synthesis primitives from centralized speech controller
 export {
   SpeechState,
