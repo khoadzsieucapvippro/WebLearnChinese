@@ -19,8 +19,10 @@ import {
   splitHanziCharacters,
   extractCleanChar,
   loadStrokeData,
-  clearStrokeCache
+  clearStrokeCache,
+  RADICAL_VARIANT_CANONICAL_MAP
 } from '../../../../frontend/js/ui/character-writing/stroke-data-loader.js';
+import { SEED_RADICALS } from '../../../../frontend/js/api/demo-seed-data.js';
 import {
   VocabWritingOrchestrator,
   WRITING_MODES
@@ -94,6 +96,41 @@ describe('Unit: Multi-Skill SRS & Vocabulary Writing Orchestrator', () => {
         assert.notStrictEqual(res, null, `Stroke data for ${chars[i]} must exist locally`);
         assert.ok(res.strokes.length > 0);
       });
+    });
+
+    test('loads local stroke data for standard radical variants (王, 卤, 黾)', async () => {
+      clearStrokeCache();
+      const chars = ['王', '卤', '黾'];
+      for (const c of chars) {
+        const data = await loadStrokeData(c);
+        assert.notStrictEqual(data, null, `Stroke data for ${c} must exist locally`);
+        assert.ok(Array.isArray(data.strokes) && data.strokes.length > 0, `Strokes for ${c} must be non-empty`);
+      }
+    });
+
+    test('loads canonical fallback stroke data for radical variants (牜 -> 牛, 玊 -> 玉, etc.)', async () => {
+      clearStrokeCache();
+      assert.ok(RADICAL_VARIANT_CANONICAL_MAP['牜'] === '牛');
+      const dataNiu = await loadStrokeData('牜');
+      assert.notStrictEqual(dataNiu, null, 'Stroke data for 牜 must fallback to canonical 牛');
+      assert.strictEqual(dataNiu.strokes.length, 4, 'Radical 牜 / 牛 must have 4 strokes');
+
+      const dataYu = await loadStrokeData('玊');
+      assert.notStrictEqual(dataYu, null, 'Stroke data for 玊 must fallback to canonical 玉');
+      assert.strictEqual(dataYu.strokes.length, 5, 'Radical 玊 / 玉 must have 5 strokes');
+    });
+
+    test('guarantees 100% stroke data coverage across all 214 Kangxi radicals', async () => {
+      clearStrokeCache();
+      let successCount = 0;
+      for (const r of SEED_RADICALS) {
+        const char = r.character;
+        const data = await loadStrokeData(char);
+        if (data && data.strokes && data.strokes.length > 0) {
+          successCount++;
+        }
+      }
+      assert.strictEqual(successCount, SEED_RADICALS.length, `All ${SEED_RADICALS.length} radicals must have valid stroke data`);
     });
   });
 

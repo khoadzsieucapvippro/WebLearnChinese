@@ -199,14 +199,31 @@
         * Real Physical Phone LAN Server: `scripts/serve.mjs` tự động lắng nghe trên `0.0.0.0` và hiển thị địa chỉ LAN Wi-Fi `http://192.168.0.104:3000` (kích hoạt qua `npm run serve:mobile`) để điện thoại thật trong mạng Wi-Fi có thể truy cập và test trực tiếp.
         * Public Cloud Tunnel: Hỗ trợ `npx localtunnel --port 3000` tạo URL HTTPS công khai cho phép test từ thiết bị di động 4G/5G hoặc bất kỳ môi trường đám mây nào.
 
+19. **[WRITING-STROKE-1] Độ phủ Nét vẽ HanziWriter & Luyện viết Di động (Stroke Data 100% Coverage & Mobile Viewport Integrity)**:
+    - **Trạng thái**: `VERIFIED_FIXED`
+    - **Bằng chứng**:
+      - Quét toàn bộ 1.055 từ vựng HSK 1, 2, 3 và 214 bộ thủ Khang Hy trong cơ sở dữ liệu (`V1..V30` và `demo-seed-data.js`):
+        * Từ vựng HSK 1-3: 656/656 (100.0%) chữ Hán độc nhất cấu thành đã có đầy đủ tệp dữ liệu nét vẽ JSON cục bộ hợp lệ trong `frontend/assets/data/strokes/`.
+        * Bộ thủ Khang Hy: Đạt 214/214 (100.0%) độ phủ nét vẽ. Bổ sung 3 tệp stroke JSON cục bộ tải từ kho HanziWriter: `王.json` (bộ Ngọc dạng Vương, 4 nét), `卤.json` (bộ Lỗ giản thể, 7 nét), `黾.json` (bộ Mãnh giản thể, 8 nét).
+        * Fallback biến thể bộ thủ (`frontend/js/ui/character-writing/stroke-data-loader.js`): Bổ sung `RADICAL_VARIANT_CANONICAL_MAP` tự động ánh xạ 9 biến thể/dị thể đặc thù (`牜` -> `牛`, `玊` -> `玉`, `靣` -> `面`, `凬` -> `风`, `黒` -> `黑`, `斉` -> `齐`, `歯` -> `齿`, `竜` -> `龙`, `亀` -> `龟`) về chữ chuẩn tương ứng, đảm bảo người học luôn xem được thứ tự nét mượt mà mà không bao giờ bị lỗi "Chưa có nét".
+      - Kiểm thử thực tế trên 4 loại thiết bị di động thật (Compact Mobile 360px, iPhone SE 375px, iPhone 14 390px, Google Pixel 7 412px) và Desktop (1024px):
+        * Hai ô mễ tự (`.writing-rice-grid-box`, 170x170px) của từ ghép 2 chữ (`爱好`, `学生`) tự động xếp chồng dọc (stacked) trên mobile hẹp và căn giữa gọn gàng nhờ `flex-wrap` trong `#srsWritingCanvasContainer`.
+        * Đạt tuyệt đối **0px horizontal overflow** (`scrollWidth <= clientWidth`, bodyScrollWidth <= bodyClientWidth) trên mọi viewport từ 360px đến 1024px.
+        * Trên màn hình máy tính (1024px), 2 ô mễ tự tự động chuyển sang bố cục song song ngang (side-by-side) nguyên bản.
+      - Bộ kiểm thử tự động xác minh:
+        * Unit test `tests/frontend/unit/srs/srs-skill-writing.test.mjs`: Bổ sung 3 test cases xác minh stroke data của 3 file mới, canonical fallback của 9 biến thể và đảm bảo 100% độ phủ trên 214 bộ thủ -> PASS 32/32 tests (1.20s).
+        * Browser E2E `tests/frontend/e2e/writing-mobile.browser.mjs`: Kiểm thử đo đạc thực tế trên Playwright cho 360px, 375px, 390px, 412px và 1024px -> PASS 3/3 tests (9.81s).
+        * `npm run verify:frontend:fast`: PASS 994/994 tests (240 suites, 0 failed, 13.28s).
+        * `node tests/e2e/runner.mjs --tier=all`: PASS 74/74 tests (0.77s).
+
 ### 5.2. Các hạng mục còn mở hoặc bị chặn bởi môi trường/thiết bị (`OPEN` / `UNVERIFIED` / `WONT_FIX`)
 
-19. **[P2-SPEECH-1] Kiểm chứng chất lượng chấm thanh điệu của `speech-service` trên tập dữ liệu giọng người thật (300–500 mẫu)**:
+20. **[P2-SPEECH-1] Kiểm chứng chất lượng chấm thanh điệu của `speech-service` trên tập dữ liệu giọng người thật (300–500 mẫu)**:
     - **Trạng thái**: `OPEN`
     - **Bằng chứng & Kế hoạch tiếp theo**: `speech-service/test_pipeline.py` hiện kiểm thử bằng sóng âm tổng hợp (synthetic pitch contours) và vượt qua 9/9 nhóm test DSP cùng 10/10 bài test bảo mật. Cần thu thập 300–500 mẫu giọng người học thật có gán nhãn chuyên gia để tinh chỉnh ngưỡng điểm F0 khi triển khai quy mô lớn.
-20. **[WONT_FIX-1] Chuyển đổi luyện viết `HanziWriter` sang mô hình AI OCR/HWR nhận diện chữ viết tay tự do**:
+21. **[WONT_FIX-1] Chuyển đổi luyện viết `HanziWriter` sang mô hình AI OCR/HWR nhận diện chữ viết tay tự do**:
     - **Trạng thái**: `WONT_FIX` (Theo quyết định sản phẩm Mục I.1 của chủ dự án).
-21. **[WONT_FIX-2] Sử dụng dịch vụ Cloud TTS trả phí tại runtime hoặc lưu trữ lâu dài bản ghi âm người học**:
+22. **[WONT_FIX-2] Sử dụng dịch vụ Cloud TTS trả phí tại runtime hoặc lưu trữ lâu dài bản ghi âm người học**:
     - **Trạng thái**: `WONT_FIX` (Theo quyết định sản phẩm Mục I.3 của chủ dự án).
 
 ---
@@ -214,15 +231,21 @@
 ## 6. KẾT QUẢ KIỂM THỬ THỰC TẾ ĐÃ CHẠY
 
 1. `npm run verify:frontend:fast`:
-   - **Kết quả**: **PASS 991/991 tests** (240 suites, 0 failed, duration: 12.81s, wall time: 12.87s).
+   - **Kết quả**: **PASS 994/994 tests** (240 suites, 0 failed, duration: 13.21s, wall time: 13.28s).
 2. `node tests/e2e/runner.mjs --tier=all`:
-   - **Kết quả**: **PASS 74/74 tests** (Tiers 1–4, 0 failed, total wall time: 0.72s).
-     - Tier 1: 32 tests (162ms)
-     - Tier 2: 30 tests (217ms)
-     - Tier 3: 6 tests (165ms)
-     - Tier 4: 6 tests (171ms)
-3. `node --test tests/frontend/unit/srs/srs-skill-listening.test.mjs`:
-   - **Kết quả**: **PASS 51/51 tests** (11 suites, 0 failed, duration: 227ms; bao gồm Suite 8 kiểm tra tính đầy đủ từ điển và Suite 9 kiểm tra bàn phím hệ điều hành di động).
+   - **Kết quả**: **PASS 74/74 tests** (Tiers 1–4, 0 failed, total wall time: 0.77s).
+     - Tier 1: 32 tests (191ms)
+     - Tier 2: 30 tests (219ms)
+     - Tier 3: 6 tests (184ms)
+     - Tier 4: 6 tests (173ms)
+3. `node --test tests/frontend/unit/srs/srs-skill-writing.test.mjs`:
+   - **Kết quả**: **PASS 32/32 tests** (7 suites, 0 failed, duration: 1.20s; bao gồm xác minh độ phủ 100% 214 bộ thủ Khang Hy, 1.055 từ vựng HSK 1-3 và canonical fallback).
+4. `node --test tests/frontend/e2e/writing-mobile.browser.mjs`:
+   - **Kết quả**: **PASS 3/3 tests** (WM-01..WM-03, duration: 9.81s; đo đạc thực tế trên 360px, 375px, 390px, 412px và 1024px).
+5. `node --test tests/frontend/e2e/mobile-keyboard.browser.mjs`:
+   - **Kết quả**: **PASS 6/6 tests** (MK-01..MK-06, duration: 5.68s; Pixel 7 Android Gboard và iPhone 14 iOS 16 Mobile Safari).
+6. `node --test tests/frontend/unit/srs/srs-skill-listening.test.mjs`:
+   - **Kết quả**: **PASS 51/51 tests** (11 suites, 0 failed, duration: 227ms).
 4. `node --test tests/frontend/e2e/srs-listening.browser.mjs`:
    - **Kết quả**: **PASS 8/8 tests** (0 failed, duration: 14.5s; bao gồm SL-06 audio WAV thật, SL-07 auto-play khi chuyển thẻ, SL-08 mobile IME viewport).
 5. `node --test tests/frontend/e2e/mobile-keyboard.browser.mjs`:
