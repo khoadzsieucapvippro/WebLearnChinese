@@ -79,27 +79,12 @@
           <!-- Profile Card (Populated upon successful load) -->
           <div id="profileCard" class="card-chinese p-4 p-md-5 d-none">
             
-            <!-- User Identity Header (Top Identity Card) -->
-            <div class="d-flex align-items-center gap-3 mb-4 pb-2">
-              <!-- Clean avatar circle (学) -->
-              <div class="profile-header-avatar-circle flex-shrink-0">
-                <img 
-                  id="profileHeaderAvatarImg" 
-                  src="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2280%22 height=%2280%22 viewBox=%220 0 80 80%22><rect width=%2280%22 height=%2280%22 fill=%22%23F3EFEA%22 rx=%2240%22/><text x=%2250%25%22 y=%2255%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-family=%22sans-serif%22 font-size=%2232%22 fill=%22%2378716C%22>学</text></svg>" 
-                  alt="Ảnh đại diện người dùng" 
-                  class="rounded-circle border shadow-sm profile-avatar-img"
-                  style="width: 64px; height: 64px; object-fit: cover;"
-                >
-              </div>
-
-              <!-- Identity Meta -->
-              <div class="flex-grow-1 min-w-0">
-                <div class="d-flex align-items-center gap-2 flex-wrap">
-                  <h1 id="profileFullNameDisplay" class="h5 fw-bold mb-0 text-dark text-truncate">Đang tải hồ sơ...</h1>
-                  <span id="profileRoleBadge" class="badge-status badge-status-draft">Học viên</span>
-                </div>
-                <div id="profileEmailDisplay" class="text-secondary small mt-1 text-truncate">---</div>
-              </div>
+            <!-- Identity Meta (Accessibility & State Binding) -->
+            <div class="visually-hidden">
+              <h1 id="profileFullNameDisplay">Đang tải hồ sơ...</h1>
+              <span id="profileRoleBadge">Học viên</span>
+              <div id="profileEmailDisplay">---</div>
+              <img id="profileHeaderAvatarImg" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Crect width='80' height='80' fill='%23F3EFEA' rx='40'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='32' fill='%2378716C'%3E学%3C/text%3E%3C/svg%3E" alt="">
             </div>
 
             <!-- Navigation Tabs (IA: Thông tin cá nhân | Cài đặt) -->
