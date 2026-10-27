@@ -1152,6 +1152,9 @@ class DemoFallbackEngine {
     }
 
     if ((cleanPath === '/srs/review' || cleanPath === '/srs/reviews') && method === 'POST') {
+      if (body?.isRequeue || body?.requeued) {
+        return { isRequeue: true };
+      }
       const rating = parseInt(body?.rating || 3, 10);
       const itemId = parseInt(body?.itemId || 1, 10);
       const itemType = (body?.itemType || 'VOCABULARY').toUpperCase();

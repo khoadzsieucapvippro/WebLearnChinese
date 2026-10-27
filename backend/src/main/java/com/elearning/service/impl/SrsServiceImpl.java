@@ -548,6 +548,9 @@ public class SrsServiceImpl implements SrsService {
         boolean isNewCard = optProgress.isEmpty();
 
         // Enforce Due-Only policy on existing cards for Standard SRS mode (R2 Review Policy)
+        // Scientific refinement: If an existing card is reviewed before its due date and the user rates AGAIN (1),
+        // authoritative SM-2 / Anki principles mandate recording an immediate memory lapse (reset interval to 0).
+        // Only early successful recall (Hard, Good, Easy) is blocked to prevent review-farming ahead of schedule.
         if (!isNewCard) {
             CardProgress existing = optProgress.get();
             if ((rawCardType == null || rawCardType.trim().isEmpty()) && existing.getCardType() != null) {
@@ -555,9 +558,14 @@ public class SrsServiceImpl implements SrsService {
             }
             LocalDateTime now = LocalDateTime.now(businessClock);
             if (existing.getIntervalDays() > 0 && existing.getNextReviewAt() != null && existing.getNextReviewAt().isAfter(now)) {
-                log.warn("Card is not due yet for user_id={}, itemType={}, itemId={}, cardType={}, nextReviewAt={}",
-                        user.getUserId(), itemTypeUpper, request.getItemId(), cardTypeUpper, existing.getNextReviewAt());
-                throw new BusinessException(ErrorCode.CONFLICT, "Thẻ chưa đến hạn ôn tập");
+                if (request.getRating() != null && request.getRating() == 1) {
+                    log.info("Early review lapse (Again) permitted for user_id={}, itemType={}, itemId={}, cardType={}",
+                            user.getUserId(), itemTypeUpper, request.getItemId(), cardTypeUpper);
+                } else {
+                    log.warn("Card is not due yet for user_id={}, itemType={}, itemId={}, cardType={}, nextReviewAt={}",
+                            user.getUserId(), itemTypeUpper, request.getItemId(), cardTypeUpper, existing.getNextReviewAt());
+                    throw new BusinessException(ErrorCode.CONFLICT, "Thẻ chưa đến hạn ôn tập");
+                }
             }
         }
 

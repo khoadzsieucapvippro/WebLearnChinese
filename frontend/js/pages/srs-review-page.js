@@ -14876,8 +14876,11 @@ export class SrsReviewController {
         return;
       }
 
-      // Normal learning & chapter review: send authoritative review to backend if authenticated
-      if (authManager.isAuthenticated()) {
+      // Normal learning & chapter review: send authoritative review to backend if authenticated.
+      // Scientific SRS Invariant: In-session requeued attempts (_requeued) are working-memory drills;
+      // they do NOT overwrite or cancel the authoritative Lapse recorded on the first pass so that
+      // the card properly remains DUE in the catalog for genuine spaced review.
+      if (authManager.isAuthenticated() && !queueItem._requeued) {
         const payload = buildReviewPayload({
           itemType: card.itemType || 'VOCABULARY',
           itemId: card.itemId,
