@@ -4015,11 +4015,21 @@ a.lesson-vocab-hanzi:hover {
 
 @media (max-width: 575px) {
   .srs-curricula-shelf {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+}
+
+@media (max-width: 360px) {
+  .srs-curricula-shelf {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
   }
 }
 
 .srs-deck-card {
+  min-width: 0;
+  box-sizing: border-box;
   background-color: #ffffff;
   border: 1.5px solid var(--color-border, #e5e7eb);
   border-radius: var(--radius-lg, 12px);

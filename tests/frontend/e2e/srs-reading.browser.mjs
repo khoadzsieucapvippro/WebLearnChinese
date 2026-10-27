@@ -309,7 +309,7 @@ describe('Browser E2E: SRS Reading Room & AI Assessment', () => {
 
       await page.locator('#srsActiveSession').waitFor({ state: 'visible', timeout: 8000 });
 
-      const isReadingContainerVisible = await page.$eval('#srsReadingContainer', el => !el.classList.contains('d-none'));
+      const isReadingContainerVisible = await page.$eval('#srsReadingRoom', el => !el.classList.contains('d-none'));
       assert.strictEqual(isReadingContainerVisible, true, 'Reading container must be active');
 
       const quickSkillToolbarExists = await page.$('#quickSkillReading');

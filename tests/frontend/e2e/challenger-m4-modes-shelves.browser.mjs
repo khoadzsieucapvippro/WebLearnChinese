@@ -382,7 +382,7 @@ describe('Empirical Adversarial Challenge: 5 Curriculum Shelves & 5 Study Modes'
     try {
       await setupBaseMock(page, { hasDue: true });
 
-      await page.goto(`${baseUrl}/srs-review.html`, { waitUntil: 'domcontentloaded' });
+      await page.goto(`${baseUrl}/srs-review.html?mode=flashcard&group=radicals50&action=continue`, { waitUntil: 'domcontentloaded' });
       await page.locator('#srsActiveSession').waitFor({ state: 'visible', timeout: 8000 });
 
       // Verify flashcard is visible, writing, listening, reading rooms hidden
