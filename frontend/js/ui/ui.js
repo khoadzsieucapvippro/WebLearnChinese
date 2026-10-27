@@ -275,7 +275,9 @@ export function showToast({
     }, 200);
   };
 
-  closeBtn.addEventListener('click', dismiss);
+  if (closeBtn && typeof closeBtn.addEventListener === 'function') {
+    closeBtn.addEventListener('click', dismiss);
+  }
 
   toastContainer.appendChild(toastEl);
 

@@ -345,17 +345,25 @@ Toàn bộ hiện trạng kỹ thuật của **`TASK-4.3`: SRS Phòng Luyện Vi
    - **Desktop**: 2 ô hiển thị ngang hàng nhau (Side-by-side).
    - **Mobile (360px..412px)**: Tự động xếp chồng dọc (Stacked), đảm bảo **0px horizontal overflow** trên cả Google Pixel 7 (412px), iPhone 14 (390px), iPhone SE (375px), và thiết bị hẹp (360px). Hỗ trợ cảm ứng ngón tay mượt mà với `touch-action: none`.
 
-4. **Thuật toán Đánh Giá SRS Tự Động cho Kỹ Năng Viết (`cardType = 'WRITING'`)**:
-   - Không bắt học viên phải tự chấm điểm bằng 4 nút (Học lại, Khó, Tốt, Dễ). Hệ thống tự động chấm điểm dựa trên độ chính xác khi vẽ nét:
-     * Sai $\ge 5$ nét $\rightarrow$ **Rating 1 (Again - Học lại)**.
-     * Sai $2 \sim 4$ nét HOẶC có xem gợi ý/phát lại nét $\rightarrow$ **Rating 2 (Hard - Khó)**.
-     * Sai $0 \sim 1$ nét và không dùng gợi ý $\rightarrow$ **Rating 3 (Good - Tốt)**.
+4. **Quy Chuẩn Đánh Giá 1–4 Thống Nhất Thuật Toán SRS & Đa Dạng Hóa Cách Thức Triển Khai (Method Invariance & Skill Modalities)**:
+   - **Bản chất thuật toán SRS**: Thống nhất 100% mô hình 4 mức điểm SM-2 (1: Học lại, 2: Khó, 3: Tốt, 4: Dễ), chu trình Requeue học lại ở cuối phiên, chu trình Tốt nghiệp học lại (Relearn Graduation), và thống kê phân rã 5 chỉ số cho toàn bộ 4 phân hệ (`FLASHCARD`, `WRITING`, `LISTENING`, `READING`).
+   - **Cách thức triển khai thu nhận đánh giá (UX) phù hợp đặc thù từng kỹ năng**:
+     * **Flashcard**: Học viên tự đánh giá bằng 4 nút `[1], [2], [3], [4]`.
+     * **Luyện Viết (`TASK-4.3`)**: Tự động đánh giá 1-4 dựa trên **số nét sai và việc có dùng gợi ý**:
+       - Sai $\ge 5$ nét $\rightarrow$ **Rating 1 (Again - Học lại)**: Tự động kích hoạt cơ chế **Requeue** đưa thẻ về cuối phiên học để bắt buộc học viên phải viết lại; khi viết lại đạt $\le 4$ lỗi nét $\rightarrow$ **Tốt nghiệp học lại (Relearn Graduation)** và gửi đánh giá lên server/demo engine!
+       - Sai $2 \sim 4$ nét HOẶC xem gợi ý/phát lại nét $\rightarrow$ **Rating 2 (Hard - Khó)**.
+       - Sai 1 nét (không dùng gợi ý) $\rightarrow$ **Rating 3 (Good - Tốt)**.
+       - Hoàn hảo 0 nét sai (không dùng gợi ý) $\rightarrow$ **Rating 4 (Easy - Dễ)**.
+     * **Luyện Nghe (`TASK-4.5`)**: Đánh giá dựa trên số lần nghe lại, độ chính xác khi nhập chữ Hán/Pinyin và số lần kiểm tra.
+     * **Luyện Đọc (`TASK-4.4`)**: Đánh giá dựa trên điểm số phân tích đường cao độ F0 thanh điệu theo thang Chao của microservice Python FastAPI speech-service.
 
 5. **Bộ Kiểm Thử Đã Xác Minh & PASS 100%**:
-   - `tests/frontend/unit/srs/srs-skill-writing.test.mjs`: **32/32 tests PASS** (vòng đời 3 trạng thái, tách nét CJK, payload SRS contract, v.v.).
+   - `tests/frontend/unit/srs/srs-skill-writing.test.mjs`: **37/37 tests PASS** (bổ sung toàn diện 5 tests mới kiểm định quy chuẩn 1-4, requeue khi $\ge 5$ lỗi, và tốt nghiệp học lại khi viết lại).
    - `tests/frontend/e2e/writing-mobile.browser.mjs`: **3/3 tests PASS** (zero overflow trên 360px, 375px, 390px, 412px; bố cục stacked vs side-by-side).
    - `tests/frontend/e2e/character-writing.browser.mjs`: **5/5 tests PASS** (hoạt ảnh nét viết, modal đóng/mở, fallback khi thiếu nét).
    - `tests/frontend/e2e/srs-review-visual.browser.mjs`: **5/5 tests PASS** (xác minh visual chính xác từng pixel và class của State 1, State 2, State 3).
+   - `npm run verify:frontend:fast`: **1.073/1.073 tests PASS** (263 suites).
+   - `node tests/e2e/runner.mjs --tier=all`: **74/74 tests PASS** (0.78s).
 
 ---
 

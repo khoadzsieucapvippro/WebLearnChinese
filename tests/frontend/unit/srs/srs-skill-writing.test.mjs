@@ -436,6 +436,7 @@ describe('Unit: Multi-Skill SRS & Vocabulary Writing Orchestrator', () => {
         getScreenCTM: () => ({ inverse: () => ({}) }),
         textContent: '',
         innerHTML: '',
+        querySelector: () => null,
         querySelectorAll: () => []
       };
       return el;
@@ -490,7 +491,7 @@ describe('Unit: Multi-Skill SRS & Vocabulary Writing Orchestrator', () => {
           getElementById: () => null,
           querySelector: () => null,
           documentElement: { getAttribute: () => null },
-          body: { classList: { contains: () => false } },
+          body: { classList: { contains: () => false }, appendChild: () => {}, removeChild: () => {} },
           addEventListener: () => {},
           removeEventListener: () => {}
         };
@@ -635,6 +636,116 @@ describe('Unit: Multi-Skill SRS & Vocabulary Writing Orchestrator', () => {
       assert.strictEqual(controller.dom.btnWritingAudio.classList.contains('d-none'), true, 'Audio button must be hidden again for new word');
       assert.strictEqual(controller.dom.btnWritingOutline.classList.contains('d-none'), false, 'Outline button must be visible again for new word');
       controller.writingEngines.forEach(e => e.destroy?.());
+    });
+  });
+
+  describe('7. Writing Mode 1-4 SRS Rating & Requeue Invariants (TASK-4.3 Standardization)', () => {
+    test('Writing with 0 mistakes and no hint yields Rating 4 (Easy)', async () => {
+      const controller = new SrsReviewController();
+      controller.activeMode = 'writing';
+      controller.sessionQueue = [
+        { card: { itemId: 201, itemType: 'VOCABULARY', hanzi: '好' } },
+        { card: { itemId: 202, itemType: 'VOCABULARY', hanzi: '大' } }
+      ];
+      controller.currentIndex = 0;
+      controller.currentWritingMistakes = 0;
+      controller.hasUsedWritingHintForCurrentCard = false;
+      controller.hasCompletedWritingForCurrentCard = true;
+      controller.renderCurrentCard = () => {};
+
+      let submittedRating = null;
+      controller.submitRating = async (r) => { submittedRating = r; };
+
+      await controller.nextWritingItem();
+      assert.strictEqual(submittedRating, 4, '0 mistakes + no hint must submit Rating 4 (Easy)');
+    });
+
+    test('Writing with 1 mistake and no hint yields Rating 3 (Good)', async () => {
+      const controller = new SrsReviewController();
+      controller.activeMode = 'writing';
+      controller.sessionQueue = [
+        { card: { itemId: 201, itemType: 'VOCABULARY', hanzi: '好' } }
+      ];
+      controller.currentIndex = 0;
+      controller.currentWritingMistakes = 1;
+      controller.hasUsedWritingHintForCurrentCard = false;
+      controller.hasCompletedWritingForCurrentCard = true;
+      controller.renderCurrentCard = () => {};
+
+      let submittedRating = null;
+      controller.submitRating = async (r) => { submittedRating = r; };
+
+      await controller.nextWritingItem();
+      assert.strictEqual(submittedRating, 3, '1 mistake + no hint must submit Rating 3 (Good)');
+    });
+
+    test('Writing with 2-4 mistakes OR used hint yields Rating 2 (Hard)', async () => {
+      const controller = new SrsReviewController();
+      controller.activeMode = 'writing';
+      controller.sessionQueue = [
+        { card: { itemId: 201, itemType: 'VOCABULARY', hanzi: '好' } }
+      ];
+      controller.currentIndex = 0;
+      controller.currentWritingMistakes = 3;
+      controller.hasUsedWritingHintForCurrentCard = false;
+      controller.hasCompletedWritingForCurrentCard = true;
+      controller.renderCurrentCard = () => {};
+
+      let submittedRating = null;
+      controller.submitRating = async (r) => { submittedRating = r; };
+
+      await controller.nextWritingItem();
+      assert.strictEqual(submittedRating, 2, '3 mistakes must submit Rating 2 (Hard)');
+
+      // Hint case
+      controller.currentWritingMistakes = 0;
+      controller.hasUsedWritingHintForCurrentCard = true;
+      await controller.nextWritingItem();
+      assert.strictEqual(submittedRating, 2, 'Used hint must submit Rating 2 (Hard)');
+    });
+
+    test('Writing with >= 5 mistakes yields Rating 1 (Again) and triggers session requeue', async () => {
+      const controller = new SrsReviewController();
+      controller.activeMode = 'writing';
+      controller.sessionQueue = [
+        { card: { itemId: 201, itemType: 'VOCABULARY', hanzi: '难' } },
+        { card: { itemId: 202, itemType: 'VOCABULARY', hanzi: '明' } }
+      ];
+      controller.currentIndex = 0;
+      controller.currentWritingMistakes = 6;
+      controller.hasUsedWritingHintForCurrentCard = false;
+      controller.hasCompletedWritingForCurrentCard = true;
+      controller.renderCurrentCard = () => {};
+
+      await controller.nextWritingItem();
+
+      // Verify that rating 1 caused card 201 to be requeued at the end of sessionQueue
+      assert.strictEqual(controller.stats.againCount, 1, 'Again count must increment to 1');
+      assert.strictEqual(controller.sessionQueue.length, 3, 'Session queue must grow to 3 due to requeue');
+      assert.strictEqual(controller.sessionQueue[2].card.itemId, 201, 'Requeued card must be appended at the end of queue');
+      assert.strictEqual(controller.sessionQueue[2]._requeued, true, 'Requeued card must have _requeued flag true');
+    });
+
+    test('Requeued card successfully graduates on re-attempt when mistakes < 5', async () => {
+      const controller = new SrsReviewController();
+      controller.activeMode = 'writing';
+      // Simulated requeued card at end of session
+      controller.sessionQueue = [
+        { card: { itemId: 201, itemType: 'VOCABULARY', hanzi: '难' }, _requeued: true }
+      ];
+      controller.currentIndex = 0;
+      controller.currentWritingMistakes = 1; // wrote well on retry (Rating 3)
+      controller.hasUsedWritingHintForCurrentCard = false;
+      controller.hasCompletedWritingForCurrentCard = true;
+      controller.renderCurrentCard = () => {};
+
+      let completedStateShown = false;
+      controller.showCompletedState = () => { completedStateShown = true; };
+
+      await controller.nextWritingItem();
+
+      assert.strictEqual(controller.stats.goodCount, 1, 'Good count must increment on graduation');
+      assert.strictEqual(completedStateShown, true, 'Session must complete after graduating the requeued card');
     });
   });
 });

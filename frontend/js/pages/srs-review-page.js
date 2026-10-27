@@ -13778,72 +13778,40 @@ export class SrsReviewController {
     }
 
     try {
-      this.cleanupTimer();
-      const elapsedSeconds = calculateReviewTime(this.cardStartTime, Date.now());
-
-      // Record progress and SRS review if in normal mode
+      // 1. Quy chuẩn đánh giá 1-4 thống nhất SRS dựa trên số nét sai và gợi ý:
+      // - Sai >= 5 nét: 1 (Học lại - Requeue xuất hiện lại ở cuối phiên)
+      // - Sai 2..4 nét hoặc có bấm gợi ý/phát lại: 2 (Khó)
+      // - Sai 1 nét (không dùng gợi ý): 3 (Tốt)
+      // - Hoàn hảo 0 nét sai (không dùng gợi ý): 4 (Dễ)
       const writingMistakes = Number(this.currentWritingMistakes) || 0;
       const usedWritingHint = Boolean(this.hasUsedWritingHintForCurrentCard);
-      const writingRating = writingMistakes >= 5
-        ? 1
-        : (writingMistakes >= 2 || usedWritingHint ? 2 : (writingMistakes === 1 ? 3 : 3));
-
-      if (this.mode !== 'LESSON_PRACTICE') {
-        if (authManager.isAuthenticated() && this.sessionQueue[this.currentIndex]?.card) {
-          const card = this.sessionQueue[this.currentIndex].card;
-          const payload = buildReviewPayload({
-            itemType: card.itemType || 'VOCABULARY',
-            itemId: card.itemId,
-            cardType: 'WRITING',
-            rating: writingRating,
-            reviewTimeSeconds: elapsedSeconds
-          });
-
-          try {
-            await apiClient('/srs/review', {
-              method: 'POST',
-              body: payload
-            });
-          } catch (apiErr) {
-            if ((apiErr?.message && apiErr.message.includes('chưa đến hạn')) || apiErr?.status === 409 || apiErr?.code === 'CONFLICT') {
-              console.info('[SRS Writing Review] Thẻ chưa đến hạn ôn tập SRS, tiếp tục chuyển sang thẻ kế tiếp.');
-            } else {
-              console.error('[SRS Writing Review] API submission failed:', apiErr);
-              const errMsg = apiErr?.message || 'Không thể lưu kết quả luyện viết lên máy chủ.';
-              showToast({
-                type: 'error',
-                title: 'Lỗi đồng bộ SRS',
-                message: `${errMsg} Vui lòng thử lại.`
-              });
-              if (this.dom?.writingCompletionNotice) {
-                this.dom.writingCompletionNotice.textContent = `⚠️ Lỗi lưu kết quả (${errMsg}). Vui lòng bấm [Sang từ tiếp theo] để thử lại.`;
-                this.dom.writingCompletionNotice.classList.remove('d-none');
-              }
-              return;
-            }
-          }
-        }
-      }
-
-      if (!this.isReviewMode) {
-        const nextIndex = this.currentIndex + 1;
-        this.persistProgress('writing', nextIndex);
-      }
-
-      this.stats.totalReviewed++;
-      this.stats.totalTimeSeconds += elapsedSeconds;
-      if (writingRating === 1) this.stats.againCount++;
-      else if (writingRating === 2) this.stats.hardCount++;
-      else if (writingRating === 3) this.stats.goodCount++;
-      else if (writingRating === 4) this.stats.easyCount++;
-      if (writingRating >= 3) this.stats.goodEasyCount++;
-
-      this.currentIndex++;
-      if (this.currentIndex >= this.sessionQueue.length) {
-        this.showCompletedState();
+      
+      let writingRating = 4;
+      if (writingMistakes >= 5) {
+        writingRating = 1;
+      } else if (writingMistakes >= 2 || usedWritingHint) {
+        writingRating = 2;
+      } else if (writingMistakes === 1) {
+        writingRating = 3;
       } else {
-        this.renderCurrentCard();
+        writingRating = 4;
       }
+
+      // Thông báo nhẹ mức đánh giá thực hành cho học viên nắm bắt
+      if (writingRating === 1) {
+        try {
+          showToast({
+            type: 'info',
+            title: 'Học lại',
+            message: `Chữ viết có ${writingMistakes} lỗi nét. Thẻ sẽ xuất hiện lại ở cuối phiên học.`
+          });
+        } catch (_) {}
+      }
+
+      // 2. Tái sử dụng cỗ máy SRS submitRating để đảm bảo tính nhất quán 100%:
+      // Hưởng đầy đủ cơ chế Requeue, Relearn Graduation, Cache update và Thống kê 5 chỉ số
+      this.activeMode = 'writing';
+      await this.submitRating(writingRating);
     } finally {
       this.isSubmittingWriting = false;
       if (this.dom?.btnWritingNext) {
