@@ -92,6 +92,18 @@ async function setupAuthenticatedSession(page) {
     });
   });
 
+  await page.route('**/api/v1/srs/due*', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        code: 'SUCCESS',
+        message: 'OK',
+        data: []
+      })
+    });
+  });
+
   await page.route('**/api/v1/lessons*', async (route) => {
     await route.fulfill({
       status: 200,
@@ -544,17 +556,24 @@ describe('Browser E2E: Interactive SRS Flashcard Review Session (9C.3)', () => {
       const completedState = page.locator('#srsCompletedState');
       await completedState.waitFor({ state: 'visible', timeout: 5000 });
 
+      // Verify all 5 rating breakdown statistics: Total, Again, Hard, Good, Easy
       const totalReviewed = page.locator('#statTotalReviewed');
       assert.strictEqual(await totalReviewed.textContent(), '1');
-
-      const goodEasyCount = page.locator('#statGoodEasyCount');
-      assert.strictEqual(await goodEasyCount.textContent(), '1');
 
       const againCount = page.locator('#statAgainCount');
       assert.strictEqual(await againCount.textContent(), '0');
 
-      const restartBtn = page.locator('#btnRestartSession');
-      assert.ok(await restartBtn.isVisible());
+      const hardCount = page.locator('#statHardCount');
+      assert.strictEqual(await hardCount.textContent(), '0');
+
+      const goodCount = page.locator('#statGoodCount');
+      assert.strictEqual(await goodCount.textContent(), '0');
+
+      const easyCount = page.locator('#statEasyCount');
+      assert.strictEqual(await easyCount.textContent(), '1');
+
+      const backToCatalogBtn = page.locator('#btnCompletionBackToCatalog');
+      assert.ok(await backToCatalogBtn.isVisible());
 
       assert.strictEqual(getRuntimeErrors().length, 0, 'Zero unexpected runtime errors');
     } finally {
@@ -1358,6 +1377,78 @@ describe('Browser E2E: Interactive SRS Flashcard Review Session (9C.3)', () => {
       // Verify constituent radicals row is hidden for radicals
       const isRadicalsRowHidden = await radicalsRow.evaluate(el => el.classList.contains('d-none') || el.style.display === 'none');
       assert.strictEqual(isRadicalsRowHidden, true, 'Constituent radicals row must be hidden for radicals');
+
+      assert.strictEqual(getRuntimeErrors().length, 0, 'Zero unexpected runtime errors');
+    } finally {
+      await context.close();
+    }
+  });
+
+  // SR-15: Card Back Writing Stroke Demonstration (Cách viết)
+  test('SR-15: Card Back Writing Stroke Demonstration toggles, renders rice grid, replays, and does not flip card', async () => {
+    const { page, context, getRuntimeErrors } = await createMonitoredPage(browser, {
+      viewportWidth: 1280,
+      viewportHeight: 720
+    });
+
+    try {
+      await setupAuthenticatedSession(page);
+
+      await page.route('**/api/v1/srs/due*', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            code: 'SUCCESS',
+            message: 'OK',
+            data: createMockDueCards()
+          })
+        });
+      });
+
+      await page.goto(`${baseUrl}/srs-review.html?action=due`, { waitUntil: 'domcontentloaded' });
+      await page.locator('#srsActiveSession').waitFor({ state: 'visible', timeout: 5000 });
+
+      // Flip card to reveal back face
+      const flashcard = page.locator('#flashcard');
+      await flashcard.click();
+      await page.waitForTimeout(200);
+
+      const cardBack = page.locator('#cardBack');
+      assert.strictEqual(await cardBack.getAttribute('aria-hidden'), 'false', 'Card back must be visible');
+
+      // Verify "Cách viết" button is present on card back
+      const btnWriting = page.locator('#btnCardBackWriting');
+      await btnWriting.waitFor({ state: 'visible', timeout: 5000 });
+      assert.ok(await btnWriting.isVisible(), 'Cách viết button must be visible on card back');
+
+      const writingSection = page.locator('#cardBackWritingSection');
+      assert.ok(await writingSection.isHidden(), 'Writing section must be hidden initially');
+
+      // Click "Cách viết" to open stroke animation box
+      await btnWriting.click();
+      await writingSection.waitFor({ state: 'visible', timeout: 5000 });
+      assert.ok(await writingSection.isVisible(), 'Writing section must be visible after click');
+
+      // Card must still be flipped (not flipped back to front)
+      assert.strictEqual(await cardBack.getAttribute('aria-hidden'), 'false', 'Card back must remain visible');
+
+      // Verify rice-grid canvas is mounted
+      const canvasContainer = page.locator('#cardBackWritingCanvasContainer');
+      const riceGridBox = canvasContainer.locator('.writing-rice-grid-box');
+      await riceGridBox.first().waitFor({ state: 'visible', timeout: 5000 });
+      assert.ok(await riceGridBox.count() >= 1, 'At least 1 rice grid box must be mounted');
+
+      // Test replay button
+      const btnReplay = page.locator('#btnCardBackWritingReplay');
+      await btnReplay.click();
+      await page.waitForTimeout(100);
+
+      // Test close button
+      const btnClose = page.locator('#btnCardBackWritingClose');
+      await btnClose.click();
+      await writingSection.waitFor({ state: 'hidden', timeout: 5000 });
+      assert.ok(await writingSection.isHidden(), 'Writing section must collapse after close button click');
 
       assert.strictEqual(getRuntimeErrors().length, 0, 'Zero unexpected runtime errors');
     } finally {

@@ -9914,6 +9914,9 @@ export class SrsReviewController {
     this.stats = {
       totalReviewed: 0,
       againCount: 0,
+      hardCount: 0,
+      goodCount: 0,
+      easyCount: 0,
       goodEasyCount: 0,
       totalTimeSeconds: 0
     };
@@ -9934,6 +9937,10 @@ export class SrsReviewController {
 
     // Active Writing Engines (for multi-character writing)
     this.writingEngines = [];
+
+    // Flashcard Back Interactive Stroke Writing State
+    this.cardBackWritingEngines = [];
+    this.isCardBackWritingOpen = false;
 
     // Cache for detail audio URLs & Personal Notes
     this.audioCache = new Map();
@@ -10041,6 +10048,11 @@ export class SrsReviewController {
       cardBackHanzi: document.getElementById('cardBackHanzi'),
       cardBackPinyin: document.getElementById('cardBackPinyin'),
       btnAudioPronounceBack: document.getElementById('btnAudioPronounceBack'),
+      btnCardBackWriting: document.getElementById('btnCardBackWriting'),
+      cardBackWritingSection: document.getElementById('cardBackWritingSection'),
+      btnCardBackWritingReplay: document.getElementById('btnCardBackWritingReplay'),
+      btnCardBackWritingClose: document.getElementById('btnCardBackWritingClose'),
+      cardBackWritingCanvasContainer: document.getElementById('cardBackWritingCanvasContainer'),
       cardBackMeaningHv: document.getElementById('cardBackMeaningHv'),
       cardBackMeaningVi: document.getElementById('cardBackMeaningVi'),
       cardBackRadicalsRow: document.getElementById('cardBackRadicalsRow'),
@@ -10152,6 +10164,9 @@ export class SrsReviewController {
       // Completion Stats
       statTotalReviewed: document.getElementById('statTotalReviewed'),
       statAgainCount: document.getElementById('statAgainCount'),
+      statHardCount: document.getElementById('statHardCount'),
+      statGoodCount: document.getElementById('statGoodCount'),
+      statEasyCount: document.getElementById('statEasyCount'),
       statGoodEasyCount: document.getElementById('statGoodEasyCount'),
       statTotalTime: document.getElementById('statTotalTime')
     };
@@ -10293,6 +10308,31 @@ export class SrsReviewController {
       this.dom.btnAudioPronounceBack.addEventListener('click', (e) => {
         e.stopPropagation();
         this.playPronunciation(this.dom.btnAudioPronounceBack);
+      });
+    }
+
+    // Flashcard Back Interactive Stroke Writing Listeners
+    if (this.dom.btnCardBackWriting) {
+      this.dom.btnCardBackWriting.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.toggleCardBackWriting();
+      });
+    }
+    if (this.dom.btnCardBackWritingReplay) {
+      this.dom.btnCardBackWritingReplay.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.replayCardBackWriting();
+      });
+    }
+    if (this.dom.btnCardBackWritingClose) {
+      this.dom.btnCardBackWritingClose.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.closeCardBackWriting();
+      });
+    }
+    if (this.dom.cardBackWritingSection) {
+      this.dom.cardBackWritingSection.addEventListener('click', (e) => {
+        e.stopPropagation();
       });
     }
 
@@ -10796,6 +10836,7 @@ export class SrsReviewController {
     this.destroyWritingEngines();
     this.destroyListeningIme();
     this.cleanUpReadingMedia();
+    this.destroyCardBackWritingEngines();
     speechController.cancel();
     this._autoPlayedListeningCardKey = null;
     this.sessionQueue = [];
@@ -12171,6 +12212,9 @@ export class SrsReviewController {
     this.stats = {
       totalReviewed: 0,
       againCount: 0,
+      hardCount: 0,
+      goodCount: 0,
+      easyCount: 0,
       goodEasyCount: 0,
       totalTimeSeconds: 0
     };
@@ -12227,6 +12271,11 @@ export class SrsReviewController {
     this.destroyWritingEngines();
     this.destroyListeningIme();
     this.cleanUpReadingMedia();
+    this.destroyCardBackWritingEngines();
+    if (this.dom.cardBackWritingSection) {
+      this.dom.cardBackWritingSection.classList.add('d-none');
+    }
+    this.isCardBackWritingOpen = false;
     this.isFlipped = false;
     this.isSubmitting = false;
 
@@ -13548,11 +13597,11 @@ export class SrsReviewController {
 
       this.stats.totalReviewed++;
       this.stats.totalTimeSeconds += elapsedSeconds;
-      if (writingRating === 1) {
-        this.stats.againCount++;
-      } else if (writingRating >= 3) {
-        this.stats.goodEasyCount++;
-      }
+      if (writingRating === 1) this.stats.againCount++;
+      else if (writingRating === 2) this.stats.hardCount++;
+      else if (writingRating === 3) this.stats.goodCount++;
+      else if (writingRating === 4) this.stats.easyCount++;
+      if (writingRating >= 3) this.stats.goodEasyCount++;
 
       this.currentIndex++;
       if (this.currentIndex >= this.sessionQueue.length) {
@@ -13579,6 +13628,153 @@ export class SrsReviewController {
       } catch (e) {}
     });
     this.writingEngines = [];
+  }
+
+  /**
+   * Destroys active card back stroke demonstration writing engines safely.
+   */
+  destroyCardBackWritingEngines() {
+    this.cardBackWritingEngines.forEach(eng => {
+      try {
+        if (typeof eng.destroy === 'function') eng.destroy();
+      } catch (e) {}
+    });
+    this.cardBackWritingEngines = [];
+    if (this.dom?.cardBackWritingCanvasContainer) {
+      this.dom.cardBackWritingCanvasContainer.replaceChildren();
+    }
+    this.isCardBackWritingOpen = false;
+  }
+
+  /**
+   * Toggles the interactive stroke demonstration box on card back.
+   */
+  async toggleCardBackWriting() {
+    if (this.isCardBackWritingOpen) {
+      this.closeCardBackWriting();
+    } else {
+      await this.openCardBackWriting();
+    }
+  }
+
+  /**
+   * Closes the interactive stroke demonstration box on card back.
+   */
+  closeCardBackWriting() {
+    this.destroyCardBackWritingEngines();
+    if (this.dom?.cardBackWritingSection) {
+      this.dom.cardBackWritingSection.classList.add('d-none');
+    }
+    this.isCardBackWritingOpen = false;
+  }
+
+  /**
+   * Opens and renders the interactive stroke demonstration on card back.
+   */
+  async openCardBackWriting() {
+    if (!this.dom?.cardBackWritingSection || !this.dom?.cardBackWritingCanvasContainer) return;
+    const queueItem = this.sessionQueue[this.currentIndex];
+    const card = queueItem?.card;
+    if (!card) return;
+
+    this.dom.cardBackWritingSection.classList.remove('d-none');
+    this.isCardBackWritingOpen = true;
+
+    // Destroy existing engines before mounting new ones
+    this.cardBackWritingEngines.forEach(eng => {
+      try {
+        if (typeof eng.destroy === 'function') eng.destroy();
+      } catch (e) {}
+    });
+    this.cardBackWritingEngines = [];
+
+    const container = this.dom.cardBackWritingCanvasContainer;
+    container.replaceChildren();
+
+    const charStr = card.hanzi || card.character || '';
+    const characters = splitHanziCharacters(charStr);
+
+    if (characters.length === 0) {
+      const msg = document.createElement('div');
+      msg.className = 'small text-muted py-2 text-center';
+      msg.textContent = 'Không có dữ liệu chữ Hán để vẽ nét.';
+      container.appendChild(msg);
+      return;
+    }
+
+    const boxSize = characters.length > 2 ? 90 : (characters.length === 2 ? 110 : 130);
+
+    for (let i = 0; i < characters.length; i++) {
+      const char = characters[i];
+
+      const boxWrapper = document.createElement('div');
+      boxWrapper.className = 'd-flex flex-column align-items-center';
+
+      if (characters.length > 1) {
+        const charLabel = document.createElement('span');
+        charLabel.className = 'small text-secondary mb-1 fw-medium';
+        charLabel.textContent = `Nét chữ ${i + 1}`;
+        boxWrapper.appendChild(charLabel);
+      }
+
+      const canvasBox = document.createElement('div');
+      canvasBox.className = 'writing-rice-grid-box position-relative rounded-2 border shadow-sm';
+      canvasBox.style.width = `${boxSize}px`;
+      canvasBox.style.height = `${boxSize}px`;
+
+      const gridSvg = createRiceGridSvg(boxSize);
+      canvasBox.appendChild(gridSvg);
+
+      const targetMount = document.createElement('div');
+      targetMount.className = 'position-absolute top-0 start-0 w-100 h-100';
+      canvasBox.appendChild(targetMount);
+      boxWrapper.appendChild(canvasBox);
+      container.appendChild(boxWrapper);
+
+      try {
+        const engine = new CharacterWritingEngine({
+          targetElement: targetMount,
+          width: boxSize,
+          height: boxSize,
+          strokeColor: '#8B2635', // Scholarly Cinnabar
+          radicalColor: '#C83C23',
+          outlineColor: '#D1D5DB'
+        });
+        const loaded = await engine.load(char, WRITING_MODES.DEMO);
+        if (loaded) {
+          this.cardBackWritingEngines.push(engine);
+        } else {
+          targetMount.replaceChildren();
+          const fallbackMsg = document.createElement('div');
+          fallbackMsg.className = 'd-flex flex-column align-items-center justify-content-center h-100 text-center p-1';
+          const charSpan = document.createElement('span');
+          charSpan.className = 'fs-3 fw-bold text-dark font-hanzi';
+          charSpan.lang = 'zh-Hans';
+          charSpan.textContent = char;
+          const noteSpan = document.createElement('span');
+          noteSpan.className = 'small text-muted';
+          noteSpan.textContent = 'Chưa có nét';
+          fallbackMsg.appendChild(charSpan);
+          fallbackMsg.appendChild(noteSpan);
+          targetMount.appendChild(fallbackMsg);
+        }
+      } catch (err) {
+        console.warn(`[CardBack Writing] Engine mount failed for ${char}:`, err);
+      }
+    }
+  }
+
+  /**
+   * Replays active stroke demonstration animations on card back.
+   */
+  replayCardBackWriting() {
+    this.cardBackWritingEngines.forEach(eng => {
+      try {
+        if (eng.writer) {
+          eng.writer.animateCharacter();
+        }
+      } catch (e) {}
+    });
   }
 
   /**
@@ -13910,6 +14106,7 @@ export class SrsReviewController {
 
       this.stats.totalReviewed++;
       this.stats.totalTimeSeconds += elapsedSeconds;
+      this.stats.goodCount++;
       this.stats.goodEasyCount++;
 
       this.currentIndex++;
@@ -14560,11 +14757,11 @@ export class SrsReviewController {
 
       this.stats.totalReviewed++;
       this.stats.totalTimeSeconds += elapsedSeconds;
-      if (rating === 1) {
-        this.stats.againCount++;
-      } else if (rating >= 3) {
-        this.stats.goodEasyCount++;
-      }
+      if (rating === 1) this.stats.againCount++;
+      else if (rating === 2) this.stats.hardCount++;
+      else if (rating === 3) this.stats.goodCount++;
+      else if (rating === 4) this.stats.easyCount++;
+      if (rating >= 3) this.stats.goodEasyCount++;
 
       this.currentIndex++;
       if (this.currentIndex >= this.sessionQueue.length) {
@@ -14652,7 +14849,10 @@ export class SrsReviewController {
         this.stats.totalReviewed++;
         this.stats.totalTimeSeconds += elapsedSeconds;
         if (numRating === 1) this.stats.againCount++;
-        else if (numRating >= 3) this.stats.goodEasyCount++;
+        else if (numRating === 2) this.stats.hardCount++;
+        else if (numRating === 3) this.stats.goodCount++;
+        else if (numRating === 4) this.stats.easyCount++;
+        if (numRating >= 3) this.stats.goodEasyCount++;
 
         if (numRating === 1) {
           const requeueResult = handleAgainRequeue(this.sessionQueue, queueItem, MAX_AGAIN_REVIEWS_PER_CARD);
@@ -14700,7 +14900,10 @@ export class SrsReviewController {
       this.stats.totalReviewed++;
       this.stats.totalTimeSeconds += elapsedSeconds;
       if (numRating === 1) this.stats.againCount++;
-      else if (numRating >= 3) this.stats.goodEasyCount++;
+      else if (numRating === 2) this.stats.hardCount++;
+      else if (numRating === 3) this.stats.goodCount++;
+      else if (numRating === 4) this.stats.easyCount++;
+      if (numRating >= 3) this.stats.goodEasyCount++;
 
       // Handle local session requeue for Again
       if (numRating === 1) {
@@ -14735,7 +14938,10 @@ export class SrsReviewController {
         this.stats.totalReviewed++;
         this.stats.totalTimeSeconds += elapsedSeconds;
         if (numRating === 1) this.stats.againCount++;
-        else if (numRating >= 3) this.stats.goodEasyCount++;
+        else if (numRating === 2) this.stats.hardCount++;
+        else if (numRating === 3) this.stats.goodCount++;
+        else if (numRating === 4) this.stats.easyCount++;
+        if (numRating >= 3) this.stats.goodEasyCount++;
 
         this.currentIndex++;
         if (this.currentIndex >= this.sessionQueue.length) {
@@ -14984,6 +15190,7 @@ export class SrsReviewController {
     this.destroyWritingEngines();
     this.destroyListeningIme();
     this.cleanUpReadingMedia();
+    this.destroyCardBackWritingEngines();
     speechController.cancel();
     this._autoPlayedListeningCardKey = null;
     this.setViewState('completed');
@@ -15004,30 +15211,27 @@ export class SrsReviewController {
         : 'Các kết quả học tập của bạn đã được ghi nhận vào tiến trình trí nhớ dài hạn.';
     }
 
+    // Populate 5 distinct rating breakdown statistics (Total, Again, Hard, Good, Easy)
     if (this.dom.statTotalReviewed) {
       this.dom.statTotalReviewed.textContent = String(this.stats.totalReviewed);
     }
     if (this.dom.statAgainCount) {
       this.dom.statAgainCount.textContent = String(this.stats.againCount);
     }
+    if (this.dom.statHardCount) {
+      this.dom.statHardCount.textContent = String(this.stats.hardCount || 0);
+    }
+    if (this.dom.statGoodCount) {
+      this.dom.statGoodCount.textContent = String(this.stats.goodCount || 0);
+    }
+    if (this.dom.statEasyCount) {
+      this.dom.statEasyCount.textContent = String(this.stats.easyCount || 0);
+    }
     if (this.dom.statGoodEasyCount) {
-      this.dom.statGoodEasyCount.textContent = String(this.stats.goodEasyCount);
+      this.dom.statGoodEasyCount.textContent = String(this.stats.goodEasyCount || 0);
     }
     if (this.dom.statTotalTime) {
       this.dom.statTotalTime.textContent = formatElapsedSeconds(this.stats.totalTimeSeconds);
-    }
-
-    if (this.dom.btnRestartSession) {
-      if (this.stats.againCount > 0) {
-        this.dom.btnRestartSession.textContent = `⚡ Ôn lại ${this.stats.againCount} thẻ cần học lại`;
-        const restartHref = this.lessonId
-          ? `srs-review.html?lessonId=${this.lessonId}&mode=${this.activeMode}&action=due`
-          : `srs-review.html?mode=${this.activeMode}&action=due`;
-        this.dom.btnRestartSession.setAttribute('href', restartHref);
-      } else {
-        this.dom.btnRestartSession.textContent = 'Ôn tập tiếp';
-        this.dom.btnRestartSession.setAttribute('href', `srs-review.html?mode=${this.activeMode}`);
-      }
     }
 
     if (authManager.isAuthenticated()) {

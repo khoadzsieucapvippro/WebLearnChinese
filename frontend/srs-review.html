@@ -365,10 +365,38 @@
                         <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
                       </svg>
                     </button>
+                    <button 
+                      type="button" 
+                      id="btnCardBackWriting" 
+                      class="btn btn-sm btn-outline-secondary py-0 px-2 d-inline-flex align-items-center gap-1 font-monospace" 
+                      style="font-size: 0.75rem; height: 28px;" 
+                      aria-label="Xem hoạt ảnh cách viết thứ tự nét" 
+                      title="Xem hoạt ảnh cách viết nét chữ Hán"
+                    >
+                      <span aria-hidden="true">✍️</span>
+                      <span>Cách viết</span>
+                    </button>
                   </div>
                   <div class="mb-2">
                     <span id="cardBackMeaningHv" class="badge bg-secondary-subtle text-secondary me-2">Học</span>
                     <span id="cardBackMeaningVi" class="flashcard-meaning-vi">Học tập, nghiên cứu</span>
+                  </div>
+
+                  <!-- Interactive Stroke Writing Demonstration Box on Card Back -->
+                  <div id="cardBackWritingSection" class="card-back-writing-section d-none mb-2" aria-label="Khung diễn giải cách viết nét chữ">
+                    <div class="d-flex align-items-center justify-content-between p-1 px-2 border-bottom bg-light rounded-top small text-secondary">
+                      <span class="fw-semibold small">✍️ Hoạt ảnh cách viết (Thứ tự nét)</span>
+                      <div class="d-flex align-items-center gap-1">
+                        <button type="button" id="btnCardBackWritingReplay" class="btn btn-sm btn-link p-0 text-decoration-none text-primary small" title="Phát lại hoạt ảnh nét viết">
+                          🔄 Phát lại
+                        </button>
+                        <span class="text-muted mx-1">|</span>
+                        <button type="button" id="btnCardBackWritingClose" class="btn btn-sm btn-link p-0 text-decoration-none text-secondary small" title="Thu gọn khung cách viết">
+                          ✕ Đóng
+                        </button>
+                      </div>
+                    </div>
+                    <div id="cardBackWritingCanvasContainer" class="p-2 d-flex justify-content-center align-items-center flex-wrap gap-2 bg-surface rounded-bottom border border-top-0"></div>
                   </div>
 
                   <!-- Constituent Radicals Row (shown only for VOCABULARY on card back) -->
@@ -768,43 +796,48 @@
           <h2 class="h4 fw-bold text-dark mb-1" id="srsCompletedTitle">Hoàn Thành Phiên Ôn Tập!</h2>
           <p class="text-secondary small mb-4" id="srsCompletedDescription">Các đánh giá của bạn đã được ghi nhận vào tiến trình trí nhớ dài hạn.</p>
 
-          <div class="row g-2 mb-4 text-center">
-            <div class="col-6 col-sm-3">
-              <div class="p-3 bg-light rounded border">
+          <div class="row g-2 mb-4 text-center justify-content-center">
+            <!-- Thống kê đánh giá SRS: Tổng thẻ, Học lại (1), Khó (2), Tốt (3), Dễ (4) -->
+            <div class="col-6 col-sm-4 col-md">
+              <div class="p-3 bg-light rounded border h-100">
                 <div class="text-secondary small">Tổng thẻ</div>
                 <div id="statTotalReviewed" class="h4 fw-bold text-dark mb-0">0</div>
               </div>
             </div>
-            <div class="col-6 col-sm-3">
-              <div class="p-3 bg-light rounded border">
-                <div class="text-danger small">Học lại (1)</div>
+            <div class="col-6 col-sm-4 col-md">
+              <div class="p-3 bg-light rounded border h-100">
+                <div class="text-danger small">Học lại</div>
                 <div id="statAgainCount" class="h4 fw-bold text-danger mb-0">0</div>
               </div>
             </div>
-            <div class="col-6 col-sm-3">
-              <div class="p-3 bg-light rounded border">
-                <div class="text-primary small">Tốt / Dễ (3-4)</div>
-                <div id="statGoodEasyCount" class="h4 fw-bold text-success mb-0">0</div>
+            <div class="col-6 col-sm-4 col-md">
+              <div class="p-3 bg-light rounded border h-100">
+                <div class="text-warning small" style="color: #b45309 !important;">Khó</div>
+                <div id="statHardCount" class="h4 fw-bold mb-0" style="color: #b45309;">0</div>
               </div>
             </div>
-            <div class="col-6 col-sm-3">
-              <div class="p-3 bg-light rounded border">
-                <div class="text-secondary small">Tổng thời gian</div>
-                <div id="statTotalTime" class="h4 fw-bold text-dark mb-0">0s</div>
+            <div class="col-6 col-sm-6 col-md">
+              <div class="p-3 bg-light rounded border h-100">
+                <div class="text-primary small">Tốt</div>
+                <div id="statGoodCount" class="h4 fw-bold text-primary mb-0">0</div>
+              </div>
+            </div>
+            <div class="col-6 col-sm-6 col-md">
+              <div class="p-3 bg-light rounded border h-100">
+                <div class="text-success small">Dễ</div>
+                <div id="statEasyCount" class="h4 fw-bold text-success mb-0">0</div>
               </div>
             </div>
           </div>
+          <span id="statGoodEasyCount" class="d-none" aria-hidden="true">0</span>
 
           <div class="d-flex justify-content-center gap-3 flex-wrap">
-            <a href="srs-review.html" id="btnRestartSession" class="btn-chinese-primary py-2 px-4 text-decoration-none">
-              Ôn tập tiếp
-            </a>
+            <button type="button" id="btnCompletionBackToCatalog" class="btn-chinese-primary py-2 px-4">
+              ← Về danh mục ôn tập
+            </button>
             <a href="srs-dashboard.html" id="btnCompletionToDashboard" class="btn-chinese-outline py-2 px-3 text-decoration-none">
               📊 Tiến độ học tập
             </a>
-            <button type="button" id="btnCompletionBackToCatalog" class="btn btn-chinese-secondary py-2 px-3">
-              ← Về danh mục ôn tập
-            </button>
           </div>
         </div>
       </section>
