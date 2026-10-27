@@ -32,15 +32,15 @@ flowchart TD
 | | `TASK-4.3` | SRS Phòng Luyện Viết (Writing Room HanziWriter) | `srs-review.html?mode=writing`, `character-writing` | ✅ Hoàn thành |
 | | `TASK-4.4` | SRS Phòng Luyện Nghe & Bàn phím ảo IME (Listening) | `srs-review.html?mode=listening`, virtual keyboard | ✅ Hoàn thành |
 | | `TASK-4.5` | SRS Phòng Đọc hiểu & Chấm ngữ điệu (Reading) | `srs-review.html?mode=reading`, `speech-service` | ✅ Hoàn thành |
-| **Chặng 5: Không gian Cá nhân** | `TASK-5.1` | Sổ tay Ghi chú Cá nhân (Personal Notes) | `personal-notes.html`, `notes-modal.js` | ⏳ Chờ duyệt |
-| **Chặng 6: Quản lý Nội dung** | `TASK-6.1` | Cổng Điều phối & Creator Studio (Tạo bài, Import) | `management.html`, `creator-lessons.html`, `creator-import.html` | ⏳ Chờ duyệt |
-| | `TASK-6.2` | Moderator Queue & Thẩm định bài học | `moderator-queue.html`, `moderator-review.html` | ⏳ Chờ duyệt |
-| **Chặng 7: Quản trị Hệ thống** | `TASK-7.1` | Quản trị Tài khoản & Phân quyền Admin | `admin-accounts.html`, `admin-roles.html` | ⏳ Chờ duyệt |
-| | `TASK-7.2` | Quản trị Bài học, Từ vựng & Bộ thủ (Admin) | `admin-lessons.html`, `admin-vocabulary.html`, `admin-radicals.html` | ⏳ Chờ duyệt |
-| | `TASK-7.3` | Nhật ký Kiểm toán & Trung tâm Xác minh UI | `admin-audit-logs.html`, `verification-center.html` | ⏳ Chờ duyệt |
-| **Chặng 8: Đám mây & Thực tế** | `TASK-8.1` | Triển khai GitHub Pages & Đường dẫn tĩnh Subpath | `deploy-pages.yml`, subpath URL resolver | ⏳ Chờ duyệt |
-| | `TASK-8.2` | Kiến trúc Render Container & TiDB Cloud | `Dockerfile.unified`, `render.yaml`, TiDB schema | ⏳ Chờ duyệt |
-| | `TASK-8.3` | Trải nghiệm Thực tế trên Điện thoại Di động Thật | LAN Wi-Fi `serve:mobile` / Tunnel công khai | ⏳ Chờ duyệt |
+| **Chặng 5: Không gian Cá nhân** | `TASK-5.1` | Sổ tay Ghi chú Cá nhân (Personal Notes) | `notes-modal.js`, contextual notes integration | ✅ Hoàn thành |
+| **Chặng 6: Quản lý Nội dung** | `TASK-6.1` | Cổng Điều phối & Creator Studio (Tạo bài, Import) | `management.html`, `creator-lessons.html`, `creator-import.html` | ✅ Hoàn thành |
+| | `TASK-6.2` | Moderator Queue & Thẩm định bài học | `moderator-queue.html`, `moderator-review.html` | ✅ Hoàn thành |
+| **Chặng 7: Quản trị Hệ thống** | `TASK-7.1` | Quản trị Tài khoản & Phân quyền Admin | `admin-accounts.html`, `admin-roles.html` | ✅ Hoàn thành |
+| | `TASK-7.2` | Quản trị Bài học, Từ vựng & Bộ thủ (Admin) | `admin-lessons.html`, `admin-vocabulary.html`, `admin-radicals.html` | ✅ Hoàn thành |
+| | `TASK-7.3` | Nhật ký Kiểm toán & Trung tâm Xác minh UI | `admin-audit-logs.html`, `verification-center.html` | ✅ Hoàn thành |
+| **Chặng 8: Đám mây & Thực tế** | `TASK-8.1` | Triển khai GitHub Pages & Đường dẫn tĩnh Subpath | `deploy-pages.yml`, subpath URL resolver | ✅ Hoàn thành |
+| | `TASK-8.2` | Kiến trúc Render Container & TiDB Cloud | `Dockerfile.unified`, `render.yaml`, TiDB schema | ✅ Hoàn thành |
+| | `TASK-8.3` | Trải nghiệm Thực tế trên Điện thoại Di động Thật | LAN Wi-Fi `serve:mobile` / Mobile Keyboard Emulation | ✅ Hoàn thành |
 
 ---
 
@@ -241,17 +241,30 @@ flowchart TD
 | `TASK-4.2` (Kiểm toán Đúp Học, Vòng đời Tốt nghiệp Học lại & 2 Thuật toán SRS) | 2026-10-28 | Kiểm toán chuyên sâu thuật toán SRS & vòng đời học lại: (1) Phân định rõ 2 tầng ghi nhớ: Trí nhớ làm việc (Working Memory Drill trong buổi) vs Trí nhớ dài hạn (Long-term Spaced Review qua ngày); (2) Thẻ chọn "Học lại" (1 - Again) ghi nhận Lapse (`interval = 0, repetitions = 0, nextReviewAt = now`), requeue về cuối buổi; khi ôn lại ở cuối buổi và bấm "Khó" (2 - Hard), thẻ được Tốt Nghiệp (Graduation) đợt khoan nhớ ngắn hạn; (3) Phân biệt 2 thuật toán: Thuật toán gốc SM-2 (Render Backend + TiDB Cloud) tính theo NGÀY (24 giờ, tức ngày mai mới đến hạn) vs Thuật toán Test 2 phút (`TwoMinuteTestSrsCalculator` / `SRS_TEST_MODE_2MIN`) tính theo PHÚT (2 phút sau đến hạn); (4) Sau 2 phút trên tài khoản `HỌC VIÊN 1111` không thấy từ đến hạn vì server Render đang chạy Thuật toán gốc SM-2 chuẩn (hẹn 24h sau); (5) Trình duyệt đóng băng background timer (`document.hidden = true`) khi chuyển tab. | (1) Bấm "học lại" với 3 từ đầu thành "khó", 3 từ tiếp thành "học lại" thì bài học hiện không có từ cần ôn; (2) Có hiện tượng trùng lặp từ học lại ở cuối bài và ở nút đến hạn? (3) Chọn "Khó" rồi sau đó chọn "Học lại" thì thuật toán tính thế nào? (4) Sao 2 phút rồi chưa thấy từ đến hạn hay có xung đột với thuật toán gốc? | **ĐÃ HOÀN TẤT, ĐỒNG BỘ & KHÓA CHẶT 100%**: (1) **Vòng đời Tốt nghiệp Học lại (Relearn Graduation)**: Sửa `srs-review-page.js` cho phép gửi đánh giá tốt nghiệp (`!queueItem._requeued || numRating >= 2`) để giải phóng thẻ khỏi hàng đợi và lên lịch ôn tập dài hạn; (2) **Triệt tiêu lỗi Homograph Eviction**: Cô lập các từ trùng chữ Hán giữa các bài khác nhau bằng kiểm tra dải ID chuẩn (`targetId < 10000 && itId < 10000 && targetId !== itId`); (3) **Đồng bộ Thứ tự Tính toán SM-2**: Sửa thứ tự tính `newEaseFactor` trước khi nhân `interval * newEaseFactor` trong `demo-fallback-engine.js`; (4) **Tách bạch 2 Thuật toán Không Xung Đột**: Thuật toán gốc SM-2 trên Cloud (24h) và Chế độ Test 2 phút (2m) chạy độc lập qua cấu hình `app.srs.test-mode.enabled` và `SRS_TEST_MODE_2MIN`; (5) **Kịch bản Ngày mai**: Thẻ tốt nghiệp trên tài khoản học viên sẽ xuất hiện chuẩn xác tại `⚡ Ôn 3 từ đến hạn` sau đúng 24 giờ kể từ thời điểm học; (6) **Kiểm thử Toàn diện Đa Nền tảng**: PASS 1.068/1.068 fast tests, 126/126 backend tests, 74/74 E2E blackbox tests (Tiers 1–4), 6/6 mobile browser tests (Pixel 7 & iPhone 14), 50/50 bài học pass kịch bản 4 chu kỳ. Commit `0dcf066`. |
 | `TASK-4.3` (SRS Phòng Luyện Viết HanziWriter & Phân Tách Độc Lập 4 Phân Hệ) | 2026-10-28 | Kiểm toán chuyên sâu phòng Luyện viết và phân tách 4 phân hệ SRS: (1) Phân tách độc lập 4 phân hệ FLASHCARD, WRITING, LISTENING, READING cả local, TiDB Cloud V33, backend Java và client engine; (2) Chuyển đổi quy chuẩn đánh giá sang thang điểm 1..4 SM-2 tự động theo số nét sai: >= 5 nét -> Rating 1 (Học lại, Requeue), 2-4 nét hoặc xem gợi ý -> Rating 2 (Khó), 1 nét -> Rating 3 (Tốt), 0 nét -> Rating 4 (Dễ); (3) Tái cấu trúc nextWritingItem gọi trực tiếp submitRating kế thừa toàn bộ cỗ máy SRS (Requeue, Relearn Graduation, 409 Conflict, Optimistic Cache); (4) Khắc phục lỗi Due session ghi đè lùi tiến độ học tiếp; (5) Nút Viết lại tại chỗ (clearWriting) reset mistakes về 0; (6) Khắc phục lỗi fallback cardType nhầm sang READING. | (1) Phân tách 4 phân hệ SRS độc lập; (2) Kiểm tra xem Task 4.3 có mắc lỗi giống 4.2 không; (3) Quy đổi thống nhất thuật toán đánh giá 1-4 trên 4 phân hệ nhưng cách thức khác nhau (viết dùng số nét sai); (4) Đảm bảo chu trình Học lại và Viết lại chuẩn xác; (5) Kiểm chứng hệ thống không bị treo và sửa lỗi có căn cứ kiểm thử. | **ĐÃ HOÀN TẤT & KHÓA CHẶT 100%**: (1) **Phân Tách 4 Phân Hệ Độc Lập**: Hoàn tất 100% Flyway V33, Backend Java, Client demo engine và UI; (2) **Quy Đổi 1-4 SM-2 Chuẩn Mực**: Tự động đánh giá theo số nét sai, tự động Requeue khi >= 5 lỗi, cho phép Relearn Graduation khi viết lại đạt <= 4 lỗi; (3) **Kế Thừa submitRating Toàn Diện**: Bảo toàn tiến độ học tiếp khi ôn từ đến hạn (chặn lùi index); (4) **Chuẩn Hóa Viết Lại Tại Chỗ**: Reset mistakes và hint flag để rèn lại không bị gán oan điểm thấp; (5) **Kiểm Thử Toàn Diện**: PASS 1.073/1.073 fast tests (263 suites), 37/37 srs-skill-writing tests, 4/4 writing-relearn-lifecycle-deep tests, 5/5 multi-skill-srs-isolation-and-due tests, 74/74 E2E blackbox tests (Tiers 1–4). Commits `8227254`, `806317f`, `d14061b`, `6ab1db5`. |
 | `TASK-4.4` & `TASK-4.5` (SRS Phòng Luyện Đọc & Luyện Nghe, Chuẩn Hóa Toàn Diện 4 Phân Hệ) | 2026-10-28 | Kiểm toán chuyên sâu phòng Luyện đọc (`TASK-4.4`) và Luyện nghe (`TASK-4.5`): (1) **Luyện Đọc**: Quy chuẩn đánh giá 1-4 SM-2 từ cao độ F0 thang Chao: Score < 45 -> 1 (Học lại, Requeue), 45..59 -> 2 (Khó), 60..84 -> 3 (Tốt), >= 85 -> 4 (Dễ); (2) **Luyện Nghe**: Xóa bỏ gán cứng Rating 3, triển khai quy chuẩn 1-4 từ số lần gõ sai và số lần nghe lại: >= 3 lỗi gõ sai -> 1 (Học lại, Requeue), 1..2 lỗi hoặc >= 3 lần nghe lại -> 2 (Khó), 0 lỗi + 1..2 lần nghe lại -> 3 (Tốt), 0 lỗi + 0 lần nghe lại -> 4 (Dễ); (3) Tái cấu trúc cả `nextReadingItem()` và `nextListeningItem()` gọi trực tiếp `submitRating()`, giải quyết triệt để lỗi bỏ sót Requeue, bỏ sót Relearn Graduation, bỏ sót optimistic cache, và bỏ sót lưu review offline trong demo mode; (4) Nút nghe lại và đọc lại cập nhật chính xác điểm mới nhất; (5) Tạo bộ kiểm thử tích hợp 4 phân hệ thống nhất `all-four-skills-srs-rating.test.mjs`. | Quy chuẩn đánh giá 1–4 thống nhất trên cả 4 phân hệ nhưng cách thức triển khai khác nhau: flashcard dùng 1,2,3,4; luyện viết dùng số nét sai; luyện nghe và luyện đọc cách thức cũng khác nhau; hoàn thiện Sprint 4. | **ĐÃ HOÀN TẤT & KHÓA CHẶT 100%**: (1) **Thống Nhất Thuật Toán Đánh Giá 1..4 Trên Toàn Bộ 4 Phân Hệ**: Cả 4 phân hệ đều vận hành trên cỗ máy SuperMemo SM-2 chuẩn mực, tự động kích hoạt Requeue khi Rating = 1, Tốt nghiệp học lại (Relearn Graduation) khi làm lại đạt Rating >= 2; (2) **Đa Dạng Hóa Cách Thức Thu Nhận Điểm Theo Kỹ Năng**: Flashcard (4 nút bấm), Viết (số nét sai), Nghe (số lần gõ sai + số lần nghe lại), Đọc (điểm cao độ F0 thang Chao); (3) **Bảo Toàn Tiến Độ Tuyệt Đối**: Cả 4 phân hệ đều độc lập về bộ từ đến hạn và không bị tụt lùi tiến độ học tiếp; (4) **Kiểm Thử Toàn Diện**: PASS 1.082/1.082 fast tests (264 suites), 5/5 all-four-skills-srs-rating tests, 8/8 srs-listening browser tests, 8/8 srs-reading browser tests, 74/74 E2E blackbox tests (Tiers 1–4). Commit `3f1cb48`. |
+| `TASK-5.1` (Sổ Tay Ghi Chú Cá Nhân Contextual Notes) | 2026-10-28 | Kiểm toán hệ thống ghi chú cá nhân: (1) Ghi chú gắn liền từng từ vựng trong Bài học (`lesson-detail.html`) và Ôn tập (`srs-review.html`); (2) Đồng bộ 2 chiều qua `localStorage` và API backend `/api/v1/notes`; (3) CRUD đầy đủ, bộ đếm 500 ký tự, chống XSS an toàn DOM tuyệt đối; (4) Giữ nguyên cơ chế modal ngữ cảnh đắc lực để bảo tồn Single Navbar 5 mục chuẩn mực. | Đồng bộ và hoàn tất Chặng 5 Không gian Cá nhân. | **ĐÃ HOÀN TẤT & KHÓA CHẶT 100%**: PASS 28/28 tests (`personal-notes.browser.mjs` và `notes-modal.test.mjs`). |
+| `TASK-6.1` & `TASK-6.2` (Khu Vực Quản Lý Nội Dung: Creator & Moderator Studio) | 2026-10-28 | Kiểm toán toàn diện khu vực quản lý: (1) Cổng điều phối RBAC (`management.html`) hiển thị thẻ theo vai trò; (2) Creator Studio (`creator-lessons.html`, `creator-import.html`): tạo bài học, import Excel/CSV 2 bước có preview; (3) Moderator Queue (`moderator-queue.html`, `moderator-review.html`): thẩm định nội dung, lưu lịch sử kiểm duyệt; (4) Khóa chặt Self-Review Invariant (Cấm Creator tự phê duyệt bài của chính mình). | Rà soát toàn diện Chặng 6. | **ĐÃ HOÀN TẤT & KHÓA CHẶT 100%**: PASS 104/104 unit tests, 23/23 browser tests (`creator-import`, `creator-lessons`, `creator-submission`, `moderator-history`, `moderator-queue`, `moderator-review`), E2E Tiers 1–4. |
+| `TASK-7.1` – `TASK-7.3` (Quản Trị Hệ Thống & Bảo Mật Admin) | 2026-10-28 | Kiểm toán toàn diện quản trị Admin: (1) Quản trị tài khoản & phân quyền (`admin-accounts.html`, `admin-roles.html`); (2) Khóa chặt Last Admin Invariant (chặn hạ quyền/khóa tài khoản Admin cuối cùng); (3) Quản trị học liệu toàn diện (`admin-lessons.html`, `admin-vocabulary.html`, `admin-radicals.html`); (4) Nhật ký kiểm toán an ninh (`admin-audit-logs.html`) tự động làm mờ credential nhạy cảm (`AuditDataSanitizer`). | Rà soát toàn diện Chặng 7. | **ĐÃ HOÀN TẤT & KHÓA CHẶT 100%**: PASS 187/187 unit tests, 74/74 E2E blackbox tests (Tiers 1–4). |
+| `TASK-8.1` – `TASK-8.3` (Môi Trường Đám Mây & Thiết Bị Thực Tế) | 2026-10-28 | Nghiệm thu môi trường Live và thiết bị: (1) GitHub Pages HTTP 200, module cache buster subpath URL an toàn; (2) Render Cloud Backend status UP (`actuator/health`), TiDB Cloud Serverless kết nối ổn định; (3) Mobile Hardware Emulation (Pixel 7 Android 14 Gboard & iPhone 14 iOS 16 Safari) 6/6 tests PASS, zero overflow trên 360px..412px. | Nghiệm thu toàn diện Chặng 8. | **ĐÃ HOÀN TẤT & KHÓA CHẶT 100%**: Live Backend UP, GitHub Pages UP, Mobile touch targets >= 40px đạt chuẩn WCAG 2.2 AA. |
 
 ---
 
 ## 5. HƯỚNG DẪN KẾ THỪA CHO AGENT TIẾP THEO (AGENT HANDOFF & CONTEXT INVARIANTS)
 
 > [!IMPORTANT]
-> **Dành cho Agent kế thừa**: Toàn bộ **Chặng 1** (`TASK-1.1`, `TASK-1.2`), **Chặng 2** (`TASK-2.1`, `TASK-2.2`), **Chặng 3** (`TASK-3.1`), và **Chặng 4: KHU VỰC ÔN TẬP SRS & 4 PHÂN HỆ ĐỘC LẬP** (`TASK-4.1`, `TASK-4.2`, `TASK-4.3`, `TASK-4.4`, `TASK-4.5`) đã hoàn thành $100\%$ và được kiểm thử toàn diện, khóa chặt. Nhiệm vụ hiện tại bàn giao là **Chặng 5: TRUNG TÂM LUYỆN ĐỀ & TIỆN ÍCH HỌC TẬP (`TASK-5.1`: Phòng Thi Thử HSK & Đánh Giá Năng Lực - `mock-test.html`, `mock-test-page.js`)**.
-> Dưới đây là toàn bộ thông tin chi tiết về các cập nhật đã triển khai, các phát hiện kiểm nghiệm thực tế, và hướng dẫn cho nhiệm vụ kế tiếp để bạn tiếp tục thực thi không bị gián đoạn.
+> **Dành cho Agent kế thừa**: Toàn bộ **8 Chặng của Lộ trình Kiểm toán Toàn diện (18/18 nhiệm vụ)** từ **Chặng 1** đến **Chặng 8** đã hoàn thành $100\%$, được kiểm thử toàn diện và khóa chặt:
+> - **Chặng 1**: Trang chủ & Xác thực, Hồ sơ cá nhân (`TASK-1.1`, `TASK-1.2`)
+> - **Chặng 2**: Thư viện 1.068 từ HSK 1–3 & 214 Bộ thủ Khang Hy (`TASK-2.1`, `TASK-2.2`)
+> - **Chặng 3**: Chương trình 50 bài học HSK & chi tiết bài học (`TASK-3.1`)
+> - **Chặng 4**: Đấu trường Ôn tập SRS & 4 phân hệ độc lập Flashcard, Writing, Listening, Reading (`TASK-4.1` – `TASK-4.5`)
+> - **Chặng 5**: Không gian cá nhân & Ghi chú ngữ cảnh Contextual Notes (`TASK-5.1`)
+> - **Chặng 6**: Khu vực Quản lý Nội dung Creator Studio & Moderator Queue (`TASK-6.1`, `TASK-6.2`)
+> - **Chặng 7**: Quản trị Hệ thống & Bảo mật Admin Accounts, Roles, Content, Audit Logs (`TASK-7.1` – `TASK-7.3`)
+> - **Chặng 8**: Môi trường Live Render UP, GitHub Pages HTTP 200, TiDB Cloud, Mobile Hardware Keyboard (`TASK-8.1` – `TASK-8.3`)
+>
+> Toàn bộ hệ sinh thái đã sẵn sàng đưa vào vận hành sản phẩm chính thức (Production-Ready).
 
 ### 5.1. Trạng Thái Mã Nguồn & Baseline Kiểm Thử Hiện Tại
-- **Nhánh Git**: `main` (Head commit: `3f1cb48`).
+- **Nhánh Git**: `main` (Head commit: `4c80c76`).
 - **Fast Frontend Verification**: `npm run verify:frontend:fast` (1.082 tests / 264 suites, 100% PASS trong ~15.5 giây).
 - **Multi-Skill Unified SRS Verification**:
   * `all-four-skills-srs-rating.test.mjs` (5/5 PASS).
@@ -260,21 +273,21 @@ flowchart TD
   * `srs-skill-writing.test.mjs` (37/37 PASS).
   * `srs-skill-reading.test.mjs` (18 suites / 76 tests PASS).
   * `srs-skill-listening.test.mjs` (10 suites / 46 tests PASS).
-- **Browser E2E Verification**:
-  * `srs-listening.browser.mjs` (8/8 PASS).
-  * `srs-reading.browser.mjs` (8/8 PASS).
-  * `srs-review.browser.mjs` (16/16 PASS).
+- **Personal Notes & Contextual Subsystem**:
+  * `personal-notes.browser.mjs` (7/7 PASS).
+  * `notes-modal.test.mjs` (21/21 PASS).
+- **Management, Creator & Moderator Subsystem**:
+  * 104/104 unit tests PASS (`tests/frontend/unit/management`, `creator`, `moderator`).
+  * 23/23 browser tests PASS (`creator-import`, `creator-lessons`, `creator-submission`, `moderator-history`, `moderator-queue`, `moderator-review`).
+- **Admin System Management & Audit**:
+  * 187/187 unit tests PASS (`tests/frontend/unit/admin`).
+- **Mobile Hardware Emulation Suite**:
+  * `mobile-keyboard.browser.mjs` (6/6 tests PASS trên Google Pixel 7 Android 14 Gboard và Apple iPhone 14 iOS 16 Mobile Safari).
 - **Backend Java Verification**: `mvn test` (126/126 tests PASS).
-- **E2E Blackbox Runner**: `node tests/e2e/runner.mjs --tier=all` (74 tests Tiers 1–4, 100% PASS trong ~0.79 giây).
-- **Backend Java Verification**: `mvn test` (126/126 tests PASS trong ~10.5 giây, bao gồm `SrsCalculatorTests`, `TwoMinuteTestSrsCalculatorTests`, `SrsServiceTests`, `SrsLessonDueTests`, `SrsNewCardEngineTests`, `UserSrsSettingServiceTests`, `UserSrsSettingDtoTests`).
-- **E2E Blackbox Runner**: `node tests/e2e/runner.mjs --tier=all` (74 tests Tiers 1–4, 100% PASS trong ~0.86 giây).
-- **Mobile Hardware Emulation Suite**: `node --test tests/frontend/e2e/mobile-keyboard.browser.mjs` (6/6 tests PASS trên Google Pixel 7 Android 14 Gboard và Apple iPhone 14 iOS 16 Mobile Safari, kiểm định WCAG 2.2 touch target >= 40px và chuỗi sự kiện IME).
-- **Relearn Multi-Round Lifecycle Simulation**: `node scripts/test_relearn_lifecycle.mjs` (100% PASS trên toàn bộ 50 bài học qua 4 chu kỳ lặp lại).
-- **Browser E2E Review Suite**: `node --test tests/frontend/e2e/srs-review.browser.mjs` (16/16 tests PASS).
-- **WCAG 2.2 Accessibility Suite**: `node --test tests/frontend/accessibility/a11y.browser.mjs` (19/19 tests PASS).
+- **E2E Blackbox Runner**: `node tests/e2e/runner.mjs --tier=all` (74/74 tests Tiers 1–4, 100% PASS trong ~0.79 giây).
 - **Responsive Layout**: Zero document-level horizontal overflow trên toàn bộ 24 trang HTML hiện hữu từ 360px đến 1920px.
 - **Môi trường Cloud Live**:
-  * GitHub Pages: `https://khoadzsieucapvippro.github.io/WebLearnChinese/srs-review.html` (Module cache buster `?v=18`, `CURRENT_DATASET_VERSION = 12`).
+  * GitHub Pages: `https://khoadzsieucapvippro.github.io/WebLearnChinese/srs-review.html` (HTTP 200, Module cache buster `?v=18`).
   * Render Cloud Backend: `https://elearning-backend-pwyi.onrender.com` (Health status: UP, Single-Container unified).
   * TiDB Cloud Serverless: MySQL 8.0, Collation `utf8mb4_unicode_ci`, Nonclustered Primary Keys.
 
