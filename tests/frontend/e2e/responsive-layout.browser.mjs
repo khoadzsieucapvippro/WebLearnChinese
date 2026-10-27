@@ -433,7 +433,7 @@ describe('Responsive & Multi-Viewport Layout Verification (Task 9G.5)', () => {
 
     try {
       await setupMockSession(mobilePage);
-      await mobilePage.goto(`${baseUrl}/srs-review.html`, { waitUntil: 'domcontentloaded' });
+      await mobilePage.goto(`${baseUrl}/srs-review.html?action=continue`, { waitUntil: 'domcontentloaded' });
       await mobilePage.locator('#srsActiveSession').waitFor({ state: 'visible' });
 
       // Verify card fits within mobile viewport
@@ -479,7 +479,7 @@ describe('Responsive & Multi-Viewport Layout Verification (Task 9G.5)', () => {
 
     try {
       await setupMockSession(deskPage);
-      await deskPage.goto(`${baseUrl}/srs-review.html`, { waitUntil: 'domcontentloaded' });
+      await deskPage.goto(`${baseUrl}/srs-review.html?action=continue`, { waitUntil: 'domcontentloaded' });
       await deskPage.locator('#srsActiveSession').waitFor({ state: 'visible' });
 
       // On desktop (>= 576px), rating bar has 4 columns in a single row
@@ -614,7 +614,7 @@ describe('Responsive & Multi-Viewport Layout Verification (Task 9G.5)', () => {
 
     try {
       await setupMockSession(p575);
-      await p575.goto(`${baseUrl}/srs-review.html`, { waitUntil: 'domcontentloaded' });
+      await p575.goto(`${baseUrl}/srs-review.html?action=continue`, { waitUntil: 'domcontentloaded' });
       await p575.locator('#srsActiveSession').waitFor({ state: 'visible' });
 
       const cols575 = (await p575.locator('.srs-rating-bar').evaluate(el => window.getComputedStyle(el).gridTemplateColumns))
@@ -622,7 +622,7 @@ describe('Responsive & Multi-Viewport Layout Verification (Task 9G.5)', () => {
       assert.strictEqual(cols575, 2, '575px must render 2-column rating bar');
 
       await setupMockSession(p576);
-      await p576.goto(`${baseUrl}/srs-review.html`, { waitUntil: 'domcontentloaded' });
+      await p576.goto(`${baseUrl}/srs-review.html?action=continue`, { waitUntil: 'domcontentloaded' });
       await p576.locator('#srsActiveSession').waitFor({ state: 'visible' });
 
       const cols576 = (await p576.locator('.srs-rating-bar').evaluate(el => window.getComputedStyle(el).gridTemplateColumns))

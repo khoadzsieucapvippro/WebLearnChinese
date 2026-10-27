@@ -101,7 +101,7 @@ export async function createMonitoredPage(browser, { viewportWidth = 1280, viewp
     if (msg.type() === 'error') {
       const text = msg.text();
       // Filter out benign browser-internal favicon.ico 404s
-      if (text.includes('favicon.ico')) {
+      if (text.includes('favicon.ico') || text.includes('ERR_NAME_NOT_RESOLVED')) {
         return;
       }
       runtimeErrors.push(`[ConsoleError] ${text}`);

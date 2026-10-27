@@ -123,6 +123,14 @@ describe('Browser E2E: Authentication UI, Profile & Session Integration', () => 
         }));
       });
 
+      await page.route('**/api/v1/auth/logout**', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ code: 'SUCCESS', message: 'Logged out' })
+        });
+      });
+
       await page.goto(`${baseUrl}/index.html`, { waitUntil: 'domcontentloaded' });
       await page.waitForSelector('#navAuthenticatedSection');
 
