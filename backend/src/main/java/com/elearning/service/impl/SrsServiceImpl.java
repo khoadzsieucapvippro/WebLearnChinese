@@ -687,7 +687,7 @@ public class SrsServiceImpl implements SrsService {
         int maxReviewLimit = setting != null ? setting.getMaxReviewPerDay() : 100;
 
         LocalDateTime now = LocalDateTime.now(businessClock);
-        long cardsDue = cardProgressRepository.countByUserAndItemTypeAndNextReviewAtLessThanEqual(user, "VOCABULARY", now);
+        long cardsDue = cardProgressRepository.countByUserAndNextReviewAtLessThanEqual(user, now);
         long cardsDueListening = cardProgressRepository.countByUserAndItemTypeAndCardTypeAndNextReviewAtLessThanEqual(user, "VOCABULARY", "LISTENING", now);
         long cardsDueWriting = cardProgressRepository.countByUserAndItemTypeAndCardTypeAndNextReviewAtLessThanEqual(user, "VOCABULARY", "WRITING", now);
         long cardsDueReading = cardProgressRepository.countByUserAndItemTypeAndCardTypeAndNextReviewAtLessThanEqual(user, "VOCABULARY", "READING", now);

@@ -1185,10 +1185,16 @@ class DemoFallbackEngine {
           };
         } else {
           const v = data.vocabulary.find(item => item.vocabId === itemId) || data.vocabulary[0];
+          let itemLessonId = body?.lessonId ? parseInt(body.lessonId, 10) : (v?.lessonId ?? null);
+          if (!itemLessonId) {
+            const foundLesson = data.lessons.find(l => (l.vocabularies || []).some(item => item.vocabId === itemId));
+            if (foundLesson) itemLessonId = foundLesson.lessonId;
+          }
           card = {
             cardId: Date.now(),
             itemType: 'VOCABULARY',
             itemId,
+            lessonId: itemLessonId,
             cardType,
             hanzi: v?.hanzi || '',
             pinyin: v?.pinyin || '',
@@ -1204,6 +1210,21 @@ class DemoFallbackEngine {
         data.srsCards.push(card);
       }
 
+      if (itemType === 'VOCABULARY' && !card.lessonId) {
+        let itemLessonId = body?.lessonId ? parseInt(body.lessonId, 10) : null;
+        if (!itemLessonId) {
+          const v = data.vocabulary.find(item => item.vocabId === itemId);
+          itemLessonId = v?.lessonId ?? null;
+        }
+        if (!itemLessonId) {
+          const foundLesson = data.lessons.find(l => (l.vocabularies || []).some(item => item.vocabId === itemId));
+          if (foundLesson) itemLessonId = foundLesson.lessonId;
+        }
+        if (itemLessonId) {
+          card.lessonId = itemLessonId;
+        }
+      }
+
       // =========================================================================
       // [CHẾ ĐỘ TEST SRS 2 PHÚT] TẠM THỜI KHÓA THUẬT TOÁN GỐC SM-2
       // Thẻ đến hạn sau khoảng 2 phút để người dùng có thể xem và ôn lại ngay khi test.
@@ -1217,6 +1238,11 @@ class DemoFallbackEngine {
       let repetitions = card.repetitions || 0;
       let intervalDays = card.intervalDays || 0;
 
+      // Map project 1..4 rating to SM-2 quality score q (1->0, 2->3, 3->4, 4->5)
+      const q = rating === 4 ? 5 : (rating === 3 ? 4 : (rating === 2 ? 3 : 0));
+      const diff = 5 - q;
+      const deltaEf = 0.1 - (diff * (0.08 + diff * 0.02));
+
       if (SRS_TEST_MODE_2MIN) {
         if (rating >= 2) {
           repetitions += 1;
@@ -1229,7 +1255,8 @@ class DemoFallbackEngine {
           intervalDays = 0;
           card.nextReviewAt = new Date().toISOString();
         }
-        easeFactor = Math.max(1.3, easeFactor + (0.1 - (5 - rating) * (0.08 + (5 - rating) * 0.02)));
+        const modeDeltaEf = (rating === 1) ? -0.20 : deltaEf;
+        easeFactor = Math.max(1.3, easeFactor + modeDeltaEf);
         card.repetitions = repetitions;
         card.easeFactor = parseFloat(easeFactor.toFixed(2));
         card.intervalDays = intervalDays;
@@ -1241,20 +1268,21 @@ class DemoFallbackEngine {
           } else if (repetitions === 1) {
             intervalDays = 6;
           } else {
-            intervalDays = Math.round(intervalDays * easeFactor);
+            intervalDays = Math.ceil(intervalDays * easeFactor);
           }
           repetitions += 1;
+          card.nextReviewAt = new Date(Date.now() + intervalDays * 86400000).toISOString();
         } else {
           repetitions = 0;
-          intervalDays = 1;
+          intervalDays = 0; // immediate relearning (due today)
+          card.nextReviewAt = new Date().toISOString();
         }
 
-        easeFactor = Math.max(1.3, easeFactor + (0.1 - (5 - rating) * (0.08 + (5 - rating) * 0.02)));
+        easeFactor = Math.max(1.3, easeFactor + deltaEf);
 
         card.repetitions = repetitions;
         card.easeFactor = parseFloat(easeFactor.toFixed(2));
         card.intervalDays = intervalDays;
-        card.nextReviewAt = new Date(Date.now() + intervalDays * 86400000).toISOString();
       }
 
       data.srsReviews.push({

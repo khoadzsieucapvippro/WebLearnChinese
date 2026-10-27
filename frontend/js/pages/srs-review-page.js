@@ -10263,6 +10263,15 @@ export class SrsReviewController {
     if (this.dom.btnCompletionBackToCatalog) {
       this.dom.btnCompletionBackToCatalog.addEventListener('click', () => this.backToSelection());
     }
+    if (this.dom.btnRestartSession) {
+      this.dom.btnRestartSession.addEventListener('click', (e) => {
+        if (this.stats && this.stats.againCount > 0 && this.lessonId) {
+          e.preventDefault();
+          this.mode = 'DUE_CARDS';
+          this.startTopicSession(this.lessonId, 'due');
+        }
+      });
+    }
 
     // Flashcard Flip
     if (this.dom.flashcard) {
@@ -11753,7 +11762,7 @@ export class SrsReviewController {
           this.startTopicSession(effectiveLessonId, 'review');
         },
         onDue: (!unavailable && dueCount > 0) ? () => {
-          this.mode = 'CATALOG_TOPIC';
+          this.mode = 'DUE_CARDS';
           this.currentChapterTitle = topic.title;
           this.startTopicSession(effectiveLessonId, 'due');
         } : null,
@@ -11882,7 +11891,8 @@ export class SrsReviewController {
           if (Array.isArray(resp)) {
             remoteCards = resp;
           }
-        } else if (this.mode === 'DUE_CARDS') {
+        } else if (this.mode === 'DUE_CARDS' || action === 'due') {
+          this.mode = 'DUE_CARDS';
           const dueParams = { itemType: 'VOCABULARY', lessonId: effectiveLessonId, cardType: cardTypeParam };
           const dueResp = await apiClient('/srs/due', { params: dueParams });
           if (Array.isArray(dueResp)) {
@@ -14983,6 +14993,23 @@ export class SrsReviewController {
     }
     if (this.dom.statTotalTime) {
       this.dom.statTotalTime.textContent = formatElapsedSeconds(this.stats.totalTimeSeconds);
+    }
+
+    if (this.dom.btnRestartSession) {
+      if (this.stats.againCount > 0) {
+        this.dom.btnRestartSession.textContent = `⚡ Ôn lại ${this.stats.againCount} thẻ cần học lại`;
+        const restartHref = this.lessonId
+          ? `srs-review.html?lessonId=${this.lessonId}&mode=${this.activeMode}&action=due`
+          : `srs-review.html?mode=${this.activeMode}&action=due`;
+        this.dom.btnRestartSession.setAttribute('href', restartHref);
+      } else {
+        this.dom.btnRestartSession.textContent = 'Ôn tập tiếp';
+        this.dom.btnRestartSession.setAttribute('href', `srs-review.html?mode=${this.activeMode}`);
+      }
+    }
+
+    if (authManager.isAuthenticated()) {
+      this.fetchDueCounts();
     }
   }
 
