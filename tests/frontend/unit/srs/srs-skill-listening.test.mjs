@@ -1144,4 +1144,84 @@ describe('Unit: SRS Listening Room & Pinyin IME Engine', () => {
     });
   });
 
+  describe('10. Quy chuẩn Đánh giá 1–4 SM-2 & Chu trình Học lại Phòng Luyện Nghe', () => {
+    test('0 mistakes, 0 replays maps to Rating 4 (Easy)', async () => {
+      const controller = new SrsReviewController();
+      controller.dom = { btnListeningNext: makeEl('button') };
+      controller.hasCompletedListeningForCurrentCard = true;
+      controller.currentListeningMistakes = 0;
+      controller.currentListeningReplays = 0;
+      let submittedRating = null;
+      controller.submitRating = async (r) => { submittedRating = r; };
+
+      await controller.nextListeningItem();
+      assert.strictEqual(submittedRating, 4);
+    });
+
+    test('0 mistakes, 1 replay maps to Rating 3 (Good)', async () => {
+      const controller = new SrsReviewController();
+      controller.dom = { btnListeningNext: makeEl('button') };
+      controller.hasCompletedListeningForCurrentCard = true;
+      controller.currentListeningMistakes = 0;
+      controller.currentListeningReplays = 0;
+      controller.currentListeningReplays = 1;
+      let submittedRating = null;
+      controller.submitRating = async (r) => { submittedRating = r; };
+
+      await controller.nextListeningItem();
+      assert.strictEqual(submittedRating, 3);
+    });
+
+    test('1 mistake or >= 3 replays maps to Rating 2 (Hard)', async () => {
+      const controller = new SrsReviewController();
+      controller.dom = { btnListeningNext: makeEl('button') };
+      controller.hasCompletedListeningForCurrentCard = true;
+      controller.currentListeningMistakes = 1;
+      controller.currentListeningReplays = 0;
+      let submittedRating = null;
+      controller.submitRating = async (r) => { submittedRating = r; };
+
+      await controller.nextListeningItem();
+      assert.strictEqual(submittedRating, 2);
+
+      // Replays >= 3 with 0 mistakes
+      controller.currentListeningMistakes = 0;
+      controller.currentListeningReplays = 3;
+      await controller.nextListeningItem();
+      assert.strictEqual(submittedRating, 2);
+    });
+
+    test('>= 3 mistakes maps to Rating 1 (Again - Requeue card)', async () => {
+      const controller = new SrsReviewController();
+      controller.dom = { btnListeningNext: makeEl('button') };
+      controller.hasCompletedListeningForCurrentCard = true;
+      controller.currentListeningMistakes = 3;
+      controller.currentListeningReplays = 2;
+      let submittedRating = null;
+      controller.submitRating = async (r) => { submittedRating = r; };
+
+      await controller.nextListeningItem();
+      assert.strictEqual(submittedRating, 1);
+    });
+
+    test('handleListeningIncorrect increments currentListeningMistakes counter', () => {
+      const controller = new SrsReviewController();
+      controller.dom = {
+        listeningAnswerInput: makeEl('input'),
+        btnListeningCheck: makeEl('button'),
+        listeningCompletionNotice: makeEl('div'),
+        listeningErrorNotice: makeEl('div'),
+        btnListeningNext: makeEl('button'),
+        btnListeningPlayAudio: makeEl('button')
+      };
+      controller.playPronunciation = () => Promise.resolve();
+
+      assert.strictEqual(controller.currentListeningMistakes, undefined);
+      controller.handleListeningIncorrect();
+      assert.strictEqual(controller.currentListeningMistakes, 1);
+      controller.handleListeningIncorrect();
+      assert.strictEqual(controller.currentListeningMistakes, 2);
+    });
+  });
+
 });

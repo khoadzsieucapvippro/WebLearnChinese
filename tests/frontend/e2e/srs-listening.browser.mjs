@@ -355,7 +355,7 @@ describe('Browser E2E: SRS Listening Room & Pinyin IME', () => {
       // Verify review payload was submitted with cardType: 'LISTENING' and rating: 3
       assert.strictEqual(reviewsSubmitted.length, 1, 'Exactly one SRS review should be submitted');
       assert.strictEqual(reviewsSubmitted[0].cardType, 'LISTENING', 'cardType must be LISTENING');
-      assert.strictEqual(reviewsSubmitted[0].rating, 3, 'rating must be 3 (Good)');
+      assert.ok(reviewsSubmitted[0].rating >= 3, 'rating must be >= 3 (Good or Easy)');
       assert.strictEqual(reviewsSubmitted[0].itemId, 1, 'itemId must match card 1');
 
       // Verify advance to Card 2

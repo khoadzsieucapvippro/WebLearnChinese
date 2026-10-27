@@ -10480,6 +10480,7 @@ export class SrsReviewController {
     if (this.dom.btnListeningPlayAudio) {
       this.dom.btnListeningPlayAudio.addEventListener('click', (e) => {
         e.stopPropagation();
+        this.currentListeningReplays = (this.currentListeningReplays || 0) + 1;
         this.playPronunciation(this.dom.btnListeningPlayAudio);
         this.setListeningSpeakerHint(false);
       });
@@ -10597,6 +10598,8 @@ export class SrsReviewController {
     if (this.dom.btnReadingRecordAgain) {
       this.dom.btnReadingRecordAgain.addEventListener('click', () => {
         this.cleanUpReadingMedia();
+        this.currentReadingScore = null;
+        this.hasCompletedReadingForCurrentCard = false;
         this.setReadingState('ready');
       });
     }
@@ -10604,6 +10607,8 @@ export class SrsReviewController {
     if (this.dom.btnReadingTryAgain) {
       this.dom.btnReadingTryAgain.addEventListener('click', () => {
         this.cleanUpReadingMedia();
+        this.currentReadingScore = null;
+        this.hasCompletedReadingForCurrentCard = false;
         this.setReadingState('ready');
       });
     }
@@ -14010,6 +14015,8 @@ export class SrsReviewController {
   async renderListeningRoomCard(card) {
     this.destroyListeningIme();
     this.hasCompletedListeningForCurrentCard = false;
+    this.currentListeningMistakes = 0;
+    this.currentListeningReplays = 0;
 
     const isVocab = (card.itemType || '').toUpperCase() === 'VOCABULARY';
 
@@ -14206,6 +14213,7 @@ export class SrsReviewController {
    * Handles incorrect answer in Listening room.
    */
   handleListeningIncorrect() {
+    this.currentListeningMistakes = (this.currentListeningMistakes || 0) + 1;
     this.hasCompletedListeningForCurrentCard = false;
 
     if (this.dom.listeningAnswerInput) {
@@ -14267,62 +14275,40 @@ export class SrsReviewController {
     }
 
     try {
-      this.cleanupTimer();
-      const elapsedSeconds = calculateReviewTime(this.cardStartTime, Date.now());
+      // 1. Quy chuẩn đánh giá 1-4 thống nhất SRS cho Luyện Nghe:
+      // Dựa trên số lần trả lời sai và số lần bấm nghe lại âm thanh:
+      // - Sai >= 3 lần: 1 (Học lại - Requeue về cuối phiên học)
+      // - Sai 1..2 lần HOẶC bấm nghe lại >= 3 lần: 2 (Khó)
+      // - Đúng lần đầu (0 lỗi) nhưng có bấm nghe lại 1..2 lần: 3 (Tốt)
+      // - Hoàn hảo: Đúng ngay lần đầu không bấm nghe lại: 4 (Dễ)
+      const mistakes = Number(this.currentListeningMistakes) || 0;
+      const replays = Number(this.currentListeningReplays) || 0;
 
-      if (this.mode !== 'LESSON_PRACTICE') {
-        if (authManager.isAuthenticated() && this.sessionQueue[this.currentIndex]?.card) {
-          const card = this.sessionQueue[this.currentIndex].card;
-          const payload = buildReviewPayload({
-            itemType: card.itemType || 'VOCABULARY',
-            itemId: card.itemId,
-            cardType: 'LISTENING',
-            rating: 3,
-            reviewTimeSeconds: elapsedSeconds
-          });
-
-          try {
-            await apiClient('/srs/review', {
-              method: 'POST',
-              body: payload
-            });
-          } catch (apiErr) {
-            if ((apiErr?.message && apiErr.message.includes('chưa đến hạn')) || apiErr?.status === 409 || apiErr?.code === 'CONFLICT') {
-              console.info('[SRS Listening Review] Thẻ chưa đến hạn ôn tập SRS, tiếp tục chuyển sang thẻ kế tiếp.');
-            } else {
-              console.error('[SRS Listening Review] API submission failed:', apiErr);
-              const errMsg = apiErr?.message || 'Không thể lưu kết quả luyện nghe lên máy chủ.';
-              showToast({
-                type: 'error',
-                title: 'Lỗi đồng bộ SRS',
-                message: `${errMsg} Vui lòng thử lại.`
-              });
-              if (this.dom?.listeningCompletionNotice) {
-                this.dom.listeningCompletionNotice.textContent = `⚠️ Lỗi lưu kết quả (${errMsg}). Vui lòng bấm [Sang từ tiếp theo] để thử lại.`;
-                this.dom.listeningCompletionNotice.classList.remove('d-none');
-              }
-              return;
-            }
-          }
-        }
-      }
-
-      if (!this.isReviewMode) {
-        const nextIndex = this.currentIndex + 1;
-        this.persistProgress('listening', nextIndex);
-      }
-
-      this.stats.totalReviewed++;
-      this.stats.totalTimeSeconds += elapsedSeconds;
-      this.stats.goodCount++;
-      this.stats.goodEasyCount++;
-
-      this.currentIndex++;
-      if (this.currentIndex >= this.sessionQueue.length) {
-        this.showCompletedState();
+      let listeningRating = 4;
+      if (mistakes >= 3) {
+        listeningRating = 1;
+      } else if (mistakes >= 1 || replays >= 3) {
+        listeningRating = 2;
+      } else if (replays >= 1) {
+        listeningRating = 3;
       } else {
-        this.renderCurrentCard();
+        listeningRating = 4;
       }
+
+      if (listeningRating === 1) {
+        try {
+          showToast({
+            type: 'info',
+            title: 'Học lại',
+            message: `Câu hỏi nghe có ${mistakes} lần trả lời chưa chính xác. Thẻ sẽ xuất hiện lại ở cuối phiên học.`
+          });
+        } catch (_) {}
+      }
+
+      // 2. Tái sử dụng cỗ máy SRS submitRating để đảm bảo tính nhất quán 100%:
+      // Hưởng đầy đủ cơ chế Requeue, Relearn Graduation, Cache update và Thống kê 5 chỉ số
+      this.activeMode = 'listening';
+      await this.submitRating(listeningRating);
     } finally {
       this.isSubmittingListening = false;
       if (this.dom?.btnListeningNext) {
@@ -14918,65 +14904,38 @@ export class SrsReviewController {
     }
 
     try {
-      this.cleanupTimer();
-      const elapsedSeconds = calculateReviewTime(this.cardStartTime, Date.now());
-
+      // 1. Quy chuẩn đánh giá 1-4 thống nhất SRS cho Luyện Đọc:
+      // Dựa trên điểm số phân tích âm thanh & cao độ F0 thang Chao:
+      // - Score >= 85: 4 (Dễ)
+      // - 60 <= Score < 85: 3 (Tốt)
+      // - 45 <= Score < 60: 2 (Khó)
+      // - Score < 45: 1 (Học lại - Requeue về cuối phiên học)
       const score = typeof this.currentReadingScore === 'number' ? this.currentReadingScore : 70;
-      const rating = score >= 85 ? 4 : (score >= 60 ? 3 : (score >= 45 ? 2 : 1));
-
-      if (this.mode !== 'LESSON_PRACTICE') {
-        if (authManager.isAuthenticated() && this.sessionQueue[this.currentIndex]?.card) {
-          const card = this.sessionQueue[this.currentIndex].card;
-
-          const payload = buildReviewPayload({
-            itemType: card.itemType || 'VOCABULARY',
-            itemId: card.itemId,
-            cardType: 'READING',
-            rating: rating,
-            reviewTimeSeconds: elapsedSeconds
-          });
-
-          try {
-            await apiClient('/srs/review', {
-              method: 'POST',
-              body: payload
-            });
-          } catch (apiErr) {
-            if ((apiErr?.message && apiErr.message.includes('chưa đến hạn')) || apiErr?.status === 409 || apiErr?.code === 'CONFLICT') {
-              console.info('[SRS Reading Review] Thẻ chưa đến hạn ôn tập SRS, tiếp tục chuyển sang thẻ kế tiếp.');
-            } else {
-              console.error('[SRS Reading Review] API submission failed:', apiErr);
-              const errMsg = apiErr?.message || 'Không thể lưu kết quả luyện đọc lên máy chủ.';
-              showToast({
-                type: 'error',
-                title: 'Lỗi đồng bộ SRS',
-                message: `${errMsg} Vui lòng thử lại.`
-              });
-              return;
-            }
-          }
-        }
-      }
-
-      if (!this.isReviewMode) {
-        const nextIndex = this.currentIndex + 1;
-        this.persistProgress('reading', nextIndex);
-      }
-
-      this.stats.totalReviewed++;
-      this.stats.totalTimeSeconds += elapsedSeconds;
-      if (rating === 1) this.stats.againCount++;
-      else if (rating === 2) this.stats.hardCount++;
-      else if (rating === 3) this.stats.goodCount++;
-      else if (rating === 4) this.stats.easyCount++;
-      if (rating >= 3) this.stats.goodEasyCount++;
-
-      this.currentIndex++;
-      if (this.currentIndex >= this.sessionQueue.length) {
-        this.showCompletedState();
+      let readingRating = 4;
+      if (score < 45) {
+        readingRating = 1;
+      } else if (score < 60) {
+        readingRating = 2;
+      } else if (score < 85) {
+        readingRating = 3;
       } else {
-        this.renderCurrentCard();
+        readingRating = 4;
       }
+
+      if (readingRating === 1) {
+        try {
+          showToast({
+            type: 'info',
+            title: 'Học lại',
+            message: `Điểm phát âm đạt ${score}/100. Thẻ sẽ xuất hiện lại ở cuối phiên học.`
+          });
+        } catch (_) {}
+      }
+
+      // 2. Tái sử dụng cỗ máy SRS submitRating để đảm bảo tính nhất quán 100%:
+      // Hưởng đầy đủ cơ chế Requeue, Relearn Graduation, Cache update và Thống kê 5 chỉ số
+      this.activeMode = 'reading';
+      await this.submitRating(readingRating);
     } finally {
       this.isSubmittingReading = false;
       if (this.dom?.btnReadingNext) {

@@ -521,4 +521,54 @@ describe('SRS Reading Room & AI Assessment Tests', () => {
       assert.strictEqual(ratingSubmitted, null);
     });
   });
+
+  describe('5. Quy chuẩn Đánh giá 1–4 SM-2 & Chu trình Học lại Phòng Luyện Đọc', () => {
+    test('score >= 85 maps to Rating 4 (Easy)', async () => {
+      const controller = new SrsReviewController();
+      controller.dom = { btnReadingNext: makeEl('button') };
+      controller.hasCompletedReadingForCurrentCard = true;
+      controller.currentReadingScore = 92;
+      let submittedRating = null;
+      controller.submitRating = async (r) => { submittedRating = r; };
+
+      await controller.nextReadingItem();
+      assert.strictEqual(submittedRating, 4);
+    });
+
+    test('60 <= score < 85 maps to Rating 3 (Good)', async () => {
+      const controller = new SrsReviewController();
+      controller.dom = { btnReadingNext: makeEl('button') };
+      controller.hasCompletedReadingForCurrentCard = true;
+      controller.currentReadingScore = 75;
+      let submittedRating = null;
+      controller.submitRating = async (r) => { submittedRating = r; };
+
+      await controller.nextReadingItem();
+      assert.strictEqual(submittedRating, 3);
+    });
+
+    test('45 <= score < 60 maps to Rating 2 (Hard)', async () => {
+      const controller = new SrsReviewController();
+      controller.dom = { btnReadingNext: makeEl('button') };
+      controller.hasCompletedReadingForCurrentCard = true;
+      controller.currentReadingScore = 52;
+      let submittedRating = null;
+      controller.submitRating = async (r) => { submittedRating = r; };
+
+      await controller.nextReadingItem();
+      assert.strictEqual(submittedRating, 2);
+    });
+
+    test('score < 45 maps to Rating 1 (Again - Requeue card)', async () => {
+      const controller = new SrsReviewController();
+      controller.dom = { btnReadingNext: makeEl('button') };
+      controller.hasCompletedReadingForCurrentCard = true;
+      controller.currentReadingScore = 38;
+      let submittedRating = null;
+      controller.submitRating = async (r) => { submittedRating = r; };
+
+      await controller.nextReadingItem();
+      assert.strictEqual(submittedRating, 1);
+    });
+  });
 });
