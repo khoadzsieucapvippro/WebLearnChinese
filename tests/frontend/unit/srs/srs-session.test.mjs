@@ -532,6 +532,37 @@ describe('Unit: SRS Flashcard Review Session Logic (9C.3)', () => {
       });
       assert.strictEqual(pWrite.cardType, 'WRITING');
     });
+
+    test('buildReviewPayload accepts and preserves optional lessonId', () => {
+      const pWithLesson = buildReviewPayload({
+        itemType: 'VOCABULARY',
+        itemId: 101,
+        cardType: 'READING',
+        rating: 1,
+        reviewTimeSeconds: 5,
+        lessonId: 1
+      });
+      assert.strictEqual(pWithLesson.lessonId, 1);
+
+      const pWithLessonStr = buildReviewPayload({
+        itemType: 'VOCABULARY',
+        itemId: 101,
+        cardType: 'READING',
+        rating: 1,
+        reviewTimeSeconds: 5,
+        lessonId: '5'
+      });
+      assert.strictEqual(pWithLessonStr.lessonId, 5);
+
+      const pWithoutLesson = buildReviewPayload({
+        itemType: 'VOCABULARY',
+        itemId: 101,
+        cardType: 'READING',
+        rating: 1,
+        reviewTimeSeconds: 5
+      });
+      assert.strictEqual(pWithoutLesson.lessonId, undefined);
+    });
   });
 
   describe('13. Dynamic Card Normalization & Authentic Backend ID (ACT-05 / C03)', () => {
@@ -647,6 +678,100 @@ describe('Unit: SRS Flashcard Review Session Logic (9C.3)', () => {
       }
     });
 
+    test('startTopicSession with action=review does not get hijacked by this.mode=DUE_CARDS and loads practice cards', async () => {
+      authManager.setSession({ token: 'test-token', user: { accountId: 1, emailOrPhone: 'user@test.com' } });
+      const controller = new SrsReviewController();
+      controller.mode = 'DUE_CARDS'; // Stale mode from previous state or default constructor
+
+      let requestedUrl = null;
+      const originalFetch = globalThis.fetch;
+      globalThis.fetch = async (url) => {
+        requestedUrl = String(url);
+        return {
+          ok: true,
+          status: 200,
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: async () => ({
+            code: 'SUCCESS',
+            message: 'OK',
+            data: Array.from({ length: 20 }, (_, i) => ({
+              itemType: 'VOCABULARY',
+              itemId: i + 1,
+              cardType: 'READING',
+              hanzi: `字${i + 1}`,
+              pinyin: 'zì',
+              meaningVi: `Nghĩa ${i + 1}`
+            }))
+          })
+        };
+      };
+
+      try {
+        let initializedQueue = null;
+        let isReviewModeParam = null;
+        controller.initSessionQueue = (cards, isReviewMode) => {
+          initializedQueue = cards;
+          isReviewModeParam = isReviewMode;
+        };
+
+        await controller.startTopicSession(1, 'review');
+        assert.ok(requestedUrl.includes('/srs/practice-cards'), 'Must fetch practice-cards, NOT /srs/due');
+        assert.ok(!requestedUrl.includes('/srs/due'), 'Must NOT call /srs/due when action is review');
+        assert.strictEqual(initializedQueue.length, 20, 'Must load all 20 practice cards for re-learning');
+        assert.strictEqual(isReviewModeParam, true, 'isReviewMode flag must be true');
+      } finally {
+        globalThis.fetch = originalFetch;
+        authManager.clearSession();
+      }
+    });
+
+    test('startTopicSession with action=due queries /srs/due', async () => {
+      authManager.setSession({ token: 'test-token', user: { accountId: 1, emailOrPhone: 'user@test.com' } });
+      const controller = new SrsReviewController();
+
+      let requestedUrl = null;
+      const originalFetch = globalThis.fetch;
+      globalThis.fetch = async (url) => {
+        requestedUrl = String(url);
+        return {
+          ok: true,
+          status: 200,
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: async () => ({
+            code: 'SUCCESS',
+            message: 'OK',
+            data: [{
+              itemType: 'VOCABULARY',
+              itemId: 1,
+              cardType: 'READING',
+              hanzi: '爱',
+              pinyin: 'ài',
+              meaningVi: 'Yêu'
+            }, {
+              itemType: 'VOCABULARY',
+              itemId: 3,
+              cardType: 'READING',
+              hanzi: '八',
+              pinyin: 'bā',
+              meaningVi: 'Tám'
+            }]
+          })
+        };
+      };
+
+      try {
+        let initializedQueue = null;
+        controller.initSessionQueue = (cards) => { initializedQueue = cards; };
+
+        await controller.startTopicSession(1, 'due');
+        assert.ok(requestedUrl.includes('/srs/due'), 'Must fetch /srs/due when action is due');
+        assert.strictEqual(initializedQueue.length, 2, 'Loads only the 2 due cards');
+      } finally {
+        globalThis.fetch = originalFetch;
+        authManager.clearSession();
+      }
+    });
+
     test('startVocabSession queries backend when authenticated and populates authentic card', async () => {
       authManager.setSession({ token: 'test-token', user: { accountId: 1, emailOrPhone: 'user@test.com' } });
       const controller = new SrsReviewController();
@@ -740,6 +865,70 @@ describe('Unit: SRS Flashcard Review Session Logic (9C.3)', () => {
     test('handles missing meaning or missing character gracefully', () => {
       assert.strictEqual(formatConstituentRadicalsText([{ character: '子' }], '学'), '子');
       assert.strictEqual(formatConstituentRadicalsText([{ meaningHanViet: 'Tử' }], '学'), 'Tử');
+    });
+  });
+
+  describe('17. Re-learning ("Học lại") and Due Count Sync Invariant', () => {
+    test('startTopicSession with action=review loads all 20 practice cards of Lesson 1', async () => {
+      authManager.clearSession();
+      const controller = new SrsReviewController();
+      let initializedQueue = null;
+      let isReviewModeParam = null;
+      controller.initSessionQueue = (cards, isReviewMode) => {
+        initializedQueue = cards;
+        isReviewModeParam = isReviewMode;
+      };
+
+      try {
+        await controller.startTopicSession(1, 'review');
+        assert.ok(Array.isArray(initializedQueue), 'Queue must be an array');
+        assert.strictEqual(initializedQueue.length, 20, 'Must load all 20 practice cards for Lesson 1');
+        assert.strictEqual(isReviewModeParam, true, 'isReviewMode flag must be true');
+        assert.strictEqual(initializedQueue[0].hanzi, '请');
+        assert.strictEqual(initializedQueue[1].hanzi, '请问');
+        assert.strictEqual(initializedQueue[2].hanzi, '谢谢');
+        assert.strictEqual(initializedQueue[3].hanzi, '不客气');
+        assert.strictEqual(initializedQueue[4].hanzi, '对不起');
+      } finally {
+        authManager.clearSession();
+      }
+    });
+
+    test('rating 5 cards with Again (1) updates dueItemsCache and yields dueCount=5 on catalog', async () => {
+      authManager.setSession({ token: 'test-token', user: { accountId: 1, emailOrPhone: 'user@test.com' } });
+      const controller = new SrsReviewController();
+      controller.dueItemsCache = { vocab: [], radicals: [] };
+
+      const cardsToReview = [
+        { itemId: 296, vocabId: 296, hanzi: '请', itemType: 'VOCABULARY', lessonId: 1 },
+        { itemId: 505, vocabId: 505, hanzi: '请问', itemType: 'VOCABULARY', lessonId: 1 },
+        { itemId: 410, vocabId: 410, hanzi: '谢谢', itemType: 'VOCABULARY', lessonId: 1 },
+        { itemId: 32, vocabId: 32, hanzi: '不客气', itemType: 'VOCABULARY', lessonId: 1 },
+        { itemId: 93, vocabId: 93, hanzi: '对不起', itemType: 'VOCABULARY', lessonId: 1 }
+      ];
+
+      for (const card of cardsToReview) {
+        const itemType = (card.itemType || 'VOCABULARY').toUpperCase();
+        const cacheKey = itemType === 'RADICAL' ? 'radicals' : 'vocab';
+        const alreadyDue = controller.isVocabDue(card.itemId ?? card.vocabId, card.hanzi);
+        if (!alreadyDue) {
+          controller.dueItemsCache[cacheKey].push({
+            itemId: card.itemId,
+            vocabId: card.vocabId || card.itemId,
+            id: card.id || card.itemId,
+            lessonId: card.lessonId,
+            hanzi: card.hanzi,
+            itemType: itemType
+          });
+        }
+      }
+
+      assert.strictEqual(controller.dueItemsCache.vocab.length, 5, 'Must have 5 due cards in cache');
+
+      const { HSK1_TOPICS } = await import('../../../../frontend/js/pages/srs-review-page.js');
+      const topic1 = HSK1_TOPICS[0];
+      const dueCount = topic1.vocabularies.filter(v => controller.isVocabDue(v.vocabId ?? v.itemId ?? v.id, v.hanzi)).length;
+      assert.strictEqual(dueCount, 5, 'Catalog dueCount for Bài 01 must be exactly 5, not stuck at 2');
     });
   });
 });

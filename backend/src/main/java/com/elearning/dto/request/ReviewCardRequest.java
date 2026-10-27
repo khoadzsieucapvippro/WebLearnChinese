@@ -1,5 +1,6 @@
 package com.elearning.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -11,6 +12,7 @@ import jakarta.validation.constraints.Positive;
  * DTO representing a flashcard recall review submission by a learner.
  * Transports user rating and reaction time for Spaced Repetition calculation.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ReviewCardRequest {
 
     @NotBlank(message = "Loại thẻ (itemType) không được để trống")
@@ -23,6 +25,8 @@ public class ReviewCardRequest {
 
     @Pattern(regexp = "^(?i)(READING|LISTENING|WRITING)$", message = "cardType phải là READING, LISTENING hoặc WRITING")
     private String cardType;
+
+    private Long lessonId;
 
     @NotNull(message = "Điểm đánh giá (rating) không được để trống")
     @Min(value = 1, message = "Rating phải từ 1 đến 4 (1=Again, 2=Hard, 3=Good, 4=Easy)")
@@ -41,9 +45,14 @@ public class ReviewCardRequest {
     }
 
     public ReviewCardRequest(String itemType, Long itemId, String cardType, Integer rating, Integer reviewTimeSeconds) {
+        this(itemType, itemId, cardType, null, rating, reviewTimeSeconds);
+    }
+
+    public ReviewCardRequest(String itemType, Long itemId, String cardType, Long lessonId, Integer rating, Integer reviewTimeSeconds) {
         this.itemType = itemType;
         this.itemId = itemId;
         this.cardType = cardType;
+        this.lessonId = lessonId;
         this.rating = rating;
         this.reviewTimeSeconds = reviewTimeSeconds;
     }
@@ -70,6 +79,14 @@ public class ReviewCardRequest {
 
     public void setCardType(String cardType) {
         this.cardType = cardType;
+    }
+
+    public Long getLessonId() {
+        return lessonId;
+    }
+
+    public void setLessonId(Long lessonId) {
+        this.lessonId = lessonId;
     }
 
     public Integer getRating() {

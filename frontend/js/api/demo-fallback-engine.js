@@ -40,7 +40,7 @@ import { authManager } from '../auth/auth-state.js';
 import { ApiError } from './api.js';
 
 const STORAGE_KEY = 'ELEARNING_DEMO_DATA';
-const CURRENT_DATASET_VERSION = 9;
+const CURRENT_DATASET_VERSION = 10;
 
 /**
  * Encodes string or object into Base64URL string compliant with JWT standards.
@@ -120,7 +120,7 @@ class DemoFallbackEngine {
     if (saved && saved.schemaVersion === CURRENT_DATASET_VERSION && Array.isArray(saved.radicals) && saved.radicals.length === 214) {
       this._data = saved;
     } else {
-      const preservedCards = (saved && Array.isArray(saved.srsCards)) ? saved.srsCards : JSON.parse(JSON.stringify(SEED_SRS_CARDS));
+      const preservedCards = (saved && saved.schemaVersion >= 10 && Array.isArray(saved.srsCards)) ? saved.srsCards : JSON.parse(JSON.stringify(SEED_SRS_CARDS));
       const preservedReviews = (saved && Array.isArray(saved.srsReviews)) ? saved.srsReviews : [];
       const preservedNotes = (saved && Array.isArray(saved.notes)) ? saved.notes : [
         {
@@ -1050,7 +1050,9 @@ class DemoFallbackEngine {
         cards = cards.filter(c => (c.itemType || 'VOCABULARY').toUpperCase() === itemType);
       }
       if (lessonId) {
-        cards = cards.filter(c => c.lessonId === lessonId);
+        const lesson = data.lessons.find(l => l.lessonId === lessonId);
+        const lessonVocabIds = new Set((lesson?.vocabularies || []).map(v => v.vocabId));
+        cards = cards.filter(c => c.lessonId === lessonId || (c.itemType === 'VOCABULARY' && lessonVocabIds.has(c.itemId)));
       }
       if (cardType) {
         cards = cards.filter(c => c.cardType === cardType);
@@ -1213,12 +1215,11 @@ class DemoFallbackEngine {
         data.srsCards.push(card);
       }
 
-      if (itemType === 'VOCABULARY' && !card.lessonId) {
-        let itemLessonId = body?.lessonId ? parseInt(body.lessonId, 10) : null;
-        if (!itemLessonId) {
-          const v = data.vocabulary.find(item => item.vocabId === itemId);
-          itemLessonId = v?.lessonId ?? null;
-        }
+      if (body?.lessonId) {
+        card.lessonId = parseInt(body.lessonId, 10);
+      } else if (itemType === 'VOCABULARY' && !card.lessonId) {
+        const v = data.vocabulary.find(item => item.vocabId === itemId);
+        let itemLessonId = v?.lessonId ?? null;
         if (!itemLessonId) {
           const foundLesson = data.lessons.find(l => (l.vocabularies || []).some(item => item.vocabId === itemId));
           if (foundLesson) itemLessonId = foundLesson.lessonId;
@@ -1256,7 +1257,7 @@ class DemoFallbackEngine {
           // Again (1): Đến hạn ngay lập tức để học lại
           repetitions = 0;
           intervalDays = 0;
-          card.nextReviewAt = new Date().toISOString();
+          card.nextReviewAt = new Date(Date.now() - 1000).toISOString();
         }
         const modeDeltaEf = (rating === 1) ? -0.20 : deltaEf;
         easeFactor = Math.max(1.3, easeFactor + modeDeltaEf);

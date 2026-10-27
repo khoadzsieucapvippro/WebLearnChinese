@@ -87,7 +87,6 @@ public class SrsLessonDueTests {
     @Spy
     private Clock businessClock = Clock.fixed(Instant.parse("2026-10-13T10:00:00Z"), ZoneId.of("Asia/Ho_Chi_Minh"));
 
-    @InjectMocks
     private SrsServiceImpl srsService;
 
     private UserProfile testLearner;
@@ -98,6 +97,19 @@ public class SrsLessonDueTests {
 
     @BeforeEach
     void setUp() {
+        srsService = new SrsServiceImpl(
+                cardProgressRepository,
+                reviewLogRepository,
+                userSrsSettingRepository,
+                vocabularyRepository,
+                radicalRepository,
+                userProfileRepository,
+                lessonRepository,
+                lessonVocabularyRepository,
+                srsCalculator,
+                businessClock
+        );
+
         learnerAccount = new Account();
         learnerAccount.setAccountId(10L);
         learnerAccount.setEmailOrPhone("learner@domain.com");

@@ -9750,9 +9750,9 @@ export function formatElapsedSeconds(seconds) {
  * - NO userId or accountId leakage
  * 
  * @param {Object} params 
- * @returns {{ itemType: string, itemId: number, rating: number, reviewTimeSeconds: number, cardType?: string }}
+ * @returns {{ itemType: string, itemId: number, rating: number, reviewTimeSeconds: number, cardType?: string, lessonId?: number }}
  */
-export function buildReviewPayload({ itemType, itemId, rating, reviewTimeSeconds, cardType }) {
+export function buildReviewPayload({ itemType, itemId, rating, reviewTimeSeconds, cardType, lessonId }) {
   if (!itemType || typeof itemType !== 'string') {
     throw new TypeError('itemType must be a non-empty string ("VOCABULARY" or "RADICAL")');
   }
@@ -9785,6 +9785,10 @@ export function buildReviewPayload({ itemType, itemId, rating, reviewTimeSeconds
 
   if (cardType && typeof cardType === 'string' && cardType.trim()) {
     payload.cardType = cardType.trim().toUpperCase();
+  }
+
+  if (lessonId != null && Number.isInteger(Number(lessonId)) && Number(lessonId) > 0) {
+    payload.lessonId = Number(lessonId);
   }
 
   return payload;
@@ -10702,6 +10706,12 @@ export class SrsReviewController {
     } else if (rawMode === 'new') {
       this.mode = 'LESSON_NEW_CARDS';
       this.activeAction = 'continue';
+    } else if (this.activeAction === 'review') {
+      this.mode = 'CATALOG_TOPIC';
+    } else if (this.activeAction === 'continue') {
+      this.mode = 'CATALOG_TOPIC';
+    } else if (this.activeAction === 'due') {
+      this.mode = 'DUE_CARDS';
     } else if (this.lessonId && !urlParams.get('group')) {
       this.mode = 'DUE_CARDS';
     }
@@ -10857,7 +10867,7 @@ export class SrsReviewController {
     this.currentIndex = 0;
     this.currentChapterTitle = '';
     this.currentChapterIdx = null;
-
+    this.mode = 'CATALOG_TOPIC';
 
     this.setViewState('catalog');
     this.syncToolbarUi();
@@ -10879,6 +10889,7 @@ export class SrsReviewController {
    */
   async backToSelection() {
     this.activeAction = null;
+    this.mode = 'CATALOG_TOPIC';
     this.lessonId = null;
     this.radicalId = null;
     this.vocabId = null;
@@ -11229,6 +11240,7 @@ export class SrsReviewController {
     this.cleanupTimer();
     this.destroyWritingEngines();
     this.activeAction = action;
+    this.mode = action === 'due' ? 'DUE_CARDS' : 'CATALOG_TOPIC';
     this.activeGroup = deck;
     this.currentChapterIdx = chapterIdx;
     this.lessonId = null;
@@ -12000,6 +12012,18 @@ export class SrsReviewController {
     this.radicalId = null;
     this.vocabId = null;
 
+    if (action === 'due') {
+      this.mode = 'DUE_CARDS';
+    } else if (action === 'review') {
+      if (this.mode !== 'LESSON_PRACTICE') {
+        this.mode = 'CATALOG_TOPIC';
+      }
+    } else if (action === 'continue') {
+      if (this.mode !== 'LESSON_NEW_CARDS') {
+        this.mode = 'CATALOG_TOPIC';
+      }
+    }
+
     let items = null;
     let backendFetched = false;
 
@@ -12070,7 +12094,7 @@ export class SrsReviewController {
           if (Array.isArray(resp)) {
             remoteCards = resp;
           }
-        } else if (this.mode === 'DUE_CARDS' || action === 'due') {
+        } else if (action === 'due' || (this.mode === 'DUE_CARDS' && action !== 'review' && action !== 'continue')) {
           this.mode = 'DUE_CARDS';
           const dueParams = { itemType: 'VOCABULARY', lessonId: effectiveLessonId, cardType: cardTypeParam };
           const dueResp = await apiClient('/srs/due', { params: dueParams }).catch(() => []);
@@ -12272,6 +12296,13 @@ export class SrsReviewController {
     }
 
     if (this.lessonId) {
+      if (this.activeAction === 'review') {
+        if (this.mode !== 'LESSON_PRACTICE') this.mode = 'CATALOG_TOPIC';
+      } else if (this.activeAction === 'continue') {
+        if (this.mode !== 'LESSON_NEW_CARDS') this.mode = 'CATALOG_TOPIC';
+      } else if (this.activeAction === 'due') {
+        this.mode = 'DUE_CARDS';
+      }
       await this.startTopicSession(this.lessonId, this.activeAction || 'continue');
       return;
     }
@@ -15083,7 +15114,8 @@ export class SrsReviewController {
           itemId: card.itemId,
           cardType: card.cardType || (this.activeMode === 'writing' ? 'WRITING' : (this.activeMode === 'listening' ? 'LISTENING' : 'READING')),
           rating: numRating,
-          reviewTimeSeconds: elapsedSeconds
+          reviewTimeSeconds: elapsedSeconds,
+          lessonId: card.lessonId || this.lessonId
         });
 
         await apiClient('/srs/review', {
@@ -15107,6 +15139,7 @@ export class SrsReviewController {
                 vocabId: card.vocabId || card.itemId,
                 radicalId: card.radicalId || card.itemId,
                 id: card.id || card.itemId,
+                lessonId: card.lessonId || this.lessonId,
                 hanzi: card.hanzi,
                 character: card.character || card.hanzi,
                 itemType: itemType
@@ -15205,6 +15238,7 @@ export class SrsReviewController {
                 vocabId: card.vocabId || card.itemId,
                 radicalId: card.radicalId || card.itemId,
                 id: card.id || card.itemId,
+                lessonId: card.lessonId || this.lessonId,
                 hanzi: card.hanzi,
                 character: card.character || card.hanzi,
                 itemType: itemType

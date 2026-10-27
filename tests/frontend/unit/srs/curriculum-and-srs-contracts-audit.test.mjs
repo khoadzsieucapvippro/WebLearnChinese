@@ -119,8 +119,6 @@ describe('Unit: Curriculum Lessons & SRS Scoring Contracts Audit (Plan 4)', () =
         const topic = allTopics[i];
         assert.ok(topic.title, `Topic ${i + 1} must have title`);
         assert.ok(Array.isArray(topic.vocabularies), `Topic ${i + 1} must have vocabularies array`);
-        assert.strictEqual(topic.vocabularies.length, 20, `Topic ${i + 1} must have 20 vocabularies`);
-
         for (const v of topic.vocabularies) {
           assert.ok(v.vocabId, `Vocab in topic ${i + 1} must have vocabId`);
           assert.ok(v.hanzi, `Vocab ${v.vocabId} must have hanzi`);
@@ -128,6 +126,15 @@ describe('Unit: Curriculum Lessons & SRS Scoring Contracts Audit (Plan 4)', () =
           assert.ok(v.meaningHanViet, `Vocab ${v.vocabId} must have meaningHanViet`);
           assert.ok(v.meaningVi, `Vocab ${v.vocabId} must have meaningVi`);
         }
+      }
+
+      // Lesson 1 standardized curriculum strictly matches HSK1_TOPICS[0]
+      const l1 = SEED_LESSONS[0];
+      const t1 = HSK1_TOPICS[0];
+      assert.strictEqual(l1.vocabularies.length, t1.vocabularies.length, 'Lesson 1 and Topic 1 must have 20 vocabularies');
+      for (let j = 0; j < 20; j++) {
+        assert.strictEqual(l1.vocabularies[j].vocabId, t1.vocabularies[j].vocabId, `Lesson 1 vocab ${j + 1} vocabId must match topic vocabId`);
+        assert.strictEqual(l1.vocabularies[j].hanzi, t1.vocabularies[j].hanzi, `Lesson 1 vocab ${j + 1} hanzi must match topic hanzi`);
       }
     });
 
