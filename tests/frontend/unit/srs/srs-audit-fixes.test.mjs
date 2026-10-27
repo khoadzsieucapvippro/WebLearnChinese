@@ -459,18 +459,26 @@ describe('Unit: SRS Flashcard & Writing Audit Fixes', () => {
   // ---------------------------------------------------------------------------
   // AREA E: Card Type Isolation (READING vs WRITING)
   // ---------------------------------------------------------------------------
-  describe('Area E: Card Type Filter & Progress Isolation', () => {
-    test('normalizeVocabCard tags cardType READING for flashcard and WRITING for writing', () => {
+  describe('Area E: Card Type Filter & Progress Isolation (4-Skill Independent SRS)', () => {
+    test('normalizeVocabCard tags cardType FLASHCARD for flashcard and WRITING for writing', () => {
       const controller = new SrsReviewController();
       const rawVocab = { vocabId: 10, hanzi: '大', pinyin: 'dà', meaningVi: 'To lớn' };
 
       controller.activeMode = 'flashcard';
       const cardFc = controller.normalizeVocabCard(rawVocab);
-      assert.strictEqual(cardFc.cardType, 'READING', 'Flashcard vocab card must have cardType READING');
+      assert.strictEqual(cardFc.cardType, 'FLASHCARD', 'Flashcard vocab card must have cardType FLASHCARD');
 
       controller.activeMode = 'writing';
       const cardWr = controller.normalizeVocabCard(rawVocab);
       assert.strictEqual(cardWr.cardType, 'WRITING', 'Writing vocab card must have cardType WRITING');
+
+      controller.activeMode = 'reading';
+      const cardRd = controller.normalizeVocabCard(rawVocab);
+      assert.strictEqual(cardRd.cardType, 'READING', 'Reading vocab card must have cardType READING');
+
+      controller.activeMode = 'listening';
+      const cardLs = controller.normalizeVocabCard(rawVocab);
+      assert.strictEqual(cardLs.cardType, 'LISTENING', 'Listening vocab card must have cardType LISTENING');
     });
 
     test('buildReviewPayload enforces cardType according to mode', () => {

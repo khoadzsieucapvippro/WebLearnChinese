@@ -11983,7 +11983,8 @@ export class SrsReviewController {
             group: this.activeGroup,
             action
           });
-          this.initSessionQueue(items, action === 'review', savedIndex);
+          const isReviewSession = action === 'review' || action === 'due';
+          this.initSessionQueue(items, isReviewSession, savedIndex);
           return;
         } catch (err) {
           console.warn('[SRS Review] Could not fetch due cards:', err);
@@ -12003,7 +12004,8 @@ export class SrsReviewController {
         action
       });
 
-      this.initSessionQueue(allWords, action === 'review', savedIndex);
+      const isReviewSession = action === 'review' || action === 'due';
+      this.initSessionQueue(allWords, isReviewSession, savedIndex);
     }
   }
 
@@ -12184,7 +12186,8 @@ export class SrsReviewController {
       action
     });
 
-    this.initSessionQueue(items, action === 'review', savedIndex);
+    const isReviewSession = action === 'review' || action === 'due';
+    this.initSessionQueue(items, isReviewSession, savedIndex);
   }
 
   /**
@@ -12244,7 +12247,7 @@ export class SrsReviewController {
             vocabId: detail.vocabId || detail.id,
             itemId: detail.vocabId || detail.id,
             itemType: 'VOCABULARY',
-            cardType: this.activeMode === 'writing' ? 'WRITING' : (this.activeMode === 'listening' ? 'LISTENING' : 'READING'),
+            cardType: this.activeMode === 'writing' ? 'WRITING' : (this.activeMode === 'listening' ? 'LISTENING' : (this.activeMode === 'reading' ? 'READING' : 'FLASHCARD')),
             hanzi: detail.hanzi,
             pinyin: detail.pinyin,
             meaningHanViet: detail.meaningHanViet,
@@ -12395,8 +12398,8 @@ export class SrsReviewController {
    */
   normalizeVocabCard(v, lessonId) {
     const rawId = v.itemId ?? v.vocabId ?? v.id ?? 1;
-    const defaultCardType = this.activeMode === 'writing' ? 'WRITING' : (this.activeMode === 'listening' ? 'LISTENING' : 'READING');
-    const cardType = (this.activeMode === 'writing' || this.activeMode === 'listening' || this.activeMode === 'flashcard')
+    const defaultCardType = this.activeMode === 'writing' ? 'WRITING' : (this.activeMode === 'listening' ? 'LISTENING' : (this.activeMode === 'reading' ? 'READING' : 'FLASHCARD'));
+    const cardType = (this.activeMode === 'writing' || this.activeMode === 'listening' || this.activeMode === 'reading' || this.activeMode === 'flashcard')
       ? defaultCardType
       : (v.cardType || defaultCardType);
     return {
@@ -15139,8 +15142,8 @@ export class SrsReviewController {
         }
       }
 
-      // Only advance forward chapter progress when NOT in review mode
-      if (!this.isReviewMode) {
+      // Only advance forward chapter progress when NOT in review or due mode
+      if (!this.isReviewMode && this.activeAction !== 'due') {
         this.persistProgress(this.activeMode || 'flashcard', this.currentIndex + 1);
       }
 
@@ -15181,7 +15184,7 @@ export class SrsReviewController {
       // Gracefully advance local session if card is not yet due (practice/early review in catalog)
       if ((err?.message && err.message.includes('chưa đến hạn')) || err?.status === 409 || err?.code === 'CONFLICT') {
         console.info('[SRS Review] Thẻ chưa đến hạn ôn tập SRS, tiếp tục chuyển sang thẻ kế tiếp trong phiên học.');
-        if (!this.isReviewMode) {
+        if (!this.isReviewMode && this.activeAction !== 'due') {
           this.persistProgress(this.activeMode || 'flashcard', this.currentIndex + 1);
         }
         this.stats.totalReviewed++;
