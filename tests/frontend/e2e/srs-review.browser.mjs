@@ -203,6 +203,45 @@ describe('Browser E2E: Interactive SRS Flashcard Review Session (9C.3)', () => {
     }
   });
 
+  // SR-01b: Authenticated user visiting plain /srs-review.html stays on catalog selection view (giao diện tổng)
+  test('SR-01b: Authenticated user visiting plain /srs-review.html stays on catalog overview without auto-starting session', async () => {
+    const { page, context, getRuntimeErrors } = await createMonitoredPage(browser, {
+      viewportWidth: 1280,
+      viewportHeight: 720
+    });
+
+    try {
+      await setupAuthenticatedSession(page);
+
+      await page.route('**/api/v1/srs/due*', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            code: 'SUCCESS',
+            message: 'OK',
+            data: createMockDueCards()
+          })
+        });
+      });
+
+      await page.goto(`${baseUrl}/srs-review.html`, { waitUntil: 'domcontentloaded' });
+
+      // Catalog selection (giao diện tổng) must be visible
+      const catalog = page.locator('#srsCatalogSelection');
+      await catalog.waitFor({ state: 'visible', timeout: 5000 });
+      assert.ok(await catalog.isVisible(), 'Catalog overview must be visible initially');
+
+      // Active session must NOT be visible
+      const activeSession = page.locator('#srsActiveSession');
+      assert.ok(await activeSession.isHidden(), 'Active review session must not auto-start');
+
+      assert.strictEqual(getRuntimeErrors().length, 0, 'Zero unexpected runtime console/page errors');
+    } finally {
+      await context.close();
+    }
+  });
+
   // SR-02: Authenticated user loads due cards & starts reaction timer
   test('SR-02: Authenticated user loads due cards session, renders prompt card, starts reaction timer', async () => {
     const { page, context, getRuntimeErrors } = await createMonitoredPage(browser, {
@@ -225,7 +264,7 @@ describe('Browser E2E: Interactive SRS Flashcard Review Session (9C.3)', () => {
         });
       });
 
-      await page.goto(`${baseUrl}/srs-review.html`, { waitUntil: 'domcontentloaded' });
+      await page.goto(`${baseUrl}/srs-review.html?action=due`, { waitUntil: 'domcontentloaded' });
 
       // Active session visible
       const activeSession = page.locator('#srsActiveSession');
@@ -279,7 +318,7 @@ describe('Browser E2E: Interactive SRS Flashcard Review Session (9C.3)', () => {
         });
       });
 
-      await page.goto(`${baseUrl}/srs-review.html`, { waitUntil: 'domcontentloaded' });
+      await page.goto(`${baseUrl}/srs-review.html?action=due`, { waitUntil: 'domcontentloaded' });
       await page.locator('#srsActiveSession').waitFor({ state: 'visible', timeout: 5000 });
 
       const flashcard = page.locator('#flashcard');
@@ -364,7 +403,7 @@ describe('Browser E2E: Interactive SRS Flashcard Review Session (9C.3)', () => {
         });
       });
 
-      await page.goto(`${baseUrl}/srs-review.html`, { waitUntil: 'domcontentloaded' });
+      await page.goto(`${baseUrl}/srs-review.html?action=due`, { waitUntil: 'domcontentloaded' });
       await page.locator('#srsActiveSession').waitFor({ state: 'visible', timeout: 5000 });
 
       // Flip card first
@@ -433,7 +472,7 @@ describe('Browser E2E: Interactive SRS Flashcard Review Session (9C.3)', () => {
         });
       });
 
-      await page.goto(`${baseUrl}/srs-review.html`, { waitUntil: 'domcontentloaded' });
+      await page.goto(`${baseUrl}/srs-review.html?action=due`, { waitUntil: 'domcontentloaded' });
       await page.locator('#srsActiveSession').waitFor({ state: 'visible', timeout: 5000 });
 
       // Flip card
@@ -493,7 +532,7 @@ describe('Browser E2E: Interactive SRS Flashcard Review Session (9C.3)', () => {
         });
       });
 
-      await page.goto(`${baseUrl}/srs-review.html`, { waitUntil: 'domcontentloaded' });
+      await page.goto(`${baseUrl}/srs-review.html?action=due`, { waitUntil: 'domcontentloaded' });
       await page.locator('#srsActiveSession').waitFor({ state: 'visible', timeout: 5000 });
 
       // Flip card and rate Easy (4)
@@ -617,7 +656,7 @@ describe('Browser E2E: Interactive SRS Flashcard Review Session (9C.3)', () => {
         }
       });
 
-      await page.goto(`${baseUrl}/srs-review.html`, { waitUntil: 'domcontentloaded' });
+      await page.goto(`${baseUrl}/srs-review.html?action=due`, { waitUntil: 'domcontentloaded' });
       await page.locator('#srsActiveSession').waitFor({ state: 'visible', timeout: 5000 });
 
       // Flip card to reveal answer
@@ -745,7 +784,7 @@ describe('Browser E2E: Interactive SRS Flashcard Review Session (9C.3)', () => {
         });
       });
 
-      await page.goto(`${baseUrl}/srs-review.html`, { waitUntil: 'domcontentloaded' });
+      await page.goto(`${baseUrl}/srs-review.html?action=due`, { waitUntil: 'domcontentloaded' });
       await page.locator('#srsActiveSession').waitFor({ state: 'visible', timeout: 5000 });
 
       const frontSpeechBtn = page.locator('#btnAudioPronounceFront');
@@ -943,7 +982,7 @@ describe('Browser E2E: Interactive SRS Flashcard Review Session (9C.3)', () => {
         });
       });
 
-      await page.goto(`${baseUrl}/srs-review.html`, { waitUntil: 'domcontentloaded' });
+      await page.goto(`${baseUrl}/srs-review.html?action=due`, { waitUntil: 'domcontentloaded' });
       await page.locator('#srsActiveSession').waitFor({ state: 'visible', timeout: 5000 });
 
       // Verify hint displays shortcut badges [1], [2], [3], [4]
@@ -1027,7 +1066,7 @@ describe('Browser E2E: Interactive SRS Flashcard Review Session (9C.3)', () => {
         });
       });
 
-      await page.goto(`${baseUrl}/srs-review.html`, { waitUntil: 'domcontentloaded' });
+      await page.goto(`${baseUrl}/srs-review.html?action=due`, { waitUntil: 'domcontentloaded' });
       await page.locator('#srsActiveSession').waitFor({ state: 'visible', timeout: 5000 });
 
       // Create a temporary input element to test focus bypass
@@ -1145,7 +1184,7 @@ describe('Browser E2E: Interactive SRS Flashcard Review Session (9C.3)', () => {
         });
       });
 
-      await page.goto(`${baseUrl}/srs-review.html`, { waitUntil: 'domcontentloaded' });
+      await page.goto(`${baseUrl}/srs-review.html?action=due`, { waitUntil: 'domcontentloaded' });
       await page.locator('#srsActiveSession').waitFor({ state: 'visible', timeout: 5000 });
 
       // Flip Radical card
@@ -1295,7 +1334,7 @@ describe('Browser E2E: Interactive SRS Flashcard Review Session (9C.3)', () => {
         });
       });
 
-      await page.goto(`${baseUrl}/srs-review.html`, { waitUntil: 'domcontentloaded' });
+      await page.goto(`${baseUrl}/srs-review.html?action=due`, { waitUntil: 'domcontentloaded' });
       await page.locator('#srsActiveSession').waitFor({ state: 'visible', timeout: 5000 });
 
       // Card 1 (Vocab: '学') - flip card

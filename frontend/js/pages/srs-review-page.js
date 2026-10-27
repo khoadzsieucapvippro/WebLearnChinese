@@ -10607,7 +10607,7 @@ export class SrsReviewController {
     }
 
     const rawAction = (urlParams.get('action') || '').toLowerCase();
-    this.activeAction = (rawAction === 'continue' || rawAction === 'review' || rawAction === 'start')
+    this.activeAction = (rawAction === 'continue' || rawAction === 'review' || rawAction === 'start' || rawAction === 'due')
       ? (rawAction === 'start' ? 'continue' : rawAction)
       : null;
 
@@ -10775,34 +10775,12 @@ export class SrsReviewController {
       return;
     }
 
-    // Case 2: Backward compatibility for plain /srs-review.html with due cards
-    const searchString = typeof window !== 'undefined' ? (window.location.search || '') : '';
-    if (!searchString) {
-      if (authManager.isAuthenticated()) {
-        try {
-          const cardTypeParam = this.activeMode === 'writing' ? 'WRITING' : (this.activeMode === 'listening' ? 'LISTENING' : 'READING');
-          const dueCards = await apiClient('/srs/due', { params: { cardType: cardTypeParam } });
-          if (Array.isArray(dueCards) && dueCards.length > 0) {
-            this.mode = 'DUE_CARDS';
-            this.initSessionQueue(dueCards, false);
-            return;
-          }
-        } catch (e) {
-          // If error or 401, proceed to catalog
-          if (e.status === 401) {
-            this.setViewState('auth');
-            return;
-          }
-        }
-      } else {
-        this.setViewState('auth');
-        return;
-      }
-    }
-
-    // Default: Show catalog selection view
+    // Default: Show catalog selection view (plain /srs-review.html shows curricula shelf)
     if (authManager.isAuthenticated()) {
       await this.fetchDueCounts();
+    } else {
+      this.setViewState('auth');
+      return;
     }
     this.showCatalogSelection();
   }
@@ -10857,10 +10835,10 @@ export class SrsReviewController {
       mode: this.activeMode,
       group: this.activeGroup
     });
-    this.showCatalogSelection();
     if (authManager.isAuthenticated()) {
       await this.fetchDueCounts();
     }
+    this.showCatalogSelection();
   }
 
   /**
@@ -12073,6 +12051,37 @@ export class SrsReviewController {
 
     if (this.lessonId) {
       await this.startTopicSession(this.lessonId, this.activeAction || 'continue');
+      return;
+    }
+
+    if (this.activeAction === 'due') {
+      if (authManager.isAuthenticated()) {
+        try {
+          const cardTypeParam = this.activeMode === 'writing' ? 'WRITING' : (this.activeMode === 'listening' ? 'LISTENING' : 'READING');
+          const dueCards = await apiClient('/srs/due', { params: { cardType: cardTypeParam } });
+          if (Array.isArray(dueCards) && dueCards.length > 0) {
+            this.mode = 'DUE_CARDS';
+            this.currentChapterTitle = 'Ôn Tập Thẻ Đến Hạn';
+            this.initSessionQueue(dueCards, false);
+            return;
+          }
+        } catch (e) {
+          if (e.status === 401) {
+            this.setViewState('auth');
+            return;
+          }
+        }
+      } else {
+        this.setViewState('auth');
+        return;
+      }
+      showToast({
+        type: 'info',
+        title: 'Thông báo',
+        message: 'Hiện tại bạn không có thẻ nào đến hạn ôn tập.'
+      });
+      await this.fetchDueCounts();
+      this.showCatalogSelection();
       return;
     }
 
@@ -13495,7 +13504,7 @@ export class SrsReviewController {
         ? 1
         : (writingMistakes >= 2 || usedWritingHint ? 2 : (writingMistakes === 1 ? 3 : 3));
 
-      if (!this.isReviewMode) {
+      if (this.mode !== 'LESSON_PRACTICE') {
         if (authManager.isAuthenticated() && this.sessionQueue[this.currentIndex]?.card) {
           const card = this.sessionQueue[this.currentIndex].card;
           const payload = buildReviewPayload({
@@ -13530,7 +13539,9 @@ export class SrsReviewController {
             }
           }
         }
+      }
 
+      if (!this.isReviewMode) {
         const nextIndex = this.currentIndex + 1;
         this.persistProgress('writing', nextIndex);
       }
@@ -13855,7 +13866,7 @@ export class SrsReviewController {
       this.cleanupTimer();
       const elapsedSeconds = calculateReviewTime(this.cardStartTime, Date.now());
 
-      if (!this.isReviewMode) {
+      if (this.mode !== 'LESSON_PRACTICE') {
         if (authManager.isAuthenticated() && this.sessionQueue[this.currentIndex]?.card) {
           const card = this.sessionQueue[this.currentIndex].card;
           const payload = buildReviewPayload({
@@ -13890,7 +13901,9 @@ export class SrsReviewController {
             }
           }
         }
+      }
 
+      if (!this.isReviewMode) {
         const nextIndex = this.currentIndex + 1;
         this.persistProgress('listening', nextIndex);
       }
@@ -14506,7 +14519,7 @@ export class SrsReviewController {
       const score = typeof this.currentReadingScore === 'number' ? this.currentReadingScore : 70;
       const rating = score >= 85 ? 4 : (score >= 60 ? 3 : (score >= 45 ? 2 : 1));
 
-      if (!this.isReviewMode) {
+      if (this.mode !== 'LESSON_PRACTICE') {
         if (authManager.isAuthenticated() && this.sessionQueue[this.currentIndex]?.card) {
           const card = this.sessionQueue[this.currentIndex].card;
 
@@ -14538,7 +14551,9 @@ export class SrsReviewController {
             }
           }
         }
+      }
 
+      if (!this.isReviewMode) {
         const nextIndex = this.currentIndex + 1;
         this.persistProgress('reading', nextIndex);
       }
@@ -14632,8 +14647,8 @@ export class SrsReviewController {
     }
 
     try {
-      // If review mode (Học lại): Zero SRS mutation (free practice, no server mutation)
-      if (this.isReviewMode) {
+      // If free practice mode (?mode=practice): Zero SRS mutation (free practice, no server mutation)
+      if (this.mode === 'LESSON_PRACTICE') {
         this.stats.totalReviewed++;
         this.stats.totalTimeSeconds += elapsedSeconds;
         if (numRating === 1) this.stats.againCount++;
@@ -14661,7 +14676,7 @@ export class SrsReviewController {
         return;
       }
 
-      // Normal mode (Học tiếp): send authoritative review to backend if authenticated
+      // Normal learning & chapter review: send authoritative review to backend if authenticated
       if (authManager.isAuthenticated()) {
         const payload = buildReviewPayload({
           itemType: card.itemType || 'VOCABULARY',
@@ -14677,8 +14692,10 @@ export class SrsReviewController {
         });
       }
 
-      // Persist progress under HOC_HAN_NGU_FLASHCARD_PROGRESS
-      this.persistProgress('flashcard', this.currentIndex + 1);
+      // Only advance forward chapter progress when NOT in review mode
+      if (!this.isReviewMode) {
+        this.persistProgress('flashcard', this.currentIndex + 1);
+      }
 
       this.stats.totalReviewed++;
       this.stats.totalTimeSeconds += elapsedSeconds;
@@ -14769,6 +14786,9 @@ export class SrsReviewController {
    * @param {number} nextIndex 
    */
   persistProgress(mode, nextIndex) {
+    if (this.isReviewMode || this.activeAction === 'due') {
+      return;
+    }
     const current = getProgress(mode);
     const updates = { ...current };
 
@@ -14778,11 +14798,13 @@ export class SrsReviewController {
 
     if (this.lessonId) {
       const topicKey = `topic_${this.lessonId}`;
-      updates[this.activeGroup][topicKey] = nextIndex;
+      const existing = typeof updates[this.activeGroup][topicKey] === 'number' ? updates[this.activeGroup][topicKey] : 0;
+      updates[this.activeGroup][topicKey] = Math.max(existing, nextIndex);
       updates[this.activeGroup].lastLessonId = this.lessonId;
     } else if (this.currentChapterIdx != null) {
       const chapKey = `chapter_${this.currentChapterIdx}`;
-      updates[this.activeGroup][chapKey] = nextIndex;
+      const existing = typeof updates[this.activeGroup][chapKey] === 'number' ? updates[this.activeGroup][chapKey] : 0;
+      updates[this.activeGroup][chapKey] = Math.max(existing, nextIndex);
       updates[this.activeGroup].lastChapterIdx = this.currentChapterIdx;
     } else {
       updates[this.activeGroup].lastIndex = nextIndex;
