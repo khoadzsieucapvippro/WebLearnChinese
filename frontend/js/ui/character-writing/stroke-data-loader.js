@@ -53,7 +53,7 @@ export function splitHanziCharacters(raw) {
   if (!raw || typeof raw !== 'string') return [];
   // If string contains parentheses variant notation like '水(氵)', extract clean base first
   const base = raw.includes('(') || raw.includes('/') ? extractCleanChar(raw) : raw;
-  const matches = base.match(/[\u4E00-\u9FFF\u3400-\u4DBF\uF900-\uFAFF]/g);
+  const matches = base.match(/[\u4E00-\u9FFF\u3400-\u4DBF\uF900-\uFAFF\u2F00-\u2FD5\u2E80-\u2EFF]/g);
   return matches || [];
 }
 
