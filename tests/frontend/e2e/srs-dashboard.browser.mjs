@@ -586,7 +586,7 @@ describe('Browser E2E: SRS Dashboard & Profile Settings Integration', () => {
   });
 
   // SD-09: Avatar Dropdown "Tiến độ học tập" Navigation & Unified Navbar Active State
-  test('SD-09: Avatar dropdown displays "Tiến độ học tập" below "Hồ sơ", navigates to srs-dashboard.html, and highlights "Ôn tập" in unified 4-item navbar', async () => {
+  test('SD-09: Avatar dropdown displays "Tiến độ học tập" below "Hồ sơ", navigates to srs-dashboard.html, and highlights "Ôn tập" in unified 5-item navbar', async () => {
     const { page, context, getRuntimeErrors } = await createMonitoredPage(browser, {
       viewportWidth: 1280,
       viewportHeight: 720
@@ -646,10 +646,10 @@ describe('Browser E2E: SRS Dashboard & Profile Settings Integration', () => {
           ariaCurrent: el.getAttribute('aria-current')
         }))
       );
-      assert.strictEqual(publicNavLinks.length, 4, 'Unified public navbar must have exactly 4 links');
+      assert.strictEqual(publicNavLinks.length, 5, 'Unified public navbar must have exactly 5 links');
       assert.deepStrictEqual(
         publicNavLinks.map(l => l.text),
-        ['Trang chủ', 'Bộ thủ', 'Từ vựng', 'Ôn tập']
+        ['Trang chủ', 'Bộ thủ', 'Từ vựng', 'Bài học', 'Ôn tập']
       );
       const onTapLink = publicNavLinks.find(l => l.href === 'srs-review.html');
       assert.ok(onTapLink && onTapLink.active && onTapLink.ariaCurrent === 'page', 'Ôn tập must be active with aria-current="page" on srs-dashboard.html');

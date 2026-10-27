@@ -98,6 +98,12 @@ describe('SRS Dashboard Unit Tests (Task 9C.4)', () => {
       assert.ok(res2.errors.maxReviewPerDay.includes('lớn hơn 0'));
     });
 
+    test('rejects values exceeding upper bound 100 (Invariant 6)', () => {
+      const res = validateSrsSettings(101, 100);
+      assert.strictEqual(res.isValid, false);
+      assert.ok(res.errors.newCardsPerDay.includes('vượt quá 100 thẻ'));
+    });
+
     test('validates fields independently', () => {
       const resNewInvalid = validateSrsSettings('invalid', 50);
       assert.strictEqual(resNewInvalid.isValid, false);
@@ -227,6 +233,7 @@ describe('SRS Dashboard Unit Tests (Task 9C.4)', () => {
     test('renderStatistics assigns cardsDueReading, cardsDueListening, cardsDueWriting safely', () => {
       const mockContext = {
         statCardsDue: { textContent: '' },
+        statCardsDueFlashcard: { textContent: '' },
         statCardsDueReading: { textContent: '' },
         statCardsDueListening: { textContent: '' },
         statCardsDueWriting: { textContent: '' },
@@ -248,6 +255,7 @@ describe('SRS Dashboard Unit Tests (Task 9C.4)', () => {
       });
 
       assert.strictEqual(mockContext.statCardsDue.textContent, '9');
+      assert.strictEqual(mockContext.statCardsDueFlashcard.textContent, '4');
       assert.strictEqual(mockContext.statCardsDueReading.textContent, '4');
       assert.strictEqual(mockContext.statCardsDueListening.textContent, '3');
       assert.strictEqual(mockContext.statCardsDueWriting.textContent, '2');

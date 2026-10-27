@@ -13180,7 +13180,24 @@ export class SrsReviewController {
       }
     }
 
-    // Mount canvas boxes
+    // Mount canvas boxes (honoring user's writing preferences from profile settings)
+    let boxSize = 170;
+    let shouldAutoReplay = false;
+    try {
+      if (typeof localStorage !== 'undefined') {
+        const rawW = localStorage.getItem('HOC_HAN_NGU_WRITING_SETTINGS');
+        if (rawW) {
+          const parsedW = JSON.parse(rawW);
+          if (parsedW?.gridSize === 'large' || parsedW?.gridPixelSize === 200) {
+            boxSize = 200;
+          }
+          if (parsedW?.autoReplayStrokes === true || parsedW?.autoReplayStrokes === 'true') {
+            shouldAutoReplay = true;
+          }
+        }
+      }
+    } catch (_) {}
+
     // For 2 characters: side-by-side flex boxes
     // For 1 character: single box
     for (let i = 0; i < chars.length; i++) {
@@ -13197,12 +13214,12 @@ export class SrsReviewController {
 
       const canvasBox = document.createElement('div');
       canvasBox.className = 'writing-rice-grid-box position-relative rounded-2 border shadow-sm';
-      canvasBox.style.width = '170px';
-      canvasBox.style.height = '170px';
+      canvasBox.style.width = `${boxSize}px`;
+      canvasBox.style.height = `${boxSize}px`;
       canvasBox.style.touchAction = 'none';
 
       // Rice grid SVG
-      const gridSvg = createRiceGridSvg(170);
+      const gridSvg = createRiceGridSvg(boxSize);
       canvasBox.appendChild(gridSvg);
 
       // Mount element for writer
@@ -13217,8 +13234,8 @@ export class SrsReviewController {
       try {
         const engine = new CharacterWritingEngine({
           targetElement: targetMount,
-          width: 170,
-          height: 170,
+          width: boxSize,
+          height: boxSize,
           strokeColor: '#1976D2',
           radicalColor: '#C83C23',
           outlineColor: '#D1D5DB',
@@ -13248,6 +13265,12 @@ export class SrsReviewController {
       } catch (err) {
         console.warn(`[Writing Mount] Engine init failed for ${char}:`, err);
       }
+    }
+
+    if (shouldAutoReplay && this.writingEngines.length > 0) {
+      setTimeout(() => {
+        this.replayWriting();
+      }, 300);
     }
 
     this.writingCharCount = this.writingEngines.length;

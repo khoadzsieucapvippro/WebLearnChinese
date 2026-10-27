@@ -755,7 +755,7 @@ export function initProfileSrsSettingsForm() {
     btnIncrement.addEventListener('click', () => {
       clearSrsErrors();
       const current = parseInt(input?.value || '20', 10);
-      const nextVal = isNaN(current) ? 20 : current + 5;
+      const nextVal = Math.min(100, isNaN(current) ? 20 : current + 5);
       if (input) {
         input.value = String(nextVal);
         syncPresetChips(nextVal);
@@ -879,9 +879,12 @@ export function initProfileSrsSettingsForm() {
   if (resetBtn) {
     resetBtn.addEventListener('click', () => {
       clearSrsErrors();
-      if (currentSrsSettings && input && currentSrsSettings.newCardsPerDay != null) {
-        input.value = String(currentSrsSettings.newCardsPerDay);
-        syncPresetChips(currentSrsSettings.newCardsPerDay);
+      const targetVal = (currentSrsSettings && currentSrsSettings.newCardsPerDay != null)
+        ? currentSrsSettings.newCardsPerDay
+        : 20;
+      if (input) {
+        input.value = String(targetVal);
+        syncPresetChips(targetVal);
         if (statusEl) {
           statusEl.textContent = 'Đã khôi phục giá trị đã lưu.';
           statusEl.className = 'small text-muted mt-2';
@@ -1167,6 +1170,8 @@ export function initDisplayAndAudioSettings() {
   }
 
   if (saveBtn) {
+    if (saveBtn.dataset.bound === 'true') return;
+    saveBtn.dataset.bound = 'true';
     saveBtn.addEventListener('click', handleSave);
   }
 

@@ -44,7 +44,6 @@ const ALL_25_PAGES = [
   'admin-lessons.html',
   'admin-audit-logs.html',
   'management.html',
-  'srs-settings.html',
   'ui-verification.html'
 ];
 

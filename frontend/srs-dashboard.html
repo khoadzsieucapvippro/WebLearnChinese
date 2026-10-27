@@ -77,15 +77,6 @@
   <!-- Main Content Landmark -->
   <main id="mainContent" class="main-content-wrapper py-4 py-md-5">
     <div class="container-xl srs-dashboard-wrapper">
-
-      <!-- Breadcrumb Navigation Landmark -->
-      <nav aria-label="Đường dẫn tiến độ học tập" class="breadcrumb-nav mb-3">
-        <ol class="breadcrumb-custom">
-          <li><a href="index.html">Trang chủ</a></li>
-          <li><a href="srs-review.html">Ôn tập</a></li>
-          <li aria-current="page">Tiến độ học tập</li>
-        </ol>
-      </nav>
       
       <!-- Page Header & Action Bar -->
       <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3 mb-4 pb-3 border-bottom">
@@ -165,6 +156,10 @@
               <div class="srs-metric-value" id="statCardsDue">-</div>
               <div class="srs-metric-meta mb-2">Thẻ cần ôn tập ngay hôm nay</div>
               <div class="srs-skill-due-breakdown d-flex flex-wrap gap-2 pt-2 border-top small" id="statSkillsDueBreakdown" aria-label="Chi tiết thẻ đến hạn theo kỹ năng">
+                <span class="badge bg-light text-dark border d-inline-flex align-items-center gap-1" title="Kỹ năng Flashcard">
+                  <span>Flashcard:</span>
+                  <strong id="statCardsDueFlashcard" class="text-danger">-</strong>
+                </span>
                 <span class="badge bg-light text-dark border d-inline-flex align-items-center gap-1" title="Kỹ năng Đọc">
                   <span>Đọc:</span>
                   <strong id="statCardsDueReading" class="text-danger">-</strong>
