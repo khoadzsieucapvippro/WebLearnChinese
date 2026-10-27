@@ -12,6 +12,7 @@ public class LessonSrsStatsResponse {
     private Long dueCardsListening;
     private Long dueCardsWriting;
     private Long dueCardsReading;
+    private Long dueCardsFlashcard;
 
     public LessonSrsStatsResponse() {
     }
@@ -24,6 +25,18 @@ public class LessonSrsStatsResponse {
             Long dueCardsListening,
             Long dueCardsWriting,
             Long dueCardsReading) {
+        this(lessonId, totalVocabularies, newWordsCount, dueCardsCount, dueCardsListening, dueCardsWriting, dueCardsReading, 0L);
+    }
+
+    public LessonSrsStatsResponse(
+            Long lessonId,
+            Integer totalVocabularies,
+            Long newWordsCount,
+            Long dueCardsCount,
+            Long dueCardsListening,
+            Long dueCardsWriting,
+            Long dueCardsReading,
+            Long dueCardsFlashcard) {
         this.lessonId = lessonId;
         this.totalVocabularies = totalVocabularies;
         this.newWordsCount = newWordsCount;
@@ -31,6 +44,7 @@ public class LessonSrsStatsResponse {
         this.dueCardsListening = dueCardsListening;
         this.dueCardsWriting = dueCardsWriting;
         this.dueCardsReading = dueCardsReading;
+        this.dueCardsFlashcard = dueCardsFlashcard;
     }
 
     public Long getLessonId() {
@@ -87,5 +101,13 @@ public class LessonSrsStatsResponse {
 
     public void setDueCardsReading(Long dueCardsReading) {
         this.dueCardsReading = dueCardsReading;
+    }
+
+    public Long getDueCardsFlashcard() {
+        return dueCardsFlashcard;
+    }
+
+    public void setDueCardsFlashcard(Long dueCardsFlashcard) {
+        this.dueCardsFlashcard = dueCardsFlashcard;
     }
 }

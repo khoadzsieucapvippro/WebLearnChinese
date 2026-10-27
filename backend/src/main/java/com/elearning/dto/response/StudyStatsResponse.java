@@ -9,6 +9,7 @@ public class StudyStatsResponse {
     private long cardsDueListening;
     private long cardsDueWriting;
     private long cardsDueReading;
+    private long cardsDueFlashcard;
     private long reviewsToday;
     private int newCardsLimit;
     private int maxReviewLimit;
@@ -22,18 +23,23 @@ public class StudyStatsResponse {
     }
 
     public StudyStatsResponse(long cardsDue, long reviewsToday, int newCardsLimit, int maxReviewLimit, long newCardsToday) {
-        this(cardsDue, 0L, 0L, 0L, reviewsToday, newCardsLimit, maxReviewLimit, newCardsToday);
+        this(cardsDue, 0L, 0L, 0L, 0L, reviewsToday, newCardsLimit, maxReviewLimit, newCardsToday);
     }
 
     public StudyStatsResponse(long cardsDue, long cardsDueListening, long cardsDueWriting, long reviewsToday, int newCardsLimit, int maxReviewLimit, long newCardsToday) {
-        this(cardsDue, cardsDueListening, cardsDueWriting, 0L, reviewsToday, newCardsLimit, maxReviewLimit, newCardsToday);
+        this(cardsDue, cardsDueListening, cardsDueWriting, 0L, 0L, reviewsToday, newCardsLimit, maxReviewLimit, newCardsToday);
     }
 
     public StudyStatsResponse(long cardsDue, long cardsDueListening, long cardsDueWriting, long cardsDueReading, long reviewsToday, int newCardsLimit, int maxReviewLimit, long newCardsToday) {
+        this(cardsDue, cardsDueListening, cardsDueWriting, cardsDueReading, 0L, reviewsToday, newCardsLimit, maxReviewLimit, newCardsToday);
+    }
+
+    public StudyStatsResponse(long cardsDue, long cardsDueListening, long cardsDueWriting, long cardsDueReading, long cardsDueFlashcard, long reviewsToday, int newCardsLimit, int maxReviewLimit, long newCardsToday) {
         this.cardsDue = cardsDue;
         this.cardsDueListening = cardsDueListening;
         this.cardsDueWriting = cardsDueWriting;
         this.cardsDueReading = cardsDueReading;
+        this.cardsDueFlashcard = cardsDueFlashcard;
         this.reviewsToday = reviewsToday;
         this.newCardsLimit = newCardsLimit;
         this.maxReviewLimit = maxReviewLimit;
@@ -70,6 +76,14 @@ public class StudyStatsResponse {
 
     public void setCardsDueReading(long cardsDueReading) {
         this.cardsDueReading = cardsDueReading;
+    }
+
+    public long getCardsDueFlashcard() {
+        return cardsDueFlashcard;
+    }
+
+    public void setCardsDueFlashcard(long cardsDueFlashcard) {
+        this.cardsDueFlashcard = cardsDueFlashcard;
     }
 
     public long getReviewsToday() {

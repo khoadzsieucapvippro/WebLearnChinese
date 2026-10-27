@@ -40,7 +40,7 @@ import { authManager } from '../auth/auth-state.js';
 import { ApiError } from './api.js';
 
 const STORAGE_KEY = 'ELEARNING_DEMO_DATA';
-const CURRENT_DATASET_VERSION = 12;
+const CURRENT_DATASET_VERSION = 13;
 
 /**
  * Encodes string or object into Base64URL string compliant with JWT standards.
@@ -120,7 +120,8 @@ class DemoFallbackEngine {
     if (saved && saved.schemaVersion === CURRENT_DATASET_VERSION && Array.isArray(saved.radicals) && saved.radicals.length === 214) {
       this._data = saved;
     } else {
-      const preservedCards = (saved && saved.schemaVersion >= 10 && Array.isArray(saved.srsCards)) ? saved.srsCards : JSON.parse(JSON.stringify(SEED_SRS_CARDS));
+      const rawCards = (saved && saved.schemaVersion >= 10 && Array.isArray(saved.srsCards)) ? saved.srsCards : JSON.parse(JSON.stringify(SEED_SRS_CARDS));
+      const preservedCards = rawCards.map(c => (!c.cardType || c.cardType === 'READING') ? { ...c, cardType: 'FLASHCARD' } : c);
       const preservedReviews = (saved && Array.isArray(saved.srsReviews)) ? saved.srsReviews : [];
       const preservedNotes = (saved && Array.isArray(saved.notes)) ? saved.notes : [
         {
@@ -1001,7 +1002,8 @@ class DemoFallbackEngine {
         cardsDue: dueCards.length,
         cardsDueListening: dueCards.filter(c => c.cardType === 'LISTENING').length,
         cardsDueWriting: dueCards.filter(c => c.cardType === 'WRITING').length,
-        cardsDueReading: dueCards.filter(c => c.cardType === 'READING' || !c.cardType).length,
+        cardsDueFlashcard: dueCards.filter(c => c.cardType === 'FLASHCARD' || (!c.cardType && c.cardType !== 'LISTENING' && c.cardType !== 'WRITING' && c.cardType !== 'READING')).length,
+        cardsDueReading: dueCards.filter(c => c.cardType === 'READING').length,
         reviewsToday: todayReviews,
         newCardsLimit: data.srsSettings.newCardsPerDay || 20,
         maxReviewLimit: data.srsSettings.maxReviewsPerDay || 50,
@@ -1055,7 +1057,7 @@ class DemoFallbackEngine {
         cards = cards.filter(c => c.lessonId === lessonId || (c.itemType === 'VOCABULARY' && lessonVocabIds.has(c.itemId)));
       }
       if (cardType) {
-        cards = cards.filter(c => c.cardType === cardType);
+        cards = cards.filter(c => cardType === 'FLASHCARD' ? (c.cardType === 'FLASHCARD' || (!c.cardType && c.cardType !== 'LISTENING' && c.cardType !== 'WRITING' && c.cardType !== 'READING')) : c.cardType === cardType);
       }
 
       return cards;
@@ -1076,7 +1078,7 @@ class DemoFallbackEngine {
         candidates = candidates.filter(c => c.lessonId === lessonId || (c.itemType === 'VOCABULARY' && lessonVocabIds.has(c.itemId)));
       }
       if (cardType) {
-        candidates = candidates.filter(c => c.cardType === cardType);
+        candidates = candidates.filter(c => cardType === 'FLASHCARD' ? (c.cardType === 'FLASHCARD' || (!c.cardType && c.cardType !== 'LISTENING' && c.cardType !== 'WRITING' && c.cardType !== 'READING')) : c.cardType === cardType);
       }
       return candidates;
     }
@@ -1164,12 +1166,12 @@ class DemoFallbackEngine {
       const rating = parseInt(body?.rating || 3, 10);
       const itemId = parseInt(body?.itemId || 1, 10);
       const itemType = (body?.itemType || 'VOCABULARY').toUpperCase();
-      const cardType = body?.cardType ? body.cardType.toUpperCase() : 'READING';
+      const cardType = body?.cardType ? body.cardType.toUpperCase() : 'FLASHCARD';
 
       let card = data.srsCards.find(c => 
         c.itemId === itemId && 
         (c.itemType || 'VOCABULARY').toUpperCase() === itemType && 
-        (c.cardType || 'READING').toUpperCase() === cardType
+        (c.cardType || 'FLASHCARD').toUpperCase() === cardType
       );
       if (!card) {
         if (itemType === 'RADICAL') {

@@ -295,6 +295,12 @@ flowchart TD
      * Thuật toán gốc SM-2 trên Cloud (tính theo Ngày - 24 giờ).
      * Chế độ Test 2 phút (tính theo Phút - 2 phút).
 
+7. **Phân Tách 4 Phân Hệ SRS Độc Lập & Flyway Migration V33**:
+   - Tách rời hoàn toàn 4 phân hệ SRS: `FLASHCARD`, `READING`, `LISTENING`, `WRITING`. Mỗi phân hệ có kho từ đến hạn, tiến trình `CARD_PROGRESS`, và lịch sử `REVIEW_LOG` độc lập.
+   - Database: Tạo Flyway Migration `V33__support_independent_flashcard_skill_srs.sql` mở rộng ràng buộc `CHECK (card_type IN ('FLASHCARD', 'READING', 'LISTENING', 'WRITING'))`.
+   - Backend: Cập nhật `ReviewCardRequest.java`, `StudyStatsResponse.java` (thêm `cardsDueFlashcard`), `LessonSrsStatsResponse.java` (thêm `dueCardsFlashcard`), `SrsServiceImpl.java`.
+   - Frontend UI & Fallback Engine: `srs-review.html` gắn `data-skill="FLASHCARD"`, `srs-review-page.js` làm mới kho thẻ đến hạn ngay lập tức khi chuyển tab bằng `await this.fetchDueCounts()`, `demo-fallback-engine.js` nâng dataset version lên 13 và thống kê tách biệt `cardsDueFlashcard`.
+
 ---
 
 ### 5.3. Hướng Dẫn Kiểm Tra Thực Tế Ngày Mai (Tomorrow Verification Guide)
@@ -320,11 +326,42 @@ flowchart TD
 
 ---
 
-### 5.4. Kế Hoạch Bàn Giao Cho Nhiệm Vụ Tiếp Theo: `TASK-4.3` (SRS Phòng Luyện Viết)
+### 5.4. Kết Quả Điều Tra & Nghiệm Thu: `TASK-4.3` (SRS Phòng Luyện Viết HanziWriter)
 
-Toàn bộ các khúc mắc và câu hỏi kiểm toán chuyên sâu về **Thuật toán SuperMemo SM-2**, **Chế độ Test 2 phút**, **Vòng đời Tốt nghiệp Học lại**, và **Đồng bộ hóa 50 bài học HSK** trong `TASK-4.2` đã được giải quyết dứt điểm và khóa chặt bằng 100% bài kiểm thử tự động xanh trên mọi tầng kiến trúc.
+Toàn bộ hiện trạng kỹ thuật của **`TASK-4.3`: SRS Phòng Luyện Viết Chữ Hán (`srs-review.html?mode=writing`, `#srsWritingRoom`)** đã được điều tra chi tiết và xác minh thực nghiệm:
 
-Nhiệm vụ tiếp theo sẵn sàng triển khai là: **`TASK-4.3`: SRS Phòng Luyện Viết Chữ Hán (`srs-review.html?mode=writing`, `character-writing`)**:
-1. Kiểm tra tích hợp canvas HanziWriter với các thiết lập độ lớn ô Mễ (170px vs 200px) từ `profile.html#settings`.
-2. Kiểm tra tính năng tự động chuyển nét và phát lại animation nét chữ.
-3. Kiểm tra responsive trên thiết bị di động (360px..412px), đảm bảo zero horizontal overflow và hỗ trợ viết cảm ứng ngón tay mượt mà.
+1. **Vòng đời 3 trạng thái của Phòng Viết (Writing Room Lifecycle)**:
+   - **Trạng thái 1 (Mới nạp thẻ)**: Nút "Sang từ tiếp theo →" bị ẩn (vẫn giữ chỗ `min-height` tránh co giật layout), phím Space/Enter bị khóa, icon loa phát âm ẩn, ô Mễ có viền xám trung tính, hiển thị 3 công cụ phụ (`Phát lại nét`, `Xem gợi ý`, `Viết lại`).
+   - **Trạng thái 2 (Hoàn thành nét cuối)**: Tự động phát âm thanh MP3/Web Speech và hiện nút loa, viền ô Mễ chuyển màu xanh lá mạ (`#1B7A4B`, class `.is-completed`), hiển thị thông báo "✓ Hoàn thành!", ẩn nút "Xem gợi ý", mở khóa và hiển thị nút "Sang từ tiếp theo →".
+   - **Trạng thái 3 (Bấm "Viết lại" sau khi đã hoàn thành)**: Canvas xóa nét và khởi động lại bài thi Quiz để học viên luyện tập thêm, viền ô Mễ trở lại xám, thông báo hoàn thành ẩn đi, nút "Xem gợi ý" xuất hiện trở lại, nhưng **Nút "Sang từ tiếp theo →" và nút loa phát âm VẪN ĐƯỢC GIỮ NGUYÊN HIỂN THỊ** (không khóa học viên lại nếu họ muốn đi tiếp).
+
+2. **Tích hợp Cài đặt Ô Mễ từ Trang Cá Nhân (`profile.html#settings`)**:
+   - `srs-review-page.js` tự động đọc cấu hình `HOC_HAN_NGU_WRITING_SETTINGS` từ `localStorage`.
+   - Độ lớn ô Mễ: Tự động chuyển đổi giữa **170px (chuẩn)** và **200px (lớn)** theo thiết lập `gridSize` (`standard` vs `large`).
+   - Tự động phát lại nét: Nếu `autoReplayStrokes === true`, hệ thống tự động kích hoạt animation nét chữ sau 300ms khi mở thẻ.
+
+3. **Bố cục Thích ứng Di Động & Từ Ghép 2 Chữ (Compound Words)**:
+   - Khi từ vựng có 2 Hán tự (ví dụ: 爱好, 学生), hệ thống tạo 2 ô Mễ độc lập có nhãn "Chữ 1: X" và "Chữ 2: Y".
+   - **Desktop**: 2 ô hiển thị ngang hàng nhau (Side-by-side).
+   - **Mobile (360px..412px)**: Tự động xếp chồng dọc (Stacked), đảm bảo **0px horizontal overflow** trên cả Google Pixel 7 (412px), iPhone 14 (390px), iPhone SE (375px), và thiết bị hẹp (360px). Hỗ trợ cảm ứng ngón tay mượt mà với `touch-action: none`.
+
+4. **Thuật toán Đánh Giá SRS Tự Động cho Kỹ Năng Viết (`cardType = 'WRITING'`)**:
+   - Không bắt học viên phải tự chấm điểm bằng 4 nút (Học lại, Khó, Tốt, Dễ). Hệ thống tự động chấm điểm dựa trên độ chính xác khi vẽ nét:
+     * Sai $\ge 5$ nét $\rightarrow$ **Rating 1 (Again - Học lại)**.
+     * Sai $2 \sim 4$ nét HOẶC có xem gợi ý/phát lại nét $\rightarrow$ **Rating 2 (Hard - Khó)**.
+     * Sai $0 \sim 1$ nét và không dùng gợi ý $\rightarrow$ **Rating 3 (Good - Tốt)**.
+
+5. **Bộ Kiểm Thử Đã Xác Minh & PASS 100%**:
+   - `tests/frontend/unit/srs/srs-skill-writing.test.mjs`: **32/32 tests PASS** (vòng đời 3 trạng thái, tách nét CJK, payload SRS contract, v.v.).
+   - `tests/frontend/e2e/writing-mobile.browser.mjs`: **3/3 tests PASS** (zero overflow trên 360px, 375px, 390px, 412px; bố cục stacked vs side-by-side).
+   - `tests/frontend/e2e/character-writing.browser.mjs`: **5/5 tests PASS** (hoạt ảnh nét viết, modal đóng/mở, fallback khi thiếu nét).
+   - `tests/frontend/e2e/srs-review-visual.browser.mjs`: **5/5 tests PASS** (xác minh visual chính xác từng pixel và class của State 1, State 2, State 3).
+
+---
+
+### 5.5. Kế Hoạch Tiếp Theo: `TASK-4.4` (SRS Phòng Luyện Đọc) & `TASK-4.5` (SRS Phòng Luyện Nghe)
+Sau khi `TASK-4.3` đã hoàn tất kiểm toán và sẵn sàng nghiệm thu, hai nhiệm vụ tiếp theo của Sprint 4 là:
+1. **`TASK-4.4`: SRS Phòng Luyện Đọc (`srs-review.html?mode=reading`, `cardType = 'READING'`)**:
+   - Kiểm tra cơ chế câu hỏi trắc nghiệm/nhận diện chữ Hán, hiển thị Pinyin/Nghĩa ẩn/hiện, tính điểm SRS dựa trên kết quả trả lời.
+2. **`TASK-4.5`: SRS Phòng Luyện Nghe (`srs-review.html?mode=listening`, `cardType = 'LISTENING'`)**:
+   - Kiểm tra phát âm thanh tự động, cơ chế gõ Pinyin hoặc chọn đáp án qua âm thanh, tích hợp micro/phát âm chuẩn.

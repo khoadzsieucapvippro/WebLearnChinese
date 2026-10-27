@@ -23,7 +23,7 @@ public class ReviewCardRequest {
     @Positive(message = "ID thẻ phải là số dương")
     private Long itemId;
 
-    @Pattern(regexp = "^(?i)(READING|LISTENING|WRITING)$", message = "cardType phải là READING, LISTENING hoặc WRITING")
+    @Pattern(regexp = "^(?i)(FLASHCARD|READING|LISTENING|WRITING)$", message = "cardType phải là FLASHCARD, READING, LISTENING hoặc WRITING")
     private String cardType;
 
     private Long lessonId;

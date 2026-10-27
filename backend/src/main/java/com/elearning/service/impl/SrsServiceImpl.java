@@ -510,8 +510,8 @@ public class SrsServiceImpl implements SrsService {
         String cardTypeUpper = (rawCardType != null && !rawCardType.trim().isEmpty())
                 ? rawCardType.trim().toUpperCase()
                 : "READING";
-        if (!"LISTENING".equals(cardTypeUpper) && !"WRITING".equals(cardTypeUpper) && !"READING".equals(cardTypeUpper)) {
-            throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Loại thẻ (cardType) phải là LISTENING, WRITING hoặc READING");
+        if (!"FLASHCARD".equals(cardTypeUpper) && !"LISTENING".equals(cardTypeUpper) && !"WRITING".equals(cardTypeUpper) && !"READING".equals(cardTypeUpper)) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Loại thẻ (cardType) phải là FLASHCARD, LISTENING, WRITING hoặc READING");
         }
 
         // 8. Load existing progress or initialize new card progress (protected by @Version optimistic locking)
@@ -699,12 +699,13 @@ public class SrsServiceImpl implements SrsService {
         long cardsDueListening = cardProgressRepository.countByUserAndItemTypeAndCardTypeAndNextReviewAtLessThanEqual(user, "VOCABULARY", "LISTENING", now);
         long cardsDueWriting = cardProgressRepository.countByUserAndItemTypeAndCardTypeAndNextReviewAtLessThanEqual(user, "VOCABULARY", "WRITING", now);
         long cardsDueReading = cardProgressRepository.countByUserAndItemTypeAndCardTypeAndNextReviewAtLessThanEqual(user, "VOCABULARY", "READING", now);
+        long cardsDueFlashcard = cardProgressRepository.countByUserAndItemTypeAndCardTypeAndNextReviewAtLessThanEqual(user, "VOCABULARY", "FLASHCARD", now);
 
         LocalDateTime startOfDay = LocalDate.now(businessClock).atStartOfDay();
         long reviewsToday = reviewLogRepository.countByUserAndReviewedAtGreaterThanEqual(user, startOfDay);
         long newCardsToday = reviewLogRepository.countNewItemsIntroducedToday(user, "VOCABULARY", startOfDay);
 
-        return new StudyStatsResponse(cardsDue, cardsDueListening, cardsDueWriting, cardsDueReading, reviewsToday, newLimit, maxReviewLimit, newCardsToday);
+        return new StudyStatsResponse(cardsDue, cardsDueListening, cardsDueWriting, cardsDueReading, cardsDueFlashcard, reviewsToday, newLimit, maxReviewLimit, newCardsToday);
     }
 
     @Override
@@ -750,8 +751,11 @@ public class SrsServiceImpl implements SrsService {
         long dueReading = cardProgressRepository != null
                 ? cardProgressRepository.countDueCardsByLessonAndCardType(user, lessonId, "READING", now)
                 : 0L;
+        long dueFlashcard = cardProgressRepository != null
+                ? cardProgressRepository.countDueCardsByLessonAndCardType(user, lessonId, "FLASHCARD", now)
+                : 0L;
 
-        return new LessonSrsStatsResponse(lessonId, totalVocab, newWordsCount, dueCount, dueListening, dueWriting, dueReading);
+        return new LessonSrsStatsResponse(lessonId, totalVocab, newWordsCount, dueCount, dueListening, dueWriting, dueReading, dueFlashcard);
     }
 
     private UserProfile resolveCurrentUserProfile() {

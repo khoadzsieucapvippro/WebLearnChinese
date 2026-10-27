@@ -10781,7 +10781,7 @@ export class SrsReviewController {
    * Switches learning mode ('flashcard' or 'writing').
    * @param {'flashcard'|'writing'} mode
    */
-  switchMode(mode) {
+  async switchMode(mode) {
     if (this.activeMode === mode) return;
     speechController.cancel();
     if (mode !== 'listening') {
@@ -10797,6 +10797,10 @@ export class SrsReviewController {
       vocabId: this.vocabId,
       action: this.activeAction
     });
+
+    try {
+      await this.fetchDueCounts();
+    } catch (_) {}
 
     if (this.sessionQueue && this.sessionQueue.length > 0 && !this.dom.activeSession?.classList.contains('d-none')) {
       // Re-render current item in new mode
@@ -10972,7 +10976,7 @@ export class SrsReviewController {
       if (this.fullRadicalsCatalog.length === 0) {
         await this.fetchRadicalsData();
       }
-      const cardTypeParam = this.activeMode === 'writing' ? 'WRITING' : (this.activeMode === 'listening' ? 'LISTENING' : 'READING');
+      const cardTypeParam = this.activeMode === 'writing' ? 'WRITING' : (this.activeMode === 'listening' ? 'LISTENING' : (this.activeMode === 'reading' ? 'READING' : 'FLASHCARD'));
       const [dueVocab, dueRadicals] = await Promise.all([
         apiClient('/srs/due', { params: { itemType: 'VOCABULARY', cardType: cardTypeParam } }).catch(() => []),
         apiClient('/srs/due', { params: { itemType: 'RADICAL', cardType: cardTypeParam } }).catch(() => [])
@@ -11971,7 +11975,7 @@ export class SrsReviewController {
 
       if (authManager.isAuthenticated()) {
         try {
-          const cardTypeParam = this.activeMode === 'writing' ? 'WRITING' : (this.activeMode === 'listening' ? 'LISTENING' : 'READING');
+          const cardTypeParam = this.activeMode === 'writing' ? 'WRITING' : (this.activeMode === 'listening' ? 'LISTENING' : (this.activeMode === 'reading' ? 'READING' : 'FLASHCARD'));
           const due = await apiClient('/srs/due', { params: { itemType: 'VOCABULARY', cardType: cardTypeParam } });
           const items = (Array.isArray(due) ? due : []).map(v => this.normalizeVocabCard(v, null));
           updateReviewUrl({
@@ -12084,7 +12088,7 @@ export class SrsReviewController {
     if (authManager.isAuthenticated()) {
       try {
         let remoteCards = [];
-        const cardTypeParam = this.activeMode === 'writing' ? 'WRITING' : (this.activeMode === 'listening' ? 'LISTENING' : 'READING');
+        const cardTypeParam = this.activeMode === 'writing' ? 'WRITING' : (this.activeMode === 'listening' ? 'LISTENING' : (this.activeMode === 'reading' ? 'READING' : 'FLASHCARD'));
         const requestParams = { lessonId: effectiveLessonId, cardType: cardTypeParam };
 
         if (this.mode === 'LESSON_PRACTICE') {
@@ -12329,7 +12333,7 @@ export class SrsReviewController {
     if (this.activeAction === 'due') {
       if (authManager.isAuthenticated()) {
         try {
-          const cardTypeParam = this.activeMode === 'writing' ? 'WRITING' : (this.activeMode === 'listening' ? 'LISTENING' : 'READING');
+          const cardTypeParam = this.activeMode === 'writing' ? 'WRITING' : (this.activeMode === 'listening' ? 'LISTENING' : (this.activeMode === 'reading' ? 'READING' : 'FLASHCARD'));
           const dueCards = await apiClient('/srs/due', { params: { cardType: cardTypeParam } });
           if (Array.isArray(dueCards) && dueCards.length > 0) {
             this.mode = 'DUE_CARDS';
@@ -15119,7 +15123,7 @@ export class SrsReviewController {
         const payload = buildReviewPayload({
           itemType: card.itemType || 'VOCABULARY',
           itemId: card.itemId,
-          cardType: card.cardType || (this.activeMode === 'writing' ? 'WRITING' : (this.activeMode === 'listening' ? 'LISTENING' : 'READING')),
+          cardType: card.cardType || (this.activeMode === 'writing' ? 'WRITING' : (this.activeMode === 'listening' ? 'LISTENING' : (this.activeMode === 'reading' ? 'READING' : 'FLASHCARD'))),
           rating: numRating,
           reviewTimeSeconds: elapsedSeconds,
           lessonId: card.lessonId || this.lessonId
