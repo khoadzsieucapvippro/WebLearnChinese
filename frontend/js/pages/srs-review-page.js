@@ -258,7 +258,6 @@ export function saveProgress(mode, updates) {
 export const HSK1_TOPICS = [
   {
     "topicId": 1,
-    "backendLessonId": 5,
     "title": "Bài 01 — Chào hỏi & Giao tiếp cơ bản",
     "description": "Chào hỏi, tạm biệt, cảm ơn, xin lỗi, đáp lời lịch sự và các câu giao tiếp cơ bản.",
     "vocabularies": [
@@ -268,43 +267,43 @@ export const HSK1_TOPICS = [
         "pinyin": "qǐng",
         "meaningHanViet": "Thỉnh",
         "meaningVi": "Mời; mời mọc",
-        "exampleSentence": "请进，请坐。",
-        "exampleTranslation": "Mời vào, mời ngồi."
+        "exampleSentence": "请进，请坐，请喝茶。",
+        "exampleTranslation": "Mời vào, mời ngồi, mời uống trà."
       },
       {
         "vocabId": 505,
         "hanzi": "请问",
         "pinyin": "qǐngwèn",
         "meaningHanViet": "Thỉnh Vấn",
-        "meaningVi": "Xin hỏi; cho hỏi",
-        "exampleSentence": "请问，洗手间在哪里？",
-        "exampleTranslation": "Xin hỏi, nhà vệ sinh ở đâu?"
+        "meaningVi": "Xin hỏi, cho hỏi",
+        "exampleSentence": "请问去图书馆怎么走？",
+        "exampleTranslation": "Xin hỏi đi đến thư viện đi đường nào?"
       },
       {
         "vocabId": 410,
         "hanzi": "谢谢",
         "pinyin": "xièxie",
         "meaningHanViet": "Tạ Tạ",
-        "meaningVi": "Cảm ơn; cảm tạ",
-        "exampleSentence": "谢谢你的帮助。",
-        "exampleTranslation": "Cảm ơn sự giúp đỡ của bạn."
+        "meaningVi": "Cảm ơn; cảm ơn bạn",
+        "exampleSentence": "谢谢大家对我的关心。",
+        "exampleTranslation": "Cảm ơn mọi người đã quan tâm đến tôi."
       },
       {
         "vocabId": 32,
         "hanzi": "不客气",
         "pinyin": "bú kèqi",
         "meaningHanViet": "Bất Khách Khí",
-        "meaningVi": "Không có chi; đừng khách sáo",
-        "exampleSentence": "不用谢，不客气。",
-        "exampleTranslation": "Không cần cảm ơn, đừng khách sáo."
+        "meaningVi": "Không có chi; đừng nhắc đến",
+        "exampleSentence": "不客气，这是我应该做的。",
+        "exampleTranslation": "Không có chi, đây là việc tôi nên làm."
       },
       {
         "vocabId": 93,
         "hanzi": "对不起",
         "pinyin": "duìbuqǐ",
         "meaningHanViet": "Đối Bất Khởi",
-        "meaningVi": "Xin lỗi",
-        "exampleSentence": "对不起，我迟到了。",
+        "meaningVi": "Tôi xin lỗi; xin thứ lỗi; tôi xin tha thứ; làm  thất vọng; không đạt kỳ vọng",
+        "exampleSentence": "对不起，我来晚了。",
         "exampleTranslation": "Xin lỗi, tôi đến muộn."
       },
       {
@@ -312,45 +311,45 @@ export const HSK1_TOPICS = [
         "hanzi": "没关系",
         "pinyin": "méi guānxi",
         "meaningHanViet": "Một Quan Hệ",
-        "meaningVi": "Không sao; không có chi",
-        "exampleSentence": "没关系，不要紧。",
-        "exampleTranslation": "Không sao đâu, không có gì nghiêm trọng."
+        "meaningVi": "Không sao đâu",
+        "exampleSentence": "没关系，别放在心上。",
+        "exampleTranslation": "Không sao, đừng để trong lòng."
       },
       {
-        "vocabId": 515,
+        "vocabId": 523,
         "hanzi": "没事",
         "pinyin": "méishì",
         "meaningHanViet": "Một Sự",
-        "meaningVi": "Không sao đâu; không có việc gì",
-        "exampleSentence": "别担心，我没事。",
-        "exampleTranslation": "Đừng lo, tôi không sao."
+        "meaningVi": "Không có gì, không sao, rảnh rỗi",
+        "exampleSentence": "别担心，我真的一点儿也没事。",
+        "exampleTranslation": "Đừng lo, tôi thật sự không sao cả."
       },
       {
         "vocabId": 454,
         "hanzi": "再见",
         "pinyin": "zàijiàn",
         "meaningHanViet": "Tái Kiến",
-        "meaningVi": "Tạm biệt; hẹn gặp lại",
-        "exampleSentence": "明天见，再见！",
-        "exampleTranslation": "Ngày mai gặp nhé, tạm biệt!"
+        "meaningVi": "Tạm biệt; gặp lại sau",
+        "exampleSentence": "老师再见，明天见！",
+        "exampleTranslation": "Chào tạm biệt thầy cô, hẹn ngày mai gặp lại!"
       },
       {
-        "vocabId": 518,
+        "vocabId": 526,
         "hanzi": "你好",
         "pinyin": "nǐ hǎo",
         "meaningHanViet": "Nễ Hảo",
         "meaningVi": "Xin chào",
-        "exampleSentence": "你好！很高兴认识你。",
-        "exampleTranslation": "Xin chào! Rất vui được quen biết bạn."
+        "exampleSentence": "你好，很高兴认识你。",
+        "exampleTranslation": "Xin chào, rất vui được làm quen với bạn."
       },
       {
         "vocabId": 274,
-        "hanzi": "您好",
-        "pinyin": "nín hǎo",
-        "meaningHanViet": "Nâm Hảo",
-        "meaningVi": "Kính chào ngài; chào bác",
+        "hanzi": "您",
+        "pinyin": "nín",
+        "meaningHanViet": "Nâm",
+        "meaningVi": "Ngài, ông, bà (đại từ nhân xưng kính trọng)",
         "exampleSentence": "老师，您好！",
-        "exampleTranslation": "Thưa thầy, chúng em chào thầy!"
+        "exampleTranslation": "Em chào thầy ạ!"
       },
       {
         "vocabId": 379,
@@ -358,8 +357,8 @@ export const HSK1_TOPICS = [
         "pinyin": "wèn",
         "meaningHanViet": "Vấn",
         "meaningVi": "Hỏi",
-        "exampleSentence": "我想问你一个问题。",
-        "exampleTranslation": "Tôi muốn hỏi bạn một câu hỏi."
+        "exampleSentence": "遇到不懂的问题要问老师。",
+        "exampleTranslation": "Gặp câu hỏi không hiểu phải hỏi thầy giáo."
       },
       {
         "vocabId": 349,
@@ -367,35 +366,35 @@ export const HSK1_TOPICS = [
         "pinyin": "shuō",
         "meaningHanViet": "Thuyết",
         "meaningVi": "Nói",
-        "exampleSentence": "请说慢一点儿。",
-        "exampleTranslation": "Xin hãy nói chậm lại một chút."
+        "exampleSentence": "老师说汉语说得很清楚。",
+        "exampleTranslation": "Thầy giáo nói tiếng Trung rất rõ ràng."
       },
       {
         "vocabId": 350,
         "hanzi": "说话",
         "pinyin": "shuōhuà",
         "meaningHanViet": "Thuyết Thoại",
-        "meaningVi": "Nói chuyện; trò chuyện",
-        "exampleSentence": "他们正在说话。",
-        "exampleTranslation": "Họ đang nói chuyện."
+        "meaningVi": "Nói; trò chuyện",
+        "exampleSentence": "请大家安静，不要说话。",
+        "exampleTranslation": "Xin mọi người hãy giữ trật tự, đừng nói chuyện."
       },
       {
         "vocabId": 173,
         "hanzi": "见",
         "pinyin": "jiàn",
         "meaningHanViet": "Kiến",
-        "meaningVi": "Gặp; nhìn thấy",
-        "exampleSentence": "明天我们在学校见。",
-        "exampleTranslation": "Ngày mai chúng ta gặp nhau ở trường."
+        "meaningVi": "Gặp; thấy",
+        "exampleSentence": "明天见！",
+        "exampleTranslation": "Hẹn gặp lại ngày mai!"
       },
       {
         "vocabId": 306,
         "hanzi": "认识",
         "pinyin": "rènshi",
         "meaningHanViet": "Nhận Thức",
-        "meaningVi": "Quen biết; hiểu rõ",
+        "meaningVi": "Biết; nhận ra",
         "exampleSentence": "认识你很高兴。",
-        "exampleTranslation": "Rất vui được quen biết bạn."
+        "exampleTranslation": "Rất vui được làm quen với bạn."
       },
       {
         "vocabId": 138,
@@ -403,8 +402,8 @@ export const HSK1_TOPICS = [
         "pinyin": "hǎo",
         "meaningHanViet": "Hảo",
         "meaningVi": "Tốt; đẹp; xong",
-        "exampleSentence": "今天天气很好。",
-        "exampleTranslation": "Thời tiết hôm nay rất đẹp."
+        "exampleSentence": "今天天气真好。",
+        "exampleTranslation": "Hôm nay thời tiết thật đẹp."
       },
       {
         "vocabId": 92,
@@ -412,41 +411,41 @@ export const HSK1_TOPICS = [
         "pinyin": "duì",
         "meaningHanViet": "Đối",
         "meaningVi": "Đúng; chính xác; đối với",
-        "exampleSentence": "你说得很对。",
-        "exampleTranslation": "Bạn nói rất đúng."
+        "exampleSentence": "你回答得非常对。",
+        "exampleTranslation": "Bạn trả lời rất chính xác."
       },
       {
         "vocabId": 34,
         "hanzi": "不",
         "pinyin": "bù",
         "meaningHanViet": "Bất",
-        "meaningVi": "Không; chưa",
-        "exampleSentence": "我不是学生。",
-        "exampleTranslation": "Tôi không phải là học sinh."
+        "meaningVi": "Không; không phải; không; bất-",
+        "exampleSentence": "我不喝茶，我喝水。",
+        "exampleTranslation": "Tôi không uống trà, tôi uống nước."
       },
       {
         "vocabId": 416,
         "hanzi": "行",
         "pinyin": "xíng",
         "meaningHanViet": "Hành",
-        "meaningVi": "Được; đi được",
-        "exampleSentence": "你看这样行不行？",
-        "exampleTranslation": "Bạn xem thế này có được không?"
+        "meaningVi": "Được; đi; thực hiện",
+        "exampleSentence": "如果你时间方便，这样就行。",
+        "exampleTranslation": "Nếu thời gian của bạn thuận tiện, vậy thì được rồi."
       },
       {
         "vocabId": 5,
         "hanzi": "吧",
         "pinyin": "ba",
         "meaningHanViet": "Ba",
-        "meaningVi": "Nhé; thôi; đi (trợ từ)",
+        "meaningVi": "Trợ từ ngữ khí: nhé, thôi, đi, chứ",
         "exampleSentence": "我们一起走吧。",
         "exampleTranslation": "Chúng ta cùng đi thôi nào."
       }
-    ]
+    ],
+    "backendLessonId": 5
   },
   {
     "topicId": 2,
-    "backendLessonId": 6,
     "title": "Bài 02 — Phương tiện, Trường học & Thiết bị",
     "description": "Phương tiện đi lại, trường học, liên lạc điện thoại và giải trí phim ảnh.",
     "vocabularies": [
@@ -460,7 +459,7 @@ export const HSK1_TOPICS = [
         "exampleTranslation": "Bạn muốn ăn gì?"
       },
       {
-        "vocabId": 504,
+        "vocabId": 512,
         "hanzi": "出租车",
         "pinyin": "chūzūchē",
         "meaningHanViet": "Xuất Tô Xa",
@@ -496,7 +495,7 @@ export const HSK1_TOPICS = [
         "exampleTranslation": "Quả dưa hấu này rất to."
       },
       {
-        "vocabId": 505,
+        "vocabId": 513,
         "hanzi": "大家",
         "pinyin": "dàjiā",
         "meaningHanViet": "Đại Gia",
@@ -568,7 +567,7 @@ export const HSK1_TOPICS = [
         "exampleTranslation": "Bây giờ là tám giờ sáng."
       },
       {
-        "vocabId": 506,
+        "vocabId": 514,
         "hanzi": "店",
         "pinyin": "diàn",
         "meaningHanViet": "Điếm",
@@ -630,11 +629,11 @@ export const HSK1_TOPICS = [
         "exampleSentence": "桌子上放着很多东西。",
         "exampleTranslation": "Trên bàn đặt rất nhiều đồ đạc."
       }
-    ]
+    ],
+    "backendLessonId": 6
   },
   {
     "topicId": 3,
-    "backendLessonId": 7,
     "title": "Bài 03 — Thời gian, Ăn uống & Cảm xúc",
     "description": "Bữa ăn, nhà hàng, đơn vị thời gian và các biểu đạt cảm xúc vui tươi.",
     "vocabularies": [
@@ -774,7 +773,7 @@ export const HSK1_TOPICS = [
         "exampleTranslation": "Bây giờ là tám giờ mười phút."
       },
       {
-        "vocabId": 507,
+        "vocabId": 515,
         "hanzi": "分钟",
         "pinyin": "fēnzhōng",
         "meaningHanViet": "Phân Chung",
@@ -818,11 +817,11 @@ export const HSK1_TOPICS = [
         "exampleSentence": "我买了一个苹果。",
         "exampleTranslation": "Tôi đã mua một quả táo."
       }
-    ]
+    ],
+    "backendLessonId": 7
   },
   {
     "topicId": 4,
-    "backendLessonId": 8,
     "title": "Bài 04 — Công việc, Ngôn ngữ & Tính từ cơ bản",
     "description": "Môi trường công sở, ngôn ngữ tiếng Trung và các tính từ mô tả thường gặp.",
     "vocabularies": [
@@ -836,7 +835,7 @@ export const HSK1_TOPICS = [
         "exampleTranslation": "Xin cho tôi một cốc nước."
       },
       {
-        "vocabId": 508,
+        "vocabId": 516,
         "hanzi": "公司",
         "pinyin": "gōngsī",
         "meaningHanViet": "Công Ty",
@@ -854,7 +853,7 @@ export const HSK1_TOPICS = [
         "exampleTranslation": "Anh ấy làm việc ở bệnh viện."
       },
       {
-        "vocabId": 509,
+        "vocabId": 517,
         "hanzi": "狗",
         "pinyin": "gǒu",
         "meaningHanViet": "Cẩu",
@@ -1006,11 +1005,11 @@ export const HSK1_TOPICS = [
         "exampleSentence": "三天后我们再见面。",
         "exampleTranslation": "Ba ngày sau chúng ta lại gặp nhau."
       }
-    ]
+    ],
+    "backendLessonId": 8
   },
   {
     "topicId": 5,
-    "backendLessonId": 9,
     "title": "Bài 05 — Thời gian, Gia đình & Hoạt động thường nhật",
     "description": "Các mốc thời gian trong năm, thành viên gia đình và hoạt động hàng ngày.",
     "vocabularies": [
@@ -1087,7 +1086,7 @@ export const HSK1_TOPICS = [
         "exampleTranslation": "Hẹn gặp lại ngày mai!"
       },
       {
-        "vocabId": 510,
+        "vocabId": 518,
         "hanzi": "件",
         "pinyin": "jiàn",
         "meaningHanViet": "Kiện",
@@ -1096,7 +1095,7 @@ export const HSK1_TOPICS = [
         "exampleTranslation": "Chiếc áo này rất đẹp."
       },
       {
-        "vocabId": 511,
+        "vocabId": 519,
         "hanzi": "饺子",
         "pinyin": "jiǎozi",
         "meaningHanViet": "Giảo Tử",
@@ -1194,11 +1193,11 @@ export const HSK1_TOPICS = [
         "exampleSentence": "他觉得不舒服，去医院看病。",
         "exampleTranslation": "Anh ấy cảm thấy không khỏe, đi bệnh viện khám bệnh."
       }
-    ]
+    ],
+    "backendLessonId": 9
   },
   {
     "topicId": 6,
-    "backendLessonId": 10,
     "title": "Bài 06 — Mua bán, Thầy cô & Số đếm",
     "description": "Hoạt động mua bán, trao đổi, thầy cô trường lớp và các số đếm căn bản.",
     "vocabularies": [
@@ -1212,7 +1211,7 @@ export const HSK1_TOPICS = [
         "exampleTranslation": "Tôi nhìn thấy một chú mèo con đáng yêu."
       },
       {
-        "vocabId": 512,
+        "vocabId": 520,
         "hanzi": "可以",
         "pinyin": "kěyǐ",
         "meaningHanViet": "Khả Dĩ",
@@ -1347,7 +1346,7 @@ export const HSK1_TOPICS = [
         "exampleTranslation": "Tôi muốn đi siêu thị mua chút hoa quả."
       },
       {
-        "vocabId": 513,
+        "vocabId": 521,
         "hanzi": "卖",
         "pinyin": "mài",
         "meaningHanViet": "Mại",
@@ -1365,7 +1364,7 @@ export const HSK1_TOPICS = [
         "exampleTranslation": "Dạo này công việc của bạn có bận không?"
       },
       {
-        "vocabId": 514,
+        "vocabId": 522,
         "hanzi": "猫",
         "pinyin": "māo",
         "meaningHanViet": "Miêu",
@@ -1382,16 +1381,16 @@ export const HSK1_TOPICS = [
         "exampleSentence": "没关系，别放在心上。",
         "exampleTranslation": "Không sao, đừng để trong lòng."
       }
-    ]
+    ],
+    "backendLessonId": 10
   },
   {
     "topicId": 7,
-    "backendLessonId": 11,
     "title": "Bài 07 — Ẩm thực, Đại từ chỉ định & Nơi chốn",
     "description": "Món ăn truyền thống, đại từ chỉ định và các biểu đạt vị trí nơi chốn.",
     "vocabularies": [
       {
-        "vocabId": 515,
+        "vocabId": 523,
         "hanzi": "没事",
         "pinyin": "méishì",
         "meaningHanViet": "Một Sự",
@@ -1490,7 +1489,7 @@ export const HSK1_TOPICS = [
         "exampleTranslation": "Bạn muốn đi đâu du lịch?"
       },
       {
-        "vocabId": 516,
+        "vocabId": 524,
         "hanzi": "哪个",
         "pinyin": "nǎge",
         "meaningHanViet": "Na Cá",
@@ -1499,7 +1498,7 @@ export const HSK1_TOPICS = [
         "exampleTranslation": "Bạn muốn mua quả táo nào?"
       },
       {
-        "vocabId": 251,
+        "vocabId": 502,
         "hanzi": "哪里",
         "pinyin": "nǎlǐ",
         "meaningHanViet": "Na Lý",
@@ -1508,7 +1507,7 @@ export const HSK1_TOPICS = [
         "exampleTranslation": "Xin hỏi nhà vệ sinh ở đâu vậy?"
       },
       {
-        "vocabId": 252,
+        "vocabId": 503,
         "hanzi": "哪儿",
         "pinyin": "nǎr",
         "meaningHanViet": "Na Nhi",
@@ -1517,7 +1516,7 @@ export const HSK1_TOPICS = [
         "exampleTranslation": "Bạn định đi đâu?"
       },
       {
-        "vocabId": 253,
+        "vocabId": 504,
         "hanzi": "哪些",
         "pinyin": "nǎxiē",
         "meaningHanViet": "Na Ta",
@@ -1544,7 +1543,7 @@ export const HSK1_TOPICS = [
         "exampleTranslation": "Hiệu sách ở phía bên kia."
       },
       {
-        "vocabId": 517,
+        "vocabId": 525,
         "hanzi": "那个",
         "pinyin": "nàge",
         "meaningHanViet": "Na Cá",
@@ -1570,11 +1569,11 @@ export const HSK1_TOPICS = [
         "exampleSentence": "他在那儿等你。",
         "exampleTranslation": "Anh ấy đang ở đằng kia đợi bạn."
       }
-    ]
+    ],
+    "backendLessonId": 11
   },
   {
     "topicId": 8,
-    "backendLessonId": 12,
     "title": "Bài 08 — Đại từ xưng hô, Mối quan hệ & Đời sống",
     "description": "Đại từ nhân xưng, đối tác giao tiếp, bạn bè và sinh hoạt gia đình.",
     "vocabularies": [
@@ -1633,7 +1632,7 @@ export const HSK1_TOPICS = [
         "exampleTranslation": "Rất vui được làm quen với bạn."
       },
       {
-        "vocabId": 518,
+        "vocabId": 526,
         "hanzi": "你好",
         "pinyin": "nǐ hǎo",
         "meaningHanViet": "Nễ Hảo",
@@ -1705,7 +1704,7 @@ export const HSK1_TOPICS = [
         "exampleTranslation": "Cô ấy là bạn gái của tôi."
       },
       {
-        "vocabId": 519,
+        "vocabId": 527,
         "hanzi": "女士",
         "pinyin": "nǚshì",
         "meaningHanViet": "Nữ Sĩ",
@@ -1723,7 +1722,7 @@ export const HSK1_TOPICS = [
         "exampleTranslation": "Bạn bè tốt sẽ luôn giúp đỡ lẫn nhau."
       },
       {
-        "vocabId": 520,
+        "vocabId": 528,
         "hanzi": "便宜",
         "pinyin": "piányi",
         "meaningHanViet": "Tiện Nghi",
@@ -1732,7 +1731,7 @@ export const HSK1_TOPICS = [
         "exampleTranslation": "Cuốn sách này vừa thực dụng vừa rẻ."
       },
       {
-        "vocabId": 521,
+        "vocabId": 529,
         "hanzi": "漂亮",
         "pinyin": "piàoliang",
         "meaningHanViet": "Phiêu Lượng",
@@ -1741,7 +1740,7 @@ export const HSK1_TOPICS = [
         "exampleTranslation": "Hôm nay bạn mặc thật là đẹp."
       },
       {
-        "vocabId": 522,
+        "vocabId": 530,
         "hanzi": "苹果",
         "pinyin": "píngguǒ",
         "meaningHanViet": "Bình Quả",
@@ -1758,11 +1757,11 @@ export const HSK1_TOPICS = [
         "exampleSentence": "一个星期有七天。",
         "exampleTranslation": "Một tuần có bảy ngày."
       }
-    ]
+    ],
+    "backendLessonId": 12
   },
   {
     "topicId": 9,
-    "backendLessonId": 13,
     "title": "Bài 09 — Lễ nghi, Thời gian & Công việc hàng ngày",
     "description": "Lễ nghi chào hỏi, kính ngữ, các buổi trong ngày và công việc thường nhật.",
     "vocabularies": [
@@ -1776,7 +1775,7 @@ export const HSK1_TOPICS = [
         "exampleTranslation": "Sáng mai bảy giờ tôi phải thức dậy."
       },
       {
-        "vocabId": 523,
+        "vocabId": 531,
         "hanzi": "千",
         "pinyin": "qiān",
         "meaningHanViet": "Thiên",
@@ -1812,7 +1811,7 @@ export const HSK1_TOPICS = [
         "exampleTranslation": "Mời vào, mời ngồi, mời uống trà."
       },
       {
-        "vocabId": 299,
+        "vocabId": 505,
         "hanzi": "请问",
         "pinyin": "qǐngwèn",
         "meaningHanViet": "Thỉnh Vấn",
@@ -1946,11 +1945,11 @@ export const HSK1_TOPICS = [
         "exampleSentence": "今天来上课的人很少。",
         "exampleTranslation": "Hôm nay người đến lớp học rất ít."
       }
-    ]
+    ],
+    "backendLessonId": 13
   },
   {
     "topicId": 10,
-    "backendLessonId": 14,
     "title": "Bài 10 — Giờ giấc, Nhu cầu sinh hoạt & Trò chuyện",
     "description": "Thời gian giờ giấc, sức khỏe, nhu cầu ngủ nghỉ và trò chuyện giao tiếp.",
     "vocabularies": [
@@ -1964,7 +1963,7 @@ export const HSK1_TOPICS = [
         "exampleTranslation": "Xin hỏi vị thầy giáo kia là ai vậy?"
       },
       {
-        "vocabId": 328,
+        "vocabId": 506,
         "hanzi": "什么",
         "pinyin": "shénme",
         "meaningHanViet": "Thập Ma",
@@ -2134,7 +2133,8 @@ export const HSK1_TOPICS = [
         "exampleSentence": "他是我的大学同学。",
         "exampleTranslation": "Anh ấy là bạn học đại học của tôi."
       }
-    ]
+    ],
+    "backendLessonId": 14
   },
   {
     "topicId": 11,
@@ -2142,7 +2142,7 @@ export const HSK1_TOPICS = [
     "description": "Thời tiết khí hậu, ngày trong tuần, câu hỏi giao tiếp và hoạt động giải trí.",
     "vocabularies": [
       {
-        "vocabId": 524,
+        "vocabId": 532,
         "hanzi": "它",
         "pinyin": "tā",
         "meaningHanViet": "Tha",
@@ -2169,7 +2169,7 @@ export const HSK1_TOPICS = [
         "exampleTranslation": "Bọn họ đang chơi bóng rổ trên sân tập."
       },
       {
-        "vocabId": 525,
+        "vocabId": 533,
         "hanzi": "它们",
         "pinyin": "tāmen",
         "meaningHanViet": "Tha Môn",
@@ -2259,7 +2259,7 @@ export const HSK1_TOPICS = [
         "exampleTranslation": "Bên ngoài trời đang mưa to."
       },
       {
-        "vocabId": 526,
+        "vocabId": 534,
         "hanzi": "玩",
         "pinyin": "wán",
         "meaningHanViet": "Ngoạn",
@@ -2295,7 +2295,7 @@ export const HSK1_TOPICS = [
         "exampleTranslation": "Buổi tối tôi thường ôn bài ở trong phòng."
       },
       {
-        "vocabId": 527,
+        "vocabId": 535,
         "hanzi": "喂",
         "pinyin": "wèi",
         "meaningHanViet": "Uý",
@@ -2313,7 +2313,7 @@ export const HSK1_TOPICS = [
         "exampleTranslation": "Gặp câu hỏi không hiểu phải hỏi thầy giáo."
       },
       {
-        "vocabId": 528,
+        "vocabId": 536,
         "hanzi": "问题",
         "pinyin": "wèntí",
         "meaningHanViet": "Vấn Đề",
@@ -2491,7 +2491,7 @@ export const HSK1_TOPICS = [
         "exampleTranslation": "Học sinh tiểu học mỗi ngày đều dậy sớm đến trường."
       },
       {
-        "vocabId": 529,
+        "vocabId": 537,
         "hanzi": "些",
         "pinyin": "xiē",
         "meaningHanViet": "Ta",
@@ -2606,7 +2606,7 @@ export const HSK1_TOPICS = [
         "exampleTranslation": "Ngôi trường của chúng tôi vô cùng tươi đẹp."
       },
       {
-        "vocabId": 530,
+        "vocabId": 538,
         "hanzi": "雪",
         "pinyin": "xuě",
         "meaningHanViet": "Tuyết",
@@ -2678,7 +2678,7 @@ export const HSK1_TOPICS = [
         "exampleTranslation": "Quả dưa hấu này mỗi người chúng ta ăn một nửa."
       },
       {
-        "vocabId": 531,
+        "vocabId": 539,
         "hanzi": "一下",
         "pinyin": "yíxià",
         "meaningHanViet": "Nhất Hạ",
@@ -2687,7 +2687,7 @@ export const HSK1_TOPICS = [
         "exampleTranslation": "Xin đợi một chút, tôi đến ngay đây."
       },
       {
-        "vocabId": 532,
+        "vocabId": 540,
         "hanzi": "椅子",
         "pinyin": "yǐzi",
         "meaningHanViet": "Ỷ Tử",
@@ -2739,7 +2739,7 @@ export const HSK1_TOPICS = [
         "exampleTranslation": "Có bạn học sinh đang đọc sách, có bạn lại đang nghe nhạc."
       },
       {
-        "vocabId": 533,
+        "vocabId": 541,
         "hanzi": "有点儿",
         "pinyin": "yǒudiǎnr",
         "meaningHanViet": "Hữu Điểm Nhi",
@@ -2838,7 +2838,7 @@ export const HSK1_TOPICS = [
         "exampleTranslation": "Buổi sáng không khí đặc biệt trong lành."
       },
       {
-        "vocabId": 460,
+        "vocabId": 507,
         "hanzi": "怎么",
         "pinyin": "zěnme",
         "meaningHanViet": "Chẩm Ma",
@@ -2847,7 +2847,7 @@ export const HSK1_TOPICS = [
         "exampleTranslation": "Từ mới này phát âm như thế nào?"
       },
       {
-        "vocabId": 534,
+        "vocabId": 542,
         "hanzi": "怎么样",
         "pinyin": "zěnmeyàng",
         "meaningHanViet": "Chẩm Ma Dạng",
@@ -2890,7 +2890,7 @@ export const HSK1_TOPICS = [
     "description": "Đồ dùng sinh hoạt, phương hướng, cách thức hành động và câu hỏi thăm dò.",
     "vocabularies": [
       {
-        "vocabId": 535,
+        "vocabId": 543,
         "hanzi": "这个",
         "pinyin": "zhège",
         "meaningHanViet": "Giá Cá",
@@ -2944,7 +2944,7 @@ export const HSK1_TOPICS = [
         "exampleTranslation": "Bố đang chăm chú đọc báo trong phòng sách."
       },
       {
-        "vocabId": 536,
+        "vocabId": 544,
         "hanzi": "只",
         "pinyin": "zhī",
         "meaningHanViet": "Chỉ",
@@ -3061,7 +3061,7 @@ export const HSK1_TOPICS = [
         "exampleTranslation": "Cuối tuần bạn thường làm gì ở nhà?"
       },
       {
-        "vocabId": 537,
+        "vocabId": 545,
         "hanzi": "做饭",
         "pinyin": "zuò fàn",
         "meaningHanViet": "Tố Phạn",
@@ -3073,9 +3073,6 @@ export const HSK1_TOPICS = [
   }
 ];
 
-/**
- * 10 Official Curriculum Topics for HSK 2 (200 words total, 20 words each)
- */
 export const HSK2_TOPICS = [
   {
     "topicId": 201,
@@ -3083,7 +3080,7 @@ export const HSK2_TOPICS = [
     "description": "Giao tiếp xã giao, giúp đỡ, so sánh, xuất hành và đi lại thường nhật.",
     "vocabularies": [
       {
-        "vocabId": 538,
+        "vocabId": 546,
         "hanzi": "啊",
         "pinyin": "a",
         "meaningHanViet": "A",
@@ -3101,7 +3098,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Sở thích của tôi là nghe nhạc."
       },
       {
-        "vocabId": 539,
+        "vocabId": 547,
         "hanzi": "白色",
         "pinyin": "báisè",
         "meaningHanViet": "Bạch Sắc",
@@ -3164,7 +3161,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Hôm nay lạnh hơn hôm qua."
       },
       {
-        "vocabId": 540,
+        "vocabId": 548,
         "hanzi": "笔",
         "pinyin": "bǐ",
         "meaningHanViet": "Bút",
@@ -3182,7 +3179,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Đừng nói chuyện, hãy nghe thầy giảng."
       },
       {
-        "vocabId": 541,
+        "vocabId": 549,
         "hanzi": "不错",
         "pinyin": "búcuò",
         "meaningHanViet": "Bất Thác",
@@ -3191,7 +3188,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Món ăn của quán này hương vị thật không tồi."
       },
       {
-        "vocabId": 542,
+        "vocabId": 550,
         "hanzi": "不好意思",
         "pinyin": "bù hǎoyìsi",
         "meaningHanViet": "Bất Hảo Ý Tư",
@@ -3200,7 +3197,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Ngại quá, để ngài phải đợi lâu rồi."
       },
       {
-        "vocabId": 543,
+        "vocabId": 551,
         "hanzi": "长",
         "pinyin": "cháng",
         "meaningHanViet": "Trường",
@@ -3227,7 +3224,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Anh ấy từ trong phòng bước ra rồi."
       },
       {
-        "vocabId": 544,
+        "vocabId": 552,
         "hanzi": "出国",
         "pinyin": "chūguó",
         "meaningHanViet": "Xuất Quốc",
@@ -3245,7 +3242,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Mau ra ngoài xem tuyết rơi nào!"
       },
       {
-        "vocabId": 545,
+        "vocabId": 553,
         "hanzi": "出门",
         "pinyin": "chūmén",
         "meaningHanViet": "Xuất Môn",
@@ -3279,7 +3276,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Trong phòng có một chiếc giường lớn."
       },
       {
-        "vocabId": 546,
+        "vocabId": 554,
         "hanzi": "词",
         "pinyin": "cí",
         "meaningHanViet": "Từ",
@@ -3306,7 +3303,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Tôi từ Việt Nam đến Trung Quốc."
       },
       {
-        "vocabId": 547,
+        "vocabId": 555,
         "hanzi": "从小",
         "pinyin": "cóngxiǎo",
         "meaningHanViet": "Tòng Tiểu",
@@ -3351,7 +3348,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Xin hãy mở sách ra."
       },
       {
-        "vocabId": 548,
+        "vocabId": 556,
         "hanzi": "但",
         "pinyin": "dàn",
         "meaningHanViet": "Đãn",
@@ -3360,7 +3357,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Cậu ấy tuy tuổi còn nhỏ nhưng hiểu biết rất nhiều đạo lý."
       },
       {
-        "vocabId": 549,
+        "vocabId": 557,
         "hanzi": "但是",
         "pinyin": "dànshì",
         "meaningHanViet": "Đãn Thị",
@@ -3369,7 +3366,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Tôi muốn đi du lịch, nhưng dạo này bận quá."
       },
       {
-        "vocabId": 550,
+        "vocabId": 558,
         "hanzi": "得",
         "pinyin": "de",
         "meaningHanViet": "Đắc",
@@ -3396,7 +3393,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Xin hãy đợi tôi năm phút."
       },
       {
-        "vocabId": 551,
+        "vocabId": 559,
         "hanzi": "地铁",
         "pinyin": "dìtiě",
         "meaningHanViet": "Địa Thiết",
@@ -3405,7 +3402,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Đi tàu điện ngầm đến ga tàu hỏa rất thuận tiện."
       },
       {
-        "vocabId": 552,
+        "vocabId": 560,
         "hanzi": "点",
         "pinyin": "diǎn",
         "meaningHanViet": "Điểm",
@@ -3414,7 +3411,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Phục vụ viên, bây giờ chúng tôi muốn gọi món."
       },
       {
-        "vocabId": 553,
+        "vocabId": 561,
         "hanzi": "懂",
         "pinyin": "dǒng",
         "meaningHanViet": "Đổng",
@@ -3432,7 +3429,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Đừng cử động, để tôi xem nào."
       },
       {
-        "vocabId": 554,
+        "vocabId": 562,
         "hanzi": "饭馆",
         "pinyin": "fànguǎn",
         "meaningHanViet": "Phạn Quán",
@@ -3466,7 +3463,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Anh ấy lớn lên rất cao."
       },
       {
-        "vocabId": 555,
+        "vocabId": 563,
         "hanzi": "高中",
         "pinyin": "gāozhōng",
         "meaningHanViet": "Cao Trung",
@@ -3484,7 +3481,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Xin hãy nói cho tôi biết đã xảy ra chuyện gì."
       },
       {
-        "vocabId": 556,
+        "vocabId": 564,
         "hanzi": "个子",
         "pinyin": "gèzi",
         "meaningHanViet": "Cá Tử",
@@ -3502,7 +3499,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Tôi muốn đi cùng với bạn."
       },
       {
-        "vocabId": 557,
+        "vocabId": 565,
         "hanzi": "公交车",
         "pinyin": "gōngjiāochē",
         "meaningHanViet": "Công Giao Xa",
@@ -3511,7 +3508,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Mỗi sáng tôi đều đi xe buýt đi làm."
       },
       {
-        "vocabId": 558,
+        "vocabId": 566,
         "hanzi": "过",
         "pinyin": "guò",
         "meaningHanViet": "Quá",
@@ -3520,7 +3517,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Khi qua đường phải chú ý an toàn."
       },
       {
-        "vocabId": 559,
+        "vocabId": 567,
         "hanzi": "过来",
         "pinyin": "guòlái",
         "meaningHanViet": "Quá Lai",
@@ -3529,7 +3526,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Xin mời bạn qua đây giúp tôi xem câu hỏi này."
       },
       {
-        "vocabId": 560,
+        "vocabId": 568,
         "hanzi": "过年",
         "pinyin": "guònián",
         "meaningHanViet": "Quá Niên",
@@ -3538,7 +3535,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Dịp đón tết cả gia đình quây quần ăn bữa cơm tất niên."
       },
       {
-        "vocabId": 561,
+        "vocabId": 569,
         "hanzi": "过去",
         "pinyin": "guòqù",
         "meaningHanViet": "Quá Khứ",
@@ -3565,7 +3562,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Bạn uống trà hay là uống cà phê?"
       },
       {
-        "vocabId": 562,
+        "vocabId": 570,
         "hanzi": "黑色",
         "pinyin": "hēisè",
         "meaningHanViet": "Hắc Sắc",
@@ -3574,7 +3571,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Cô ấy đã mua một đôi giày da màu đen."
       },
       {
-        "vocabId": 563,
+        "vocabId": 571,
         "hanzi": "红茶",
         "pinyin": "hóngchá",
         "meaningHanViet": "Hồng Trà",
@@ -3583,7 +3580,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Người Trung Quốc thích uống một ly hồng trà nóng vào buổi chiều."
       },
       {
-        "vocabId": 564,
+        "vocabId": 572,
         "hanzi": "红色",
         "pinyin": "hóngsè",
         "meaningHanViet": "Hồng Sắc",
@@ -3592,7 +3589,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Người Trung Quốc khi đón tết thích dùng đồ màu đỏ."
       },
       {
-        "vocabId": 565,
+        "vocabId": 573,
         "hanzi": "后面",
         "pinyin": "hòumiàn",
         "meaningHanViet": "Hậu Diện",
@@ -3601,7 +3598,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Thư viện ở ngay phía sau tòa nhà giảng dạy."
       },
       {
-        "vocabId": 566,
+        "vocabId": 574,
         "hanzi": "花",
         "pinyin": "huā",
         "meaningHanViet": "Hoa",
@@ -3619,7 +3616,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Trong vườn hoa nở rực rỡ."
       },
       {
-        "vocabId": 567,
+        "vocabId": 575,
         "hanzi": "画",
         "pinyin": "huà",
         "meaningHanViet": "Hoạ",
@@ -3707,7 +3704,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Thầy Vương dạy chúng tôi tiếng Trung."
       },
       {
-        "vocabId": 568,
+        "vocabId": 576,
         "hanzi": "教室",
         "pinyin": "jiàoshì",
         "meaningHanViet": "Giáo Thất",
@@ -3734,7 +3731,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Mời vào, mời ngồi."
       },
       {
-        "vocabId": 569,
+        "vocabId": 577,
         "hanzi": "近",
         "pinyin": "jìn",
         "meaningHanViet": "Cận",
@@ -3761,7 +3758,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Chúng ta có thể đi vào trong tham quan không?"
       },
       {
-        "vocabId": 570,
+        "vocabId": 578,
         "hanzi": "经常",
         "pinyin": "jīngcháng",
         "meaningHanViet": "Kinh Thường",
@@ -3770,7 +3767,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Anh ấy thường xuyên đi thư viện mượn sách vào cuối tuần."
       },
       {
-        "vocabId": 571,
+        "vocabId": 579,
         "hanzi": "酒店",
         "pinyin": "jiǔdiàn",
         "meaningHanViet": "Tửu Điếm",
@@ -3788,7 +3785,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Tôi chính là người mà bạn đang tìm kiếm."
       },
       {
-        "vocabId": 572,
+        "vocabId": 580,
         "hanzi": "咖啡",
         "pinyin": "kāfēi",
         "meaningHanViet": "Ca Phê",
@@ -3797,7 +3794,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Uống một tách cà phê nóng giúp tinh thần tỉnh táo hơn."
       },
       {
-        "vocabId": 573,
+        "vocabId": 581,
         "hanzi": "开始",
         "pinyin": "kāishǐ",
         "meaningHanViet": "Khai Thuỷ",
@@ -3806,7 +3803,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Bộ phim sắp bắt đầu rồi, mọi người hãy ngồi ngay ngắn."
       },
       {
-        "vocabId": 574,
+        "vocabId": 582,
         "hanzi": "开学",
         "pinyin": "kāixué",
         "meaningHanViet": "Khai Học",
@@ -3840,7 +3837,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Chúc bạn đạt thành tích tốt trong kỳ thi."
       },
       {
-        "vocabId": 575,
+        "vocabId": 583,
         "hanzi": "可能",
         "pinyin": "kěnéng",
         "meaningHanViet": "Khả Năng",
@@ -3849,7 +3846,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Ngày mai có thể trời sẽ mưa, ra ngoài nhớ mang theo ô."
       },
       {
-        "vocabId": 576,
+        "vocabId": 584,
         "hanzi": "裤子",
         "pinyin": "kùzi",
         "meaningHanViet": "Khố Tử",
@@ -3867,7 +3864,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Thời gian trôi qua thật nhanh."
       },
       {
-        "vocabId": 577,
+        "vocabId": 585,
         "hanzi": "快乐",
         "pinyin": "kuàilè",
         "meaningHanViet": "Khoái Nhạc",
@@ -3876,7 +3873,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Chúc bạn sinh nhật vui vẻ, dồi dào sức khỏe!"
       },
       {
-        "vocabId": 578,
+        "vocabId": 586,
         "hanzi": "快要",
         "pinyin": "kuàiyào",
         "meaningHanViet": "Khoái Yếu",
@@ -3885,7 +3882,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Trời râm rồi, sắp mưa to rồi."
       },
       {
-        "vocabId": 579,
+        "vocabId": 587,
         "hanzi": "篮球",
         "pinyin": "lánqiú",
         "meaningHanViet": "Lam Cầu",
@@ -3903,7 +3900,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Hôm nay công việc rất bận, tôi hơi mệt."
       },
       {
-        "vocabId": 580,
+        "vocabId": 588,
         "hanzi": "离",
         "pinyin": "lí",
         "meaningHanViet": "Ly",
@@ -3912,7 +3909,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Nhà tôi cách bệnh viện không xa lắm."
       },
       {
-        "vocabId": 581,
+        "vocabId": 589,
         "hanzi": "里面",
         "pinyin": "lǐmiàn",
         "meaningHanViet": "Lý Diện",
@@ -3948,7 +3945,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Trên đường xe cộ rất đông, hãy chú ý an toàn."
       },
       {
-        "vocabId": 582,
+        "vocabId": 590,
         "hanzi": "旅游",
         "pinyin": "lǚyóu",
         "meaningHanViet": "Lữ Du",
@@ -3957,7 +3954,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Kỳ nghỉ hè năm nay cả nhà chúng tôi dự định đi du lịch Bắc Kinh."
       },
       {
-        "vocabId": 583,
+        "vocabId": 591,
         "hanzi": "绿茶",
         "pinyin": "lǜchá",
         "meaningHanViet": "Lục Trà",
@@ -3966,7 +3963,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Mùa hè uống một ly trà xanh đá làm người ta thấy rất thanh mát."
       },
       {
-        "vocabId": 584,
+        "vocabId": 592,
         "hanzi": "绿色",
         "pinyin": "lǜsè",
         "meaningHanViet": "Lục Sắc",
@@ -3984,7 +3981,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Anh ấy bước đi rất chậm chạp."
       },
       {
-        "vocabId": 585,
+        "vocabId": 593,
         "hanzi": "没意思",
         "pinyin": "méi yìsi",
         "meaningHanViet": "Một Ý Tư",
@@ -3993,7 +3990,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Cốt truyện bộ phim này quá rườm rà, rất nhàm chán."
       },
       {
-        "vocabId": 586,
+        "vocabId": 594,
         "hanzi": "每",
         "pinyin": "měi",
         "meaningHanViet": "Mỗi",
@@ -4036,7 +4033,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Vé vào Cố Cung bao nhiêu tiền một vé?"
       },
       {
-        "vocabId": 587,
+        "vocabId": 595,
         "hanzi": "面",
         "pinyin": "miàn",
         "meaningHanViet": "Diện",
@@ -4045,7 +4042,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Phía đông trường học là một bãi cỏ xanh mướt."
       },
       {
-        "vocabId": 588,
+        "vocabId": 596,
         "hanzi": "名",
         "pinyin": "míng",
         "meaningHanViet": "Danh",
@@ -4063,7 +4060,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Xin hãy giúp tôi cầm chiếc túi một lát."
       },
       {
-        "vocabId": 589,
+        "vocabId": 597,
         "hanzi": "那么",
         "pinyin": "nàme",
         "meaningHanViet": "Na Ma",
@@ -4072,7 +4069,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Nếu mọi người đều có mặt, vậy thì chúng ta bắt đầu họp nhé."
       },
       {
-        "vocabId": 590,
+        "vocabId": 598,
         "hanzi": "那样",
         "pinyin": "nàyàng",
         "meaningHanViet": "Na Dạng",
@@ -4081,7 +4078,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Bạn nên học tập chăm chỉ như anh ấy vậy."
       },
       {
-        "vocabId": 591,
+        "vocabId": 599,
         "hanzi": "奶茶",
         "pinyin": "nǎichá",
         "meaningHanViet": "Nãi Trà",
@@ -4108,7 +4105,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Cậu bé trai đó rất thông minh."
       },
       {
-        "vocabId": 592,
+        "vocabId": 600,
         "hanzi": "鸟",
         "pinyin": "niǎo",
         "meaningHanViet": "Điểu",
@@ -4144,7 +4141,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Chú cún con chạy rất nhanh trên bãi cỏ."
       },
       {
-        "vocabId": 593,
+        "vocabId": 601,
         "hanzi": "跑步",
         "pinyin": "pǎobù",
         "meaningHanViet": "Bào Bộ",
@@ -4162,7 +4159,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Chúng tôi đã mua hai tấm vé xem phim."
       },
       {
-        "vocabId": 594,
+        "vocabId": 602,
         "hanzi": "妻子",
         "pinyin": "qīzi",
         "meaningHanViet": "Thê Tử",
@@ -4180,7 +4177,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Mau dậy đi, mặt trời lên cao rồi."
       },
       {
-        "vocabId": 595,
+        "vocabId": 603,
         "hanzi": "前面",
         "pinyin": "qiánmiàn",
         "meaningHanViet": "Tiền Diện",
@@ -4189,7 +4186,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Tòa nhà cao tầng đằng trước kia chính là thư viện của chúng tôi."
       },
       {
-        "vocabId": 596,
+        "vocabId": 604,
         "hanzi": "晴",
         "pinyin": "qíng",
         "meaningHanViet": "Tình",
@@ -4214,7 +4211,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Lũ trẻ đang đá bóng trên sân tập."
       },
       {
-        "vocabId": 597,
+        "vocabId": 605,
         "hanzi": "让",
         "pinyin": "ràng",
         "meaningHanViet": "Nhượng",
@@ -4241,7 +4238,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Cuối tuần chúng tôi đến trung tâm thương mại mua sắm."
       },
       {
-        "vocabId": 598,
+        "vocabId": 606,
         "hanzi": "上来",
         "pinyin": "shànglái",
         "meaningHanViet": "Thượng Lai",
@@ -4250,7 +4247,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Thang máy đến rồi, mọi người mau bước lên đi."
       },
       {
-        "vocabId": 599,
+        "vocabId": 607,
         "hanzi": "上面",
         "pinyin": "shàngmiàn",
         "meaningHanViet": "Thượng Diện",
@@ -4259,7 +4256,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Phía trên bàn đặt một cuốn từ điển dày cộp."
       },
       {
-        "vocabId": 600,
+        "vocabId": 608,
         "hanzi": "上去",
         "pinyin": "shàngqù",
         "meaningHanViet": "Thượng Khứ",
@@ -4295,7 +4292,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Hôm nay là sinh nhật của tôi."
       },
       {
-        "vocabId": 601,
+        "vocabId": 609,
         "hanzi": "时",
         "pinyin": "shí",
         "meaningHanViet": "Thời",
@@ -4304,7 +4301,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Khi đọc sách xin hãy giữ trật tự, đừng làm phiền người khác."
       },
       {
-        "vocabId": 602,
+        "vocabId": 610,
         "hanzi": "事情",
         "pinyin": "shìqing",
         "meaningHanViet": "Sự Tình",
@@ -4322,7 +4319,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Rửa tay trước khi ăn là thói quen tốt."
       },
       {
-        "vocabId": 603,
+        "vocabId": 611,
         "hanzi": "手表",
         "pinyin": "shǒubiǎo",
         "meaningHanViet": "Thủ Biểu",
@@ -4340,7 +4337,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Trong chiếc cặp sách mới chứa đầy sách vở và bút."
       },
       {
-        "vocabId": 604,
+        "vocabId": 612,
         "hanzi": "舒服",
         "pinyin": "shūfu",
         "meaningHanViet": "Thư Phục",
@@ -4358,7 +4355,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Bạn bè đã tặng tôi một cuốn sách rất thú vị."
       },
       {
-        "vocabId": 605,
+        "vocabId": 613,
         "hanzi": "虽然",
         "pinyin": "suīrán",
         "meaningHanViet": "Tuy Nhiên",
@@ -4367,7 +4364,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Tuy rằng thời tiết rất lạnh, nhưng anh ấy vẫn kiên trì rèn luyện."
       },
       {
-        "vocabId": 606,
+        "vocabId": 614,
         "hanzi": "所以",
         "pinyin": "suǒyǐ",
         "meaningHanViet": "Sở Dĩ",
@@ -4376,7 +4373,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Vì trời mưa to, cho nên đại hội thể thao đã bị hoãn lại."
       },
       {
-        "vocabId": 607,
+        "vocabId": 615,
         "hanzi": "疼",
         "pinyin": "téng",
         "meaningHanViet": "Đông",
@@ -4392,7 +4389,7 @@ export const HSK2_TOPICS = [
     "description": "Đá bóng, nhảy múa, định hướng không gian và lý do trong giao tiếp.",
     "vocabularies": [
       {
-        "vocabId": 608,
+        "vocabId": 616,
         "hanzi": "踢",
         "pinyin": "tī",
         "meaningHanViet": "Thích",
@@ -4401,7 +4398,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Cuối tuần các cậu bé thích đá bóng trên bãi cỏ."
       },
       {
-        "vocabId": 609,
+        "vocabId": 617,
         "hanzi": "题",
         "pinyin": "tí",
         "meaningHanViet": "Đề",
@@ -4410,7 +4407,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Các câu hỏi toán học trong bài thi lần này tương đối đơn giản."
       },
       {
-        "vocabId": 610,
+        "vocabId": 618,
         "hanzi": "条",
         "pinyin": "tiáo",
         "meaningHanViet": "Điều",
@@ -4419,7 +4416,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Trước cửa có một con sông nhỏ trong vắt."
       },
       {
-        "vocabId": 611,
+        "vocabId": 619,
         "hanzi": "跳舞",
         "pinyin": "tiàowǔ",
         "meaningHanViet": "Khiêu Vũ",
@@ -4428,7 +4425,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Chị gái học khiêu vũ từ nhỏ, nhảy rất uyển chuyển."
       },
       {
-        "vocabId": 612,
+        "vocabId": 620,
         "hanzi": "头",
         "pinyin": "tóu",
         "meaningHanViet": "Đầu",
@@ -4446,7 +4443,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Anh ấy rất thích đi du lịch nước ngoài."
       },
       {
-        "vocabId": 613,
+        "vocabId": 621,
         "hanzi": "外面",
         "pinyin": "wàimiàn",
         "meaningHanViet": "Ngoại Diện",
@@ -4455,7 +4452,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Bên ngoài tuyết đang rơi, trong nhà lại rất ấm áp."
       },
       {
-        "vocabId": 614,
+        "vocabId": 622,
         "hanzi": "完",
         "pinyin": "wán",
         "meaningHanViet": "Hoàn",
@@ -4464,7 +4461,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Tôi làm xong bài tập hôm nay là có thể đi xem phim rồi."
       },
       {
-        "vocabId": 615,
+        "vocabId": 623,
         "hanzi": "万",
         "pinyin": "wàn",
         "meaningHanViet": "Vạn",
@@ -4473,7 +4470,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Sân vận động lớn này có thể chứa được năm vạn người."
       },
       {
-        "vocabId": 616,
+        "vocabId": 624,
         "hanzi": "往",
         "pinyin": "wǎng",
         "meaningHanViet": "Vãng",
@@ -4500,7 +4497,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Đừng quên mang theo chiếc ô của bạn nhé."
       },
       {
-        "vocabId": 617,
+        "vocabId": 625,
         "hanzi": "位",
         "pinyin": "wèi",
         "meaningHanViet": "Vị",
@@ -4509,7 +4506,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Xin hỏi ngài đang tìm vị thầy cô nào?"
       },
       {
-        "vocabId": 618,
+        "vocabId": 626,
         "hanzi": "为什么",
         "pinyin": "wèi shénme",
         "meaningHanViet": "Vi Thập Ma",
@@ -4518,7 +4515,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Hôm nay tại sao bạn không đến tham gia lớp tiếng Trung?"
       },
       {
-        "vocabId": 619,
+        "vocabId": 627,
         "hanzi": "希望",
         "pinyin": "xīwàng",
         "meaningHanViet": "Hi Vọng",
@@ -4545,7 +4542,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Xin hỏi nhà vệ sinh ở tầng mấy vậy?"
       },
       {
-        "vocabId": 620,
+        "vocabId": 628,
         "hanzi": "下来",
         "pinyin": "xiàlái",
         "meaningHanViet": "Hạ Lai",
@@ -4554,7 +4551,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Xe buýt đến trạm rồi, các hành khách xếp hàng bước xuống."
       },
       {
-        "vocabId": 621,
+        "vocabId": 629,
         "hanzi": "下面",
         "pinyin": "xiàmiàn",
         "meaningHanViet": "Hạ Diện",
@@ -4563,7 +4560,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Dưới gốc cây lớn có rất nhiều người hóng mát."
       },
       {
-        "vocabId": 622,
+        "vocabId": 630,
         "hanzi": "下去",
         "pinyin": "xiàqù",
         "meaningHanViet": "Hạ Khứ",
@@ -4588,7 +4585,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Trong công viên có rất nhiều đứa trẻ vui vẻ."
       },
       {
-        "vocabId": 623,
+        "vocabId": 631,
         "hanzi": "小时候",
         "pinyin": "xiǎoshíhou",
         "meaningHanViet": "Tiểu Thời Hậu",
@@ -4606,7 +4603,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Cô ấy cười lên trông rất xinh đẹp."
       },
       {
-        "vocabId": 624,
+        "vocabId": 632,
         "hanzi": "姓",
         "pinyin": "xìng",
         "meaningHanViet": "Tính",
@@ -4615,7 +4612,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Xin hỏi quý tính của tiên sinh? Tôi họ Lý."
       },
       {
-        "vocabId": 625,
+        "vocabId": 633,
         "hanzi": "姓名",
         "pinyin": "xìngmíng",
         "meaningHanViet": "Tính Danh",
@@ -4624,7 +4621,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Xin hãy viết họ và tên của ngài vào dòng đầu tiên của biểu mẫu."
       },
       {
-        "vocabId": 626,
+        "vocabId": 634,
         "hanzi": "颜色",
         "pinyin": "yánsè",
         "meaningHanViet": "Nhan Sắc",
@@ -4633,7 +4630,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Bạn thích quần áo màu sắc gì nhất?"
       },
       {
-        "vocabId": 627,
+        "vocabId": 635,
         "hanzi": "眼睛",
         "pinyin": "yǎnjing",
         "meaningHanViet": "Nhãn Tinh",
@@ -4642,7 +4639,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Nhìn nhiều cây cối màu xanh ở phía xa rất tốt cho mắt."
       },
       {
-        "vocabId": 628,
+        "vocabId": 636,
         "hanzi": "药",
         "pinyin": "yào",
         "meaningHanViet": "Dược",
@@ -4651,7 +4648,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Bị ốm rồi thì phải uống thuốc đúng giờ và uống nhiều nước."
       },
       {
-        "vocabId": 629,
+        "vocabId": 637,
         "hanzi": "药店",
         "pinyin": "yàodiàn",
         "meaningHanViet": "Dược Điếm",
@@ -4678,7 +4675,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Xin mọi người hãy chờ một lát."
       },
       {
-        "vocabId": 630,
+        "vocabId": 638,
         "hanzi": "已经",
         "pinyin": "yǐjīng",
         "meaningHanViet": "Dĩ Kinh",
@@ -4696,7 +4693,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Chúng ta cùng nhau nỗ lực nâng cao trình độ tiếng Trung."
       },
       {
-        "vocabId": 631,
+        "vocabId": 639,
         "hanzi": "意思",
         "pinyin": "yìsi",
         "meaningHanViet": "Ý Tư",
@@ -4705,7 +4702,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Bạn có thể nói cho tôi biết ý nghĩa cụ thể của câu này không?"
       },
       {
-        "vocabId": 632,
+        "vocabId": 640,
         "hanzi": "阴",
         "pinyin": "yīn",
         "meaningHanViet": "Âm",
@@ -4714,7 +4711,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Thời tiết hôm nay u ám, hình như sắp mưa rồi."
       },
       {
-        "vocabId": 633,
+        "vocabId": 641,
         "hanzi": "因为",
         "pinyin": "yīnwèi",
         "meaningHanViet": "Nhân Vi",
@@ -4723,7 +4720,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Bởi vì hôm nay tắc đường, cho nên tôi đã đến muộn mười phút."
       },
       {
-        "vocabId": 634,
+        "vocabId": 642,
         "hanzi": "游",
         "pinyin": "yóu",
         "meaningHanViet": "Du",
@@ -4732,7 +4729,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Một đàn cá nhỏ đang tung tăng bơi lội trong dòng suối trong veo."
       },
       {
-        "vocabId": 635,
+        "vocabId": 643,
         "hanzi": "游泳",
         "pinyin": "yóuyǒng",
         "meaningHanViet": "Du Vịnh",
@@ -4741,7 +4738,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Mùa hè rất nhiều người thích đi biển bơi lội."
       },
       {
-        "vocabId": 636,
+        "vocabId": 644,
         "hanzi": "有意思",
         "pinyin": "yǒu yìsi",
         "meaningHanViet": "Hữu Ý Tư",
@@ -4750,7 +4747,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Cuốn sách này viết rất thú vị, đáng để đọc một lần."
       },
       {
-        "vocabId": 637,
+        "vocabId": 645,
         "hanzi": "有时",
         "pinyin": "yǒushí",
         "meaningHanViet": "Hữu Thời",
@@ -4784,7 +4781,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Bên phải trường học là một siêu thị lớn."
       },
       {
-        "vocabId": 638,
+        "vocabId": 646,
         "hanzi": "鱼",
         "pinyin": "yú",
         "meaningHanViet": "Ngư",
@@ -4802,7 +4799,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Từ nhà tôi đến trường học không hề xa."
       },
       {
-        "vocabId": 639,
+        "vocabId": 647,
         "hanzi": "运动",
         "pinyin": "yùndòng",
         "meaningHanViet": "Vận Động",
@@ -4820,7 +4817,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Trạm tiếp theo chính là Quảng trường Thiên An Môn."
       },
       {
-        "vocabId": 640,
+        "vocabId": 648,
         "hanzi": "丈夫",
         "pinyin": "zhàngfu",
         "meaningHanViet": "Trượng Phu",
@@ -4829,7 +4826,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Chồng của cô ấy là một giáo sư đại học kỳ cựu."
       },
       {
-        "vocabId": 641,
+        "vocabId": 649,
         "hanzi": "这么",
         "pinyin": "zhème",
         "meaningHanViet": "Giá Ma",
@@ -4838,7 +4835,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Sao bạn đi nhanh thế này, đợi tôi với!"
       },
       {
-        "vocabId": 642,
+        "vocabId": 650,
         "hanzi": "这样",
         "pinyin": "zhèyàng",
         "meaningHanViet": "Giá Dạng",
@@ -4865,7 +4862,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Mặt trời đang chiếu rọi ngay trên đỉnh đầu xuống mặt đất."
       },
       {
-        "vocabId": 643,
+        "vocabId": 651,
         "hanzi": "周",
         "pinyin": "zhōu",
         "meaningHanViet": "Chu",
@@ -4883,7 +4880,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Chúng tôi đang chăm chỉ chuẩn bị cho kỳ thi cuối kỳ."
       },
       {
-        "vocabId": 644,
+        "vocabId": 652,
         "hanzi": "自己",
         "pinyin": "zìjǐ",
         "meaningHanViet": "Tự Kỷ",
@@ -4910,7 +4907,7 @@ export const HSK2_TOPICS = [
         "exampleTranslation": "Mỗi ngày đi bộ nửa giờ rất có ích cho tim mạch."
       },
       {
-        "vocabId": 645,
+        "vocabId": 653,
         "hanzi": "足球",
         "pinyin": "zúqiú",
         "meaningHanViet": "Túc Cầu",
@@ -4949,9 +4946,6 @@ export const HSK2_TOPICS = [
   }
 ];
 
-/**
- * 25 Official Curriculum Topics for HSK 3 (500 words total, 20 words each)
- */
 export const HSK3_TOPICS = [
   {
     "topicId": 301,
@@ -4959,7 +4953,7 @@ export const HSK3_TOPICS = [
     "description": "Xưng hô thân mật, dọn dẹp nhà cửa, ghi chép và giữ gìn an toàn.",
     "vocabularies": [
       {
-        "vocabId": 646,
+        "vocabId": 654,
         "hanzi": "阿姨",
         "pinyin": "āyí",
         "meaningHanViet": "A Di",
@@ -4968,7 +4962,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Dì Vương nhiệt tình giúp chúng tôi trông nom lũ trẻ."
       },
       {
-        "vocabId": 647,
+        "vocabId": 655,
         "hanzi": "矮",
         "pinyin": "ǎi",
         "meaningHanViet": "Ải",
@@ -4977,7 +4971,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Em trai thấp hơn anh trai nửa cái đầu."
       },
       {
-        "vocabId": 648,
+        "vocabId": 656,
         "hanzi": "爱人",
         "pinyin": "àiren",
         "meaningHanViet": "Ái Nhân",
@@ -4986,7 +4980,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Anh ấy và người bạn đời tình cảm rất hòa thuận."
       },
       {
-        "vocabId": 649,
+        "vocabId": 657,
         "hanzi": "安静",
         "pinyin": "ānjìng",
         "meaningHanViet": "An Tĩnh",
@@ -4995,7 +4989,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Xin mọi người hãy giữ trật tự trong thư viện."
       },
       {
-        "vocabId": 650,
+        "vocabId": 658,
         "hanzi": "安全",
         "pinyin": "ānquán",
         "meaningHanViet": "An Toàn",
@@ -5004,7 +4998,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Khi qua đường nhất định phải chú ý an toàn giao thông."
       },
       {
-        "vocabId": 651,
+        "vocabId": 659,
         "hanzi": "把",
         "pinyin": "bǎ",
         "meaningHanViet": "Bả",
@@ -5013,7 +5007,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Xin bạn hãy đưa cuốn sách trên bàn cho tôi."
       },
       {
-        "vocabId": 652,
+        "vocabId": 660,
         "hanzi": "搬",
         "pinyin": "bān",
         "meaningHanViet": "Ban",
@@ -5022,7 +5016,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Chúng ta cùng khiêng cỗ máy nặng này ra ngoài."
       },
       {
-        "vocabId": 653,
+        "vocabId": 661,
         "hanzi": "班级",
         "pinyin": "bānjí",
         "meaningHanViet": "Ban Cấp",
@@ -5031,7 +5025,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Lớp học của chúng tôi có tổng cộng ba mươi học sinh."
       },
       {
-        "vocabId": 654,
+        "vocabId": 662,
         "hanzi": "搬家",
         "pinyin": "bānjiā",
         "meaningHanViet": "Ban Gia",
@@ -5040,7 +5034,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Tháng sau cả gia đình chúng tôi sẽ chuyển nhà rồi."
       },
       {
-        "vocabId": 655,
+        "vocabId": 663,
         "hanzi": "办",
         "pinyin": "bàn",
         "meaningHanViet": "Biện",
@@ -5049,7 +5043,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Chuyện này bạn dự định giải quyết như thế nào?"
       },
       {
-        "vocabId": 656,
+        "vocabId": 664,
         "hanzi": "办法",
         "pinyin": "bànfǎ",
         "meaningHanViet": "Biện Pháp",
@@ -5058,7 +5052,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Mọi người đều đang nghĩ biện pháp giải quyết vấn đề khó khăn này."
       },
       {
-        "vocabId": 657,
+        "vocabId": 665,
         "hanzi": "办公室",
         "pinyin": "bàngōngshì",
         "meaningHanViet": "Biện Công Thất",
@@ -5076,7 +5070,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Tôi đã đợi bạn cả buổi trời."
       },
       {
-        "vocabId": 658,
+        "vocabId": 666,
         "hanzi": "帮助",
         "pinyin": "bāngzhù",
         "meaningHanViet": "Bang Trợ",
@@ -5085,7 +5079,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Vô cùng cảm ơn sự giúp đỡ bạn đã dành cho tôi khi tôi gặp khó khăn."
       },
       {
-        "vocabId": 659,
+        "vocabId": 667,
         "hanzi": "饱",
         "pinyin": "bǎo",
         "meaningHanViet": "Bão",
@@ -5094,7 +5088,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Bữa trưa hôm nay nhiều món quá, tôi ăn no rồi."
       },
       {
-        "vocabId": 660,
+        "vocabId": 668,
         "hanzi": "报纸",
         "pinyin": "bàozhǐ",
         "meaningHanViet": "Báo Chỉ",
@@ -5112,7 +5106,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Nhà tôi ở phía bắc trường học."
       },
       {
-        "vocabId": 661,
+        "vocabId": 669,
         "hanzi": "北方",
         "pinyin": "běifāng",
         "meaningHanViet": "Bắc Phương",
@@ -5121,7 +5115,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Miền bắc Trung Quốc vào mùa đông thường xuyên có tuyết rơi lớn."
       },
       {
-        "vocabId": 662,
+        "vocabId": 670,
         "hanzi": "被",
         "pinyin": "bèi",
         "meaningHanViet": "Bị",
@@ -5130,7 +5124,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Miếng bánh ngọt trên bàn đã bị chú mèo nghịch ngợm ăn mất rồi."
       },
       {
-        "vocabId": 663,
+        "vocabId": 671,
         "hanzi": "笔记",
         "pinyin": "bǐjì",
         "meaningHanViet": "Bút Ký",
@@ -5146,7 +5140,7 @@ export const HSK3_TOPICS = [
     "description": "Tham gia thi đấu, máy tính xách tay, so sánh và chuẩn bị kế hoạch.",
     "vocabularies": [
       {
-        "vocabId": 664,
+        "vocabId": 672,
         "hanzi": "比较",
         "pinyin": "bǐjiào",
         "meaningHanViet": "Tỉ Giảo",
@@ -5155,7 +5149,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Môn học này tương đối dễ hơn so với tôi tưởng tượng."
       },
       {
-        "vocabId": 665,
+        "vocabId": 673,
         "hanzi": "笔记本",
         "pinyin": "bǐjìběn",
         "meaningHanViet": "Bút Ký Bản",
@@ -5164,7 +5158,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Chiếc máy tính xách tay này nhẹ nhàng tiện lợi, rất hợp cho công việc văn phòng."
       },
       {
-        "vocabId": 666,
+        "vocabId": 674,
         "hanzi": "比如",
         "pinyin": "bǐrú",
         "meaningHanViet": "Tỉ Như",
@@ -5173,7 +5167,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Nhiều loại hoa quả hàm lượng vitamin rất cao, ví dụ như cam và kiwi."
       },
       {
-        "vocabId": 667,
+        "vocabId": 675,
         "hanzi": "比赛",
         "pinyin": "bǐsài",
         "meaningHanViet": "Tỉ Tái",
@@ -5182,7 +5176,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Đội bóng đá của trường họ đã thắng trong trận thi đấu này."
       },
       {
-        "vocabId": 668,
+        "vocabId": 676,
         "hanzi": "必须",
         "pinyin": "bìxū",
         "meaningHanViet": "Tất Tu",
@@ -5191,7 +5185,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Trước khi xuất phát vào ngày mai mọi người bắt buộc phải mang đầy đủ giấy tờ tùy thân."
       },
       {
-        "vocabId": 669,
+        "vocabId": 677,
         "hanzi": "变",
         "pinyin": "biàn",
         "meaningHanViet": "Biến",
@@ -5200,7 +5194,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Sau vài cơn mưa thu, thời tiết dần dần trở nên se lạnh."
       },
       {
-        "vocabId": 670,
+        "vocabId": 678,
         "hanzi": "遍",
         "pinyin": "biàn",
         "meaningHanViet": "Biến",
@@ -5209,7 +5203,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Bài văn dài này tôi đã chăm chú đọc ba lần từ đầu đến cuối."
       },
       {
-        "vocabId": 671,
+        "vocabId": 679,
         "hanzi": "变成",
         "pinyin": "biànchéng",
         "meaningHanViet": "Biến Thành",
@@ -5218,7 +5212,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Qua nỗ lực miệt mài, anh ấy đã trở thành một phiên dịch viên ưu tú."
       },
       {
-        "vocabId": 672,
+        "vocabId": 680,
         "hanzi": "变化",
         "pinyin": "biànhuà",
         "meaningHanViet": "Biến Hoá",
@@ -5227,7 +5221,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Những năm gần đây, thành phố này đã diễn ra sự thay đổi to lớn."
       },
       {
-        "vocabId": 673,
+        "vocabId": 681,
         "hanzi": "表演",
         "pinyin": "biǎoyǎn",
         "meaningHanViet": "Biểu Diễn",
@@ -5254,7 +5248,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Chúng ta phải học cách tôn trọng người khác."
       },
       {
-        "vocabId": 674,
+        "vocabId": 682,
         "hanzi": "宾馆",
         "pinyin": "bīnguǎn",
         "meaningHanViet": "Tân Quán",
@@ -5263,7 +5257,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Cơ sở vật chất của khách sạn đón khách quốc tế này rất hiện đại."
       },
       {
-        "vocabId": 675,
+        "vocabId": 683,
         "hanzi": "冰",
         "pinyin": "bīng",
         "meaningHanViet": "Băng",
@@ -5272,7 +5266,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Trên mặt hồ đã đóng một lớp băng dày và cứng."
       },
       {
-        "vocabId": 676,
+        "vocabId": 684,
         "hanzi": "冰激凌",
         "pinyin": "bīngjīlíng",
         "meaningHanViet": "Băng Kích Lăng",
@@ -5281,7 +5275,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Trong ngày hè nóng nực ăn một que kem thật là đã khát."
       },
       {
-        "vocabId": 677,
+        "vocabId": 685,
         "hanzi": "冰箱",
         "pinyin": "bīngxiāng",
         "meaningHanViet": "Băng Sương",
@@ -5299,7 +5293,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Bác sĩ đang chăm sóc bệnh nhân."
       },
       {
-        "vocabId": 678,
+        "vocabId": 686,
         "hanzi": "不但",
         "pinyin": "búdàn",
         "meaningHanViet": "Bất Đãn",
@@ -5308,7 +5302,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Anh ấy không những nói lưu loát tiếng Trung mà còn biết nói tiếng Pháp."
       },
       {
-        "vocabId": 679,
+        "vocabId": 687,
         "hanzi": "不见",
         "pinyin": "bújiàn",
         "meaningHanViet": "Bất Kiến",
@@ -5333,7 +5327,7 @@ export const HSK3_TOPICS = [
     "description": "Gọi món nhà hàng, đánh giá thành tích, đời sống đô thị và trang phục.",
     "vocabularies": [
       {
-        "vocabId": 680,
+        "vocabId": 688,
         "hanzi": "不同",
         "pinyin": "bù tóng",
         "meaningHanViet": "Bất Đồng",
@@ -5342,7 +5336,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Mỗi người đối với định nghĩa về hạnh phúc đều có điểm khác nhau."
       },
       {
-        "vocabId": 681,
+        "vocabId": 689,
         "hanzi": "不久",
         "pinyin": "bùjiǔ",
         "meaningHanViet": "Bất Cửu",
@@ -5351,7 +5345,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Họ kết hôn chẳng bao lâu thì đón chào một em bé kháu khỉnh."
       },
       {
-        "vocabId": 682,
+        "vocabId": 690,
         "hanzi": "不行",
         "pinyin": "bùxíng",
         "meaningHanViet": "Bất Hành",
@@ -5360,7 +5354,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Hành vi vi phạm kỷ luật như vậy là tuyệt đối không được."
       },
       {
-        "vocabId": 683,
+        "vocabId": 691,
         "hanzi": "才",
         "pinyin": "cái",
         "meaningHanViet": "Tài",
@@ -5369,7 +5363,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Sau bao trắc trở, mãi đến bây giờ chúng tôi mới tới được đích đến."
       },
       {
-        "vocabId": 684,
+        "vocabId": 692,
         "hanzi": "菜单",
         "pinyin": "càidān",
         "meaningHanViet": "Thái Đơn",
@@ -5378,7 +5372,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Phục vụ viên, xin hãy đem cho chúng tôi một cuốn thực đơn mới nhất."
       },
       {
-        "vocabId": 685,
+        "vocabId": 693,
         "hanzi": "参加",
         "pinyin": "cānjiā",
         "meaningHanViet": "Tham Gia",
@@ -5387,7 +5381,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Thứ bảy tuần sau tôi dự định tham gia cuộc thi nghe viết chữ Hán của trường."
       },
       {
-        "vocabId": 686,
+        "vocabId": 694,
         "hanzi": "草",
         "pinyin": "cǎo",
         "meaningHanViet": "Thảo",
@@ -5396,7 +5390,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Trên sườn núi mọc đầy những ngọn cỏ xanh tốt um tùm."
       },
       {
-        "vocabId": 687,
+        "vocabId": 695,
         "hanzi": "草地",
         "pinyin": "cǎodì",
         "meaningHanViet": "Thảo Địa",
@@ -5405,7 +5399,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Lũ trẻ đang vui vẻ đá bóng trên bãi cỏ rộng thênh thang."
       },
       {
-        "vocabId": 688,
+        "vocabId": 696,
         "hanzi": "层",
         "pinyin": "céng",
         "meaningHanViet": "Tằng",
@@ -5414,7 +5408,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Phòng học tiếng Trung của chúng tôi ở tầng ba của tòa nhà giảng dạy."
       },
       {
-        "vocabId": 689,
+        "vocabId": 697,
         "hanzi": "查",
         "pinyin": "chá",
         "meaningHanViet": "Tra",
@@ -5432,7 +5426,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Bây giờ là tám giờ kém năm."
       },
       {
-        "vocabId": 690,
+        "vocabId": 698,
         "hanzi": "差不多",
         "pinyin": "chàbuduō",
         "meaningHanViet": "Sai Bất Đa",
@@ -5441,7 +5435,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Độ tuổi của hai đứa trẻ xấp xỉ nhau, chơi với nhau rất hợp."
       },
       {
-        "vocabId": 691,
+        "vocabId": 699,
         "hanzi": "尝",
         "pinyin": "cháng",
         "meaningHanViet": "Thường",
@@ -5459,7 +5453,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Tôi thường đến thư viện đọc sách."
       },
       {
-        "vocabId": 692,
+        "vocabId": 700,
         "hanzi": "常见",
         "pinyin": "cháng jiàn",
         "meaningHanViet": "Thường Kiến",
@@ -5468,7 +5462,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Đây là một loại thực vật rụng lá rất thường thấy ở miền Bắc."
       },
       {
-        "vocabId": 693,
+        "vocabId": 701,
         "hanzi": "常用",
         "pinyin": "cháng yòng",
         "meaningHanViet": "Thường Dụng",
@@ -5486,7 +5480,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Cuối tuần tôi thường tụ tập với bạn bè."
       },
       {
-        "vocabId": 694,
+        "vocabId": 702,
         "hanzi": "衬衫",
         "pinyin": "chènshān",
         "meaningHanViet": "Sấn Sam",
@@ -5495,7 +5489,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Anh ấy mặc một chiếc áo sơ mi trắng tinh phẳng phiu đi phỏng vấn."
       },
       {
-        "vocabId": 695,
+        "vocabId": 703,
         "hanzi": "成绩",
         "pinyin": "chéngjì",
         "meaningHanViet": "Thành Tích",
@@ -5504,7 +5498,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Nhờ nỗ lực chăm chỉ, thành tích thi cuối kỳ của cô ấy đứng hàng đầu."
       },
       {
-        "vocabId": 696,
+        "vocabId": 704,
         "hanzi": "城市",
         "pinyin": "chéngshì",
         "meaningHanViet": "Thành Thị",
@@ -5520,7 +5514,7 @@ export const HSK3_TOPICS = [
     "description": "Lịch trình xuất phát, kỷ niệm ngày sinh, bánh ngọt và đồ dùng mang theo.",
     "vocabularies": [
       {
-        "vocabId": 697,
+        "vocabId": 705,
         "hanzi": "迟到",
         "pinyin": "chídào",
         "meaningHanViet": "Trì Đáo",
@@ -5529,7 +5523,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Vì tắc đường vào giờ cao điểm buổi sáng, hôm nay anh ấy đi làm muộn mười phút."
       },
       {
-        "vocabId": 698,
+        "vocabId": 706,
         "hanzi": "出发",
         "pinyin": "chūfā",
         "meaningHanViet": "Xuất Phát",
@@ -5538,7 +5532,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Sáu giờ sáng mai chúng tôi tập trung đúng giờ ở cổng trường để xuất phát."
       },
       {
-        "vocabId": 699,
+        "vocabId": 707,
         "hanzi": "出生",
         "pinyin": "chūshēng",
         "meaningHanViet": "Xuất Sinh",
@@ -5547,7 +5541,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Anh ấy sinh ra ở một thị trấn sông nước phong cảnh hữu tình."
       },
       {
-        "vocabId": 700,
+        "vocabId": 708,
         "hanzi": "出院",
         "pinyin": "chūyuàn",
         "meaningHanViet": "Xuất Viện",
@@ -5556,7 +5550,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Sau thời gian được bác sĩ tận tình điều trị, bà nội hôm nay rốt cuộc đã xuất viện rồi."
       },
       {
-        "vocabId": 701,
+        "vocabId": 709,
         "hanzi": "初中",
         "pinyin": "chūzhōng",
         "meaningHanViet": "Sơ Trung",
@@ -5565,7 +5559,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Chúng tôi là đôi bạn thân học cùng lớp từ thời cấp hai."
       },
       {
-        "vocabId": 702,
+        "vocabId": 710,
         "hanzi": "除了",
         "pinyin": "chúle",
         "meaningHanViet": "Trừ Liễu",
@@ -5574,7 +5568,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Ngoài tiếng Anh ra, anh ấy còn tự học thêm tiếng Nhật giao tiếp đơn giản."
       },
       {
-        "vocabId": 703,
+        "vocabId": 711,
         "hanzi": "船",
         "pinyin": "chuán",
         "meaningHanViet": "Thuyền",
@@ -5583,7 +5577,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Trên mặt sông chầm chậm lướt qua mấy con thuyền lớn chở đầy hàng hóa."
       },
       {
-        "vocabId": 704,
+        "vocabId": 712,
         "hanzi": "春天",
         "pinyin": "chūntiān",
         "meaningHanViet": "Xuân Thiên",
@@ -5592,7 +5586,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Mùa xuân vạn vật hồi sinh, trong công viên trăm hoa đua nở vô cùng rực rỡ."
       },
       {
-        "vocabId": 705,
+        "vocabId": 713,
         "hanzi": "词典",
         "pinyin": "cídiǎn",
         "meaningHanViet": "Từ Điển",
@@ -5601,7 +5595,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Khi gặp từ mới tra từ điển là thói quen học tập vững chắc nhất."
       },
       {
-        "vocabId": 706,
+        "vocabId": 714,
         "hanzi": "聪明",
         "pinyin": "cōngmíng",
         "meaningHanViet": "Thông Minh",
@@ -5610,7 +5604,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Tiểu Vương rất thông minh lanh lợi, luôn nhanh chóng nắm bắt được ý đồ của cấp trên."
       },
       {
-        "vocabId": 707,
+        "vocabId": 715,
         "hanzi": "打扫",
         "pinyin": "dǎsǎo",
         "meaningHanViet": "Đả Tảo",
@@ -5619,7 +5613,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Cuối tuần cả nhà cùng nhau quét dọn căn nhà sạch sẽ tinh tươm."
       },
       {
-        "vocabId": 708,
+        "vocabId": 716,
         "hanzi": "打算",
         "pinyin": "dǎsuàn",
         "meaningHanViet": "Đả Toán",
@@ -5628,7 +5622,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Sau khi nghỉ lễ tôi dự định đi thăm người bạn cũ nhiều năm chưa gặp."
       },
       {
-        "vocabId": 709,
+        "vocabId": 717,
         "hanzi": "大概",
         "pinyin": "dàgài",
         "meaningHanViet": "Đại Khái",
@@ -5637,7 +5631,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Từ đây đi xe vào trung tâm thành phố đại khái cần bốn mươi phút."
       },
       {
-        "vocabId": 710,
+        "vocabId": 718,
         "hanzi": "大人",
         "pinyin": "dàren",
         "meaningHanViet": "Đại Nhân",
@@ -5646,7 +5640,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Người lớn đang ở phòng khách bàn bạc sắp xếp buổi tụ họp dịp Tết."
       },
       {
-        "vocabId": 711,
+        "vocabId": 719,
         "hanzi": "大小",
         "pinyin": "dàxiǎo",
         "meaningHanViet": "Đại Tiểu",
@@ -5655,7 +5649,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Kích cỡ của đôi giày da này vừa vặn, đi rất êm chân."
       },
       {
-        "vocabId": 712,
+        "vocabId": 720,
         "hanzi": "大熊猫",
         "pinyin": "dàxióngmāo",
         "meaningHanViet": "Đại Hùng Miêu",
@@ -5664,7 +5658,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Những chú gấu trúc lớn ngộ nghĩnh đáng yêu được người dân khắp thế giới yêu thích."
       },
       {
-        "vocabId": 713,
+        "vocabId": 721,
         "hanzi": "大衣",
         "pinyin": "dàyī",
         "meaningHanViet": "Đại Y",
@@ -5673,7 +5667,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Mùa đông ra ngoài nhất định phải mặc chiếc áo khoác dạ len dày dặn giữ ấm."
       },
       {
-        "vocabId": 714,
+        "vocabId": 722,
         "hanzi": "带",
         "pinyin": "dài",
         "meaningHanViet": "Đới",
@@ -5682,7 +5676,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Ngày mai đi dã ngoại nhớ mang theo ô và đủ nước uống."
       },
       {
-        "vocabId": 715,
+        "vocabId": 723,
         "hanzi": "担心",
         "pinyin": "dānxīn",
         "meaningHanViet": "Đảm Tâm",
@@ -5691,7 +5685,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Mẹ lúc nào cũng lo lắng cho tôi một mình học tập nơi đất khách quê người."
       },
       {
-        "vocabId": 716,
+        "vocabId": 724,
         "hanzi": "蛋糕",
         "pinyin": "dàngāo",
         "meaningHanViet": "Đản Cao",
@@ -5707,7 +5701,7 @@ export const HSK3_TOPICS = [
     "description": "Nắm bắt cơ hội, đạt điểm số cao, địa lý đông tây nam bắc.",
     "vocabularies": [
       {
-        "vocabId": 717,
+        "vocabId": 725,
         "hanzi": "当然",
         "pinyin": "dāngrán",
         "meaningHanViet": "Đương Nhiên",
@@ -5716,7 +5710,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Bạn bè gặp khó khăn, chúng ta đương nhiên nên dốc hết sức giúp đỡ."
       },
       {
-        "vocabId": 718,
+        "vocabId": 726,
         "hanzi": "到处",
         "pinyin": "dàochù",
         "meaningHanViet": "Đáo Xứ",
@@ -5725,7 +5719,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Mùa xuân vừa đến, khắp đồi núi mọi nơi nở rộ những bông hoa dại muôn màu muôn vẻ."
       },
       {
-        "vocabId": 719,
+        "vocabId": 727,
         "hanzi": "得",
         "pinyin": "dé",
         "meaningHanViet": "Đắc",
@@ -5743,7 +5737,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Anh ấy đã nhận được một công việc tốt."
       },
       {
-        "vocabId": 720,
+        "vocabId": 728,
         "hanzi": "得分",
         "pinyin": "défēn",
         "meaningHanViet": "Đắc Phân",
@@ -5752,7 +5746,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Dưới sự phối hợp ăn ý của tiền đạo, đội bóng đá trường đã dẫn trước ghi điểm."
       },
       {
-        "vocabId": 721,
+        "vocabId": 729,
         "hanzi": "的话",
         "pinyin": "dehuà",
         "meaningHanViet": "Đích Thoại",
@@ -5761,7 +5755,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Nếu ngày mai trời không mưa, chúng ta sẽ theo kế hoạch cũ đi leo núi."
       },
       {
-        "vocabId": 722,
+        "vocabId": 730,
         "hanzi": "得",
         "pinyin": "děi",
         "meaningHanViet": "Đắc",
@@ -5770,7 +5764,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Thời gian không còn sớm nữa, tôi phải mau chóng quay về công ty xử lý việc gấp."
       },
       {
-        "vocabId": 723,
+        "vocabId": 731,
         "hanzi": "灯",
         "pinyin": "dēng",
         "meaningHanViet": "Đăng",
@@ -5824,7 +5818,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Điện thoại hết pin rồi."
       },
       {
-        "vocabId": 724,
+        "vocabId": 732,
         "hanzi": "电梯",
         "pinyin": "diàntī",
         "meaningHanViet": "Điện Thê",
@@ -5833,7 +5827,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Giờ cao điểm đi thang máy xin mọi người hãy tự giác tuân thủ trật tự xếp hàng."
       },
       {
-        "vocabId": 725,
+        "vocabId": 733,
         "hanzi": "电子书",
         "pinyin": "diànzǐshū",
         "meaningHanViet": "Điện Tử Thư",
@@ -5842,7 +5836,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Dùng máy đọc sách xem sách điện tử rất tiện lợi, có thể học mọi lúc mọi nơi."
       },
       {
-        "vocabId": 726,
+        "vocabId": 734,
         "hanzi": "丢",
         "pinyin": "diū",
         "meaningHanViet": "Đưu",
@@ -5860,7 +5854,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Mặt trời mọc từ hướng đông."
       },
       {
-        "vocabId": 727,
+        "vocabId": 735,
         "hanzi": "东北",
         "pinyin": "dōngběi",
         "meaningHanViet": "Đông Bắc",
@@ -5869,7 +5863,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Vùng đông bắc Trung Quốc có vùng đất đen màu mỡ bao la và cảnh tuyết tráng lệ."
       },
       {
-        "vocabId": 728,
+        "vocabId": 736,
         "hanzi": "东方",
         "pinyin": "dōngfāng",
         "meaningHanViet": "Đông Phương",
@@ -5878,7 +5872,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Mặt trời từ phương đông từ từ nhô lên, chiếu sáng một ngày mới tinh khôi."
       },
       {
-        "vocabId": 729,
+        "vocabId": 737,
         "hanzi": "东南",
         "pinyin": "dōngnán",
         "meaningHanViet": "Đông Nam",
@@ -5894,7 +5888,7 @@ export const HSK3_TOPICS = [
     "description": "Khí hậu mùa đông, sở thú, mì ăn liền và các phương tiện tiện lợi.",
     "vocabularies": [
       {
-        "vocabId": 730,
+        "vocabId": 738,
         "hanzi": "冬天",
         "pinyin": "dōngtiān",
         "meaningHanViet": "Đông Thiên",
@@ -5903,7 +5897,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Nhiệt độ mùa đông ở miền bắc thường giảm xuống âm mười mấy độ."
       },
       {
-        "vocabId": 731,
+        "vocabId": 739,
         "hanzi": "懂得",
         "pinyin": "dǒngde",
         "meaningHanViet": "Đổng Đắc",
@@ -5912,7 +5906,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Nhờ thầy giáo ân cần chỉ bảo, cậu ấy rốt cuộc đã hiểu được cách giải bài toán này."
       },
       {
-        "vocabId": 732,
+        "vocabId": 740,
         "hanzi": "动物",
         "pinyin": "dòngwù",
         "meaningHanViet": "Động Vật",
@@ -5921,7 +5915,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Yêu thương và bảo vệ động vật nhỏ lang thang quanh mình là biểu hiện của lòng nhân ái."
       },
       {
-        "vocabId": 733,
+        "vocabId": 741,
         "hanzi": "动物园",
         "pinyin": "dòngwùyuán",
         "meaningHanViet": "Động Vật Viên",
@@ -5930,7 +5924,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Cuối tuần nhiều phụ huynh dẫn con đi sở thú quan sát các loài chim."
       },
       {
-        "vocabId": 734,
+        "vocabId": 742,
         "hanzi": "短",
         "pinyin": "duǎn",
         "meaningHanViet": "Đoản",
@@ -5939,7 +5933,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Kỳ nghỉ này tuy rất ngắn nhưng chúng tôi đã trải qua vô cùng trọn vẹn và vui vẻ."
       },
       {
-        "vocabId": 735,
+        "vocabId": 743,
         "hanzi": "短裤",
         "pinyin": "duǎnkù",
         "meaningHanViet": "Đoản Khố",
@@ -5948,7 +5942,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Mùa hè nhiệt độ cao, mọi người đều thích mặc quần soóc thoáng mát nhẹ nhàng."
       },
       {
-        "vocabId": 736,
+        "vocabId": 744,
         "hanzi": "段",
         "pinyin": "duàn",
         "meaningHanViet": "Đoạn",
@@ -5957,7 +5951,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Đoạn văn bài khóa đặc sắc này cần mọi người học thuộc sau giờ học."
       },
       {
-        "vocabId": 737,
+        "vocabId": 745,
         "hanzi": "锻炼",
         "pinyin": "duànliàn",
         "meaningHanViet": "Đoàn Luyện",
@@ -5966,7 +5960,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Mỗi ngày kiên trì chạy bộ rèn luyện giúp tăng cường chức năng tim phổi."
       },
       {
-        "vocabId": 738,
+        "vocabId": 746,
         "hanzi": "对话",
         "pinyin": "duìhuà",
         "meaningHanViet": "Đối Thoại",
@@ -5984,7 +5978,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Bụng tôi đói rồi, muốn ăn gì đó."
       },
       {
-        "vocabId": 739,
+        "vocabId": 747,
         "hanzi": "而且",
         "pinyin": "érqiě",
         "meaningHanViet": "Nhi Thả",
@@ -5993,7 +5987,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Cô ấy không chỉ hát rất êm tai mà hơn nữa vũ điệu cũng vô cùng uyển chuyển."
       },
       {
-        "vocabId": 740,
+        "vocabId": 748,
         "hanzi": "耳朵",
         "pinyin": "ěrduo",
         "meaningHanViet": "Nhĩ Đoá",
@@ -6002,7 +5996,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Bảo vệ đôi tai khỏe mạnh, thường ngày nghe nhạc âm lượng đừng mở quá to."
       },
       {
-        "vocabId": 741,
+        "vocabId": 749,
         "hanzi": "耳机",
         "pinyin": "ěrjī",
         "meaningHanViet": "Nhĩ Cơ",
@@ -6011,7 +6005,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Trong phòng tự học công cộng yên tĩnh nghe băng ghi âm xin nhất định phải đeo tai nghe."
       },
       {
-        "vocabId": 742,
+        "vocabId": 750,
         "hanzi": "发",
         "pinyin": "fā",
         "meaningHanViet": "Phát",
@@ -6020,7 +6014,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Tôi đã gửi bản báo cáo điện tử đã sửa vào hòm thư của bạn rồi."
       },
       {
-        "vocabId": 743,
+        "vocabId": 751,
         "hanzi": "发烧",
         "pinyin": "fāshāo",
         "meaningHanViet": "Phát Thiêu",
@@ -6029,7 +6023,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Trán em bé hôm nay sốt nóng ran, cần lập tức đưa đến bệnh viện khám."
       },
       {
-        "vocabId": 744,
+        "vocabId": 752,
         "hanzi": "发生",
         "pinyin": "fāshēng",
         "meaningHanViet": "Phát Sinh",
@@ -6038,7 +6032,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Tại ngã tư đã xảy ra một vụ va quẹt nhẹ do vượt đèn đỏ."
       },
       {
-        "vocabId": 745,
+        "vocabId": 753,
         "hanzi": "发现",
         "pinyin": "fāxiàn",
         "meaningHanViet": "Phát Hiện",
@@ -6047,7 +6041,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Các nhà khoa học dưới kính hiển vi đã phát hiện ra cấu trúc của loài vi sinh vật hoàn toàn mới này."
       },
       {
-        "vocabId": 746,
+        "vocabId": 754,
         "hanzi": "发展",
         "pinyin": "fāzhǎn",
         "meaningHanViet": "Phát Triển",
@@ -6056,7 +6050,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Cùng với sự phát triển thần tốc của công nghệ, trí tuệ nhân tạo đang thay đổi sâu sắc thế giới."
       },
       {
-        "vocabId": 747,
+        "vocabId": 755,
         "hanzi": "方便",
         "pinyin": "fāngbiàn",
         "meaningHanViet": "Phương Tiện",
@@ -6065,7 +6059,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Sự phổ cập toàn diện của thanh toán di động mang lại sự thuận tiện to lớn cho cuộc sống thường ngày."
       },
       {
-        "vocabId": 748,
+        "vocabId": 756,
         "hanzi": "方便面",
         "pinyin": "fāngbiànmiàn",
         "meaningHanViet": "Phương Tiện Diện",
@@ -6081,7 +6075,7 @@ export const HSK3_TOPICS = [
     "description": "Tìm kiếm phương pháp, bảo vệ sức khỏe khi cảm mạo và làm việc chăm chỉ.",
     "vocabularies": [
       {
-        "vocabId": 749,
+        "vocabId": 757,
         "hanzi": "方法",
         "pinyin": "fāngfǎ",
         "meaningHanViet": "Phương Pháp",
@@ -6090,7 +6084,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Nắm vững phương pháp học thuộc khoa học hiệu quả có thể nâng cao tốc độ ghi nhớ từ vựng rất nhiều."
       },
       {
-        "vocabId": 750,
+        "vocabId": 758,
         "hanzi": "方向",
         "pinyin": "fāngxiàng",
         "meaningHanViet": "Phương Hướng",
@@ -6126,7 +6120,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Tuần tới chúng tôi được nghỉ ba ngày."
       },
       {
-        "vocabId": 751,
+        "vocabId": 759,
         "hanzi": "放心",
         "pinyin": "fàngxīn",
         "meaningHanViet": "Phóng Tâm",
@@ -6144,7 +6138,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Năm giờ chiều học sinh tan học."
       },
       {
-        "vocabId": 752,
+        "vocabId": 760,
         "hanzi": "分开",
         "pinyin": "fēnkāi",
         "meaningHanViet": "Phân Khai",
@@ -6162,7 +6156,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Hôm nay gió ngoài trời rất to."
       },
       {
-        "vocabId": 753,
+        "vocabId": 761,
         "hanzi": "封",
         "pinyin": "fēng",
         "meaningHanViet": "Phong",
@@ -6171,7 +6165,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Anh ấy đã gửi về cho cha mẹ ở phương xa một phong thư nhà chan chứa tình cảm chân thành."
       },
       {
-        "vocabId": 754,
+        "vocabId": 762,
         "hanzi": "夫妻",
         "pinyin": "fūqī",
         "meaningHanViet": "Phu Thê",
@@ -6180,7 +6174,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Cặp vợ chồng già này đã gắn bó sớm tối bên nhau trải qua trọn vẹn năm mươi mùa xuân thu."
       },
       {
-        "vocabId": 755,
+        "vocabId": 763,
         "hanzi": "服务",
         "pinyin": "fúwù",
         "meaningHanViet": "Phục Vụ",
@@ -6189,7 +6183,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Đội ngũ tiếp viên của hãng hàng không này nổi tiếng với dịch vụ chu đáo nhiệt tình chất lượng cao."
       },
       {
-        "vocabId": 756,
+        "vocabId": 764,
         "hanzi": "附近",
         "pinyin": "fùjìn",
         "meaningHanViet": "Phụ Cận",
@@ -6198,7 +6192,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Vùng lân cận trường học các tiện ích sinh hoạt rất đầy đủ, có nhiều cửa hàng tiện lợi và quán ăn."
       },
       {
-        "vocabId": 757,
+        "vocabId": 765,
         "hanzi": "复习",
         "pinyin": "fùxí",
         "meaningHanViet": "Phục Tập",
@@ -6207,7 +6201,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Trước kỳ thi cuối kỳ mọi người đều đang tranh thủ thời gian ôn tập toàn diện kiến thức đã học."
       },
       {
-        "vocabId": 758,
+        "vocabId": 766,
         "hanzi": "该",
         "pinyin": "gāi",
         "meaningHanViet": "Cai",
@@ -6225,7 +6219,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Lớp học này thật sạch sẽ."
       },
       {
-        "vocabId": 759,
+        "vocabId": 767,
         "hanzi": "感兴趣",
         "pinyin": "gǎn xìngqù",
         "meaningHanViet": "Cảm Hứng Thú",
@@ -6234,7 +6228,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Anh ấy vô cùng có hứng thú với nghệ thuật gốm sứ truyền thống lâu đời độc đáo của Trung Quốc."
       },
       {
-        "vocabId": 760,
+        "vocabId": 768,
         "hanzi": "感到",
         "pinyin": "gǎndào",
         "meaningHanViet": "Cảm Đáo",
@@ -6243,7 +6237,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Nhìn thấy các học sinh đạt được thành tích xuất sắc, thầy giáo cảm thấy vô cùng an lòng và tự hào."
       },
       {
-        "vocabId": 761,
+        "vocabId": 769,
         "hanzi": "感冒",
         "pinyin": "gǎnmào",
         "meaningHanViet": "Cảm Mạo",
@@ -6268,7 +6262,7 @@ export const HSK3_TOPICS = [
     "description": "Tàu cao tốc hiện đại, văn hóa quốc gia, ngày lễ tết và quá khứ.",
     "vocabularies": [
       {
-        "vocabId": 762,
+        "vocabId": 770,
         "hanzi": "刚",
         "pinyin": "gāng",
         "meaningHanViet": "Cương",
@@ -6277,7 +6271,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Tách trà nóng mới pha nhiệt độ vừa vặn, nhấp một ngụm hương thơm lưu lại đầy vòm miệng."
       },
       {
-        "vocabId": 763,
+        "vocabId": 771,
         "hanzi": "刚才",
         "pinyin": "gāngcái",
         "meaningHanViet": "Cương Tài",
@@ -6286,7 +6280,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Cậu ấy vừa nãy còn chạy bộ ở sân vận động, bây giờ đã về ký túc xá tắm mát rồi."
       },
       {
-        "vocabId": 764,
+        "vocabId": 772,
         "hanzi": "刚刚",
         "pinyin": "gānggāng",
         "meaningHanViet": "Cương Cương",
@@ -6295,7 +6289,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Món bánh quy thơm ngọt mẹ vừa mới nướng xong tỏa ra hương thơm ngậy của sữa đầy cuốn hút."
       },
       {
-        "vocabId": 765,
+        "vocabId": 773,
         "hanzi": "高铁",
         "pinyin": "gāotiě",
         "meaningHanViet": "Cao Thiết",
@@ -6304,7 +6298,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Ngồi tàu cao tốc từ Bắc Kinh đến Thượng Hải chỉ mất hơn bốn tiếng đồng hồ."
       },
       {
-        "vocabId": 766,
+        "vocabId": 774,
         "hanzi": "根据",
         "pinyin": "gēnjù",
         "meaningHanViet": "Căn Cứ",
@@ -6313,7 +6307,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Chúng ta phải căn cứ vào số liệu điều tra thị trường thực tế để hoạch định chiến lược tiếp thị."
       },
       {
-        "vocabId": 767,
+        "vocabId": 775,
         "hanzi": "更",
         "pinyin": "gèng",
         "meaningHanViet": "Canh",
@@ -6322,7 +6316,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Sau cơn mưa trời hửng nắng, toàn bộ ngọn núi xanh hiện lên càng thêm mướt mát xanh tươi."
       },
       {
-        "vocabId": 768,
+        "vocabId": 776,
         "hanzi": "公斤",
         "pinyin": "gōngjīn",
         "meaningHanViet": "Công Cân",
@@ -6331,7 +6325,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Xin hãy cân giúp tôi hai kilôgam táo Phú Sĩ đỏ tươi chín mọng."
       },
       {
-        "vocabId": 769,
+        "vocabId": 777,
         "hanzi": "公园",
         "pinyin": "gōngyuán",
         "meaningHanViet": "Công Viên",
@@ -6340,7 +6334,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Sáng sớm nhiều người cao tuổi tập thái cực quyền trong công viên thành phố rợp bóng cây xanh."
       },
       {
-        "vocabId": 770,
+        "vocabId": 778,
         "hanzi": "工作日",
         "pinyin": "gōngzuòrì",
         "meaningHanViet": "Công Tác Nhật",
@@ -6349,7 +6343,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Ngân hàng mở cửa giao dịch bình thường vào ngày làm việc, cuối tuần chỉ xử lý một phần nghiệp vụ."
       },
       {
-        "vocabId": 771,
+        "vocabId": 779,
         "hanzi": "故事",
         "pinyin": "gùshi",
         "meaningHanViet": "Cố Sự",
@@ -6358,7 +6352,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Trước giờ ngủ kể cho con nghe một câu chuyện ngụ ngôn sinh động thú vị có thể gợi mở trí tuệ."
       },
       {
-        "vocabId": 772,
+        "vocabId": 780,
         "hanzi": "刮",
         "pinyin": "guā",
         "meaningHanViet": "Quát",
@@ -6376,7 +6370,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Xin hãy đóng cửa lại."
       },
       {
-        "vocabId": 773,
+        "vocabId": 781,
         "hanzi": "关机",
         "pinyin": "guānjī",
         "meaningHanViet": "Quan Cơ",
@@ -6385,7 +6379,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Giai đoạn máy bay cất cánh và hạ cánh xin hành khách nhất thiết tự giác tắt máy."
       },
       {
-        "vocabId": 774,
+        "vocabId": 782,
         "hanzi": "关系",
         "pinyin": "guānxì",
         "meaningHanViet": "Quan Hệ",
@@ -6394,7 +6388,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Mối quan hệ hàng xóm láng giềng tốt đẹp giúp tạo dựng môi trường sống hòa thuận ấm cúng."
       },
       {
-        "vocabId": 775,
+        "vocabId": 783,
         "hanzi": "关心",
         "pinyin": "guānxīn",
         "meaningHanViet": "Quan Tâm",
@@ -6403,7 +6397,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Sự quan tâm chu đáo từng li từng tí của cha mẹ là chỗ dựa vững chắc nhất trên đường ta khôn lớn."
       },
       {
-        "vocabId": 776,
+        "vocabId": 784,
         "hanzi": "关于",
         "pinyin": "guānyú",
         "meaningHanViet": "Quan Vu",
@@ -6412,7 +6406,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Chiều hôm nay có một buổi tọa đàm học thuật chuyên đề về bảo vệ môi trường."
       },
       {
-        "vocabId": 777,
+        "vocabId": 785,
         "hanzi": "关注",
         "pinyin": "guānzhù",
         "meaningHanViet": "Quan Chú",
@@ -6430,7 +6424,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Trên thế giới có rất nhiều quốc gia."
       },
       {
-        "vocabId": 778,
+        "vocabId": 786,
         "hanzi": "过节",
         "pinyin": "guòjié",
         "meaningHanViet": "Quá Tiết",
@@ -6439,7 +6433,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Mỗi dịp đón ngày lễ, trước cửa mỗi nhà đều dán đôi câu đối đỏ rộn ràng đón xuân."
       },
       {
-        "vocabId": 779,
+        "vocabId": 787,
         "hanzi": "过去",
         "pinyin": "guòqù",
         "meaningHanViet": "Quá Khứ",
@@ -6455,7 +6449,7 @@ export const HSK3_TOPICS = [
     "description": "Cảnh sắc biển cả, bảo vệ môi trường, đổi tiền và mua sắm.",
     "vocabularies": [
       {
-        "vocabId": 780,
+        "vocabId": 788,
         "hanzi": "海",
         "pinyin": "hǎi",
         "meaningHanViet": "Hải",
@@ -6464,7 +6458,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Bên bờ biển xanh thẳm bao la, đàn hải âu dang rộng đôi cánh lượn bay trên sóng biếc."
       },
       {
-        "vocabId": 781,
+        "vocabId": 789,
         "hanzi": "害怕",
         "pinyin": "hàipà",
         "meaningHanViet": "Hại Phạ",
@@ -6473,7 +6467,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Đối diện với khó khăn ập đến bất ngờ, người dũng cảm kiên cường chưa từng biết sợ hãi."
       },
       {
-        "vocabId": 782,
+        "vocabId": 790,
         "hanzi": "好多",
         "pinyin": "hǎoduō",
         "meaningHanViet": "Hảo Đa",
@@ -6482,7 +6476,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Trong mấy năm du học tại Trung Quốc anh ấy đã làm quen được rất nhiều người bạn thân cùng chí hướng."
       },
       {
-        "vocabId": 783,
+        "vocabId": 791,
         "hanzi": "好久",
         "pinyin": "hǎojiǔ",
         "meaningHanViet": "Hảo Cửu",
@@ -6491,7 +6485,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Chúng ta đã lâu lắm rồi không ngồi cùng nhau trò chuyện tâm tình."
       },
       {
-        "vocabId": 784,
+        "vocabId": 792,
         "hanzi": "好像",
         "pinyin": "hǎoxiàng",
         "meaningHanViet": "Hảo Tượng",
@@ -6500,7 +6494,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Nhìn sắc trời u ám thế này, hình như bên ngoài sắp sửa đổ mưa rào sấm chớp rồi."
       },
       {
-        "vocabId": 785,
+        "vocabId": 793,
         "hanzi": "号码",
         "pinyin": "hàomǎ",
         "meaningHanViet": "Hiệu Mã",
@@ -6509,7 +6503,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Xin hãy để lại số điện thoại di động liên lạc của bạn một cách rõ ràng ngay ngắn trên phiếu biên nhận."
       },
       {
-        "vocabId": 786,
+        "vocabId": 794,
         "hanzi": "河",
         "pinyin": "hé",
         "meaningHanViet": "Hà",
@@ -6518,7 +6512,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Một dòng sông mẹ trong xanh hiền hòa chảy xuyên qua toàn bộ thị trấn cổ kính xa xưa."
       },
       {
-        "vocabId": 787,
+        "vocabId": 795,
         "hanzi": "合适",
         "pinyin": "héshì",
         "meaningHanViet": "Hợp Thích",
@@ -6527,7 +6521,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Tìm được một công việc mà bản thân thực sự yêu thích và mọi mặt đều phù hợp quả thực không dễ."
       },
       {
-        "vocabId": 788,
+        "vocabId": 796,
         "hanzi": "黑板",
         "pinyin": "hēibǎn",
         "meaningHanViet": "Hắc Bản",
@@ -6536,7 +6530,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Trong giờ học thầy giáo dùng phấn trắng viết nắn nót các chữ Hán trọng tâm lên bảng đen."
       },
       {
-        "vocabId": 789,
+        "vocabId": 797,
         "hanzi": "红绿灯",
         "pinyin": "hóng-lǜdēng",
         "meaningHanViet": "Hồng Lục Đăng",
@@ -6545,7 +6539,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Khi qua ngã tư bận rộn nhất định phải nhìn thật kỹ tín hiệu đèn giao thông rồi mới qua đường."
       },
       {
-        "vocabId": 790,
+        "vocabId": 798,
         "hanzi": "后来",
         "pinyin": "hòulái",
         "meaningHanViet": "Hậu Lai",
@@ -6554,7 +6548,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Về sau nhờ sự nghiên cứu miệt mài không ngừng anh ấy đã trở thành một chuyên gia đầu ngành."
       },
       {
-        "vocabId": 791,
+        "vocabId": 799,
         "hanzi": "后年",
         "pinyin": "hòunián",
         "meaningHanViet": "Hậu Niên",
@@ -6572,7 +6566,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Ngày kia là chủ nhật."
       },
       {
-        "vocabId": 792,
+        "vocabId": 800,
         "hanzi": "护照",
         "pinyin": "hùzhào",
         "meaningHanViet": "Hộ Chiếu",
@@ -6581,7 +6575,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Trước khi ra nước ngoài du lịch nhất định phải kiểm tra kỹ thời hạn thị thực còn hiệu lực trên hộ chiếu cá nhân."
       },
       {
-        "vocabId": 793,
+        "vocabId": 801,
         "hanzi": "花园",
         "pinyin": "huāyuán",
         "meaningHanViet": "Hoa Viên",
@@ -6590,7 +6584,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Trong vườn hoa của khu dân cư mùa xuân trăm hoa đua nở, cây cỏ xanh tươi dễ chịu."
       },
       {
-        "vocabId": 794,
+        "vocabId": 802,
         "hanzi": "画家",
         "pinyin": "huàjiā",
         "meaningHanViet": "Hoạ Gia",
@@ -6599,7 +6593,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Nhân vật, hoa cỏ chim muông dưới ngòi bút của họa sĩ tranh Trung Quốc trứ danh Tề Bạch Thạch sống động như thật."
       },
       {
-        "vocabId": 795,
+        "vocabId": 803,
         "hanzi": "欢迎",
         "pinyin": "huānyíng",
         "meaningHanViet": "Hoan Nghênh",
@@ -6617,7 +6611,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Quyển sách này ngày mai tôi sẽ trả lại cho bạn."
       },
       {
-        "vocabId": 796,
+        "vocabId": 804,
         "hanzi": "环境",
         "pinyin": "huánjìng",
         "meaningHanViet": "Hoàn Cảnh",
@@ -6626,7 +6620,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Bảo vệ môi trường sinh thái là trách nhiệm lớn lao chung của toàn nhân loại."
       },
       {
-        "vocabId": 797,
+        "vocabId": 805,
         "hanzi": "换",
         "pinyin": "huàn",
         "meaningHanViet": "Hoán",
@@ -6642,7 +6636,7 @@ export const HSK3_TOPICS = [
     "description": "Tham gia hội nghị, giải đáp thắc mắc, soát vé và kiểm tra tài liệu.",
     "vocabularies": [
       {
-        "vocabId": 798,
+        "vocabId": 806,
         "hanzi": "黄色",
         "pinyin": "huángsè",
         "meaningHanViet": "Hoàng Sắc",
@@ -6660,7 +6654,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Xin hãy trả lời câu hỏi của thầy giáo."
       },
       {
-        "vocabId": 799,
+        "vocabId": 807,
         "hanzi": "会",
         "pinyin": "huì",
         "meaningHanViet": "Hội",
@@ -6669,7 +6663,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Toàn thể người phụ trách bộ phận đang họp tại phòng hội nghị tầng ba."
       },
       {
-        "vocabId": 800,
+        "vocabId": 808,
         "hanzi": "会议",
         "pinyin": "huìyì",
         "meaningHanViet": "Hội Nghị",
@@ -6678,7 +6672,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Hội nghị thượng đỉnh về biến đổi khí hậu quốc tế là một cuộc họp vô cùng quan trọng."
       },
       {
-        "vocabId": 801,
+        "vocabId": 809,
         "hanzi": "或",
         "pinyin": "huò",
         "meaningHanViet": "Hoặc",
@@ -6687,7 +6681,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Chiều mai bạn có thể đến thư viện tìm tôi, hoặc gửi email cho tôi."
       },
       {
-        "vocabId": 802,
+        "vocabId": 810,
         "hanzi": "或者",
         "pinyin": "huòzhě",
         "meaningHanViet": "Hoặc Giả",
@@ -6696,7 +6690,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Cuối tuần tôi thường đọc sách ở ký túc xá hoặc ra sân vận động rèn luyện thân thể."
       },
       {
-        "vocabId": 803,
+        "vocabId": 811,
         "hanzi": "鸡",
         "pinyin": "jī",
         "meaningHanViet": "Kê",
@@ -6705,7 +6699,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Những chú gà nuôi thả trong trang trại sáng sớm nào cũng gáy vang."
       },
       {
-        "vocabId": 804,
+        "vocabId": 812,
         "hanzi": "几乎",
         "pinyin": "jīhū",
         "meaningHanViet": "Kỷ Hồ",
@@ -6714,7 +6708,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Hôm nay anh ấy bận túi bụi, hầu như ngay cả thời gian uống nước cũng không có."
       },
       {
-        "vocabId": 805,
+        "vocabId": 813,
         "hanzi": "机会",
         "pinyin": "jīhuì",
         "meaningHanViet": "Cơ Hội",
@@ -6723,7 +6717,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Có thể đến Đại học Bắc Kinh giao lưu học tập là một cơ hội vô cùng quý báu."
       },
       {
-        "vocabId": 806,
+        "vocabId": 814,
         "hanzi": "极",
         "pinyin": "jí",
         "meaningHanViet": "Cực",
@@ -6732,7 +6726,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Trải qua chuyến đi dài đằng đẵng, mọi người lúc này cảm thấy cực kỳ mệt mỏi."
       },
       {
-        "vocabId": 807,
+        "vocabId": 815,
         "hanzi": "急",
         "pinyin": "jí",
         "meaningHanViet": "Cấp",
@@ -6750,7 +6744,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Xin hãy ghi nhớ từ mới này."
       },
       {
-        "vocabId": 808,
+        "vocabId": 816,
         "hanzi": "季",
         "pinyin": "jì",
         "meaningHanViet": "Quý",
@@ -6759,7 +6753,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Mùa thu là mùa đẹp đẽ dễ chịu và thoải mái nhất trong năm."
       },
       {
-        "vocabId": 809,
+        "vocabId": 817,
         "hanzi": "季节",
         "pinyin": "jìjié",
         "meaningHanViet": "Quý Tiết",
@@ -6768,7 +6762,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Trong một năm bạn thích nhất mùa nào?"
       },
       {
-        "vocabId": 810,
+        "vocabId": 818,
         "hanzi": "加",
         "pinyin": "jiā",
         "meaningHanViet": "Gia",
@@ -6777,7 +6771,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Tách cà phê nóng này đắng quá, xin hãy giúp tôi thêm chút sữa và đường."
       },
       {
-        "vocabId": 811,
+        "vocabId": 819,
         "hanzi": "假期",
         "pinyin": "jiàqī",
         "meaningHanViet": "Giá Kỳ",
@@ -6786,7 +6780,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Kỳ nghỉ hè dài trọn vẹn là khoảng thời gian tuyệt vời để học sinh thư giãn và nạp lại năng lượng."
       },
       {
-        "vocabId": 812,
+        "vocabId": 820,
         "hanzi": "坚持",
         "pinyin": "jiānchí",
         "meaningHanViet": "Kiên Trì",
@@ -6795,7 +6789,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Chỉ có kiên trì luyện tập không ngừng thì trình độ khẩu ngữ mới tiến bộ vượt bậc."
       },
       {
-        "vocabId": 813,
+        "vocabId": 821,
         "hanzi": "检查",
         "pinyin": "jiǎnchá",
         "meaningHanViet": "Kiểm Tra",
@@ -6804,7 +6798,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Trước khi nộp bài thi nhất thiết phải kiểm tra kỹ một lượt xem họ tên và số báo danh đã điền đúng chưa."
       },
       {
-        "vocabId": 814,
+        "vocabId": 822,
         "hanzi": "简单",
         "pinyin": "jiǎndān",
         "meaningHanViet": "Giản Đơn",
@@ -6813,7 +6807,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Câu ngữ pháp tiếng Trung này thực ra đơn giản hơn mọi người tưởng tượng nhiều."
       },
       {
-        "vocabId": 815,
+        "vocabId": 823,
         "hanzi": "检票",
         "pinyin": "jiǎnpiào",
         "meaningHanViet": "Kiểm Phiếu",
@@ -6829,7 +6823,7 @@ export const HSK3_TOPICS = [
     "description": "Chăm sóc sức khỏe, gặp mặt bạn bè, quản lý công việc và đồ uống.",
     "vocabularies": [
       {
-        "vocabId": 816,
+        "vocabId": 824,
         "hanzi": "健康",
         "pinyin": "jiànkāng",
         "meaningHanViet": "Kiện Khang",
@@ -6847,7 +6841,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Rất vui được gặp mặt bạn."
       },
       {
-        "vocabId": 817,
+        "vocabId": 825,
         "hanzi": "讲",
         "pinyin": "jiǎng",
         "meaningHanViet": "Giảng",
@@ -6856,7 +6850,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Giáo sư Vương hôm nay ở hội trường học thuật giảng cho chúng tôi nghe về văn học đương đại Trung Quốc."
       },
       {
-        "vocabId": 818,
+        "vocabId": 826,
         "hanzi": "角",
         "pinyin": "jiǎo",
         "meaningHanViet": "Giác",
@@ -6865,7 +6859,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Ở một góc phòng lặng lẽ đặt một cây đàn ghi-ta mang nét cổ kính."
       },
       {
-        "vocabId": 819,
+        "vocabId": 827,
         "hanzi": "脚",
         "pinyin": "jiǎo",
         "meaningHanViet": "Cước",
@@ -6874,7 +6868,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Hôm qua leo núi đi bộ mấy cây số đường đèo, hôm nay hai bàn chân đặc biệt mỏi nhừ."
       },
       {
-        "vocabId": 820,
+        "vocabId": 828,
         "hanzi": "接",
         "pinyin": "jiē",
         "meaningHanViet": "Tiếp",
@@ -6883,7 +6877,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Vừa nãy anh ấy ra ga xe lửa đón cha mẹ từ xa đến rồi."
       },
       {
-        "vocabId": 821,
+        "vocabId": 829,
         "hanzi": "街",
         "pinyin": "jiē",
         "meaningHanViet": "Nhai",
@@ -6892,7 +6886,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Cuối tuần trên con phố đi bộ sầm uất người qua kẻ lại, vô cùng náo nhiệt."
       },
       {
-        "vocabId": 822,
+        "vocabId": 830,
         "hanzi": "节",
         "pinyin": "jié",
         "meaningHanViet": "Tiết",
@@ -6901,7 +6895,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Sáng nay chúng tôi học liền ba tiết môn chuyên ngành rất quan trọng."
       },
       {
-        "vocabId": 823,
+        "vocabId": 831,
         "hanzi": "结婚",
         "pinyin": "jiéhūn",
         "meaningHanViet": "Kết Hôn",
@@ -6910,7 +6904,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Sau năm năm yêu nhau, họ quyết định kết hôn vào dịp Quốc khánh năm nay."
       },
       {
-        "vocabId": 824,
+        "vocabId": 832,
         "hanzi": "节目",
         "pinyin": "jiémù",
         "meaningHanViet": "Tiết Mục",
@@ -6919,7 +6913,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Tiết mục múa trong đêm hội văn nghệ truyền hình tối nay vô cùng đặc sắc."
       },
       {
-        "vocabId": 825,
+        "vocabId": 833,
         "hanzi": "节日",
         "pinyin": "jiérì",
         "meaningHanViet": "Tiết Nhật",
@@ -6928,7 +6922,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Tết Nguyên Đán là ngày lễ truyền thống long trọng và náo nhiệt nhất trong dân gian Trung Hoa."
       },
       {
-        "vocabId": 826,
+        "vocabId": 834,
         "hanzi": "结束",
         "pinyin": "jiéshù",
         "meaningHanViet": "Kết Thúc",
@@ -6937,7 +6931,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Sau khi toàn bộ kỳ thi cuối kỳ kết thúc, mọi người vui vẻ bước ra khỏi phòng thi."
       },
       {
-        "vocabId": 827,
+        "vocabId": 835,
         "hanzi": "解决",
         "pinyin": "jiějué",
         "meaningHanViet": "Giải Quyết",
@@ -6946,7 +6940,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Nhờ mọi người cùng nhau hiến kế, vấn đề hóc búa này rốt cuộc đã được giải quyết rồi."
       },
       {
-        "vocabId": 828,
+        "vocabId": 836,
         "hanzi": "姐妹",
         "pinyin": "jiěmèi",
         "meaningHanViet": "Tỉ Muội",
@@ -6955,7 +6949,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Hai chị em ruột này ngoại hình rất giống nhau, tình cảm cũng vô cùng thân thiết."
       },
       {
-        "vocabId": 829,
+        "vocabId": 837,
         "hanzi": "借",
         "pinyin": "jiè",
         "meaningHanViet": "Tá",
@@ -6964,7 +6958,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Xin hỏi tôi có thể mượn mấy cuốn sách tham khảo ngoại ngữ ở thư viện đại học không?"
       },
       {
-        "vocabId": 830,
+        "vocabId": 838,
         "hanzi": "斤",
         "pinyin": "jīn",
         "meaningHanViet": "Cân",
@@ -6973,7 +6967,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Anh ấy đã mua ba cân đào mật giòn ngọt tươi ngon ở siêu thị rau quả."
       },
       {
-        "vocabId": 831,
+        "vocabId": 839,
         "hanzi": "经过",
         "pinyin": "jīngguò",
         "meaningHanViet": "Kinh Quá",
@@ -6982,7 +6976,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Trải qua nhiều vòng tuyển chọn khắt khe, anh ấy đã thuận lợi lọt vào đội tuyển tập huấn quốc gia."
       },
       {
-        "vocabId": 832,
+        "vocabId": 840,
         "hanzi": "经理",
         "pinyin": "jīnglǐ",
         "meaningHanViet": "Kinh Lý",
@@ -6991,7 +6985,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Giám đốc Lý đang cùng khách hàng quan trọng bàn bạc hợp tác kinh doanh trong phòng họp."
       },
       {
-        "vocabId": 833,
+        "vocabId": 841,
         "hanzi": "久",
         "pinyin": "jiǔ",
         "meaningHanViet": "Cửu",
@@ -7000,7 +6994,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Chúng tôi đã chia tay nhau lâu lắm rồi, hôm nay gặp lại vô cùng xúc động."
       },
       {
-        "vocabId": 834,
+        "vocabId": 842,
         "hanzi": "酒",
         "pinyin": "jiǔ",
         "meaningHanViet": "Tửu",
@@ -7016,7 +7010,7 @@ export const HSK3_TOPICS = [
     "description": "Đưa ra quyết định, sử dụng thẻ tiện ích, điều hòa và bài khóa.",
     "vocabularies": [
       {
-        "vocabId": 835,
+        "vocabId": 843,
         "hanzi": "旧",
         "pinyin": "jiù",
         "meaningHanViet": "Cựu",
@@ -7025,7 +7019,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Trong cuốn an-bum ảnh cũ ố vàng này lưu giữ bao kỷ niệm quý giá thời thơ ấu."
       },
       {
-        "vocabId": 836,
+        "vocabId": 844,
         "hanzi": "句",
         "pinyin": "jù",
         "meaningHanViet": "Cú",
@@ -7034,7 +7028,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Xin mọi người hãy dùng ba từ mới trọng tâm học hôm nay để đặt một câu văn."
       },
       {
-        "vocabId": 837,
+        "vocabId": 845,
         "hanzi": "句子",
         "pinyin": "jùzi",
         "meaningHanViet": "Cú Tử",
@@ -7043,7 +7037,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Viết văn cần đạt được ngữ pháp chính xác, câu cú mạch lạc trôi chảy tự nhiên."
       },
       {
-        "vocabId": 838,
+        "vocabId": 846,
         "hanzi": "决定",
         "pinyin": "juédìng",
         "meaningHanViet": "Quyết Định",
@@ -7052,7 +7046,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Sau khi suy nghĩ chín chắn, anh ấy quyết định ở lại trường cũ học tiếp tiến sĩ."
       },
       {
-        "vocabId": 839,
+        "vocabId": 847,
         "hanzi": "卡",
         "pinyin": "kǎ",
         "meaningHanViet": "Tạp",
@@ -7061,7 +7055,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Quẹt thẻ sinh viên trong căng tin ăn cơm vừa nhanh vừa an toàn tiện lợi."
       },
       {
-        "vocabId": 840,
+        "vocabId": 848,
         "hanzi": "开花",
         "pinyin": "kāihuā",
         "meaningHanViet": "Khai Hoa",
@@ -7079,7 +7073,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Giám đốc đang họp."
       },
       {
-        "vocabId": 841,
+        "vocabId": 849,
         "hanzi": "开机",
         "pinyin": "kāijī",
         "meaningHanViet": "Khai Cơ",
@@ -7088,7 +7082,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Sau khi máy bay hạ cánh an toàn chạy xong đường băng, các hành khách rủ nhau mở máy."
       },
       {
-        "vocabId": 842,
+        "vocabId": 850,
         "hanzi": "开心",
         "pinyin": "kāixīn",
         "meaningHanViet": "Khai Tâm",
@@ -7097,7 +7091,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Biết được tin vui thi đỗ, trong lòng mọi người đều cảm thấy vô cùng phấn khởi."
       },
       {
-        "vocabId": 843,
+        "vocabId": 851,
         "hanzi": "看来",
         "pinyin": "kànlái",
         "meaningHanViet": "Khán Lai",
@@ -7106,7 +7100,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Nhìn sắc trời mây đen vần vũ hôm nay, xem ra một cơn mưa dông khó lòng tránh khỏi."
       },
       {
-        "vocabId": 844,
+        "vocabId": 852,
         "hanzi": "可",
         "pinyin": "kě",
         "meaningHanViet": "Khả",
@@ -7124,7 +7118,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Tôi khát rồi, muốn uống nước."
       },
       {
-        "vocabId": 845,
+        "vocabId": 853,
         "hanzi": "可爱",
         "pinyin": "kě’ài",
         "meaningHanViet": "Khả Ái",
@@ -7133,7 +7127,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Chú chó Teddy nhỏ chạy nhảy đùa nghịch trên bãi cỏ trông thật là đáng yêu quá."
       },
       {
-        "vocabId": 846,
+        "vocabId": 854,
         "hanzi": "可是",
         "pinyin": "kěshì",
         "meaningHanViet": "Khả Thị",
@@ -7142,7 +7136,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Tuy anh ấy đã cố hết sức mình, nhưng mà kết quả thi đấu vẫn còn chút tiếc nuối."
       },
       {
-        "vocabId": 847,
+        "vocabId": 855,
         "hanzi": "刻",
         "pinyin": "kè",
         "meaningHanViet": "Khắc",
@@ -7160,7 +7154,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Xin mọi người mở sách giáo khoa trang 20."
       },
       {
-        "vocabId": 848,
+        "vocabId": 856,
         "hanzi": "客人",
         "pinyin": "kèrén",
         "meaningHanViet": "Khách Nhân",
@@ -7178,7 +7172,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Xin hãy cùng tôi đọc bài khóa."
       },
       {
-        "vocabId": 849,
+        "vocabId": 857,
         "hanzi": "空调",
         "pinyin": "kōngtiáo",
         "meaningHanViet": "Không Điệu",
@@ -7187,7 +7181,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Mùa hè nóng bức khó chịu, ở trong căn phòng bật điều hòa đặc biệt mát mẻ."
       },
       {
-        "vocabId": 850,
+        "vocabId": 858,
         "hanzi": "哭",
         "pinyin": "kū",
         "meaningHanViet": "Khốc",
@@ -7203,7 +7197,7 @@ export const HSK3_TOPICS = [
     "description": "Vật dụng ăn uống, cuộc sống du học sinh và quan hệ láng giềng.",
     "vocabularies": [
       {
-        "vocabId": 851,
+        "vocabId": 859,
         "hanzi": "筷子",
         "pinyin": "kuàizi",
         "meaningHanViet": "Khoái Tử",
@@ -7212,7 +7206,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Học được cách dùng đũa thành thạo là bước đầu tiên để tìm hiểu văn hóa ẩm thực Trung Quốc."
       },
       {
-        "vocabId": 852,
+        "vocabId": 860,
         "hanzi": "矿泉水",
         "pinyin": "kuàngquánshuǐ",
         "meaningHanViet": "Khoáng Tuyền Thuỷ",
@@ -7221,7 +7215,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Sau khi vận động xin hãy kịp thời uống lượng nước khoáng thích hợp để bù nước cho cơ thể."
       },
       {
-        "vocabId": 853,
+        "vocabId": 861,
         "hanzi": "来自",
         "pinyin": "láizì",
         "meaningHanViet": "Lai Tự",
@@ -7230,7 +7224,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Du học sinh lớp chúng tôi đến từ các quốc gia hữu nghị khác nhau trên khắp thế giới."
       },
       {
-        "vocabId": 854,
+        "vocabId": 862,
         "hanzi": "蓝",
         "pinyin": "lán",
         "meaningHanViet": "Lam",
@@ -7257,7 +7251,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Chúng ta cần quan tâm chăm sóc người già."
       },
       {
-        "vocabId": 855,
+        "vocabId": 863,
         "hanzi": "离开",
         "pinyin": "líkāi",
         "meaningHanViet": "Ly Khai",
@@ -7266,7 +7260,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Anh ấy lưu luyến vẫy tay từ biệt, rời khỏi quê hương nơi mình đã gắn bó bao năm."
       },
       {
-        "vocabId": 856,
+        "vocabId": 864,
         "hanzi": "礼物",
         "pinyin": "lǐwù",
         "meaningHanViet": "Lễ Vật",
@@ -7275,7 +7269,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Bộ ấm chén trà Trung Quốc tinh tế này là món quà sinh nhật quý giá người bạn tặng tôi."
       },
       {
-        "vocabId": 857,
+        "vocabId": 865,
         "hanzi": "历史",
         "pinyin": "lìshǐ",
         "meaningHanViet": "Lịch Sử",
@@ -7284,7 +7278,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Tử Cấm Thành Bắc Kinh là một công trình kiến trúc đồ sộ chở che bề dày lịch sử hàng trăm năm."
       },
       {
-        "vocabId": 858,
+        "vocabId": 866,
         "hanzi": "脸",
         "pinyin": "liǎn",
         "meaningHanViet": "Liễm",
@@ -7293,7 +7287,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Buổi sáng dùng nước lạnh rửa mặt có thể giúp con người lập tức tỉnh táo tinh thần."
       },
       {
-        "vocabId": 859,
+        "vocabId": 867,
         "hanzi": "练",
         "pinyin": "liàn",
         "meaningHanViet": "Luyện",
@@ -7302,7 +7296,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Muốn viết được nét chữ bút lông cứng cáp đẹp đẽ cần phải dày công rèn luyện qua năm tháng."
       },
       {
-        "vocabId": 860,
+        "vocabId": 868,
         "hanzi": "练习",
         "pinyin": "liànxí",
         "meaningHanViet": "Luyện Tập",
@@ -7311,7 +7305,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Sau giờ học xin mọi người chăm chỉ hoàn thành bài tập ngữ pháp từng bài trong sách giáo khoa."
       },
       {
-        "vocabId": 861,
+        "vocabId": 869,
         "hanzi": "凉快",
         "pinyin": "liángkuai",
         "meaningHanViet": "Lương Khoái",
@@ -7320,7 +7314,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Gió chiều mùa thu hiu hiu thổi tới, khiến người ta cảm thấy đặc biệt mát mẻ dễ chịu."
       },
       {
-        "vocabId": 862,
+        "vocabId": 870,
         "hanzi": "辆",
         "pinyin": "liàng",
         "meaningHanViet": "Lượng",
@@ -7329,7 +7323,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Trước cổng trường đỗ ngay ngắn một chiếc xe buýt năng lượng mới thân thiện với môi trường."
       },
       {
-        "vocabId": 863,
+        "vocabId": 871,
         "hanzi": "聊",
         "pinyin": "liáo",
         "meaningHanViet": "Liêu",
@@ -7338,7 +7332,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Các bạn học cũ quây quần bên nhau vui vẻ trò chuyện về những kỷ niệm vui thời đi học."
       },
       {
-        "vocabId": 864,
+        "vocabId": 872,
         "hanzi": "聊天儿",
         "pinyin": "liáotiānr",
         "meaningHanViet": "Liêu Thiên Nhi",
@@ -7347,7 +7341,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Chiều rảnh rỗi uống trà tán gẫu là nét phong cảnh đặc sắc nhất ở quán trà Lão Xá."
       },
       {
-        "vocabId": 865,
+        "vocabId": 873,
         "hanzi": "了解",
         "pinyin": "liǎojiě",
         "meaningHanViet": "Liễu Giải",
@@ -7356,7 +7350,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Thông qua chuyến đi thực tế sâu sát này, chúng tôi đã hiểu rõ toàn diện hơn về phong tục địa phương."
       },
       {
-        "vocabId": 866,
+        "vocabId": 874,
         "hanzi": "邻居",
         "pinyin": "línjū",
         "meaningHanViet": "Lân Cư",
@@ -7365,7 +7359,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Tôi và người hàng xóm bên cạnh quan hệ rất hòa thuận."
       },
       {
-        "vocabId": 867,
+        "vocabId": 875,
         "hanzi": "留学",
         "pinyin": "liúxué",
         "meaningHanViet": "Lưu Học",
@@ -7374,7 +7368,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Từ nhỏ cậu ấy đã lập chí lớn lên sẽ đi du học nâng cao tại trường đại học hàng đầu thế giới."
       },
       {
-        "vocabId": 868,
+        "vocabId": 876,
         "hanzi": "留学生",
         "pinyin": "liúxuéshēng",
         "meaningHanViet": "Lưu Học Sinh",
@@ -7390,7 +7384,7 @@ export const HSK3_TOPICS = [
     "description": "Cầu thang bộ, ngã tư đường phố, giao thông và nam nữ thanh niên.",
     "vocabularies": [
       {
-        "vocabId": 869,
+        "vocabId": 877,
         "hanzi": "楼梯",
         "pinyin": "lóutī",
         "meaningHanViet": "Lâu Thê",
@@ -7399,7 +7393,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Để rèn luyện sức khỏe, anh ấy mỗi ngày kiên trì đi bộ lên xuống cầu thang thay vì đi thang máy."
       },
       {
-        "vocabId": 870,
+        "vocabId": 878,
         "hanzi": "路边",
         "pinyin": "lùbiān",
         "meaningHanViet": "Lộ Biên",
@@ -7417,7 +7411,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Chúng ta gặp nhau ở ngã tư đường nhé."
       },
       {
-        "vocabId": 871,
+        "vocabId": 879,
         "hanzi": "马",
         "pinyin": "mǎ",
         "meaningHanViet": "Mã",
@@ -7444,7 +7438,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Xin đợi một chút, tôi tới ngay đây."
       },
       {
-        "vocabId": 872,
+        "vocabId": 880,
         "hanzi": "满意",
         "pinyin": "mǎnyì",
         "meaningHanViet": "Mãn Ý",
@@ -7462,7 +7456,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Quả táo này giá năm hào."
       },
       {
-        "vocabId": 873,
+        "vocabId": 881,
         "hanzi": "米",
         "pinyin": "mǐ",
         "meaningHanViet": "Mễ",
@@ -7471,7 +7465,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Gạo là lương thực chính không thể thiếu trên bàn ăn mỗi ngày của các gia đình miền Nam Trung Quốc."
       },
       {
-        "vocabId": 874,
+        "vocabId": 882,
         "hanzi": "面前",
         "pinyin": "miànqián",
         "meaningHanViet": "Diện Tiền",
@@ -7489,7 +7483,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Những lời thầy giảng tôi đều hiểu rõ rồi."
       },
       {
-        "vocabId": 875,
+        "vocabId": 883,
         "hanzi": "名单",
         "pinyin": "míngdān",
         "meaningHanViet": "Danh Đơn",
@@ -7498,7 +7492,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Danh sách bình chọn học bổng cuối kỳ đã chính thức niêm yết trên bảng thông báo chính thức của học viện."
       },
       {
-        "vocabId": 876,
+        "vocabId": 884,
         "hanzi": "名人",
         "pinyin": "míngrén",
         "meaningHanViet": "Danh Nhân",
@@ -7525,7 +7519,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Phát âm tiếng Trung hơi khó một chút."
       },
       {
-        "vocabId": 877,
+        "vocabId": 885,
         "hanzi": "南方",
         "pinyin": "nánfāng",
         "meaningHanViet": "Nam Phương",
@@ -7534,7 +7528,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Miền nam Trung Quốc sông ngòi dày đặc chằng chịt, khí hậu ấm áp ẩm ướt cảnh sắc hữu tình."
       },
       {
-        "vocabId": 878,
+        "vocabId": 886,
         "hanzi": "难过",
         "pinyin": "nánguò",
         "meaningHanViet": "Nan Quá",
@@ -7543,7 +7537,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Nghe tin thú cưng yêu quý bị ốm phải nhập viện, trong lòng cô ấy buồn bã vô cùng."
       },
       {
-        "vocabId": 879,
+        "vocabId": 887,
         "hanzi": "难看",
         "pinyin": "nánkàn",
         "meaningHanViet": "Nan Khán",
@@ -7577,7 +7571,7 @@ export const HSK3_TOPICS = [
     "description": "Giải quyết bài tập khó, phân chia khối lớp và những điều kỳ thú.",
     "vocabularies": [
       {
-        "vocabId": 880,
+        "vocabId": 888,
         "hanzi": "难题",
         "pinyin": "nántí",
         "meaningHanViet": "Nan Đề",
@@ -7586,7 +7580,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Đối diện với bài toán khó thi học sinh giỏi này, các bạn học sinh cùng nhau hiến kế thảo luận sôi nổi."
       },
       {
-        "vocabId": 881,
+        "vocabId": 889,
         "hanzi": "难听",
         "pinyin": "nántīng",
         "meaningHanViet": "Nan Thính",
@@ -7595,7 +7589,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Cây đàn vĩ cầm cũ kỹ này dây không chuẩn, kéo ra âm thanh vô cùng chói tai."
       },
       {
-        "vocabId": 882,
+        "vocabId": 890,
         "hanzi": "年级",
         "pinyin": "niánjí",
         "meaningHanViet": "Niên Cấp",
@@ -7604,7 +7598,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Năm nay anh ấy vừa lên năm thứ ba đại học, bắt đầu tiếp cận các môn học cốt lõi chuyên ngành."
       },
       {
-        "vocabId": 883,
+        "vocabId": 891,
         "hanzi": "年轻",
         "pinyin": "niánqīng",
         "meaningHanViet": "Niên Khinh",
@@ -7613,7 +7607,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Anh ấy tuy trẻ tuổi nhưng kinh nghiệm làm việc rất phong phú."
       },
       {
-        "vocabId": 884,
+        "vocabId": 892,
         "hanzi": "牛",
         "pinyin": "niú",
         "meaningHanViet": "Ngưu",
@@ -7622,7 +7616,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Chú bò vàng lặng lẽ cày bừa trên đồng ruộng, là biểu tượng truyền thống cho sự cần cù cống hiến của Trung Hoa."
       },
       {
-        "vocabId": 885,
+        "vocabId": 893,
         "hanzi": "努力",
         "pinyin": "nǔlì",
         "meaningHanViet": "Nỗ Lực",
@@ -7649,7 +7643,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Lớp chúng tôi bạn nữ nhiều hơn bạn nam."
       },
       {
-        "vocabId": 886,
+        "vocabId": 894,
         "hanzi": "爬",
         "pinyin": "pá",
         "meaningHanViet": "Bà",
@@ -7658,7 +7652,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Dịp Tết Trùng Cửu thu cao khí mát, leo núi lên cao là truyền thống ngàn đời của dân tộc Trung Hoa."
       },
       {
-        "vocabId": 887,
+        "vocabId": 895,
         "hanzi": "怕",
         "pinyin": "pà",
         "meaningHanViet": "Phạ",
@@ -7667,7 +7661,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Bão dông sắp kéo đến rồi, e rằng hoạt động ngoài trời chiều nay buộc phải hủy bỏ."
       },
       {
-        "vocabId": 888,
+        "vocabId": 896,
         "hanzi": "拍照",
         "pinyin": "pāizhào",
         "meaningHanViet": "Phách Chiếu",
@@ -7676,7 +7670,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Tiết trời thu vàng du khách rủ nhau dừng bước chụp ảnh lưu niệm trước rừng lá phong."
       },
       {
-        "vocabId": 889,
+        "vocabId": 897,
         "hanzi": "盘子",
         "pinyin": "pánzi",
         "meaningHanViet": "Bàn Tử",
@@ -7685,7 +7679,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Người phục vụ nhanh nhẹn bày những chiếc đĩa sứ trắng sạch bong lên bàn ăn."
       },
       {
-        "vocabId": 890,
+        "vocabId": 898,
         "hanzi": "胖",
         "pinyin": "pàng",
         "meaningHanViet": "Bàng",
@@ -7694,7 +7688,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Chú mèo qua vài tháng được chăm bẵm cẩn thận đã lớn thành một chú mèo mướp vàng béo tròn xoe."
       },
       {
-        "vocabId": 891,
+        "vocabId": 899,
         "hanzi": "啤酒",
         "pinyin": "píjiǔ",
         "meaningHanViet": "Tỳ Tửu",
@@ -7703,7 +7697,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Bia Thanh Đảo là một trong những thức uống ủ truyền thống mang thương hiệu nổi tiếng thế giới của Trung Quốc."
       },
       {
-        "vocabId": 892,
+        "vocabId": 900,
         "hanzi": "平时",
         "pinyin": "píngshí",
         "meaningHanViet": "Bình Thời",
@@ -7712,7 +7706,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Bình thường chú trọng chăm sóc sức khỏe và rèn luyện, tỷ lệ mắc bệnh sẽ giảm đi rất nhiều."
       },
       {
-        "vocabId": 893,
+        "vocabId": 901,
         "hanzi": "瓶子",
         "pinyin": "píngzi",
         "meaningHanViet": "Bình Tử",
@@ -7721,7 +7715,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Xin hãy tiện tay vứt chiếc chai nhựa rỗng dùng xong vào thùng rác tái chế."
       },
       {
-        "vocabId": 894,
+        "vocabId": 902,
         "hanzi": "骑",
         "pinyin": "qí",
         "meaningHanViet": "Kỵ",
@@ -7730,7 +7724,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Đi xe đạp công cộng qua lại trên các ngõ phố không chỉ giảm khí thải bảo vệ môi trường mà còn rèn luyện sức khỏe."
       },
       {
-        "vocabId": 895,
+        "vocabId": 903,
         "hanzi": "奇怪",
         "pinyin": "qíguài",
         "meaningHanViet": "Kỳ Quái",
@@ -7739,7 +7733,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Chú chim nhỏ này phát ra một tiếng kêu kỳ lạ chưa từng nghe thấy bao giờ."
       },
       {
-        "vocabId": 896,
+        "vocabId": 904,
         "hanzi": "其实",
         "pinyin": "qíshí",
         "meaningHanViet": "Kỳ Thực",
@@ -7748,7 +7742,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Học tiếng Trung nhìn qua có vẻ khó, thực ra chỉ cần nắm chắc quy luật chữ Hán sẽ trở nên rất thú vị."
       },
       {
-        "vocabId": 897,
+        "vocabId": 905,
         "hanzi": "其他",
         "pinyin": "qítā",
         "meaningHanViet": "Kỳ Tha",
@@ -7773,7 +7767,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Sáu giờ sáng tôi đã thức dậy rồi."
       },
       {
-        "vocabId": 898,
+        "vocabId": 906,
         "hanzi": "起飞",
         "pinyin": "qǐfēi",
         "meaningHanViet": "Khởi Phi",
@@ -7791,7 +7785,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Trên đường xe hơi đi lại tấp nập."
       },
       {
-        "vocabId": 899,
+        "vocabId": 907,
         "hanzi": "铅笔",
         "pinyin": "qiānbǐ",
         "meaningHanViet": "Diên Bút",
@@ -7800,7 +7794,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Học sinh tiểu học khi mới bắt đầu học viết chữ Hán thường chọn bút chì gỗ có độ cứng vừa phải."
       },
       {
-        "vocabId": 900,
+        "vocabId": 908,
         "hanzi": "前年",
         "pinyin": "qiánnián",
         "meaningHanViet": "Tiền Niên",
@@ -7818,7 +7812,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Hôm kia chúng tôi đã tham gia kỳ thi."
       },
       {
-        "vocabId": 901,
+        "vocabId": 909,
         "hanzi": "清楚",
         "pinyin": "qīngchu",
         "meaningHanViet": "Thanh Sở",
@@ -7836,7 +7830,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Hôm nay anh ấy bị ốm nên xin phép thầy nghỉ học."
       },
       {
-        "vocabId": 902,
+        "vocabId": 910,
         "hanzi": "请客",
         "pinyin": "qǐngkè",
         "meaningHanViet": "Thỉnh Khách",
@@ -7845,7 +7839,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Hôm nay tôi đã vượt qua kỳ thi năng lực Hán ngữ, tối nay nhất định phải khao một chầu để ăn mừng!"
       },
       {
-        "vocabId": 903,
+        "vocabId": 911,
         "hanzi": "秋天",
         "pinyin": "qiūtiān",
         "meaningHanViet": "Thu Thiên",
@@ -7854,7 +7848,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Mùa thu là mùa thu hoạch vàng óng trĩu quả mùa màng bội thu."
       },
       {
-        "vocabId": 904,
+        "vocabId": 912,
         "hanzi": "球场",
         "pinyin": "qiúchǎng",
         "meaningHanViet": "Cầu Trường",
@@ -7863,7 +7857,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Chiều sau giờ tan học, trên sân bóng cỏ xanh rộng lớn rộn ràng các bạn học sinh yêu thích thể thao."
       },
       {
-        "vocabId": 905,
+        "vocabId": 913,
         "hanzi": "裙子",
         "pinyin": "qúnzi",
         "meaningHanViet": "Quần Tử",
@@ -7872,7 +7866,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Chiếc váy màu đỏ này rất hợp với bạn."
       },
       {
-        "vocabId": 906,
+        "vocabId": 914,
         "hanzi": "然后",
         "pinyin": "ránhòu",
         "meaningHanViet": "Nhiên Hậu",
@@ -7881,7 +7875,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Chúng tôi tham quan Bảo tàng Quốc gia trước, sau đó cùng nhau tản bộ trên Quảng trường Thiên An Môn."
       },
       {
-        "vocabId": 907,
+        "vocabId": 915,
         "hanzi": "热情",
         "pinyin": "rèqíng",
         "meaningHanViet": "Nhiệt Tình",
@@ -7890,7 +7884,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Người dân địa phương vô cùng nhiệt tình hiếu khách, bưng ra những món ngon đặc sản nhất thết đãi khách phương xa."
       },
       {
-        "vocabId": 908,
+        "vocabId": 916,
         "hanzi": "认得",
         "pinyin": "rènde",
         "meaningHanViet": "Nhận Đắc",
@@ -7899,7 +7893,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Nhiều năm chưa gặp, đôi bạn học cũ giữa biển người mênh mông vẫn nhận ra nhau ngay từ cái nhìn đầu tiên."
       },
       {
-        "vocabId": 909,
+        "vocabId": 917,
         "hanzi": "认为",
         "pinyin": "rènwéi",
         "meaningHanViet": "Nhận Vi",
@@ -7917,7 +7911,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Mọi người đều đang chăm chỉ học tiếng Trung."
       },
       {
-        "vocabId": 910,
+        "vocabId": 918,
         "hanzi": "容易",
         "pinyin": "róngyì",
         "meaningHanViet": "Dung Dị",
@@ -7926,7 +7920,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Dưới gầm trời không việc gì khó, chỉ cần quyết chí trèo cao, không có gian nan hay dễ dàng nào không vượt qua được."
       },
       {
-        "vocabId": 911,
+        "vocabId": 919,
         "hanzi": "如果",
         "pinyin": "rúguǒ",
         "meaningHanViet": "Như Quả",
@@ -7935,7 +7929,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Nếu như ngày mai trời mưa to, hoạt động chạy bền ngoài trời đã định của chúng ta sẽ chuyển sang tổ chức trong nhà."
       },
       {
-        "vocabId": 912,
+        "vocabId": 920,
         "hanzi": "伞",
         "pinyin": "sǎn",
         "meaningHanViet": "Tản",
@@ -7951,7 +7945,7 @@ export const HSK3_TOPICS = [
     "description": "Quét dọn nhà cửa, ghế sô pha, áo khoác và các trải nghiệm cá nhân.",
     "vocabularies": [
       {
-        "vocabId": 913,
+        "vocabId": 921,
         "hanzi": "扫",
         "pinyin": "sǎo",
         "meaningHanViet": "Tảo",
@@ -7960,7 +7954,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Các công nhân vệ sinh môi trường từ năm giờ sáng đã cầm chổi lớn quét dọn đường phố sạch bong."
       },
       {
-        "vocabId": 914,
+        "vocabId": 922,
         "hanzi": "沙发",
         "pinyin": "shāfā",
         "meaningHanViet": "Sa Phát",
@@ -7978,7 +7972,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Ngọn núi này thật là cao."
       },
       {
-        "vocabId": 915,
+        "vocabId": 923,
         "hanzi": "上衣",
         "pinyin": "shàngyī",
         "meaningHanViet": "Thượng Y",
@@ -7987,7 +7981,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Hôm nay anh ấy mặc một chiếc áo khoác ấm màu xanh lam sẫm đi làm."
       },
       {
-        "vocabId": 916,
+        "vocabId": 924,
         "hanzi": "勺子",
         "pinyin": "sháozi",
         "meaningHanViet": "Chước Tử",
@@ -7996,7 +7990,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Khi húp canh nóng xin hãy dùng chiếc thìa sứ chuyên dụng để tránh bị bỏng."
       },
       {
-        "vocabId": 917,
+        "vocabId": 925,
         "hanzi": "身边",
         "pinyin": "shēnbiān",
         "meaningHanViet": "Thân Biên",
@@ -8005,7 +7999,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Dù có đi đến chân trời góc biển, tình cảm chở che của người thân mãi luôn đồng hành bên cạnh chúng ta."
       },
       {
-        "vocabId": 918,
+        "vocabId": 926,
         "hanzi": "身高",
         "pinyin": "shēngāo",
         "meaningHanViet": "Thân Cao",
@@ -8014,7 +8008,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Đo chiều cao cân nặng định kỳ là chỉ số quan trọng để theo dõi sự phát triển thể chất của thanh thiếu niên trẻ em."
       },
       {
-        "vocabId": 919,
+        "vocabId": 927,
         "hanzi": "声",
         "pinyin": "shēng",
         "meaningHanViet": "Thanh",
@@ -8023,7 +8017,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Giữa những ngọn núi xa xa vọng lại một tiếng chim hót lảnh lót êm tai."
       },
       {
-        "vocabId": 920,
+        "vocabId": 928,
         "hanzi": "生活",
         "pinyin": "shēnghuó",
         "meaningHanViet": "Sinh Hoạt",
@@ -8041,7 +8035,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Đừng vì chuyện nhỏ nhặt này mà tức giận."
       },
       {
-        "vocabId": 921,
+        "vocabId": 929,
         "hanzi": "声音",
         "pinyin": "shēngyīn",
         "meaningHanViet": "Thanh Âm",
@@ -8050,7 +8044,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Trong phòng học vang lên âm thanh đọc bài khóa đồng thanh to rõ của các bạn học sinh."
       },
       {
-        "vocabId": 922,
+        "vocabId": 930,
         "hanzi": "市",
         "pinyin": "shì",
         "meaningHanViet": "Thị",
@@ -8068,7 +8062,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Bộ quần áo này bạn có thể mặc thử một chút."
       },
       {
-        "vocabId": 923,
+        "vocabId": 931,
         "hanzi": "室",
         "pinyin": "shì",
         "meaningHanViet": "Thất",
@@ -8077,7 +8071,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Chúng tôi ở trong phòng đọc sách yên tĩnh tại tầng ba chăm chú tra cứu tài liệu văn kiện."
       },
       {
-        "vocabId": 924,
+        "vocabId": 932,
         "hanzi": "世界",
         "pinyin": "shìjiè",
         "meaningHanViet": "Thế Giới",
@@ -8086,7 +8080,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Công nghệ internet đã kéo lại gần hoàn toàn khoảng cách giữa nhân dân các nước trên toàn thế giới."
       },
       {
-        "vocabId": 925,
+        "vocabId": 933,
         "hanzi": "收",
         "pinyin": "shōu",
         "meaningHanViet": "Thu",
@@ -8095,7 +8089,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Trước khi rời trường cuối kỳ xin các bạn học sinh thu dọn gọn gàng đồ đạc cá nhân mang về."
       },
       {
-        "vocabId": 926,
+        "vocabId": 934,
         "hanzi": "收到",
         "pinyin": "shōudào",
         "meaningHanViet": "Thu Đáo",
@@ -8104,7 +8098,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Chiều nay tôi rốt cuộc đã nhận được thư bảo đảm báo tin trúng tuyển đại học."
       },
       {
-        "vocabId": 927,
+        "vocabId": 935,
         "hanzi": "受",
         "pinyin": "shòu",
         "meaningHanViet": "Thụ",
@@ -8113,7 +8107,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Dù gặp phải khảo nghiệm khắc nghiệt đến đâu, anh ấy đều dũng cảm vượt qua chịu đựng."
       },
       {
-        "vocabId": 928,
+        "vocabId": 936,
         "hanzi": "瘦",
         "pinyin": "shòu",
         "meaningHanViet": "Sấu",
@@ -8122,7 +8116,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Mấy tháng kiên trì rèn luyện điều độ và ăn uống lành mạnh, anh ấy đã gầy đi trông thấy."
       },
       {
-        "vocabId": 929,
+        "vocabId": 937,
         "hanzi": "受到",
         "pinyin": "shòudào",
         "meaningHanViet": "Thụ Đáo",
@@ -8138,7 +8132,7 @@ export const HSK3_TOPICS = [
     "description": "Môn toán, cây cối thiên nhiên, trao đổi đồng nghiệp và sự đồng thuận.",
     "vocabularies": [
       {
-        "vocabId": 930,
+        "vocabId": 938,
         "hanzi": "叔叔",
         "pinyin": "shūshu",
         "meaningHanViet": "Thúc Thúc",
@@ -8156,7 +8150,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Trong khuôn viên trường trồng rất nhiều cây xanh cao lớn."
       },
       {
-        "vocabId": 931,
+        "vocabId": 939,
         "hanzi": "数学",
         "pinyin": "shùxué",
         "meaningHanViet": "Số Học",
@@ -8165,7 +8159,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Học tốt toán học cơ bản có thể bồi dưỡng năng lực tư duy logic chặt chẽ cẩn trọng cho con người."
       },
       {
-        "vocabId": 932,
+        "vocabId": 940,
         "hanzi": "刷",
         "pinyin": "shuā",
         "meaningHanViet": "Loát",
@@ -8174,7 +8168,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Mỗi sáng tối chăm chỉ đánh răng là yêu cầu cơ bản để giữ vệ sinh răng miệng phòng ngừa sâu răng."
       },
       {
-        "vocabId": 933,
+        "vocabId": 941,
         "hanzi": "双",
         "pinyin": "shuāng",
         "meaningHanViet": "Song",
@@ -8183,7 +8177,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Dịp đón tết mẹ đã mua cho tôi một đôi giày thể thao màu trắng mới tinh."
       },
       {
-        "vocabId": 934,
+        "vocabId": 942,
         "hanzi": "水平",
         "pinyin": "shuǐpíng",
         "meaningHanViet": "Thuỷ Bình",
@@ -8192,7 +8186,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Qua nửa năm học tập đắm chìm, trình độ khẩu ngữ tiếng Trung của anh ấy đã có bước tiến nhảy vọt về chất."
       },
       {
-        "vocabId": 935,
+        "vocabId": 943,
         "hanzi": "司机",
         "pinyin": "sījī",
         "meaningHanViet": "Ty Cơ",
@@ -8201,7 +8195,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Bác tài xế xe buýt lâu năm kinh nghiệm lái xe cực kỳ phong phú, kỹ thuật điều khiển xe êm ái an toàn."
       },
       {
-        "vocabId": 936,
+        "vocabId": 944,
         "hanzi": "四季",
         "pinyin": "sìjì",
         "meaningHanViet": "Tứ Quý",
@@ -8210,7 +8204,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Côn Minh khí hậu dễ chịu bốn mùa như xuân, được ngợi ca với danh xưng Thành phố Mùa Xuân."
       },
       {
-        "vocabId": 937,
+        "vocabId": 945,
         "hanzi": "太阳",
         "pinyin": "tàiyáng",
         "meaningHanViet": "Thái Dương",
@@ -8219,7 +8213,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Mặt trời ấm áp rực rỡ chiếu rọi đất trời, làm tan chảy dòng nước tuyết đóng băng."
       },
       {
-        "vocabId": 938,
+        "vocabId": 946,
         "hanzi": "糖",
         "pinyin": "táng",
         "meaningHanViet": "Đường",
@@ -8228,7 +8222,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Trẻ nhỏ sau khi ăn kẹo ngọt có đường cần kịp thời súc miệng để phòng tránh sâu răng."
       },
       {
-        "vocabId": 939,
+        "vocabId": 947,
         "hanzi": "特别",
         "pinyin": "tèbié",
         "meaningHanViet": "Đặc Biệt",
@@ -8237,7 +8231,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Hôm nay toàn thể học sinh trong lớp đã chuẩn bị cho thầy cô một món quà ngày Nhà giáo đặc biệt có ý nghĩa."
       },
       {
-        "vocabId": 940,
+        "vocabId": 948,
         "hanzi": "提高",
         "pinyin": "tígāo",
         "meaningHanViet": "Đề Cao",
@@ -8246,7 +8240,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Kiên trì mỗi ngày đọc báo chí ấn bản gốc tiếng Trung có thể nâng cao tốc độ đọc hiểu một cách rõ rệt."
       },
       {
-        "vocabId": 941,
+        "vocabId": 949,
         "hanzi": "体育",
         "pinyin": "tǐyù",
         "meaningHanViet": "Thể Dục",
@@ -8255,7 +8249,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Trường học mỗi năm vào mùa xuân đều tổ chức đại hội thể dục thể thao toàn trường tưng bừng đúng hẹn."
       },
       {
-        "vocabId": 942,
+        "vocabId": 950,
         "hanzi": "体育馆",
         "pinyin": "tǐyùguǎn",
         "meaningHanViet": "Thể Dục Quán",
@@ -8264,7 +8258,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Nhà thi đấu hiện đại này có thể tổ chức các giải thi đấu cầu lông quy mô tiêu chuẩn hàng đầu quốc tế."
       },
       {
-        "vocabId": 943,
+        "vocabId": 951,
         "hanzi": "甜",
         "pinyin": "tián",
         "meaningHanViet": "Điềm",
@@ -8273,7 +8267,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Thổ Lỗ Phiên ở Tân Cương chênh lệch nhiệt độ ngày đêm lớn, nho sản xuất ra đặc biệt ngọt ngào mọng nước."
       },
       {
-        "vocabId": 944,
+        "vocabId": 952,
         "hanzi": "跳",
         "pinyin": "tiào",
         "meaningHanViet": "Khiêu",
@@ -8282,7 +8276,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Những chú chuột túi nhỏ tinh nghịch thoăn thoắt nhảy từng bước từng bước trên đồng cỏ."
       },
       {
-        "vocabId": 945,
+        "vocabId": 953,
         "hanzi": "听说",
         "pinyin": "tīngshuō",
         "meaningHanViet": "Thính Thuyết",
@@ -8291,7 +8285,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Nghe nói tuần sau trong ngày hội nghệ thuật của trường sẽ có một màn hợp xướng tuyệt vời của sinh viên trong và ngoài nước."
       },
       {
-        "vocabId": 946,
+        "vocabId": 954,
         "hanzi": "挺",
         "pinyin": "tǐng",
         "meaningHanViet": "Đĩnh",
@@ -8300,7 +8294,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Cuốn tiểu thuyết lịch sử mới xuất bản này viết rất có chiều sâu."
       },
       {
-        "vocabId": 947,
+        "vocabId": 955,
         "hanzi": "同事",
         "pinyin": "tóngshì",
         "meaningHanViet": "Đồng Sự",
@@ -8309,7 +8303,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Tôi và vài đồng nghiệp trong bộ phận sống chan hòa hòa thuận với nhau rất vui vẻ."
       },
       {
-        "vocabId": 948,
+        "vocabId": 956,
         "hanzi": "同意",
         "pinyin": "tóngyì",
         "meaningHanViet": "Đồng Ý",
@@ -8325,7 +8319,7 @@ export const HSK3_TOPICS = [
     "description": "Nghiên cứu thư viện, nét đẹp văn hóa, không gian phòng ốc và địa lý.",
     "vocabularies": [
       {
-        "vocabId": 949,
+        "vocabId": 957,
         "hanzi": "头发",
         "pinyin": "tóufa",
         "meaningHanViet": "Đầu Phát",
@@ -8334,7 +8328,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Cô ấy để một mái tóc dài đen nhánh mềm mượt, trông đặc biệt dịu dàng đằm thắm."
       },
       {
-        "vocabId": 950,
+        "vocabId": 958,
         "hanzi": "突然",
         "pinyin": "tūrán",
         "meaningHanViet": "Đột Nhiên",
@@ -8352,7 +8346,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Trong thư viện vô cùng yên tĩnh."
       },
       {
-        "vocabId": 951,
+        "vocabId": 959,
         "hanzi": "腿",
         "pinyin": "tuǐ",
         "meaningHanViet": "Thoái",
@@ -8361,7 +8355,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Khi đá bóng không may bị căng cơ chân, cần tĩnh dưỡng nghỉ ngơi cẩn thận."
       },
       {
-        "vocabId": 952,
+        "vocabId": 960,
         "hanzi": "外地",
         "pinyin": "wàidì",
         "meaningHanViet": "Ngoại Địa",
@@ -8370,7 +8364,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Rất nhiều du khách đến từ nơi khác tranh thủ kỳ nghỉ tuần lễ vàng đến Bắc Kinh tham quan."
       },
       {
-        "vocabId": 953,
+        "vocabId": 961,
         "hanzi": "外卖",
         "pinyin": "wàimài",
         "meaningHanViet": "Ngoại Mại",
@@ -8388,7 +8382,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Học giỏi một ngoại ngữ rất có ích."
       },
       {
-        "vocabId": 954,
+        "vocabId": 962,
         "hanzi": "完成",
         "pinyin": "wánchéng",
         "meaningHanViet": "Hoàn Thành",
@@ -8397,7 +8391,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Nhóm chúng tôi trước thời hạn chót đã hoàn thành toàn bộ dự án đảm bảo chất lượng và số lượng."
       },
       {
-        "vocabId": 955,
+        "vocabId": 963,
         "hanzi": "碗",
         "pinyin": "wǎn",
         "meaningHanViet": "Oản",
@@ -8406,7 +8400,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Mẹ múc một bát canh gà bốc khói nghi ngút trong bếp bưng cho tôi."
       },
       {
-        "vocabId": 956,
+        "vocabId": 964,
         "hanzi": "晚点",
         "pinyin": "wǎndiǎn",
         "meaningHanViet": "Vãn Điểm",
@@ -8415,7 +8409,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Do ảnh hưởng của thời tiết bão tuyết, nhiều chuyến tàu chạy về phía bắc đã bị trễ giờ."
       },
       {
-        "vocabId": 957,
+        "vocabId": 965,
         "hanzi": "晚会",
         "pinyin": "wǎnhuì",
         "meaningHanViet": "Vãn Hội",
@@ -8424,7 +8418,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Đêm dạ hội đón mừng năm mới do trường tổ chức các tiết mục vô cùng đặc sắc cuốn hút."
       },
       {
-        "vocabId": 958,
+        "vocabId": 966,
         "hanzi": "网球",
         "pinyin": "wǎngqiú",
         "meaningHanViet": "Võng Cầu",
@@ -8433,7 +8427,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Cứ mỗi cuối tuần anh ấy đều hẹn bạn bè đến nhà thi đấu chơi quần vợt hai tiếng."
       },
       {
-        "vocabId": 959,
+        "vocabId": 967,
         "hanzi": "网站",
         "pinyin": "wǎngzhàn",
         "meaningHanViet": "Võng Trạm",
@@ -8451,7 +8445,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Tôi quên mất số điện thoại của anh ấy rồi."
       },
       {
-        "vocabId": 960,
+        "vocabId": 968,
         "hanzi": "为",
         "pinyin": "wèi",
         "meaningHanViet": "Vi",
@@ -8460,7 +8454,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Mọi người đều đang vì mục tiêu phấn đấu thực hiện sự phục hưng vĩ đại của dân tộc."
       },
       {
-        "vocabId": 961,
+        "vocabId": 969,
         "hanzi": "为了",
         "pinyin": "wèile",
         "meaningHanViet": "Vi Liễu",
@@ -8469,7 +8463,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Để có thể vượt qua kỳ thi năng lực tiếng Trung một cách thuận lợi, anh ấy mỗi ngày khổ luyện nghe."
       },
       {
-        "vocabId": 962,
+        "vocabId": 970,
         "hanzi": "卫生间",
         "pinyin": "wèishēngjiān",
         "meaningHanViet": "Vệ Sinh Gian",
@@ -8478,7 +8472,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Xin hỏi nhà vệ sinh ở tầng hai thư viện nên đi theo hướng nào?"
       },
       {
-        "vocabId": 963,
+        "vocabId": 971,
         "hanzi": "文化",
         "pinyin": "wénhuà",
         "meaningHanViet": "Văn Hoá",
@@ -8487,7 +8481,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Văn hóa truyền thống Trung Hoa sâu rộng uyên bác đã thu hút những người yêu thích Hán học khắp nơi trên thế giới."
       },
       {
-        "vocabId": 964,
+        "vocabId": 972,
         "hanzi": "屋子",
         "pinyin": "wūzi",
         "meaningHanViet": "Ốc Tử",
@@ -8512,7 +8506,7 @@ export const HSK3_TOPICS = [
     "description": "Định hướng địa lý, rèn luyện thói quen tốt và giao tiếp học đường.",
     "vocabularies": [
       {
-        "vocabId": 965,
+        "vocabId": 973,
         "hanzi": "西北",
         "pinyin": "xīběi",
         "meaningHanViet": "Tây Bắc",
@@ -8521,7 +8515,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Vùng tây bắc Trung Quốc có phong cảnh sa mạc sa mạc đá mênh mông hùng vĩ."
       },
       {
-        "vocabId": 966,
+        "vocabId": 974,
         "hanzi": "西方",
         "pinyin": "xīfāng",
         "meaningHanViet": "Tây Phương",
@@ -8530,7 +8524,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Giao lưu và đối thoại văn hóa giữa Trung Hoa và phương Tây đã thúc đẩy sự học hỏi lẫn nhau giữa các nền văn minh."
       },
       {
-        "vocabId": 967,
+        "vocabId": 975,
         "hanzi": "西瓜",
         "pinyin": "xīguā",
         "meaningHanViet": "Tây Qua",
@@ -8539,7 +8533,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Trong ngày hè nắng nóng gay gắt, bổ một quả dưa hấu ướp lạnh đặc biệt ngọt mát xua tan cái nóng."
       },
       {
-        "vocabId": 968,
+        "vocabId": 976,
         "hanzi": "西南",
         "pinyin": "xīnán",
         "meaningHanViet": "Tây Nam",
@@ -8548,7 +8542,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Tỉnh Vân Nam ở vùng tây nam Trung Quốc vốn có danh xưng miền nam mây ngũ sắc và vương quốc động thực vật."
       },
       {
-        "vocabId": 969,
+        "vocabId": 977,
         "hanzi": "习惯",
         "pinyin": "xíguàn",
         "meaningHanViet": "Tập Quán",
@@ -8557,7 +8551,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Rèn luyện thói quen tốt kiên trì đọc sách buổi sáng mỗi ngày sẽ khiến con người ta được hưởng lợi vô cùng suốt đời."
       },
       {
-        "vocabId": 970,
+        "vocabId": 978,
         "hanzi": "喜爱",
         "pinyin": "xǐ’ài",
         "meaningHanViet": "Hỉ Ái",
@@ -8566,7 +8560,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Khúc nhạc dân gian Trung Hoa kinh điển này được quần chúng ở mọi lứa tuổi vô cùng mến chuộng."
       },
       {
-        "vocabId": 971,
+        "vocabId": 979,
         "hanzi": "洗衣机",
         "pinyin": "xǐyījī",
         "meaningHanViet": "Tẩy Y Cơ",
@@ -8575,7 +8569,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Sự phổ cập của máy giặt lồng ngang hoàn toàn tự động đã giải phóng hoàn toàn đôi bàn tay con người."
       },
       {
-        "vocabId": 972,
+        "vocabId": 980,
         "hanzi": "洗澡",
         "pinyin": "xǐzǎo",
         "meaningHanViet": "Tẩy Táo",
@@ -8584,7 +8578,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Mỗi tối tắm trước khi đi ngủ là một thói quen tốt."
       },
       {
-        "vocabId": 973,
+        "vocabId": 981,
         "hanzi": "夏天",
         "pinyin": "xiàtiān",
         "meaningHanViet": "Hạ Thiên",
@@ -8602,7 +8596,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Bạn hãy ngồi trước đi, tôi đi rót trà ngay."
       },
       {
-        "vocabId": 974,
+        "vocabId": 982,
         "hanzi": "香蕉",
         "pinyin": "xiāngjiāo",
         "meaningHanViet": "Hương Tiêu",
@@ -8611,7 +8605,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Quả chuối giàu nguyên tố kali phong phú, là loại hoa quả lý tưởng để bổ sung năng lượng sau vận động."
       },
       {
-        "vocabId": 975,
+        "vocabId": 983,
         "hanzi": "相信",
         "pinyin": "xiāngxìn",
         "meaningHanViet": "Tương Tín",
@@ -8620,7 +8614,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Tôi tin rằng chỉ cần kiên trì nỗ lực thì nhất định sẽ thành công."
       },
       {
-        "vocabId": 976,
+        "vocabId": 984,
         "hanzi": "箱子",
         "pinyin": "xiāngzi",
         "meaningHanViet": "Sương Tử",
@@ -8629,7 +8623,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Trước khi lên đường đi xa, anh ấy xếp gọn quần áo thay thường ngày vào trong chiếc vali du lịch."
       },
       {
-        "vocabId": 977,
+        "vocabId": 985,
         "hanzi": "向",
         "pinyin": "xiàng",
         "meaningHanViet": "Hướng",
@@ -8638,7 +8632,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Hoa hướng dương buổi sớm đón vầng thái dương đỏ rực đang mọc, luôn hướng về phía ánh sáng một cách kiên định."
       },
       {
-        "vocabId": 978,
+        "vocabId": 986,
         "hanzi": "像",
         "pinyin": "xiàng",
         "meaningHanViet": "Tượng",
@@ -8647,7 +8641,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Đôi mắt to tròn trong sáng long lanh kia giống như muôn ngàn vì sao lấp lánh trên bầu trời."
       },
       {
-        "vocabId": 979,
+        "vocabId": 987,
         "hanzi": "相机",
         "pinyin": "xiàngjī",
         "meaningHanViet": "Tương Cơ",
@@ -8656,7 +8650,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Nhiếp ảnh gia cầm máy ảnh chuyên dụng lên, ghi lại chuẩn xác khoảnh khắc đàn chim sải cánh tung bay."
       },
       {
-        "vocabId": 980,
+        "vocabId": 988,
         "hanzi": "小区",
         "pinyin": "xiǎoqū",
         "meaningHanViet": "Tiểu Khu",
@@ -8665,7 +8659,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Tỷ lệ phủ xanh của khu dân cư chúng tôi rất cao, các tiện ích sinh hoạt cũng đầy đủ vẹn toàn."
       },
       {
-        "vocabId": 981,
+        "vocabId": 989,
         "hanzi": "小心",
         "pinyin": "xiǎoxīn",
         "meaningHanViet": "Tiểu Tâm",
@@ -8674,7 +8668,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Ngày mưa mặt đường trơn ướt, đi xe ra ngoài nhất định phải đặc biệt cẩn thận đi chậm rãi."
       },
       {
-        "vocabId": 982,
+        "vocabId": 990,
         "hanzi": "校园",
         "pinyin": "xiàoyuán",
         "meaningHanViet": "Hiệu Viên",
@@ -8683,7 +8677,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Khuôn viên trường đại học ngày thu lá vàng rơi ngập lối, khắp nơi tràn ngập hơi thở thanh xuân đèn sách."
       },
       {
-        "vocabId": 983,
+        "vocabId": 991,
         "hanzi": "校长",
         "pinyin": "xiàozhǎng",
         "meaningHanViet": "Hiệu Trưởng",
@@ -8699,7 +8693,7 @@ export const HSK3_TOPICS = [
     "description": "Đọc báo cập nhật tin tức, thực phẩm tươi ngon và các yêu cầu công việc.",
     "vocabularies": [
       {
-        "vocabId": 984,
+        "vocabId": 992,
         "hanzi": "鞋",
         "pinyin": "xié",
         "meaningHanViet": "Hài",
@@ -8708,7 +8702,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Đi leo núi nhất định phải đi một đôi giày đi bộ chuyên dụng chống trượt mài mòn và thoáng khí tốt."
       },
       {
-        "vocabId": 985,
+        "vocabId": 993,
         "hanzi": "心里",
         "pinyin": "xīnlǐ",
         "meaningHanViet": "Tâm Lý",
@@ -8726,7 +8720,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Chúc mọi người năm mới vui vẻ, vạn sự như ý!"
       },
       {
-        "vocabId": 986,
+        "vocabId": 994,
         "hanzi": "新闻",
         "pinyin": "xīnwén",
         "meaningHanViet": "Tân Văn",
@@ -8735,7 +8729,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Ông nội mỗi buổi chập tối đều đúng giờ đón xem chương trình thời sự của đài truyền hình trung ương."
       },
       {
-        "vocabId": 987,
+        "vocabId": 995,
         "hanzi": "新鲜",
         "pinyin": "xīnxiān",
         "meaningHanViet": "Tân Tiên",
@@ -8744,7 +8738,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Các loại rau củ hoa quả ở chợ sớm ban mai còn đọng giọt sương, đặc biệt tươi ngon giòn ngọt."
       },
       {
-        "vocabId": 988,
+        "vocabId": 996,
         "hanzi": "信",
         "pinyin": "xìn",
         "meaningHanViet": "Tín",
@@ -8753,7 +8747,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Chiều nay tôi đã nhận được một bức thư bạn gửi đến."
       },
       {
-        "vocabId": 989,
+        "vocabId": 997,
         "hanzi": "信用卡",
         "pinyin": "xìnyòngkǎ",
         "meaningHanViet": "Tín Dụng Tạp",
@@ -8771,7 +8765,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Nếu thời gian của bạn thuận tiện, vậy thì được rồi."
       },
       {
-        "vocabId": 990,
+        "vocabId": 998,
         "hanzi": "行李",
         "pinyin": "xíngli",
         "meaningHanViet": "Hành Lý",
@@ -8780,7 +8774,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Khi đi tàu cao tốc, hành lý cồng kềnh mang theo xin hãy để ngay ngắn trên giá để hành lý ở nơi nối toa."
       },
       {
-        "vocabId": 991,
+        "vocabId": 999,
         "hanzi": "兴趣",
         "pinyin": "xìngqù",
         "meaningHanViet": "Hứng Thú",
@@ -8789,7 +8783,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Bồi dưỡng niềm hứng thú sâu sắc với nghệ thuật thư pháp Trung Hoa có thể tu dưỡng tâm tính nuôi dưỡng tâm hồn."
       },
       {
-        "vocabId": 992,
+        "vocabId": 1000,
         "hanzi": "休假",
         "pinyin": "xiūjià",
         "meaningHanViet": "Hưu Giá",
@@ -8798,7 +8792,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Sau một năm ròng rã bận rộn, anh ấy rốt cuộc đã được duyệt nghỉ phép một tuần để ở bên cha mẹ già."
       },
       {
-        "vocabId": 993,
+        "vocabId": 1001,
         "hanzi": "需要",
         "pinyin": "xūyào",
         "meaningHanViet": "Nhu Yếu",
@@ -8807,7 +8801,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Hoàn thành nhiệm vụ nghiên cứu khoa học phức tạp này đòi hỏi toàn thể thành viên trong đội ngũ phải hợp tác chân thành."
       },
       {
-        "vocabId": 994,
+        "vocabId": 1002,
         "hanzi": "选",
         "pinyin": "xuǎn",
         "meaningHanViet": "Tuyển",
@@ -8816,7 +8810,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Thời đại học chọn được một chuyên ngành bản thân thực sự đam mê lại có triển vọng phát triển là vô cùng quan trọng."
       },
       {
-        "vocabId": 995,
+        "vocabId": 1003,
         "hanzi": "选择",
         "pinyin": "xuǎnzé",
         "meaningHanViet": "Tuyển Trạch",
@@ -8825,7 +8819,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Đối diện với ngã rẽ lớn của cuộc đời, chúng ta cần phải kiên định và tỉnh táo đưa ra sự lựa chọn đúng đắn."
       },
       {
-        "vocabId": 996,
+        "vocabId": 1004,
         "hanzi": "学期",
         "pinyin": "xuéqī",
         "meaningHanViet": "Học Kỳ",
@@ -8834,7 +8828,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Học kỳ mới vừa bắt đầu, các bạn học sinh ai nấy đều tràn đầy tinh thần hăng say bước vào học tập khẩn trương."
       },
       {
-        "vocabId": 997,
+        "vocabId": 1005,
         "hanzi": "牙",
         "pinyin": "yá",
         "meaningHanViet": "Nha",
@@ -8843,7 +8837,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Giữ hàm răng khỏe mạnh sạch sẽ, mỗi ngày kiên trì súc miệng sau bữa ăn và đánh răng đúng cách sáng tối."
       },
       {
-        "vocabId": 998,
+        "vocabId": 1006,
         "hanzi": "牙刷",
         "pinyin": "yáshuā",
         "meaningHanViet": "Nha Loát",
@@ -8852,7 +8846,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Bác sĩ nha khoa khuyên mọi người cứ cách hai đến ba tháng nên định kỳ thay bàn chải đánh răng mới một lần."
       },
       {
-        "vocabId": 999,
+        "vocabId": 1007,
         "hanzi": "羊",
         "pinyin": "yáng",
         "meaningHanViet": "Dương",
@@ -8861,7 +8855,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Trên thảo nguyên bao la một đàn cừu trắng muốt như tuyết đang thong thả gặm cỏ xanh."
       },
       {
-        "vocabId": 1000,
+        "vocabId": 1008,
         "hanzi": "养",
         "pinyin": "yǎng",
         "meaningHanViet": "Dưỡng",
@@ -8870,7 +8864,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Sau khi nghỉ hưu ông nội nuôi trồng rất nhiều hoa lan quý và cá vàng ngắm cảnh ở khoảng sân sau rộng rãi."
       },
       {
-        "vocabId": 1001,
+        "vocabId": 1009,
         "hanzi": "要求",
         "pinyin": "yāoqiú",
         "meaningHanViet": "Yếu Cầu",
@@ -8895,7 +8889,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Xin mời mọi người lật tới trang 45 sách giáo khoa."
       },
       {
-        "vocabId": 1002,
+        "vocabId": 1010,
         "hanzi": "一定",
         "pinyin": "yídìng",
         "meaningHanViet": "Nhất Định",
@@ -8904,7 +8898,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Chỉ cần kiên trì không ngừng nghỉ thì trình độ tiếng Trung của bạn nhất định sẽ đạt được bước tiến nhảy vọt."
       },
       {
-        "vocabId": 1003,
+        "vocabId": 1011,
         "hanzi": "一共",
         "pinyin": "yígòng",
         "meaningHanViet": "Nhất Cộng",
@@ -8931,7 +8925,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Tính cách của anh ấy giống y hệt như bố mình."
       },
       {
-        "vocabId": 1004,
+        "vocabId": 1012,
         "hanzi": "以后",
         "pinyin": "yǐhòu",
         "meaningHanViet": "Dĩ Hậu",
@@ -8940,7 +8934,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Sau bài học lần này về sau anh ấy làm việc trở nên đặc biệt điềm tĩnh chín chắn và cẩn trọng tỉ mỉ."
       },
       {
-        "vocabId": 1005,
+        "vocabId": 1013,
         "hanzi": "以前",
         "pinyin": "yǐqián",
         "meaningHanViet": "Dĩ Tiền",
@@ -8949,7 +8943,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Trước khi đến Trung Quốc du học, anh ấy đã tự học kiến thức ngữ âm tiếng Trung cơ bản nửa năm."
       },
       {
-        "vocabId": 1006,
+        "vocabId": 1014,
         "hanzi": "以上",
         "pinyin": "yǐshàng",
         "meaningHanViet": "Dĩ Thượng",
@@ -8958,7 +8952,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Phàm là thí sinh có điểm thi năng lực Hán ngữ đạt từ hai trăm điểm trở lên đều có thể nộp đơn xin học bổng này."
       },
       {
-        "vocabId": 1007,
+        "vocabId": 1015,
         "hanzi": "以外",
         "pinyin": "yǐwài",
         "meaningHanViet": "Dĩ Ngoại",
@@ -8967,7 +8961,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Ngoài việc lên lớp học kiến thức chuyên ngành ra, anh ấy còn tích cực tham gia các hoạt động thực tiễn công ích xã hội."
       },
       {
-        "vocabId": 1008,
+        "vocabId": 1016,
         "hanzi": "以为",
         "pinyin": "yǐwéi",
         "meaningHanViet": "Dĩ Vi",
@@ -8976,7 +8970,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Tôi vốn tưởng rằng chiều nay sẽ mưa to, không ngờ trời lại hửng nắng trong xanh không một gợn mây."
       },
       {
-        "vocabId": 1009,
+        "vocabId": 1017,
         "hanzi": "以下",
         "pinyin": "yǐxià",
         "meaningHanViet": "Dĩ Hạ",
@@ -8985,7 +8979,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Khi nhiệt độ giảm đột ngột xuống dưới không độ C, mặt đường rất dễ đóng băng gây khó khăn cho việc đi lại."
       },
       {
-        "vocabId": 1010,
+        "vocabId": 1018,
         "hanzi": "一般",
         "pinyin": "yìbān",
         "meaningHanViet": "Nhất Ban",
@@ -9003,7 +8997,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Anh ấy vừa nghe nhạc, vừa làm bài tập."
       },
       {
-        "vocabId": 1011,
+        "vocabId": 1019,
         "hanzi": "一直",
         "pinyin": "yìzhí",
         "meaningHanViet": "Nhất Trực",
@@ -9012,7 +9006,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Từ cổng trường dọc theo đại lộ rợp bóng cây này đi thẳng mãi về phía trước, bên tay phải chính là thư viện."
       },
       {
-        "vocabId": 1012,
+        "vocabId": 1020,
         "hanzi": "音乐",
         "pinyin": "yīnyuè",
         "meaningHanViet": "Âm Nhạc",
@@ -9021,7 +9015,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Lúc rảnh rỗi nghe chút âm nhạc cổ điển có thể giúp tâm trạng thư giãn."
       },
       {
-        "vocabId": 1013,
+        "vocabId": 1021,
         "hanzi": "银行",
         "pinyin": "yínháng",
         "meaningHanViet": "Ngân Hành",
@@ -9030,7 +9024,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Chiều nay anh ấy xin nghỉ phép đến Ngân hàng Trung Quốc làm thủ tục chuyển khoản học phí qua biên giới."
       },
       {
-        "vocabId": 1014,
+        "vocabId": 1022,
         "hanzi": "银行卡",
         "pinyin": "yínhángkǎ",
         "meaningHanViet": "Ngân Hành Tạp",
@@ -9039,7 +9033,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Sau khi giao dịch tại cây ATM, xin nhất thiết hãy cất kỹ thẻ ngân hàng và biên lai của bạn."
       },
       {
-        "vocabId": 1015,
+        "vocabId": 1023,
         "hanzi": "饮料",
         "pinyin": "yǐnliào",
         "meaningHanViet": "Ẩm Liệu",
@@ -9048,7 +9042,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Mùa hè tiệm đồ uống lạnh cung cấp nhiều loại đồ uống giải khát mát lạnh bổ dưỡng ép từ hoa quả tươi."
       },
       {
-        "vocabId": 1016,
+        "vocabId": 1024,
         "hanzi": "应该",
         "pinyin": "yīnggāi",
         "meaningHanViet": "Ứng Cai",
@@ -9057,7 +9051,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Khi gặp điểm khó ngữ pháp không hiểu, mọi người nên chủ động mạnh dạn thỉnh giáo thầy cô giảng dạy."
       },
       {
-        "vocabId": 1017,
+        "vocabId": 1025,
         "hanzi": "影响",
         "pinyin": "yǐngxiǎng",
         "meaningHanViet": "Ảnh Hưởng",
@@ -9082,7 +9076,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Xin mời mọi người dùng tiếng Trung trả lời câu hỏi của thầy giáo."
       },
       {
-        "vocabId": 1018,
+        "vocabId": 1026,
         "hanzi": "邮件",
         "pinyin": "yóujiàn",
         "meaningHanViet": "Bưu Kiện",
@@ -9091,7 +9085,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Anh ấy vừa nhận được một bức thư điện tử xác nhận trúng tuyển chính thức từ phòng tuyển sinh đại học đối tác ở nước ngoài."
       },
       {
-        "vocabId": 1019,
+        "vocabId": 1027,
         "hanzi": "游客",
         "pinyin": "yóukè",
         "meaningHanViet": "Du Khách",
@@ -9100,7 +9094,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Hằng năm vào tháng mười mùa thu vàng có hàng vạn du khách trong và ngoài nước bước lên Vạn Lý Trường Thành Bát Đạt Lĩnh Bắc Kinh."
       },
       {
-        "vocabId": 1020,
+        "vocabId": 1028,
         "hanzi": "游戏",
         "pinyin": "yóuxì",
         "meaningHanViet": "Du Hí",
@@ -9109,7 +9103,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Chơi game điện tử rèn luyện trí tuệ ở mức độ vừa phải có thể phát triển trí thông minh, nhưng sa đà vào đó sẽ hại cho việc học hành."
       },
       {
-        "vocabId": 1021,
+        "vocabId": 1029,
         "hanzi": "邮箱",
         "pinyin": "yóuxiāng",
         "meaningHanViet": "Bưu Sương",
@@ -9118,7 +9112,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Trong sơ yếu lý lịch cá nhân xin nhất định phải ghi rõ ràng địa chỉ hộp thư điện tử thường dùng của bạn."
       },
       {
-        "vocabId": 1022,
+        "vocabId": 1030,
         "hanzi": "有关",
         "pinyin": "yǒuguān",
         "meaningHanViet": "Hữu Quan",
@@ -9145,7 +9139,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Nắm vững kỹ thuật này vô cùng hữu ích."
       },
       {
-        "vocabId": 1023,
+        "vocabId": 1031,
         "hanzi": "又",
         "pinyin": "yòu",
         "meaningHanViet": "Hựu",
@@ -9154,7 +9148,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Chiều nay trên trời đổ cơn mưa phùn lất phất, gió thoảng hiu hiu, thời tiết vừa mát mẻ lại vừa dễ chịu."
       },
       {
-        "vocabId": 1024,
+        "vocabId": 1032,
         "hanzi": "羽毛球",
         "pinyin": "yǔmáoqiú",
         "meaningHanViet": "Vũ Mao Cầu",
@@ -9163,7 +9157,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Sau giờ tan học sân cầu lông của nhà thi đấu lúc nào cũng rất đắt khách, chật kín các bạn trẻ yêu thể thao."
       },
       {
-        "vocabId": 1025,
+        "vocabId": 1033,
         "hanzi": "语言",
         "pinyin": "yǔyán",
         "meaningHanViet": "Ngữ Ngôn",
@@ -9172,7 +9166,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Ngôn ngữ không chỉ là công cụ giao lưu tư tưởng của con người mà còn là chiếc cầu nối để tìm hiểu văn hóa của một dân tộc."
       },
       {
-        "vocabId": 1026,
+        "vocabId": 1034,
         "hanzi": "雨衣",
         "pinyin": "yǔyī",
         "meaningHanViet": "Vũ Y",
@@ -9181,7 +9175,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Mùa hè trước khi đi xe máy điện ra ngoài nhất định phải để sẵn một chiếc áo mưa tiện lợi dưới cốp xe."
       },
       {
-        "vocabId": 1027,
+        "vocabId": 1035,
         "hanzi": "遇到",
         "pinyin": "yùdào",
         "meaningHanViet": "Ngộ Đáo",
@@ -9190,7 +9184,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Trên con đường du học nơi đất khách khó lòng tránh khỏi gặp phải trắc trở, điều cốt lõi nằm ở lòng dũng cảm vượt qua khó khăn."
       },
       {
-        "vocabId": 1028,
+        "vocabId": 1036,
         "hanzi": "遇见",
         "pinyin": "yùjiàn",
         "meaningHanViet": "Ngộ Kiến",
@@ -9199,7 +9193,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Hôm nay ở nơi mượn sách thư viện đại học tình cờ bắt gặp người bạn học thời cấp hai nhiều năm chưa từng liên lạc."
       },
       {
-        "vocabId": 1029,
+        "vocabId": 1037,
         "hanzi": "园",
         "pinyin": "yuán",
         "meaningHanViet": "Viên",
@@ -9208,7 +9202,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Cuối tuần dạo bước trong công viên thành phố môi trường thanh tĩnh làm lòng người sảng khoái xua tan mệt mỏi cả tuần."
       },
       {
-        "vocabId": 1030,
+        "vocabId": 1038,
         "hanzi": "员",
         "pinyin": "yuán",
         "meaningHanViet": "Viên",
@@ -9217,7 +9211,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Toàn thể nhân viên làm việc với tinh thần trách nhiệm nhiệt tình cao đã đem đến sự bảo đảm chu đáo cho cuộc thi lần này."
       },
       {
-        "vocabId": 1031,
+        "vocabId": 1039,
         "hanzi": "愿意",
         "pinyin": "yuànyì",
         "meaningHanViet": "Nguyện Ý",
@@ -9226,7 +9220,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Nếu có cơ hội được đến miền núi xa xôi nghèo khó dạy học tình nguyện, tôi rất sẵn lòng cống hiến một phần sức lực của mình."
       },
       {
-        "vocabId": 1032,
+        "vocabId": 1040,
         "hanzi": "越",
         "pinyin": "yuè",
         "meaningHanViet": "Việt",
@@ -9235,7 +9229,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Qua thời gian khổ luyện kiên trì không ngừng, phát âm nhả chữ tiếng Trung của cậu ấy càng ngày càng chuẩn xác tự nhiên."
       },
       {
-        "vocabId": 1033,
+        "vocabId": 1041,
         "hanzi": "月亮",
         "pinyin": "yuèliang",
         "meaningHanViet": "Nguyệt Lượng",
@@ -9244,13 +9238,13 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Đêm tết Trung thu rằm tháng tám, trên bầu trời treo một vầng trăng sáng vằng vặc trong ngần như ngọc."
       },
       {
-        "vocabId": 1034,
+        "vocabId": 1042,
         "hanzi": "运动会",
         "pinyin": "yùndònghuì",
         "meaningHanViet": "Vận Động Hội",
-        "meaningVi": "Đại hội thể thao, hội thao",
-        "exampleSentence": "在一年一度的春季田径运动会上，运动健儿们顽强拼搏屡创佳绩。",
-        "exampleTranslation": "Tại đại hội thể thao điền kinh mùa xuân thường niên, các vận động viên ngoan cường nỗ lực liên tiếp lập thành tích tốt."
+        "meaningVi": "Đại hội thể thao; hội thao",
+        "exampleSentence": "学校下个月开运动会。",
+        "exampleTranslation": "Trường học tháng sau tổ chức đại hội thể thao."
       }
     ]
   },
@@ -9260,7 +9254,7 @@ export const HSK3_TOPICS = [
     "description": "Tập luyện thể thao, giữ gìn vệ sinh và thiết lập điều kiện giải quyết.",
     "vocabularies": [
       {
-        "vocabId": 1035,
+        "vocabId": 1043,
         "hanzi": "运动员",
         "pinyin": "yùndòngyuán",
         "meaningHanViet": "Vận Động Viên",
@@ -9269,7 +9263,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Các vận động viên ưu tú kiên cường thi đấu trên đấu trường quốc tế, mang lại vinh quang to lớn cho tổ quốc."
       },
       {
-        "vocabId": 1036,
+        "vocabId": 1044,
         "hanzi": "咱们",
         "pinyin": "zánmen",
         "meaningHanViet": "Trá Môn",
@@ -9278,7 +9272,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Nếu mọi người đều ở đây rồi, chúng mình mau tranh thủ thời gian ngồi lại bàn bạc phân công cụ thể nhé."
       },
       {
-        "vocabId": 1037,
+        "vocabId": 1045,
         "hanzi": "脏",
         "pinyin": "zāng",
         "meaningHanViet": "Tạng",
@@ -9287,7 +9281,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Đá bóng xong về nhà xin hãy thay bộ quần áo bẩn ra trước rồi để vào giỏ giặt."
       },
       {
-        "vocabId": 1038,
+        "vocabId": 1046,
         "hanzi": "怎么办",
         "pinyin": "zěnme bàn",
         "meaningHanViet": "Chẩm Ma Biện",
@@ -9296,7 +9290,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Sắp bắt đầu bài thuyết trình chính thức rồi, slide của tôi đột nhiên không mở được thì phải làm sao bây giờ?"
       },
       {
-        "vocabId": 1039,
+        "vocabId": 1047,
         "hanzi": "怎样",
         "pinyin": "zěnyàng",
         "meaningHanViet": "Chẩm Dạng",
@@ -9305,7 +9299,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Xin hỏi chúng ta phải làm thế nào mới có thể nhanh chóng nâng cao kỹ năng nghe và biểu đạt khẩu ngữ tiếng Trung trong thời gian ngắn?"
       },
       {
-        "vocabId": 1040,
+        "vocabId": 1048,
         "hanzi": "站",
         "pinyin": "zhàn",
         "meaningHanViet": "Trạm",
@@ -9314,7 +9308,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Trên xe buýt mọi người đều đứng, không có chỗ ngồi trống."
       },
       {
-        "vocabId": 1041,
+        "vocabId": 1049,
         "hanzi": "张",
         "pinyin": "zhāng",
         "meaningHanViet": "Trương",
@@ -9323,16 +9317,16 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Xin hãy trải một tờ giấy xuyến trắng tinh mới lên bàn, chúng ta sắp bắt đầu luyện vẽ tranh thủy mặc."
       },
       {
-        "vocabId": 1042,
+        "vocabId": 1050,
         "hanzi": "长",
         "pinyin": "zhǎng",
         "meaningHanViet": "Trưởng",
         "meaningVi": "Trưởng, lớn lên, sinh ra, đứng đầu",
         "exampleSentence": "他长得很高。",
-        "exampleTranslation": "Anh ấy lớn lên rất cao."
+        "exampleTranslation": "Anh ấy lớn lên rất cao / dáng người rất cao."
       },
       {
-        "vocabId": 1043,
+        "vocabId": 1051,
         "hanzi": "着急",
         "pinyin": "zháojí",
         "meaningHanViet": "Trước Cấp",
@@ -9341,7 +9335,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Sắp muộn rồi, trong lòng anh ấy cảm thấy rất sốt ruột."
       },
       {
-        "vocabId": 1044,
+        "vocabId": 1052,
         "hanzi": "照",
         "pinyin": "zhào",
         "meaningHanViet": "Chiếu",
@@ -9350,7 +9344,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Ánh nắng ấm áp chiếu lên mặt hồ, phong cảnh vô cùng đẹp đẽ."
       },
       {
-        "vocabId": 1045,
+        "vocabId": 1053,
         "hanzi": "照顾",
         "pinyin": "zhàogù",
         "meaningHanViet": "Chiếu Cố",
@@ -9359,7 +9353,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Thời gian cha mẹ ốm nằm viện, anh ấy xin nghỉ phép túc trực trước giường bệnh chăm sóc ân cần chu đáo."
       },
       {
-        "vocabId": 1046,
+        "vocabId": 1054,
         "hanzi": "照片",
         "pinyin": "zhàopiàn",
         "meaningHanViet": "Chiếu Phiến",
@@ -9368,7 +9362,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Lật mở cuốn an-bum kỷ yếu tốt nghiệp trân quý bao năm, từng bức ảnh cũ ố vàng đánh thức cả tuổi thanh xuân."
       },
       {
-        "vocabId": 1047,
+        "vocabId": 1055,
         "hanzi": "照相",
         "pinyin": "zhàoxiàng",
         "meaningHanViet": "Chiếu Tương",
@@ -9377,7 +9371,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Đến trước đài phong hỏa Vạn Lý Trường Thành hùng vĩ tráng lệ, du khách rủ nhau lấy điện thoại ra chụp ảnh kỷ niệm."
       },
       {
-        "vocabId": 1048,
+        "vocabId": 1056,
         "hanzi": "直到",
         "pinyin": "zhídào",
         "meaningHanViet": "Trực Đáo",
@@ -9386,7 +9380,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Mọi người chăm chú ôn tập trong phòng tự học thư viện, mãi đến khi thư viện đóng cửa lúc đêm muộn mới lưu luyến ra về."
       },
       {
-        "vocabId": 1049,
+        "vocabId": 1057,
         "hanzi": "只",
         "pinyin": "zhǐ",
         "meaningHanViet": "Chỉ",
@@ -9395,7 +9389,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Tuy đường sá xa xôi gập ghềnh nhưng chỉ cần trong lòng có ước mơ, chúng ta chỉ việc vững bước dãi gió dầm mưa."
       },
       {
-        "vocabId": 1050,
+        "vocabId": 1058,
         "hanzi": "纸",
         "pinyin": "zhǐ",
         "meaningHanViet": "Chỉ",
@@ -9404,7 +9398,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Xin mọi người hãy viết câu trả lời ngay ngắn chuẩn mực lên tờ giấy làm bài thi trắng được phát."
       },
       {
-        "vocabId": 1051,
+        "vocabId": 1059,
         "hanzi": "只能",
         "pinyin": "zhǐ néng",
         "meaningHanViet": "Chỉ Năng",
@@ -9413,7 +9407,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Do mưa dông bất ngờ chuyến bay bị buộc hủy bỏ, chúng tôi đành phải đổi sang đi tàu cao tốc sáng hôm sau."
       },
       {
-        "vocabId": 1052,
+        "vocabId": 1060,
         "hanzi": "只是",
         "pinyin": "zhǐshì",
         "meaningHanViet": "Chỉ Thị",
@@ -9422,7 +9416,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Anh ấy thường ngày tính tình hướng nội ít nói, không phải là kiêu ngạo tự mãn mà chỉ là có phần e thẹn ngượng ngùng."
       },
       {
-        "vocabId": 1053,
+        "vocabId": 1061,
         "hanzi": "只要",
         "pinyin": "zhǐyào",
         "meaningHanViet": "Chỉ Yếu",
@@ -9431,7 +9425,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Trên đời không việc gì khó chỉ cần chịu khó trèo lên, bất kỳ chông gai hiểm trở nào rốt cuộc cũng bị người dũng cảm giẫm dưới chân."
       },
       {
-        "vocabId": 1054,
+        "vocabId": 1062,
         "hanzi": "只有",
         "pinyin": "zhǐyǒu",
         "meaningHanViet": "Chỉ Hữu",
@@ -9465,7 +9459,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Anh ấy ở giữa đám đông vẫy tay chào chúng tôi."
       },
       {
-        "vocabId": 1055,
+        "vocabId": 1063,
         "hanzi": "终于",
         "pinyin": "zhōngyú",
         "meaningHanViet": "Chung Vu",
@@ -9474,7 +9468,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Trải qua vô số lần tìm tòi gian khổ làm đi làm lại, nhóm nghiên cứu khoa học cuối cùng đã khắc phục được cửa ải công nghệ khó khăn này."
       },
       {
-        "vocabId": 1056,
+        "vocabId": 1064,
         "hanzi": "种",
         "pinyin": "zhǒng",
         "meaningHanViet": "Chủng",
@@ -9492,7 +9486,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Sức khỏe tốt quan trọng hơn bất cứ thứ gì."
       },
       {
-        "vocabId": 1057,
+        "vocabId": 1065,
         "hanzi": "周末",
         "pinyin": "zhōumò",
         "meaningHanViet": "Chu Mạt",
@@ -9501,7 +9495,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Dịp rảnh rỗi cuối tuần tôi thích rủ hai ba người bạn thân cùng nhau đi cắm trại ngoại ô hòa mình với thiên nhiên."
       },
       {
-        "vocabId": 1058,
+        "vocabId": 1066,
         "hanzi": "主要",
         "pinyin": "zhǔyào",
         "meaningHanViet": "Chủ Yếu",
@@ -9510,7 +9504,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Đóng góp học thuật chủ yếu của luận văn này nằm ở việc đề xuất một mô hình tính toán phân tích dữ liệu hoàn toàn mới."
       },
       {
-        "vocabId": 1059,
+        "vocabId": 1067,
         "hanzi": "注意",
         "pinyin": "zhùyì",
         "meaningHanViet": "Chú Ý",
@@ -9519,7 +9513,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Khi thực hiện thao tác thí nghiệm hóa học trong phòng thí nghiệm, xin mọi người nghiêm ngặt chú ý an toàn phòng hộ bản thân."
       },
       {
-        "vocabId": 1060,
+        "vocabId": 1068,
         "hanzi": "住院",
         "pinyin": "zhùyuàn",
         "meaningHanViet": "Trú Viện",
@@ -9528,7 +9522,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Ông nội vì viêm dạ dày ruột cấp tính đột phát đã nằm viện theo dõi điều trị một tuần lễ."
       },
       {
-        "vocabId": 1061,
+        "vocabId": 1069,
         "hanzi": "字典",
         "pinyin": "zìdiǎn",
         "meaningHanViet": "Tự Điển",
@@ -9537,7 +9531,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Khi gặp chữ Hán hiếm nét bút phức tạp, tra cứu Tân Hoa Tự Điển là sự lựa chọn uy tín nhất."
       },
       {
-        "vocabId": 1062,
+        "vocabId": 1070,
         "hanzi": "自行车",
         "pinyin": "zìxíngchē",
         "meaningHanViet": "Tự Hành Xa",
@@ -9555,7 +9549,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Trên bàn đặt mấy chiếc cốc tinh xảo."
       },
       {
-        "vocabId": 1063,
+        "vocabId": 1071,
         "hanzi": "总",
         "pinyin": "zǒng",
         "meaningHanViet": "Tổng",
@@ -9564,7 +9558,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Trong công việc hợp tác nhóm thường ngày anh ấy luôn không nề hà khó nhọc, được lãnh đạo và đồng nghiệp vô cùng tín nhiệm."
       },
       {
-        "vocabId": 1064,
+        "vocabId": 1072,
         "hanzi": "总是",
         "pinyin": "zǒngshì",
         "meaningHanViet": "Tổng Thị",
@@ -9573,7 +9567,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Mẹ lúc nào cũng ân cần chu đáo quan tâm đến sức khỏe và bữa ăn của con cái đang học tập nơi phương xa."
       },
       {
-        "vocabId": 1065,
+        "vocabId": 1073,
         "hanzi": "嘴",
         "pinyin": "zuǐ",
         "meaningHanViet": "Chuỷ",
@@ -9600,7 +9594,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Qua sự nỗ lực của mọi người, cuối cùng chúng tôi đã giành thắng lợi."
       },
       {
-        "vocabId": 1066,
+        "vocabId": 1074,
         "hanzi": "最近",
         "pinyin": "zuìjìn",
         "meaningHanViet": "Tối Cận",
@@ -9609,7 +9603,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Thời tiết dạo này nhiệt độ thay đổi thất thường dữ dội, khi ra ngoài xin mọi người chú ý mặc thêm áo ấm."
       },
       {
-        "vocabId": 1067,
+        "vocabId": 1075,
         "hanzi": "做客",
         "pinyin": "zuòkè",
         "meaningHanViet": "Tố Khách",
@@ -9618,7 +9612,7 @@ export const HSK3_TOPICS = [
         "exampleTranslation": "Cuối tuần thầy Vương nhiệt tình mời mấy bạn lưu học sinh nước ngoài chúng tôi đến nhà chơi làm khách nếm món ăn gia đình."
       },
       {
-        "vocabId": 1068,
+        "vocabId": 1076,
         "hanzi": "作业",
         "pinyin": "zuòyè",
         "meaningHanViet": "Tác Nghiệp",
@@ -9629,6 +9623,9 @@ export const HSK3_TOPICS = [
     ]
   }
 ];
+
+
+
 
 /**
  * Maps rating numeric keys or integers to descriptive metadata.
@@ -11021,7 +11018,7 @@ export class SrsReviewController {
 
   /**
    * Checks if a vocabulary ID is currently due.
-   * Supports matching by ID and Hanzi fallback (remediates mock IDs vs TiDB Cloud DB IDs).
+   * Supports matching by canonical ID, TiDB Cloud ID bridging, and isolates curriculum homographs.
    * @param {number|string} vocabId
    * @param {string|null} [hanzi=null]
    * @returns {boolean}
@@ -11034,6 +11031,10 @@ export class SrsReviewController {
       const id = v.itemId ?? v.vocabId ?? v.id;
       if (targetId != null && id != null && Number(id) === targetId) {
         return true;
+      }
+      // If both IDs are known curriculum IDs in the same range (< 10000), differing IDs mean distinct homographs
+      if (targetId != null && id != null && targetId < 10000 && Number(id) < 10000 && Number(id) !== targetId) {
+        return false;
       }
       if (hanzi && v.hanzi && String(v.hanzi).trim() === String(hanzi).trim()) {
         return true;
@@ -15145,14 +15146,14 @@ export class SrsReviewController {
                 itemType: itemType
               });
             }
-          } else if (numRating >= 3 && !queueItem._requeued) {
+          } else if (numRating >= 2 && !queueItem._requeued) {
             const targetId = Number(card.itemId ?? card.vocabId ?? card.radicalId ?? card.id);
             const targetChar = (card.hanzi || card.character || '').trim();
             this.dueItemsCache[cacheKey] = this.dueItemsCache[cacheKey].filter(it => {
               const itId = Number(it.itemId ?? it.vocabId ?? it.radicalId ?? it.id);
               const itChar = (it.hanzi || it.character || '').trim();
-              if (targetId && itId === targetId) return false;
-              if (targetChar && itChar === targetChar) return false;
+              if (targetId && itId) return itId !== targetId;
+              if (targetChar && itChar) return itChar !== targetChar;
               return true;
             });
           }

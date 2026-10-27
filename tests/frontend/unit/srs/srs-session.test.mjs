@@ -930,6 +930,123 @@ describe('Unit: SRS Flashcard Review Session Logic (9C.3)', () => {
       const dueCount = topic1.vocabularies.filter(v => controller.isVocabDue(v.vocabId ?? v.itemId ?? v.id, v.hanzi)).length;
       assert.strictEqual(dueCount, 5, 'Catalog dueCount for Bài 01 must be exactly 5, not stuck at 2');
     });
+
+    test('Section 18: Multi-repetition lifecycle (3rd, 4th review passes) on Lesson 2 and other lessons with zero collisions', async () => {
+      const { HSK1_TOPICS } = await import('../../../../frontend/js/pages/srs-review-page.js');
+      const { SEED_LESSONS } = await import('../../../../frontend/js/api/demo-seed-data.js');
+
+      const controller = new SrsReviewController();
+      controller.dueItemsCache = { vocab: [], radicals: [] };
+
+      // Lesson 2 words
+      const topic2 = HSK1_TOPICS[1];
+      const lesson2 = SEED_LESSONS[1];
+      assert.strictEqual(topic2.vocabularies.length, 20);
+      assert.strictEqual(lesson2.vocabularies.length, 20);
+
+      // Verify 出租车 has vocabId 512, NOT 504 (which belonged to 哪些)
+      const chuzuche = topic2.vocabularies.find(v => v.hanzi === '出租车');
+      assert.strictEqual(chuzuche.vocabId, 512, '出租车 must have canonical vocabId 512');
+
+      // Verify 大家 has vocabId 513, NOT 505 (which belonged to 请问)
+      const dajia = topic2.vocabularies.find(v => v.hanzi === '大家');
+      assert.strictEqual(dajia.vocabId, 513, '大家 must have canonical vocabId 513');
+
+      // --- Pass 1: Learner reviews Lesson 2 for the 1st time, rates 2 words as Again (1) ---
+      const pass1Due = [topic2.vocabularies[0], topic2.vocabularies[1]]; // 吃 (46) and 出租车 (512)
+      for (const v of pass1Due) {
+        controller.dueItemsCache.vocab.push({
+          itemId: v.vocabId,
+          vocabId: v.vocabId,
+          lessonId: 2,
+          hanzi: v.hanzi,
+          itemType: 'VOCABULARY'
+        });
+      }
+      let dueCountL2 = topic2.vocabularies.filter(v => controller.isVocabDue(v.vocabId, v.hanzi)).length;
+      assert.strictEqual(dueCountL2, 2, 'Pass 1 must record exactly 2 due words for Lesson 2');
+
+      // Verify no leak into Topic 1
+      const dueCountL1 = HSK1_TOPICS[0].vocabularies.filter(v => controller.isVocabDue(v.vocabId, v.hanzi)).length;
+      assert.strictEqual(dueCountL1, 0, 'Lesson 2 reviews must never leak due cards into Lesson 1');
+
+      // --- Pass 2: Learner relearns Lesson 2 for the 2nd time, rates 5 words as Again (1) ---
+      // Reset cache for new due state
+      controller.dueItemsCache.vocab = [];
+      const pass2Due = topic2.vocabularies.slice(0, 5); // 5 words
+      for (const v of pass2Due) {
+        controller.dueItemsCache.vocab.push({
+          itemId: v.vocabId,
+          vocabId: v.vocabId,
+          lessonId: 2,
+          hanzi: v.hanzi,
+          itemType: 'VOCABULARY'
+        });
+      }
+      dueCountL2 = topic2.vocabularies.filter(v => controller.isVocabDue(v.vocabId, v.hanzi)).length;
+      assert.strictEqual(dueCountL2, 5, 'Pass 2 must record exactly 5 due words for Lesson 2');
+
+      // --- Pass 3: Learner reviews Lesson 2 for the 3rd time, recalls words with Hard (2), Good (3), Easy (4) ---
+      // Word 0 is rated Hard (2), Words 1..4 rated Good (3)
+      // Both Rating 2 (Hard) and Rating 3/4 must clear from dueItemsCache
+      const filterDue = (targetId, targetChar) => {
+        controller.dueItemsCache.vocab = controller.dueItemsCache.vocab.filter(it => {
+          const itId = Number(it.itemId ?? it.vocabId ?? it.id);
+          const itChar = (it.hanzi || '').trim();
+          if (targetId && itId) return itId !== targetId;
+          if (targetChar && itChar) return itChar !== targetChar;
+          return true;
+        });
+      };
+      // Rating 2 (Hard) on word 0 (吃)
+      filterDue(pass2Due[0].vocabId, pass2Due[0].hanzi);
+      dueCountL2 = topic2.vocabularies.filter(v => controller.isVocabDue(v.vocabId, v.hanzi)).length;
+      assert.strictEqual(dueCountL2, 4, 'Rating 2 (Hard) must successfully clear due card from cache');
+
+      // Rating 3/4 on remaining 4 words
+      for (let i = 1; i < pass2Due.length; i++) {
+        filterDue(pass2Due[i].vocabId, pass2Due[i].hanzi);
+      }
+      dueCountL2 = topic2.vocabularies.filter(v => controller.isVocabDue(v.vocabId, v.hanzi)).length;
+      assert.strictEqual(dueCountL2, 0, 'Pass 3: Successful review of all due words drops dueCount to 0');
+
+      // --- Pass 4: Learner does a 4th session, lapses on 1 word (Word 3: 穿) ---
+      const pass4Due = topic2.vocabularies[2]; // 穿
+      controller.dueItemsCache.vocab.push({
+        itemId: pass4Due.vocabId,
+        vocabId: pass4Due.vocabId,
+        lessonId: 2,
+        hanzi: pass4Due.hanzi,
+        itemType: 'VOCABULARY'
+      });
+      dueCountL2 = topic2.vocabularies.filter(v => controller.isVocabDue(v.vocabId, v.hanzi)).length;
+      assert.strictEqual(dueCountL2, 1, 'Pass 4: Single memory lapse on 4th session records exactly 1 due card');
+      assert.strictEqual(controller.isVocabDue(pass4Due.vocabId, pass4Due.hanzi), true, '穿 must be due');
+
+      // --- Cross-Lesson Homograph Isolation Invariant ---
+      // Lesson 4 has '还' (id 132, hái), Lesson 34 has '还' (id 153, huán)
+      controller.dueItemsCache.vocab = [{
+        itemId: 132,
+        vocabId: 132,
+        lessonId: 4,
+        hanzi: '还',
+        itemType: 'VOCABULARY'
+      }];
+      assert.strictEqual(controller.isVocabDue(132, '还'), true, '还 in Lesson 4 must be due');
+      assert.strictEqual(controller.isVocabDue(153, '还'), false, '还 in Lesson 34 must NOT be due when Lesson 4 lapses');
+      assert.strictEqual(controller.isVocabDue(null, '还'), true, 'Hanzi fallback still matches when ID is null');
+
+      // Lesson 2 has '点' (id 76), Lesson 17 has '点' (id 560)
+      controller.dueItemsCache.vocab = [{
+        itemId: 76,
+        vocabId: 76,
+        lessonId: 2,
+        hanzi: '点',
+        itemType: 'VOCABULARY'
+      }];
+      assert.strictEqual(controller.isVocabDue(76, '点'), true, '点 in Lesson 2 must be due');
+      assert.strictEqual(controller.isVocabDue(560, '点'), false, '点 in Lesson 17 must NOT be due when Lesson 2 lapses');
+    });
   });
 });
 

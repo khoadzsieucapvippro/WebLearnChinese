@@ -83,13 +83,25 @@ public class SrsMultiSkillServiceTests {
     @Spy
     private Clock businessClock = Clock.fixed(Instant.parse("2026-10-12T12:00:00Z"), ZoneId.of("Asia/Ho_Chi_Minh"));
 
-    @InjectMocks
     private SrsServiceImpl srsService;
 
     private UserProfile testUserProfile;
 
     @BeforeEach
     void setUp() {
+        srsService = new SrsServiceImpl(
+                cardProgressRepository,
+                reviewLogRepository,
+                userSrsSettingRepository,
+                vocabularyRepository,
+                radicalRepository,
+                userProfileRepository,
+                lessonRepository,
+                lessonVocabularyRepository,
+                srsCalculator,
+                businessClock
+        );
+
         testUserProfile = new UserProfile();
         testUserProfile.setUserId(42L);
         testUserProfile.setFullName("Learner Nguyen");
@@ -269,7 +281,7 @@ public class SrsMultiSkillServiceTests {
         UserSrsSetting setting = new UserSrsSetting(testUserProfile, 20, 100);
         when(userSrsSettingRepository.findByUser(testUserProfile)).thenReturn(Optional.of(setting));
 
-        when(cardProgressRepository.countByUserAndItemTypeAndNextReviewAtLessThanEqual(eq(testUserProfile), eq("VOCABULARY"), any(LocalDateTime.class)))
+        when(cardProgressRepository.countByUserAndNextReviewAtLessThanEqual(eq(testUserProfile), any(LocalDateTime.class)))
                 .thenReturn(15L);
         when(cardProgressRepository.countByUserAndItemTypeAndCardTypeAndNextReviewAtLessThanEqual(eq(testUserProfile), eq("VOCABULARY"), eq("LISTENING"), any(LocalDateTime.class)))
                 .thenReturn(5L);

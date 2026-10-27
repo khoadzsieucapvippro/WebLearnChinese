@@ -534,7 +534,7 @@ class SrsServiceTests {
             UserSrsSetting setting = new UserSrsSetting(testUserProfile, 25, 120);
             when(userSrsSettingRepository.findByUser(testUserProfile)).thenReturn(Optional.of(setting));
 
-            when(cardProgressRepository.countByUserAndItemTypeAndNextReviewAtLessThanEqual(eq(testUserProfile), eq("VOCABULARY"), any(LocalDateTime.class)))
+            when(cardProgressRepository.countByUserAndNextReviewAtLessThanEqual(eq(testUserProfile), any(LocalDateTime.class)))
                     .thenReturn(18L);
             when(reviewLogRepository.countByUserAndReviewedAtGreaterThanEqual(eq(testUserProfile), any(LocalDateTime.class)))
                     .thenReturn(32L);

@@ -128,13 +128,29 @@ describe('Unit: Curriculum Lessons & SRS Scoring Contracts Audit (Plan 4)', () =
         }
       }
 
-      // Lesson 1 standardized curriculum strictly matches HSK1_TOPICS[0]
-      const l1 = SEED_LESSONS[0];
-      const t1 = HSK1_TOPICS[0];
-      assert.strictEqual(l1.vocabularies.length, t1.vocabularies.length, 'Lesson 1 and Topic 1 must have 20 vocabularies');
-      for (let j = 0; j < 20; j++) {
-        assert.strictEqual(l1.vocabularies[j].vocabId, t1.vocabularies[j].vocabId, `Lesson 1 vocab ${j + 1} vocabId must match topic vocabId`);
-        assert.strictEqual(l1.vocabularies[j].hanzi, t1.vocabularies[j].hanzi, `Lesson 1 vocab ${j + 1} hanzi must match topic hanzi`);
+      // All 50 standardized curriculum lessons strictly match all 50 HSK Topics and canonical SEED_VOCABULARY
+      assert.strictEqual(SEED_LESSONS.length, 50, 'Must have 50 curriculum lessons');
+      for (let i = 0; i < 50; i++) {
+        const l = SEED_LESSONS[i];
+        const t = allTopics[i];
+        assert.strictEqual(l.vocabularies.length, 20, `Lesson ${i + 1} must have 20 vocabularies`);
+        assert.strictEqual(t.vocabularies.length, 20, `Topic ${i + 1} must have 20 vocabularies`);
+        for (let j = 0; j < 20; j++) {
+          assert.strictEqual(l.vocabularies[j].vocabId, t.vocabularies[j].vocabId, `Lesson ${i + 1} word ${j + 1} vocabId must match topic vocabId`);
+          assert.strictEqual(l.vocabularies[j].hanzi, t.vocabularies[j].hanzi, `Lesson ${i + 1} word ${j + 1} hanzi must match topic hanzi`);
+        }
+      }
+
+      // Assert ZERO ID collisions across different Hanzi in SEED_LESSONS
+      const idToHanzi = new Map();
+      for (const l of SEED_LESSONS) {
+        for (const v of l.vocabularies) {
+          if (idToHanzi.has(v.vocabId)) {
+            assert.strictEqual(idToHanzi.get(v.vocabId), v.hanzi, `vocabId ${v.vocabId} cannot be shared by different hanzi`);
+          } else {
+            idToHanzi.set(v.vocabId, v.hanzi);
+          }
+        }
       }
     });
 

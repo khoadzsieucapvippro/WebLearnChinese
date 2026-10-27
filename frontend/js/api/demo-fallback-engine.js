@@ -40,7 +40,7 @@ import { authManager } from '../auth/auth-state.js';
 import { ApiError } from './api.js';
 
 const STORAGE_KEY = 'ELEARNING_DEMO_DATA';
-const CURRENT_DATASET_VERSION = 10;
+const CURRENT_DATASET_VERSION = 12;
 
 /**
  * Encodes string or object into Base64URL string compliant with JWT standards.
@@ -1071,7 +1071,9 @@ class DemoFallbackEngine {
         candidates = candidates.filter(c => (c.itemType || 'VOCABULARY').toUpperCase() === itemType);
       }
       if (lessonId) {
-        candidates = candidates.filter(c => c.lessonId === lessonId);
+        const lesson = data.lessons.find(l => l.lessonId === lessonId);
+        const lessonVocabIds = new Set((lesson?.vocabularies || []).map(v => v.vocabId));
+        candidates = candidates.filter(c => c.lessonId === lessonId || (c.itemType === 'VOCABULARY' && lessonVocabIds.has(c.itemId)));
       }
       if (cardType) {
         candidates = candidates.filter(c => c.cardType === cardType);
@@ -1139,7 +1141,9 @@ class DemoFallbackEngine {
     const lessonSrsStatsMatch = cleanPath.match(/^\/srs\/lessons\/(\d+)\/stats$/);
     if (lessonSrsStatsMatch && method === 'GET') {
       const id = parseInt(lessonSrsStatsMatch[1], 10);
-      const lessonCards = data.srsCards.filter(c => c.lessonId === id);
+      const lesson = data.lessons.find(l => l.lessonId === id);
+      const lessonVocabIds = new Set((lesson?.vocabularies || []).map(v => v.vocabId));
+      const lessonCards = data.srsCards.filter(c => c.lessonId === id || (c.itemType === 'VOCABULARY' && lessonVocabIds.has(c.itemId)));
       const now = new Date();
       const dueCards = lessonCards.filter(c => !c.isNew && new Date(c.nextReviewAt) <= now).length;
       const learnedCards = lessonCards.filter(c => !c.isNew).length;

@@ -29784,7 +29784,7 @@ export const SEED_VOCABULARY = [
 ];
 
 export const SEED_LESSONS = [
-    {
+  {
     "lessonId": 1,
     "title": "Bài 01 — Chào hỏi & Giao tiếp cơ bản",
     "description": "Chào hỏi, tạm biệt, cảm ơn, xin lỗi, đáp lời lịch sự và các câu giao tiếp cơ bản.",
@@ -29806,8 +29806,8 @@ export const SEED_LESSONS = [
         "meaningVi": "Mời; mời mọc",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
-        "exampleSentence": "请进，请坐。",
-        "exampleTranslation": "Mời vào, mời ngồi.",
+        "exampleSentence": "请进，请坐，请喝茶。",
+        "exampleTranslation": "Mời vào, mời ngồi, mời uống trà.",
         "audioUrl": "/assets/audio/vocabulary/vocab_0296.mp3",
         "videoWritingUrl": null,
         "orderIndex": 1
@@ -29821,8 +29821,8 @@ export const SEED_LESSONS = [
         "meaningVi": "Xin hỏi, cho hỏi",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
-        "exampleSentence": "请问，洗手间在哪里？",
-        "exampleTranslation": "Xin hỏi, nhà vệ sinh ở đâu?",
+        "exampleSentence": "请问去图书馆怎么走？",
+        "exampleTranslation": "Xin hỏi đi đến thư viện đi đường nào?",
         "audioUrl": "/assets/audio/vocabulary/vocab_0505.mp3",
         "videoWritingUrl": null,
         "orderIndex": 2
@@ -29836,8 +29836,8 @@ export const SEED_LESSONS = [
         "meaningVi": "Cảm ơn; cảm ơn bạn",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
-        "exampleSentence": "谢谢你的帮助。",
-        "exampleTranslation": "Cảm ơn sự giúp đỡ của bạn.",
+        "exampleSentence": "谢谢大家对我的关心。",
+        "exampleTranslation": "Cảm ơn mọi người đã quan tâm đến tôi.",
         "audioUrl": "/assets/audio/vocabulary/vocab_0410.mp3",
         "videoWritingUrl": null,
         "orderIndex": 3
@@ -29851,8 +29851,8 @@ export const SEED_LESSONS = [
         "meaningVi": "Không có chi; đừng nhắc đến",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
-        "exampleSentence": "不用谢，不客气。",
-        "exampleTranslation": "Không cần cảm ơn, đừng khách sáo.",
+        "exampleSentence": "不客气，这是我应该做的。",
+        "exampleTranslation": "Không có chi, đây là việc tôi nên làm.",
         "audioUrl": "/assets/audio/vocabulary/vocab_0032.mp3",
         "videoWritingUrl": null,
         "orderIndex": 4
@@ -29866,7 +29866,7 @@ export const SEED_LESSONS = [
         "meaningVi": "Tôi xin lỗi; xin thứ lỗi; tôi xin tha thứ; làm  thất vọng; không đạt kỳ vọng",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
-        "exampleSentence": "对不起，我迟到了。",
+        "exampleSentence": "对不起，我来晚了。",
         "exampleTranslation": "Xin lỗi, tôi đến muộn.",
         "audioUrl": "/assets/audio/vocabulary/vocab_0093.mp3",
         "videoWritingUrl": null,
@@ -29881,24 +29881,24 @@ export const SEED_LESSONS = [
         "meaningVi": "Không sao đâu",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
-        "exampleSentence": "没关系，不要紧。",
-        "exampleTranslation": "Không sao đâu, không có gì nghiêm trọng.",
+        "exampleSentence": "没关系，别放在心上。",
+        "exampleTranslation": "Không sao, đừng để trong lòng.",
         "audioUrl": "/assets/audio/vocabulary/vocab_0233.mp3",
         "videoWritingUrl": null,
         "orderIndex": 6
       },
       {
-        "vocabId": 515,
+        "vocabId": 523,
         "hanzi": "没事",
-        "pinyin": "fēnzhōng",
-        "pinyinRaw": "fenzhong",
-        "meaningHanViet": "Phân Chung",
-        "meaningVi": "Phút (thời gian)",
+        "pinyin": "méishì",
+        "pinyinRaw": "meishi",
+        "meaningHanViet": "Một Sự",
+        "meaningVi": "Không có gì, không sao, rảnh rỗi",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
-        "exampleSentence": "别担心，我没事。",
-        "exampleTranslation": "Đừng lo, tôi không sao.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0515.mp3",
+        "exampleSentence": "别担心，我真的一点儿也没事。",
+        "exampleTranslation": "Đừng lo, tôi thật sự không sao cả.",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0523.mp3",
         "videoWritingUrl": null,
         "orderIndex": 7
       },
@@ -29911,30 +29911,30 @@ export const SEED_LESSONS = [
         "meaningVi": "Tạm biệt; gặp lại sau",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
-        "exampleSentence": "明天见，再见！",
-        "exampleTranslation": "Ngày mai gặp nhé, tạm biệt!",
+        "exampleSentence": "老师再见，明天见！",
+        "exampleTranslation": "Chào tạm biệt thầy cô, hẹn ngày mai gặp lại!",
         "audioUrl": "/assets/audio/vocabulary/vocab_0454.mp3",
         "videoWritingUrl": null,
         "orderIndex": 8
       },
       {
-        "vocabId": 518,
+        "vocabId": 526,
         "hanzi": "你好",
-        "pinyin": "jiàn",
-        "pinyinRaw": "jian",
-        "meaningHanViet": "Kiện",
-        "meaningVi": "Chiếc, cái, kiện (lượng từ cho quần áo, sự việc)",
+        "pinyin": "nǐ hǎo",
+        "pinyinRaw": "nihao",
+        "meaningHanViet": "Nễ Hảo",
+        "meaningVi": "Xin chào",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
-        "exampleSentence": "你好！很高兴认识你。",
-        "exampleTranslation": "Xin chào! Rất vui được quen biết bạn.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0518.mp3",
+        "exampleSentence": "你好，很高兴认识你。",
+        "exampleTranslation": "Xin chào, rất vui được làm quen với bạn.",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0526.mp3",
         "videoWritingUrl": null,
         "orderIndex": 9
       },
       {
         "vocabId": 274,
-        "hanzi": "您好",
+        "hanzi": "您",
         "pinyin": "nín",
         "pinyinRaw": "nin",
         "meaningHanViet": "Nâm",
@@ -29942,7 +29942,7 @@ export const SEED_LESSONS = [
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "老师，您好！",
-        "exampleTranslation": "Thưa thầy, chúng em chào thầy!",
+        "exampleTranslation": "Em chào thầy ạ!",
         "audioUrl": "/assets/audio/vocabulary/vocab_0274.mp3",
         "videoWritingUrl": null,
         "orderIndex": 10
@@ -29956,8 +29956,8 @@ export const SEED_LESSONS = [
         "meaningVi": "Hỏi",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
-        "exampleSentence": "我想问你一个问题。",
-        "exampleTranslation": "Tôi muốn hỏi bạn một câu hỏi.",
+        "exampleSentence": "遇到不懂的问题要问老师。",
+        "exampleTranslation": "Gặp câu hỏi không hiểu phải hỏi thầy giáo.",
         "audioUrl": "/assets/audio/vocabulary/vocab_0379.mp3",
         "videoWritingUrl": null,
         "orderIndex": 11
@@ -29971,8 +29971,8 @@ export const SEED_LESSONS = [
         "meaningVi": "Nói",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
-        "exampleSentence": "请说慢一点儿。",
-        "exampleTranslation": "Xin hãy nói chậm lại một chút.",
+        "exampleSentence": "老师说汉语说得很清楚。",
+        "exampleTranslation": "Thầy giáo nói tiếng Trung rất rõ ràng.",
         "audioUrl": "/assets/audio/vocabulary/vocab_0349.mp3",
         "videoWritingUrl": null,
         "orderIndex": 12
@@ -29986,8 +29986,8 @@ export const SEED_LESSONS = [
         "meaningVi": "Nói; trò chuyện",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
-        "exampleSentence": "他们正在说话。",
-        "exampleTranslation": "Họ đang nói chuyện.",
+        "exampleSentence": "请大家安静，不要说话。",
+        "exampleTranslation": "Xin mọi người hãy giữ trật tự, đừng nói chuyện.",
         "audioUrl": "/assets/audio/vocabulary/vocab_0350.mp3",
         "videoWritingUrl": null,
         "orderIndex": 13
@@ -30001,8 +30001,8 @@ export const SEED_LESSONS = [
         "meaningVi": "Gặp; thấy",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
-        "exampleSentence": "明天我们在学校见。",
-        "exampleTranslation": "Ngày mai chúng ta gặp nhau ở trường.",
+        "exampleSentence": "明天见！",
+        "exampleTranslation": "Hẹn gặp lại ngày mai!",
         "audioUrl": "/assets/audio/vocabulary/vocab_0173.mp3",
         "videoWritingUrl": null,
         "orderIndex": 14
@@ -30017,7 +30017,7 @@ export const SEED_LESSONS = [
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "认识你很高兴。",
-        "exampleTranslation": "Rất vui được quen biết bạn.",
+        "exampleTranslation": "Rất vui được làm quen với bạn.",
         "audioUrl": "/assets/audio/vocabulary/vocab_0306.mp3",
         "videoWritingUrl": null,
         "orderIndex": 15
@@ -30031,8 +30031,8 @@ export const SEED_LESSONS = [
         "meaningVi": "Tốt; đẹp; xong",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
-        "exampleSentence": "今天天气很好。",
-        "exampleTranslation": "Thời tiết hôm nay rất đẹp.",
+        "exampleSentence": "今天天气真好。",
+        "exampleTranslation": "Hôm nay thời tiết thật đẹp.",
         "audioUrl": "/assets/audio/vocabulary/vocab_0138.mp3",
         "videoWritingUrl": null,
         "orderIndex": 16
@@ -30046,8 +30046,8 @@ export const SEED_LESSONS = [
         "meaningVi": "Đúng; chính xác; đối với",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
-        "exampleSentence": "你说得很对。",
-        "exampleTranslation": "Bạn nói rất đúng.",
+        "exampleSentence": "你回答得非常对。",
+        "exampleTranslation": "Bạn trả lời rất chính xác.",
         "audioUrl": "/assets/audio/vocabulary/vocab_0092.mp3",
         "videoWritingUrl": null,
         "orderIndex": 17
@@ -30061,8 +30061,8 @@ export const SEED_LESSONS = [
         "meaningVi": "Không; không phải; không; bất-",
         "hskLevel": 1,
         "hskStandard": "HSK 3.0",
-        "exampleSentence": "我不是学生。",
-        "exampleTranslation": "Tôi không phải là học sinh.",
+        "exampleSentence": "我不喝茶，我喝水。",
+        "exampleTranslation": "Tôi không uống trà, tôi uống nước.",
         "audioUrl": "/assets/audio/vocabulary/vocab_0034.mp3",
         "videoWritingUrl": null,
         "orderIndex": 18
@@ -30074,10 +30074,10 @@ export const SEED_LESSONS = [
         "pinyinRaw": "xing",
         "meaningHanViet": "Hành",
         "meaningVi": "Được; đi; thực hiện",
-        "hskLevel": 1,
+        "hskLevel": 3,
         "hskStandard": "HSK 3.0",
-        "exampleSentence": "你看这样行不行？",
-        "exampleTranslation": "Bạn xem thế này có được không?",
+        "exampleSentence": "如果你时间方便，这样就行。",
+        "exampleTranslation": "Nếu thời gian của bạn thuận tiện, vậy thì được rồi.",
         "audioUrl": "/assets/audio/vocabulary/vocab_0416.mp3",
         "videoWritingUrl": null,
         "orderIndex": 19
@@ -30099,7 +30099,7 @@ export const SEED_LESSONS = [
       }
     ]
   },
-{
+  {
     "lessonId": 2,
     "title": "Bài 02 — Phương tiện, Trường học & Thiết bị",
     "description": "Phương tiện đi lại, trường học, liên lạc điện thoại và giải trí phim ảnh.",
@@ -30128,7 +30128,7 @@ export const SEED_LESSONS = [
         "orderIndex": 1
       },
       {
-        "vocabId": 504,
+        "vocabId": 512,
         "hanzi": "出租车",
         "pinyin": "chūzūchē",
         "pinyinRaw": "chuzuche",
@@ -30138,7 +30138,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "我们坐出租车去机场吧。",
         "exampleTranslation": "Chúng ta đi taxi ra sân bay nhé.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0504.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0512.mp3",
         "videoWritingUrl": null,
         "orderIndex": 2
       },
@@ -30188,7 +30188,7 @@ export const SEED_LESSONS = [
         "orderIndex": 5
       },
       {
-        "vocabId": 505,
+        "vocabId": 513,
         "hanzi": "大家",
         "pinyin": "dàjiā",
         "pinyinRaw": "dajia",
@@ -30198,7 +30198,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "大家好，欢迎来到中文班。",
         "exampleTranslation": "Chào mọi người, hoan nghênh đến với lớp tiếng Trung.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0505.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0513.mp3",
         "videoWritingUrl": null,
         "orderIndex": 6
       },
@@ -30308,7 +30308,7 @@ export const SEED_LESSONS = [
         "orderIndex": 13
       },
       {
-        "vocabId": 506,
+        "vocabId": 514,
         "hanzi": "店",
         "pinyin": "diàn",
         "pinyinRaw": "dian",
@@ -30318,7 +30318,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "学校旁边有一家书店。",
         "exampleTranslation": "Bên cạnh trường học có một hiệu sách.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0506.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0514.mp3",
         "videoWritingUrl": null,
         "orderIndex": 14
       },
@@ -30653,7 +30653,7 @@ export const SEED_LESSONS = [
         "orderIndex": 15
       },
       {
-        "vocabId": 507,
+        "vocabId": 515,
         "hanzi": "分钟",
         "pinyin": "fēnzhōng",
         "pinyinRaw": "fenzhong",
@@ -30663,7 +30663,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "请等我十分钟。",
         "exampleTranslation": "Xin hãy đợi tôi mười phút.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0507.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0515.mp3",
         "videoWritingUrl": null,
         "orderIndex": 16
       },
@@ -30788,7 +30788,7 @@ export const SEED_LESSONS = [
         "orderIndex": 3
       },
       {
-        "vocabId": 509,
+        "vocabId": 517,
         "hanzi": "狗",
         "pinyin": "gǒu",
         "pinyinRaw": "gou",
@@ -30798,7 +30798,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "他家养了一只可爱的小狗。",
         "exampleTranslation": "Nhà anh ấy nuôi một chú chó nhỏ đáng yêu.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0509.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0517.mp3",
         "videoWritingUrl": null,
         "orderIndex": 4
       },
@@ -31178,7 +31178,7 @@ export const SEED_LESSONS = [
         "orderIndex": 8
       },
       {
-        "vocabId": 510,
+        "vocabId": 518,
         "hanzi": "件",
         "pinyin": "jiàn",
         "pinyinRaw": "jian",
@@ -31188,12 +31188,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "这件衣服很漂亮。",
         "exampleTranslation": "Chiếc áo này rất đẹp.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0510.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0518.mp3",
         "videoWritingUrl": null,
         "orderIndex": 9
       },
       {
-        "vocabId": 511,
+        "vocabId": 519,
         "hanzi": "饺子",
         "pinyin": "jiǎozi",
         "pinyinRaw": "jiaozi",
@@ -31203,7 +31203,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "中国人过年常常吃饺子。",
         "exampleTranslation": "Người Trung Quốc ăn Tết thường ăn sủi cảo.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0511.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0519.mp3",
         "videoWritingUrl": null,
         "orderIndex": 10
       },
@@ -31388,7 +31388,7 @@ export const SEED_LESSONS = [
         "orderIndex": 1
       },
       {
-        "vocabId": 512,
+        "vocabId": 520,
         "hanzi": "可以",
         "pinyin": "kěyǐ",
         "pinyinRaw": "keyi",
@@ -31398,7 +31398,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "我可以借用一下你的笔吗？",
         "exampleTranslation": "Tôi có thể mượn bút của bạn một chút không?",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0512.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0520.mp3",
         "videoWritingUrl": null,
         "orderIndex": 2
       },
@@ -31613,7 +31613,7 @@ export const SEED_LESSONS = [
         "orderIndex": 16
       },
       {
-        "vocabId": 513,
+        "vocabId": 521,
         "hanzi": "卖",
         "pinyin": "mài",
         "pinyinRaw": "mai",
@@ -31623,7 +31623,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "这个商店卖各种新鲜水果。",
         "exampleTranslation": "Cửa hàng này bán các loại hoa quả tươi.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0513.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0521.mp3",
         "videoWritingUrl": null,
         "orderIndex": 17
       },
@@ -31643,7 +31643,7 @@ export const SEED_LESSONS = [
         "orderIndex": 18
       },
       {
-        "vocabId": 514,
+        "vocabId": 522,
         "hanzi": "猫",
         "pinyin": "māo",
         "pinyinRaw": "mao",
@@ -31653,7 +31653,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "我家的小猫喜欢睡在椅子上。",
         "exampleTranslation": "Con mèo nhỏ nhà tôi thích ngủ trên ghế.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0514.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0522.mp3",
         "videoWritingUrl": null,
         "orderIndex": 19
       },
@@ -31688,7 +31688,7 @@ export const SEED_LESSONS = [
     "updatedAt": "2026-08-02T10:30:00Z",
     "vocabularies": [
       {
-        "vocabId": 515,
+        "vocabId": 523,
         "hanzi": "没事",
         "pinyin": "méishì",
         "pinyinRaw": "meishi",
@@ -31698,7 +31698,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "别担心，我真的一点儿也没事。",
         "exampleTranslation": "Đừng lo, tôi thật sự không sao cả.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0515.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0523.mp3",
         "videoWritingUrl": null,
         "orderIndex": 1
       },
@@ -31853,7 +31853,7 @@ export const SEED_LESSONS = [
         "orderIndex": 11
       },
       {
-        "vocabId": 516,
+        "vocabId": 524,
         "hanzi": "哪个",
         "pinyin": "nǎge",
         "pinyinRaw": "nage",
@@ -31863,7 +31863,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "你想买哪个苹果？",
         "exampleTranslation": "Bạn muốn mua quả táo nào?",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0516.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0524.mp3",
         "videoWritingUrl": null,
         "orderIndex": 12
       },
@@ -31943,7 +31943,7 @@ export const SEED_LESSONS = [
         "orderIndex": 17
       },
       {
-        "vocabId": 517,
+        "vocabId": 525,
         "hanzi": "那个",
         "pinyin": "nàge",
         "pinyinRaw": "nage",
@@ -31953,7 +31953,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "那个包子很好吃。",
         "exampleTranslation": "Chiếc bánh bao kia rất ngon.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0517.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0525.mp3",
         "videoWritingUrl": null,
         "orderIndex": 18
       },
@@ -32093,7 +32093,7 @@ export const SEED_LESSONS = [
         "orderIndex": 6
       },
       {
-        "vocabId": 518,
+        "vocabId": 526,
         "hanzi": "你好",
         "pinyin": "nǐ hǎo",
         "pinyinRaw": "nihao",
@@ -32103,7 +32103,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "你好，很高兴认识你。",
         "exampleTranslation": "Xin chào, rất vui được làm quen với bạn.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0518.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0526.mp3",
         "videoWritingUrl": null,
         "orderIndex": 7
       },
@@ -32213,7 +32213,7 @@ export const SEED_LESSONS = [
         "orderIndex": 14
       },
       {
-        "vocabId": 519,
+        "vocabId": 527,
         "hanzi": "女士",
         "pinyin": "nǚshì",
         "pinyinRaw": "nushi",
@@ -32223,7 +32223,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "那位女士是我们的汉语老师。",
         "exampleTranslation": "Vị quý cô kia là giáo viên tiếng Trung của chúng tôi.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0519.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0527.mp3",
         "videoWritingUrl": null,
         "orderIndex": 15
       },
@@ -32243,7 +32243,7 @@ export const SEED_LESSONS = [
         "orderIndex": 16
       },
       {
-        "vocabId": 520,
+        "vocabId": 528,
         "hanzi": "便宜",
         "pinyin": "piányi",
         "pinyinRaw": "pianyi",
@@ -32253,12 +32253,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "这本书既实用又便宜。",
         "exampleTranslation": "Cuốn sách này vừa thực dụng vừa rẻ.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0520.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0528.mp3",
         "videoWritingUrl": null,
         "orderIndex": 17
       },
       {
-        "vocabId": 521,
+        "vocabId": 529,
         "hanzi": "漂亮",
         "pinyin": "piàoliang",
         "pinyinRaw": "piaoliang",
@@ -32268,12 +32268,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "今天你穿得真漂亮。",
         "exampleTranslation": "Hôm nay bạn mặc thật là đẹp.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0521.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0529.mp3",
         "videoWritingUrl": null,
         "orderIndex": 18
       },
       {
-        "vocabId": 522,
+        "vocabId": 530,
         "hanzi": "苹果",
         "pinyin": "píngguǒ",
         "pinyinRaw": "pingguo",
@@ -32283,7 +32283,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "我想吃一个红苹果。",
         "exampleTranslation": "Tôi muốn ăn một quả táo đỏ.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0522.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0530.mp3",
         "videoWritingUrl": null,
         "orderIndex": 19
       },
@@ -32333,7 +32333,7 @@ export const SEED_LESSONS = [
         "orderIndex": 1
       },
       {
-        "vocabId": 523,
+        "vocabId": 531,
         "hanzi": "千",
         "pinyin": "qiān",
         "pinyinRaw": "qian",
@@ -32343,7 +32343,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "这个电脑要五千元。",
         "exampleTranslation": "Chiếc máy tính này giá năm nghìn tệ.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0523.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0531.mp3",
         "videoWritingUrl": null,
         "orderIndex": 2
       },
@@ -32948,7 +32948,7 @@ export const SEED_LESSONS = [
     "updatedAt": "2026-08-02T10:30:00Z",
     "vocabularies": [
       {
-        "vocabId": 524,
+        "vocabId": 532,
         "hanzi": "它",
         "pinyin": "tā",
         "pinyinRaw": "ta",
@@ -32958,7 +32958,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "这是一只小猫，它的眼睛很大。",
         "exampleTranslation": "Đây là một con mèo con, mắt của nó rất to.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0524.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0532.mp3",
         "videoWritingUrl": null,
         "orderIndex": 1
       },
@@ -32993,7 +32993,7 @@ export const SEED_LESSONS = [
         "orderIndex": 3
       },
       {
-        "vocabId": 525,
+        "vocabId": 533,
         "hanzi": "它们",
         "pinyin": "tāmen",
         "pinyinRaw": "tamen",
@@ -33003,7 +33003,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "这些鸟真可爱，它们在树上唱歌。",
         "exampleTranslation": "Những con chim này thật đáng yêu, chúng đang hót trên cây.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0525.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0533.mp3",
         "videoWritingUrl": null,
         "orderIndex": 4
       },
@@ -33143,7 +33143,7 @@ export const SEED_LESSONS = [
         "orderIndex": 13
       },
       {
-        "vocabId": 526,
+        "vocabId": 534,
         "hanzi": "玩",
         "pinyin": "wán",
         "pinyinRaw": "wan",
@@ -33153,7 +33153,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "周末孩子们在公园里开心地玩。",
         "exampleTranslation": "Cuối tuần lũ trẻ vui vẻ chơi đùa trong công viên.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0526.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0534.mp3",
         "videoWritingUrl": null,
         "orderIndex": 14
       },
@@ -33203,7 +33203,7 @@ export const SEED_LESSONS = [
         "orderIndex": 17
       },
       {
-        "vocabId": 527,
+        "vocabId": 535,
         "hanzi": "喂",
         "pinyin": "wèi",
         "pinyinRaw": "wei",
@@ -33213,7 +33213,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "喂，请问王老师在吗？",
         "exampleTranslation": "A lô, xin hỏi thầy Vương có ở đó không?",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0527.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0535.mp3",
         "videoWritingUrl": null,
         "orderIndex": 18
       },
@@ -33233,7 +33233,7 @@ export const SEED_LESSONS = [
         "orderIndex": 19
       },
       {
-        "vocabId": 528,
+        "vocabId": 536,
         "hanzi": "问题",
         "pinyin": "wèntí",
         "pinyinRaw": "wenti",
@@ -33243,7 +33243,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "老师，我有一个问题想问您。",
         "exampleTranslation": "Thưa thầy, em có một câu hỏi muốn hỏi thầy.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0528.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0536.mp3",
         "videoWritingUrl": null,
         "orderIndex": 20
       }
@@ -33533,7 +33533,7 @@ export const SEED_LESSONS = [
         "orderIndex": 18
       },
       {
-        "vocabId": 529,
+        "vocabId": 537,
         "hanzi": "些",
         "pinyin": "xiē",
         "pinyinRaw": "xie",
@@ -33543,7 +33543,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "桌子上有一些新书。",
         "exampleTranslation": "Trên bàn có một vài cuốn sách mới.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0529.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0537.mp3",
         "videoWritingUrl": null,
         "orderIndex": 19
       },
@@ -33728,7 +33728,7 @@ export const SEED_LESSONS = [
         "orderIndex": 10
       },
       {
-        "vocabId": 530,
+        "vocabId": 538,
         "hanzi": "雪",
         "pinyin": "xuě",
         "pinyinRaw": "xue",
@@ -33738,7 +33738,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "冬天下雪的时候外面很冷。",
         "exampleTranslation": "Mùa đông khi tuyết rơi bên ngoài rất lạnh.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0530.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0538.mp3",
         "videoWritingUrl": null,
         "orderIndex": 11
       },
@@ -33848,7 +33848,7 @@ export const SEED_LESSONS = [
         "orderIndex": 18
       },
       {
-        "vocabId": 531,
+        "vocabId": 539,
         "hanzi": "一下",
         "pinyin": "yíxià",
         "pinyinRaw": "yixia",
@@ -33858,12 +33858,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "请等一下，我马上就来。",
         "exampleTranslation": "Xin đợi một chút, tôi đến ngay đây.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0531.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0539.mp3",
         "videoWritingUrl": null,
         "orderIndex": 19
       },
       {
-        "vocabId": 532,
+        "vocabId": 540,
         "hanzi": "椅子",
         "pinyin": "yǐzi",
         "pinyinRaw": "yizi",
@@ -33873,7 +33873,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "请坐在这把椅子上休息。",
         "exampleTranslation": "Xin mời ngồi trên chiếc ghế này nghỉ ngơi.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0532.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0540.mp3",
         "videoWritingUrl": null,
         "orderIndex": 20
       }
@@ -33953,7 +33953,7 @@ export const SEED_LESSONS = [
         "orderIndex": 4
       },
       {
-        "vocabId": 533,
+        "vocabId": 541,
         "hanzi": "有点儿",
         "pinyin": "yǒudiǎnr",
         "pinyinRaw": "youdianr",
@@ -33963,7 +33963,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "今天天气有点儿冷。",
         "exampleTranslation": "Thời tiết hôm nay hơi lạnh.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0533.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0541.mp3",
         "videoWritingUrl": null,
         "orderIndex": 5
       },
@@ -34133,7 +34133,7 @@ export const SEED_LESSONS = [
         "orderIndex": 16
       },
       {
-        "vocabId": 534,
+        "vocabId": 542,
         "hanzi": "怎么样",
         "pinyin": "zěnmeyàng",
         "pinyinRaw": "zenmeyang",
@@ -34143,7 +34143,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "你最近身体怎么样？",
         "exampleTranslation": "Dạo này sức khỏe của bạn thế nào?",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0534.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0542.mp3",
         "videoWritingUrl": null,
         "orderIndex": 17
       },
@@ -34208,7 +34208,7 @@ export const SEED_LESSONS = [
     "updatedAt": "2026-08-02T10:30:00Z",
     "vocabularies": [
       {
-        "vocabId": 535,
+        "vocabId": 543,
         "hanzi": "这个",
         "pinyin": "zhège",
         "pinyinRaw": "zhege",
@@ -34218,7 +34218,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "这个汉字怎么读？",
         "exampleTranslation": "Chữ Hán này đọc như thế nào?",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0535.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0543.mp3",
         "videoWritingUrl": null,
         "orderIndex": 1
       },
@@ -34298,7 +34298,7 @@ export const SEED_LESSONS = [
         "orderIndex": 6
       },
       {
-        "vocabId": 536,
+        "vocabId": 544,
         "hanzi": "只",
         "pinyin": "zhī",
         "pinyinRaw": "zhi",
@@ -34308,7 +34308,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "树上有一只小鸟。",
         "exampleTranslation": "Trên cây có một con chim nhỏ.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0536.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0544.mp3",
         "videoWritingUrl": null,
         "orderIndex": 7
       },
@@ -34493,7 +34493,7 @@ export const SEED_LESSONS = [
         "orderIndex": 19
       },
       {
-        "vocabId": 537,
+        "vocabId": 545,
         "hanzi": "做饭",
         "pinyin": "zuò fàn",
         "pinyinRaw": "zuofan",
@@ -34503,7 +34503,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "妈妈每天都在家做饭。",
         "exampleTranslation": "Mẹ ngày nào cũng nấu cơm ở nhà.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0537.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0545.mp3",
         "videoWritingUrl": null,
         "orderIndex": 20
       }
@@ -34523,7 +34523,7 @@ export const SEED_LESSONS = [
     "updatedAt": "2026-08-02T10:30:00Z",
     "vocabularies": [
       {
-        "vocabId": 538,
+        "vocabId": 546,
         "hanzi": "啊",
         "pinyin": "a",
         "pinyinRaw": "a",
@@ -34533,7 +34533,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "这里的风景真美啊！",
         "exampleTranslation": "Phong cảnh ở đây thật là đẹp quá!",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0538.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0546.mp3",
         "videoWritingUrl": null,
         "orderIndex": 1
       },
@@ -34553,7 +34553,7 @@ export const SEED_LESSONS = [
         "orderIndex": 2
       },
       {
-        "vocabId": 539,
+        "vocabId": 547,
         "hanzi": "白色",
         "pinyin": "báisè",
         "pinyinRaw": "baise",
@@ -34563,7 +34563,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "他今天穿了一件白色的衬衫。",
         "exampleTranslation": "Hôm nay anh ấy mặc một chiếc áo sơ mi màu trắng.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0539.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0547.mp3",
         "videoWritingUrl": null,
         "orderIndex": 3
       },
@@ -34658,7 +34658,7 @@ export const SEED_LESSONS = [
         "orderIndex": 9
       },
       {
-        "vocabId": 540,
+        "vocabId": 548,
         "hanzi": "笔",
         "pinyin": "bǐ",
         "pinyinRaw": "bi",
@@ -34668,7 +34668,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "我可以用一下你的笔吗？",
         "exampleTranslation": "Tôi có thể dùng bút của bạn một chút không?",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0540.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0548.mp3",
         "videoWritingUrl": null,
         "orderIndex": 10
       },
@@ -34688,7 +34688,7 @@ export const SEED_LESSONS = [
         "orderIndex": 11
       },
       {
-        "vocabId": 541,
+        "vocabId": 549,
         "hanzi": "不错",
         "pinyin": "búcuò",
         "pinyinRaw": "bucuo",
@@ -34698,12 +34698,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "这家饭馆的菜味道真不错。",
         "exampleTranslation": "Món ăn của quán này hương vị thật không tồi.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0541.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0549.mp3",
         "videoWritingUrl": null,
         "orderIndex": 12
       },
       {
-        "vocabId": 542,
+        "vocabId": 550,
         "hanzi": "不好意思",
         "pinyin": "bù hǎoyìsi",
         "pinyinRaw": "buhaoyisi",
@@ -34713,12 +34713,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "不好意思，让您久等了。",
         "exampleTranslation": "Ngại quá, để ngài phải đợi lâu rồi.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0542.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0550.mp3",
         "videoWritingUrl": null,
         "orderIndex": 13
       },
       {
-        "vocabId": 543,
+        "vocabId": 551,
         "hanzi": "长",
         "pinyin": "cháng",
         "pinyinRaw": "chang",
@@ -34728,7 +34728,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "这条河很长，流过很多城市。",
         "exampleTranslation": "Con sông này rất dài, chảy qua nhiều thành phố.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0543.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0551.mp3",
         "videoWritingUrl": null,
         "orderIndex": 14
       },
@@ -34763,7 +34763,7 @@ export const SEED_LESSONS = [
         "orderIndex": 16
       },
       {
-        "vocabId": 544,
+        "vocabId": 552,
         "hanzi": "出国",
         "pinyin": "chūguó",
         "pinyinRaw": "chuguo",
@@ -34773,7 +34773,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "他打算明年出国留学。",
         "exampleTranslation": "Anh ấy dự định năm sau ra nước ngoài du học.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0544.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0552.mp3",
         "videoWritingUrl": null,
         "orderIndex": 17
       },
@@ -34793,7 +34793,7 @@ export const SEED_LESSONS = [
         "orderIndex": 18
       },
       {
-        "vocabId": 545,
+        "vocabId": 553,
         "hanzi": "出门",
         "pinyin": "chūmén",
         "pinyinRaw": "chumen",
@@ -34803,7 +34803,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "外面下雨了，出门记得带伞。",
         "exampleTranslation": "Bên ngoài trời mưa rồi, ra ngoài nhớ mang theo ô.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0545.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0553.mp3",
         "videoWritingUrl": null,
         "orderIndex": 19
       },
@@ -34853,7 +34853,7 @@ export const SEED_LESSONS = [
         "orderIndex": 1
       },
       {
-        "vocabId": 546,
+        "vocabId": 554,
         "hanzi": "词",
         "pinyin": "cí",
         "pinyinRaw": "ci",
@@ -34863,7 +34863,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "这个生词是什么意思？",
         "exampleTranslation": "Từ mới này có nghĩa là gì?",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0546.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0554.mp3",
         "videoWritingUrl": null,
         "orderIndex": 2
       },
@@ -34898,7 +34898,7 @@ export const SEED_LESSONS = [
         "orderIndex": 4
       },
       {
-        "vocabId": 547,
+        "vocabId": 555,
         "hanzi": "从小",
         "pinyin": "cóngxiǎo",
         "pinyinRaw": "congxiao",
@@ -34908,7 +34908,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "他从小就非常喜欢画画。",
         "exampleTranslation": "Từ nhỏ anh ấy đã rất thích vẽ tranh.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0547.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0555.mp3",
         "videoWritingUrl": null,
         "orderIndex": 5
       },
@@ -34973,7 +34973,7 @@ export const SEED_LESSONS = [
         "orderIndex": 9
       },
       {
-        "vocabId": 548,
+        "vocabId": 556,
         "hanzi": "但",
         "pinyin": "dàn",
         "pinyinRaw": "dan",
@@ -34983,12 +34983,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "他虽然年纪小，但懂得很多道理。",
         "exampleTranslation": "Cậu ấy tuy tuổi còn nhỏ nhưng hiểu biết rất nhiều đạo lý.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0548.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0556.mp3",
         "videoWritingUrl": null,
         "orderIndex": 10
       },
       {
-        "vocabId": 549,
+        "vocabId": 557,
         "hanzi": "但是",
         "pinyin": "dànshì",
         "pinyinRaw": "danshi",
@@ -34998,12 +34998,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "我想去旅行，但是最近太忙了。",
         "exampleTranslation": "Tôi muốn đi du lịch, nhưng dạo này bận quá.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0549.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0557.mp3",
         "videoWritingUrl": null,
         "orderIndex": 11
       },
       {
-        "vocabId": 550,
+        "vocabId": 558,
         "hanzi": "得",
         "pinyin": "de",
         "pinyinRaw": "de",
@@ -35013,7 +35013,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "弟弟跑得很快。",
         "exampleTranslation": "Em trai chạy rất nhanh.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0550.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0558.mp3",
         "videoWritingUrl": null,
         "orderIndex": 12
       },
@@ -35048,7 +35048,7 @@ export const SEED_LESSONS = [
         "orderIndex": 14
       },
       {
-        "vocabId": 551,
+        "vocabId": 559,
         "hanzi": "地铁",
         "pinyin": "dìtiě",
         "pinyinRaw": "ditie",
@@ -35058,12 +35058,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "坐地铁去火车站非常方便。",
         "exampleTranslation": "Đi tàu điện ngầm đến ga tàu hỏa rất thuận tiện.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0551.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0559.mp3",
         "videoWritingUrl": null,
         "orderIndex": 15
       },
       {
-        "vocabId": 552,
+        "vocabId": 560,
         "hanzi": "点",
         "pinyin": "diǎn",
         "pinyinRaw": "dian",
@@ -35073,12 +35073,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "服务员，我们现在想点菜。",
         "exampleTranslation": "Phục vụ viên, bây giờ chúng tôi muốn gọi món.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0552.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0560.mp3",
         "videoWritingUrl": null,
         "orderIndex": 16
       },
       {
-        "vocabId": 553,
+        "vocabId": 561,
         "hanzi": "懂",
         "pinyin": "dǒng",
         "pinyinRaw": "dong",
@@ -35088,7 +35088,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "老师讲的内容你都听懂了吗？",
         "exampleTranslation": "Nội dung thầy giảng bạn đã nghe hiểu hết chưa?",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0553.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0561.mp3",
         "videoWritingUrl": null,
         "orderIndex": 17
       },
@@ -35108,7 +35108,7 @@ export const SEED_LESSONS = [
         "orderIndex": 18
       },
       {
-        "vocabId": 554,
+        "vocabId": 562,
         "hanzi": "饭馆",
         "pinyin": "fànguǎn",
         "pinyinRaw": "fanguan",
@@ -35118,7 +35118,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "学校附近有一家好吃的中国饭馆。",
         "exampleTranslation": "Gần trường có một quán ăn Trung Quốc rất ngon.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0554.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0562.mp3",
         "videoWritingUrl": null,
         "orderIndex": 19
       },
@@ -35168,7 +35168,7 @@ export const SEED_LESSONS = [
         "orderIndex": 1
       },
       {
-        "vocabId": 555,
+        "vocabId": 563,
         "hanzi": "高中",
         "pinyin": "gāozhōng",
         "pinyinRaw": "gaozhong",
@@ -35178,7 +35178,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "我们是从高中就开始做朋友的。",
         "exampleTranslation": "Chúng tôi làm bạn với nhau từ thời cấp ba.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0555.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0563.mp3",
         "videoWritingUrl": null,
         "orderIndex": 2
       },
@@ -35198,7 +35198,7 @@ export const SEED_LESSONS = [
         "orderIndex": 3
       },
       {
-        "vocabId": 556,
+        "vocabId": 564,
         "hanzi": "个子",
         "pinyin": "gèzi",
         "pinyinRaw": "gezi",
@@ -35208,7 +35208,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "他的个子很高，喜欢打篮球。",
         "exampleTranslation": "Vóc dáng anh ấy rất cao, thích chơi bóng rổ.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0556.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0564.mp3",
         "videoWritingUrl": null,
         "orderIndex": 4
       },
@@ -35228,7 +35228,7 @@ export const SEED_LESSONS = [
         "orderIndex": 5
       },
       {
-        "vocabId": 557,
+        "vocabId": 565,
         "hanzi": "公交车",
         "pinyin": "gōngjiāochē",
         "pinyinRaw": "gongjiaoche",
@@ -35238,12 +35238,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "每天早上我都坐公交车去上班。",
         "exampleTranslation": "Mỗi sáng tôi đều đi xe buýt đi làm.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0557.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0565.mp3",
         "videoWritingUrl": null,
         "orderIndex": 6
       },
       {
-        "vocabId": 558,
+        "vocabId": 566,
         "hanzi": "过",
         "pinyin": "guò",
         "pinyinRaw": "guo",
@@ -35253,12 +35253,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "过马路的时候要注意安全。",
         "exampleTranslation": "Khi qua đường phải chú ý an toàn.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0558.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0566.mp3",
         "videoWritingUrl": null,
         "orderIndex": 7
       },
       {
-        "vocabId": 559,
+        "vocabId": 567,
         "hanzi": "过来",
         "pinyin": "guòlái",
         "pinyinRaw": "guolai",
@@ -35268,12 +35268,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "请你过来帮我看一下这个问题。",
         "exampleTranslation": "Xin mời bạn qua đây giúp tôi xem câu hỏi này.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0559.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0567.mp3",
         "videoWritingUrl": null,
         "orderIndex": 8
       },
       {
-        "vocabId": 560,
+        "vocabId": 568,
         "hanzi": "过年",
         "pinyin": "guònián",
         "pinyinRaw": "guonian",
@@ -35283,12 +35283,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "过年的时候全家人聚在一起吃年夜饭。",
         "exampleTranslation": "Dịp đón tết cả gia đình quây quần ăn bữa cơm tất niên.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0560.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0568.mp3",
         "videoWritingUrl": null,
         "orderIndex": 9
       },
       {
-        "vocabId": 561,
+        "vocabId": 569,
         "hanzi": "过去",
         "pinyin": "guòqù",
         "pinyinRaw": "guoqu",
@@ -35298,7 +35298,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "我们从这里走过去只要五分钟。",
         "exampleTranslation": "Chúng ta đi bộ qua đó từ đây chỉ mất năm phút.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0561.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0569.mp3",
         "videoWritingUrl": null,
         "orderIndex": 10
       },
@@ -35333,7 +35333,7 @@ export const SEED_LESSONS = [
         "orderIndex": 12
       },
       {
-        "vocabId": 562,
+        "vocabId": 570,
         "hanzi": "黑色",
         "pinyin": "hēisè",
         "pinyinRaw": "heise",
@@ -35343,12 +35343,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "她买了一双黑色的皮鞋。",
         "exampleTranslation": "Cô ấy đã mua một đôi giày da màu đen.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0562.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0570.mp3",
         "videoWritingUrl": null,
         "orderIndex": 13
       },
       {
-        "vocabId": 563,
+        "vocabId": 571,
         "hanzi": "红茶",
         "pinyin": "hóngchá",
         "pinyinRaw": "hongcha",
@@ -35358,12 +35358,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "中国人喜欢在下午喝一杯热红茶。",
         "exampleTranslation": "Người Trung Quốc thích uống một ly hồng trà nóng vào buổi chiều.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0563.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0571.mp3",
         "videoWritingUrl": null,
         "orderIndex": 14
       },
       {
-        "vocabId": 564,
+        "vocabId": 572,
         "hanzi": "红色",
         "pinyin": "hóngsè",
         "pinyinRaw": "hongse",
@@ -35373,12 +35373,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "中国人过年时喜欢用红色的东西。",
         "exampleTranslation": "Người Trung Quốc khi đón tết thích dùng đồ màu đỏ.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0564.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0572.mp3",
         "videoWritingUrl": null,
         "orderIndex": 15
       },
       {
-        "vocabId": 565,
+        "vocabId": 573,
         "hanzi": "后面",
         "pinyin": "hòumiàn",
         "pinyinRaw": "houmian",
@@ -35388,12 +35388,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "图书馆就在教学楼的后面。",
         "exampleTranslation": "Thư viện ở ngay phía sau tòa nhà giảng dạy.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0565.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0573.mp3",
         "videoWritingUrl": null,
         "orderIndex": 16
       },
       {
-        "vocabId": 566,
+        "vocabId": 574,
         "hanzi": "花",
         "pinyin": "huā",
         "pinyinRaw": "hua",
@@ -35403,7 +35403,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "买这辆自行车花了我很多钱。",
         "exampleTranslation": "Mua chiếc xe đạp này đã tốn của tôi rất nhiều tiền.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0566.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0574.mp3",
         "videoWritingUrl": null,
         "orderIndex": 17
       },
@@ -35423,7 +35423,7 @@ export const SEED_LESSONS = [
         "orderIndex": 18
       },
       {
-        "vocabId": 567,
+        "vocabId": 575,
         "hanzi": "画",
         "pinyin": "huà",
         "pinyinRaw": "hua",
@@ -35433,7 +35433,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "墙上挂着一幅漂亮的中国山水画。",
         "exampleTranslation": "Trên tường treo một bức tranh sơn thủy Trung Quốc rất đẹp.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0567.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0575.mp3",
         "videoWritingUrl": null,
         "orderIndex": 19
       },
@@ -35573,7 +35573,7 @@ export const SEED_LESSONS = [
         "orderIndex": 7
       },
       {
-        "vocabId": 568,
+        "vocabId": 576,
         "hanzi": "教室",
         "pinyin": "jiàoshì",
         "pinyinRaw": "jiaoshi",
@@ -35583,7 +35583,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "同学们都在教室里认真听讲。",
         "exampleTranslation": "Các bạn học sinh đều đang chăm chú nghe giảng trong phòng học.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0568.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0576.mp3",
         "videoWritingUrl": null,
         "orderIndex": 8
       },
@@ -35618,7 +35618,7 @@ export const SEED_LESSONS = [
         "orderIndex": 10
       },
       {
-        "vocabId": 569,
+        "vocabId": 577,
         "hanzi": "近",
         "pinyin": "jìn",
         "pinyinRaw": "jin",
@@ -35628,7 +35628,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "我家离学校非常近，走路十分钟就到。",
         "exampleTranslation": "Nhà tôi cách trường rất gần, đi bộ mười phút là tới.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0569.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0577.mp3",
         "videoWritingUrl": null,
         "orderIndex": 11
       },
@@ -35663,7 +35663,7 @@ export const SEED_LESSONS = [
         "orderIndex": 13
       },
       {
-        "vocabId": 570,
+        "vocabId": 578,
         "hanzi": "经常",
         "pinyin": "jīngcháng",
         "pinyinRaw": "jingchang",
@@ -35673,12 +35673,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "他经常在周末去图书馆借书。",
         "exampleTranslation": "Anh ấy thường xuyên đi thư viện mượn sách vào cuối tuần.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0570.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0578.mp3",
         "videoWritingUrl": null,
         "orderIndex": 14
       },
       {
-        "vocabId": 571,
+        "vocabId": 579,
         "hanzi": "酒店",
         "pinyin": "jiǔdiàn",
         "pinyinRaw": "jiudian",
@@ -35688,7 +35688,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "这家五星级酒店的服务非常周到。",
         "exampleTranslation": "Dịch vụ của khách sạn năm sao này rất chu đáo.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0571.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0579.mp3",
         "videoWritingUrl": null,
         "orderIndex": 15
       },
@@ -35708,7 +35708,7 @@ export const SEED_LESSONS = [
         "orderIndex": 16
       },
       {
-        "vocabId": 572,
+        "vocabId": 580,
         "hanzi": "咖啡",
         "pinyin": "kāfēi",
         "pinyinRaw": "kafei",
@@ -35718,12 +35718,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "喝一杯热咖啡能让人精神起来。",
         "exampleTranslation": "Uống một tách cà phê nóng giúp tinh thần tỉnh táo hơn.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0572.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0580.mp3",
         "videoWritingUrl": null,
         "orderIndex": 17
       },
       {
-        "vocabId": 573,
+        "vocabId": 581,
         "hanzi": "开始",
         "pinyin": "kāishǐ",
         "pinyinRaw": "kaishi",
@@ -35733,12 +35733,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "电影马上就要开始了，大家请坐好。",
         "exampleTranslation": "Bộ phim sắp bắt đầu rồi, mọi người hãy ngồi ngay ngắn.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0573.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0581.mp3",
         "videoWritingUrl": null,
         "orderIndex": 18
       },
       {
-        "vocabId": 574,
+        "vocabId": 582,
         "hanzi": "开学",
         "pinyin": "kāixué",
         "pinyinRaw": "kaixue",
@@ -35748,7 +35748,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "下个星期一我们学校就要开学了。",
         "exampleTranslation": "Thứ hai tuần sau trường chúng tôi sẽ khai giảng rồi.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0574.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0582.mp3",
         "videoWritingUrl": null,
         "orderIndex": 19
       },
@@ -35798,7 +35798,7 @@ export const SEED_LESSONS = [
         "orderIndex": 1
       },
       {
-        "vocabId": 575,
+        "vocabId": 583,
         "hanzi": "可能",
         "pinyin": "kěnéng",
         "pinyinRaw": "keneng",
@@ -35808,12 +35808,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "明天可能会下雨，出门记得带伞。",
         "exampleTranslation": "Ngày mai có thể trời sẽ mưa, ra ngoài nhớ mang theo ô.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0575.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0583.mp3",
         "videoWritingUrl": null,
         "orderIndex": 2
       },
       {
-        "vocabId": 576,
+        "vocabId": 584,
         "hanzi": "裤子",
         "pinyin": "kùzi",
         "pinyinRaw": "kuzi",
@@ -35823,7 +35823,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "这条黑色的裤子穿起来很合身。",
         "exampleTranslation": "Chiếc quần màu đen này mặc vào rất vừa vặn.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0576.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0584.mp3",
         "videoWritingUrl": null,
         "orderIndex": 3
       },
@@ -35843,7 +35843,7 @@ export const SEED_LESSONS = [
         "orderIndex": 4
       },
       {
-        "vocabId": 577,
+        "vocabId": 585,
         "hanzi": "快乐",
         "pinyin": "kuàilè",
         "pinyinRaw": "kuaile",
@@ -35853,12 +35853,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "祝你生日快乐，身体健康！",
         "exampleTranslation": "Chúc bạn sinh nhật vui vẻ, dồi dào sức khỏe!",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0577.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0585.mp3",
         "videoWritingUrl": null,
         "orderIndex": 5
       },
       {
-        "vocabId": 578,
+        "vocabId": 586,
         "hanzi": "快要",
         "pinyin": "kuàiyào",
         "pinyinRaw": "kuaiyao",
@@ -35868,12 +35868,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "天阴了，快要下大雨了。",
         "exampleTranslation": "Trời râm rồi, sắp mưa to rồi.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0578.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0586.mp3",
         "videoWritingUrl": null,
         "orderIndex": 6
       },
       {
-        "vocabId": 579,
+        "vocabId": 587,
         "hanzi": "篮球",
         "pinyin": "lánqiú",
         "pinyinRaw": "lanqiu",
@@ -35883,7 +35883,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "下课后男同学们喜欢一起打篮球。",
         "exampleTranslation": "Tan học các bạn nam thích cùng nhau chơi bóng rổ.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0579.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0587.mp3",
         "videoWritingUrl": null,
         "orderIndex": 7
       },
@@ -35903,7 +35903,7 @@ export const SEED_LESSONS = [
         "orderIndex": 8
       },
       {
-        "vocabId": 580,
+        "vocabId": 588,
         "hanzi": "离",
         "pinyin": "lí",
         "pinyinRaw": "li",
@@ -35913,12 +35913,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "我家离医院不太远。",
         "exampleTranslation": "Nhà tôi cách bệnh viện không xa lắm.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0580.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0588.mp3",
         "videoWritingUrl": null,
         "orderIndex": 9
       },
       {
-        "vocabId": 581,
+        "vocabId": 589,
         "hanzi": "里面",
         "pinyin": "lǐmiàn",
         "pinyinRaw": "limian",
@@ -35928,7 +35928,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "书包里面装满了课本和笔记本。",
         "exampleTranslation": "Bên trong cặp sách chứa đầy sách giáo khoa và vở ghi.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0581.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0589.mp3",
         "videoWritingUrl": null,
         "orderIndex": 10
       },
@@ -35978,7 +35978,7 @@ export const SEED_LESSONS = [
         "orderIndex": 13
       },
       {
-        "vocabId": 582,
+        "vocabId": 590,
         "hanzi": "旅游",
         "pinyin": "lǚyóu",
         "pinyinRaw": "luyou",
@@ -35988,12 +35988,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "今年暑假我们全家打算去北京旅游。",
         "exampleTranslation": "Kỳ nghỉ hè năm nay cả nhà chúng tôi dự định đi du lịch Bắc Kinh.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0582.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0590.mp3",
         "videoWritingUrl": null,
         "orderIndex": 14
       },
       {
-        "vocabId": 583,
+        "vocabId": 591,
         "hanzi": "绿茶",
         "pinyin": "lǜchá",
         "pinyinRaw": "lucha",
@@ -36003,12 +36003,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "夏天喝一杯冰绿茶让人感觉很清凉。",
         "exampleTranslation": "Mùa hè uống một ly trà xanh đá làm người ta thấy rất thanh mát.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0583.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0591.mp3",
         "videoWritingUrl": null,
         "orderIndex": 15
       },
       {
-        "vocabId": 584,
+        "vocabId": 592,
         "hanzi": "绿色",
         "pinyin": "lǜsè",
         "pinyinRaw": "luse",
@@ -36018,7 +36018,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "春天来了，公园里到处都是绿色的草地。",
         "exampleTranslation": "Mùa xuân đến rồi, trong công viên khắp nơi đều là bãi cỏ màu xanh lá.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0584.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0592.mp3",
         "videoWritingUrl": null,
         "orderIndex": 16
       },
@@ -36038,7 +36038,7 @@ export const SEED_LESSONS = [
         "orderIndex": 17
       },
       {
-        "vocabId": 585,
+        "vocabId": 593,
         "hanzi": "没意思",
         "pinyin": "méi yìsi",
         "pinyinRaw": "meiyisi",
@@ -36048,12 +36048,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "这部电影剧情太拖沓，很没意思。",
         "exampleTranslation": "Cốt truyện bộ phim này quá rườm rà, rất nhàm chán.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0585.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0593.mp3",
         "videoWritingUrl": null,
         "orderIndex": 18
       },
       {
-        "vocabId": 586,
+        "vocabId": 594,
         "hanzi": "每",
         "pinyin": "měi",
         "pinyinRaw": "mei",
@@ -36063,7 +36063,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "每天早上他都坚持晨跑半个小时。",
         "exampleTranslation": "Mỗi buổi sáng anh ấy đều kiên trì chạy bộ nửa tiếng.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0586.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0594.mp3",
         "videoWritingUrl": null,
         "orderIndex": 19
       },
@@ -36128,7 +36128,7 @@ export const SEED_LESSONS = [
         "orderIndex": 2
       },
       {
-        "vocabId": 587,
+        "vocabId": 595,
         "hanzi": "面",
         "pinyin": "miàn",
         "pinyinRaw": "mian",
@@ -36138,12 +36138,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "学校东面是一片绿色的草坪。",
         "exampleTranslation": "Phía đông trường học là một bãi cỏ xanh mướt.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0587.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0595.mp3",
         "videoWritingUrl": null,
         "orderIndex": 3
       },
       {
-        "vocabId": 588,
+        "vocabId": 596,
         "hanzi": "名",
         "pinyin": "míng",
         "pinyinRaw": "ming",
@@ -36153,7 +36153,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "我们班有三十名热情的学生。",
         "exampleTranslation": "Lớp chúng tôi có ba mươi học sinh nhiệt tình.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0588.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0596.mp3",
         "videoWritingUrl": null,
         "orderIndex": 4
       },
@@ -36173,7 +36173,7 @@ export const SEED_LESSONS = [
         "orderIndex": 5
       },
       {
-        "vocabId": 589,
+        "vocabId": 597,
         "hanzi": "那么",
         "pinyin": "nàme",
         "pinyinRaw": "name",
@@ -36183,12 +36183,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "既然大家都在，那么我们就开始开会吧。",
         "exampleTranslation": "Nếu mọi người đều có mặt, vậy thì chúng ta bắt đầu họp nhé.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0589.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0597.mp3",
         "videoWritingUrl": null,
         "orderIndex": 6
       },
       {
-        "vocabId": 590,
+        "vocabId": 598,
         "hanzi": "那样",
         "pinyin": "nàyàng",
         "pinyinRaw": "nayang",
@@ -36198,12 +36198,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "你应该像他那样认真学习。",
         "exampleTranslation": "Bạn nên học tập chăm chỉ như anh ấy vậy.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0590.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0598.mp3",
         "videoWritingUrl": null,
         "orderIndex": 7
       },
       {
-        "vocabId": 591,
+        "vocabId": 599,
         "hanzi": "奶茶",
         "pinyin": "nǎichá",
         "pinyinRaw": "naicha",
@@ -36213,7 +36213,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "现在的年轻人很喜欢在下午喝奶茶。",
         "exampleTranslation": "Giới trẻ ngày nay rất thích uống trà sữa vào buổi chiều.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0591.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0599.mp3",
         "videoWritingUrl": null,
         "orderIndex": 8
       },
@@ -36248,7 +36248,7 @@ export const SEED_LESSONS = [
         "orderIndex": 10
       },
       {
-        "vocabId": 592,
+        "vocabId": 600,
         "hanzi": "鸟",
         "pinyin": "niǎo",
         "pinyinRaw": "niao",
@@ -36258,7 +36258,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "树上有许多美丽的鸟在欢快地唱歌。",
         "exampleTranslation": "Trên cây có nhiều chú chim xinh đẹp đang vui vẻ hót.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0592.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0600.mp3",
         "videoWritingUrl": null,
         "orderIndex": 11
       },
@@ -36308,7 +36308,7 @@ export const SEED_LESSONS = [
         "orderIndex": 14
       },
       {
-        "vocabId": 593,
+        "vocabId": 601,
         "hanzi": "跑步",
         "pinyin": "pǎobù",
         "pinyinRaw": "paobu",
@@ -36318,7 +36318,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "坚持每天跑步能增强身体免疫力。",
         "exampleTranslation": "Kiên trì chạy bộ mỗi ngày có thể tăng cường sức đề kháng cho cơ thể.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0593.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0601.mp3",
         "videoWritingUrl": null,
         "orderIndex": 15
       },
@@ -36338,7 +36338,7 @@ export const SEED_LESSONS = [
         "orderIndex": 16
       },
       {
-        "vocabId": 594,
+        "vocabId": 602,
         "hanzi": "妻子",
         "pinyin": "qīzi",
         "pinyinRaw": "qizi",
@@ -36348,7 +36348,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "他的妻子是一位温柔的医生。",
         "exampleTranslation": "Vợ anh ấy là một bác sĩ rất dịu dàng.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0594.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0602.mp3",
         "videoWritingUrl": null,
         "orderIndex": 17
       },
@@ -36368,7 +36368,7 @@ export const SEED_LESSONS = [
         "orderIndex": 18
       },
       {
-        "vocabId": 595,
+        "vocabId": 603,
         "hanzi": "前面",
         "pinyin": "qiánmiàn",
         "pinyinRaw": "qianmian",
@@ -36378,12 +36378,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "前面那栋高楼就是我们的图书馆。",
         "exampleTranslation": "Tòa nhà cao tầng đằng trước kia chính là thư viện của chúng tôi.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0595.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0603.mp3",
         "videoWritingUrl": null,
         "orderIndex": 19
       },
       {
-        "vocabId": 596,
+        "vocabId": 604,
         "hanzi": "晴",
         "pinyin": "qíng",
         "pinyinRaw": "qing",
@@ -36393,7 +36393,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "今天是个大晴天，阳光明媚。",
         "exampleTranslation": "Hôm nay là một ngày nắng đẹp, ánh nắng chan hòa.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0596.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0604.mp3",
         "videoWritingUrl": null,
         "orderIndex": 20
       }
@@ -36428,7 +36428,7 @@ export const SEED_LESSONS = [
         "orderIndex": 1
       },
       {
-        "vocabId": 597,
+        "vocabId": 605,
         "hanzi": "让",
         "pinyin": "ràng",
         "pinyinRaw": "rang",
@@ -36438,7 +36438,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "老师让我们分成几个小组讨论问题。",
         "exampleTranslation": "Thầy giáo bảo chúng tôi chia thành vài nhóm nhỏ thảo luận vấn đề.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0597.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0605.mp3",
         "videoWritingUrl": null,
         "orderIndex": 2
       },
@@ -36473,7 +36473,7 @@ export const SEED_LESSONS = [
         "orderIndex": 4
       },
       {
-        "vocabId": 598,
+        "vocabId": 606,
         "hanzi": "上来",
         "pinyin": "shànglái",
         "pinyinRaw": "shanglai",
@@ -36483,12 +36483,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "电梯到了，大家快点儿上来吧。",
         "exampleTranslation": "Thang máy đến rồi, mọi người mau bước lên đi.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0598.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0606.mp3",
         "videoWritingUrl": null,
         "orderIndex": 5
       },
       {
-        "vocabId": 599,
+        "vocabId": 607,
         "hanzi": "上面",
         "pinyin": "shàngmiàn",
         "pinyinRaw": "shangmian",
@@ -36498,12 +36498,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "桌子上面放着一本厚厚的词典。",
         "exampleTranslation": "Phía trên bàn đặt một cuốn từ điển dày cộp.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0599.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0607.mp3",
         "videoWritingUrl": null,
         "orderIndex": 6
       },
       {
-        "vocabId": 600,
+        "vocabId": 608,
         "hanzi": "上去",
         "pinyin": "shàngqù",
         "pinyinRaw": "shangqu",
@@ -36513,7 +36513,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "楼梯很陡，你上去的时候要小心。",
         "exampleTranslation": "Cầu thang rất dốc, khi bạn đi lên đó phải cẩn thận.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0600.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0608.mp3",
         "videoWritingUrl": null,
         "orderIndex": 7
       },
@@ -36563,7 +36563,7 @@ export const SEED_LESSONS = [
         "orderIndex": 10
       },
       {
-        "vocabId": 601,
+        "vocabId": 609,
         "hanzi": "时",
         "pinyin": "shí",
         "pinyinRaw": "shi",
@@ -36573,12 +36573,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "看书时请保持安静，不要打扰别人。",
         "exampleTranslation": "Khi đọc sách xin hãy giữ trật tự, đừng làm phiền người khác.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0601.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0609.mp3",
         "videoWritingUrl": null,
         "orderIndex": 11
       },
       {
-        "vocabId": 602,
+        "vocabId": 610,
         "hanzi": "事情",
         "pinyin": "shìqing",
         "pinyinRaw": "shiqing",
@@ -36588,7 +36588,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "今天我有很多重要的事情要处理。",
         "exampleTranslation": "Hôm nay tôi có rất nhiều chuyện quan trọng cần giải quyết.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0602.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0610.mp3",
         "videoWritingUrl": null,
         "orderIndex": 12
       },
@@ -36608,7 +36608,7 @@ export const SEED_LESSONS = [
         "orderIndex": 13
       },
       {
-        "vocabId": 603,
+        "vocabId": 611,
         "hanzi": "手表",
         "pinyin": "shǒubiǎo",
         "pinyinRaw": "shoubiao",
@@ -36618,7 +36618,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "这只手表是爸爸送给我的生日礼物。",
         "exampleTranslation": "Chiếc đồng hồ đeo tay này là món quà sinh nhật bố tặng tôi.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0603.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0611.mp3",
         "videoWritingUrl": null,
         "orderIndex": 14
       },
@@ -36638,7 +36638,7 @@ export const SEED_LESSONS = [
         "orderIndex": 15
       },
       {
-        "vocabId": 604,
+        "vocabId": 612,
         "hanzi": "舒服",
         "pinyin": "shūfu",
         "pinyinRaw": "shufu",
@@ -36648,7 +36648,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "洗了个温水澡之后感觉非常舒服。",
         "exampleTranslation": "Sau khi tắm nước ấm xong cảm thấy vô cùng thoải mái.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0604.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0612.mp3",
         "videoWritingUrl": null,
         "orderIndex": 16
       },
@@ -36668,7 +36668,7 @@ export const SEED_LESSONS = [
         "orderIndex": 17
       },
       {
-        "vocabId": 605,
+        "vocabId": 613,
         "hanzi": "虽然",
         "pinyin": "suīrán",
         "pinyinRaw": "suiran",
@@ -36678,12 +36678,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "虽然天气很冷，但他依然坚持锻炼。",
         "exampleTranslation": "Tuy rằng thời tiết rất lạnh, nhưng anh ấy vẫn kiên trì rèn luyện.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0605.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0613.mp3",
         "videoWritingUrl": null,
         "orderIndex": 18
       },
       {
-        "vocabId": 606,
+        "vocabId": 614,
         "hanzi": "所以",
         "pinyin": "suǒyǐ",
         "pinyinRaw": "suoyi",
@@ -36693,12 +36693,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "因为下大雨，所以运动会推迟了。",
         "exampleTranslation": "Vì trời mưa to, cho nên đại hội thể thao đã bị hoãn lại.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0606.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0614.mp3",
         "videoWritingUrl": null,
         "orderIndex": 19
       },
       {
-        "vocabId": 607,
+        "vocabId": 615,
         "hanzi": "疼",
         "pinyin": "téng",
         "pinyinRaw": "teng",
@@ -36708,7 +36708,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "昨天吃了冷饮，今天胃有点儿疼。",
         "exampleTranslation": "Hôm qua uống đồ lạnh, hôm nay dạ dày hơi đau.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0607.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0615.mp3",
         "videoWritingUrl": null,
         "orderIndex": 20
       }
@@ -36728,7 +36728,7 @@ export const SEED_LESSONS = [
     "updatedAt": "2026-08-02T10:30:00Z",
     "vocabularies": [
       {
-        "vocabId": 608,
+        "vocabId": 616,
         "hanzi": "踢",
         "pinyin": "tī",
         "pinyinRaw": "ti",
@@ -36738,12 +36738,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "周末男孩子们喜欢在草地上踢足球。",
         "exampleTranslation": "Cuối tuần các cậu bé thích đá bóng trên bãi cỏ.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0608.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0616.mp3",
         "videoWritingUrl": null,
         "orderIndex": 1
       },
       {
-        "vocabId": 609,
+        "vocabId": 617,
         "hanzi": "题",
         "pinyin": "tí",
         "pinyinRaw": "ti",
@@ -36753,12 +36753,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "这次考试的数学题都比较简单。",
         "exampleTranslation": "Các câu hỏi toán học trong bài thi lần này tương đối đơn giản.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0609.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0617.mp3",
         "videoWritingUrl": null,
         "orderIndex": 2
       },
       {
-        "vocabId": 610,
+        "vocabId": 618,
         "hanzi": "条",
         "pinyin": "tiáo",
         "pinyinRaw": "tiao",
@@ -36768,12 +36768,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "门前有一条清澈的小河。",
         "exampleTranslation": "Trước cửa có một con sông nhỏ trong vắt.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0610.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0618.mp3",
         "videoWritingUrl": null,
         "orderIndex": 3
       },
       {
-        "vocabId": 611,
+        "vocabId": 619,
         "hanzi": "跳舞",
         "pinyin": "tiàowǔ",
         "pinyinRaw": "tiaowu",
@@ -36783,12 +36783,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "姐姐从小就学习跳舞，跳得很优美。",
         "exampleTranslation": "Chị gái học khiêu vũ từ nhỏ, nhảy rất uyển chuyển.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0611.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0619.mp3",
         "videoWritingUrl": null,
         "orderIndex": 4
       },
       {
-        "vocabId": 612,
+        "vocabId": 620,
         "hanzi": "头",
         "pinyin": "tóu",
         "pinyinRaw": "tou",
@@ -36798,7 +36798,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "他低下头认真地看着手里的书。",
         "exampleTranslation": "Cậu ấy cúi đầu chăm chú nhìn cuốn sách trong tay.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0612.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0620.mp3",
         "videoWritingUrl": null,
         "orderIndex": 5
       },
@@ -36818,7 +36818,7 @@ export const SEED_LESSONS = [
         "orderIndex": 6
       },
       {
-        "vocabId": 613,
+        "vocabId": 621,
         "hanzi": "外面",
         "pinyin": "wàimiàn",
         "pinyinRaw": "waimian",
@@ -36828,12 +36828,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "外面下着雪，屋里却很暖和。",
         "exampleTranslation": "Bên ngoài tuyết đang rơi, trong nhà lại rất ấm áp.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0613.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0621.mp3",
         "videoWritingUrl": null,
         "orderIndex": 7
       },
       {
-        "vocabId": 614,
+        "vocabId": 622,
         "hanzi": "完",
         "pinyin": "wán",
         "pinyinRaw": "wan",
@@ -36843,12 +36843,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "我做完今天的作业就可以去看电影了。",
         "exampleTranslation": "Tôi làm xong bài tập hôm nay là có thể đi xem phim rồi.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0614.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0622.mp3",
         "videoWritingUrl": null,
         "orderIndex": 8
       },
       {
-        "vocabId": 615,
+        "vocabId": 623,
         "hanzi": "万",
         "pinyin": "wàn",
         "pinyinRaw": "wan",
@@ -36858,12 +36858,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "这个大型体育场可以容纳五万人。",
         "exampleTranslation": "Sân vận động lớn này có thể chứa được năm vạn người.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0615.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0623.mp3",
         "videoWritingUrl": null,
         "orderIndex": 9
       },
       {
-        "vocabId": 616,
+        "vocabId": 624,
         "hanzi": "往",
         "pinyin": "wǎng",
         "pinyinRaw": "wang",
@@ -36873,7 +36873,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "请大家一直往前走，图书馆就在右手边。",
         "exampleTranslation": "Xin mọi người cứ đi thẳng về phía trước, thư viện ở ngay bên tay phải.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0616.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0624.mp3",
         "videoWritingUrl": null,
         "orderIndex": 10
       },
@@ -36908,7 +36908,7 @@ export const SEED_LESSONS = [
         "orderIndex": 12
       },
       {
-        "vocabId": 617,
+        "vocabId": 625,
         "hanzi": "位",
         "pinyin": "wèi",
         "pinyinRaw": "wei",
@@ -36918,12 +36918,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "请问您是找哪位老师？",
         "exampleTranslation": "Xin hỏi ngài đang tìm vị thầy cô nào?",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0617.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0625.mp3",
         "videoWritingUrl": null,
         "orderIndex": 13
       },
       {
-        "vocabId": 618,
+        "vocabId": 626,
         "hanzi": "为什么",
         "pinyin": "wèi shénme",
         "pinyinRaw": "weishenme",
@@ -36933,12 +36933,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "你今天为什么没有来参加汉语课？",
         "exampleTranslation": "Hôm nay tại sao bạn không đến tham gia lớp tiếng Trung?",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0618.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0626.mp3",
         "videoWritingUrl": null,
         "orderIndex": 14
       },
       {
-        "vocabId": 619,
+        "vocabId": 627,
         "hanzi": "希望",
         "pinyin": "xīwàng",
         "pinyinRaw": "xiwang",
@@ -36948,7 +36948,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "我希望大家都能够顺利通过汉语考试。",
         "exampleTranslation": "Tôi hy vọng mọi người đều có thể thuận lợi vượt qua kỳ thi tiếng Trung.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0619.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0627.mp3",
         "videoWritingUrl": null,
         "orderIndex": 15
       },
@@ -36983,7 +36983,7 @@ export const SEED_LESSONS = [
         "orderIndex": 17
       },
       {
-        "vocabId": 620,
+        "vocabId": 628,
         "hanzi": "下来",
         "pinyin": "xiàlái",
         "pinyinRaw": "xialai",
@@ -36993,12 +36993,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "公车到站了，乘客们排队走下来。",
         "exampleTranslation": "Xe buýt đến trạm rồi, các hành khách xếp hàng bước xuống.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0620.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0628.mp3",
         "videoWritingUrl": null,
         "orderIndex": 18
       },
       {
-        "vocabId": 621,
+        "vocabId": 629,
         "hanzi": "下面",
         "pinyin": "xiàmiàn",
         "pinyinRaw": "xiamian",
@@ -37008,12 +37008,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "大树下面乘凉的人很多。",
         "exampleTranslation": "Dưới gốc cây lớn có rất nhiều người hóng mát.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0621.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0629.mp3",
         "videoWritingUrl": null,
         "orderIndex": 19
       },
       {
-        "vocabId": 622,
+        "vocabId": 630,
         "hanzi": "下去",
         "pinyin": "xiàqù",
         "pinyinRaw": "xiaqu",
@@ -37023,7 +37023,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "太阳下去了，天渐渐黑了下来。",
         "exampleTranslation": "Mặt trời lặn xuống rồi, trời dần dần tối lại.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0622.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0630.mp3",
         "videoWritingUrl": null,
         "orderIndex": 20
       }
@@ -37058,7 +37058,7 @@ export const SEED_LESSONS = [
         "orderIndex": 1
       },
       {
-        "vocabId": 623,
+        "vocabId": 631,
         "hanzi": "小时候",
         "pinyin": "xiǎoshíhou",
         "pinyinRaw": "xiaoshihou",
@@ -37068,7 +37068,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "小时候我最喜欢听奶奶讲故事。",
         "exampleTranslation": "Hồi nhỏ tôi thích nhất nghe bà kể chuyện.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0623.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0631.mp3",
         "videoWritingUrl": null,
         "orderIndex": 2
       },
@@ -37088,7 +37088,7 @@ export const SEED_LESSONS = [
         "orderIndex": 3
       },
       {
-        "vocabId": 624,
+        "vocabId": 632,
         "hanzi": "姓",
         "pinyin": "xìng",
         "pinyinRaw": "xing",
@@ -37098,12 +37098,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "请问先生贵姓？我姓李。",
         "exampleTranslation": "Xin hỏi quý tính của tiên sinh? Tôi họ Lý.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0624.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0632.mp3",
         "videoWritingUrl": null,
         "orderIndex": 4
       },
       {
-        "vocabId": 625,
+        "vocabId": 633,
         "hanzi": "姓名",
         "pinyin": "xìngmíng",
         "pinyinRaw": "xingming",
@@ -37113,12 +37113,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "请在表格的第一行写下您的姓名。",
         "exampleTranslation": "Xin hãy viết họ và tên của ngài vào dòng đầu tiên của biểu mẫu.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0625.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0633.mp3",
         "videoWritingUrl": null,
         "orderIndex": 5
       },
       {
-        "vocabId": 626,
+        "vocabId": 634,
         "hanzi": "颜色",
         "pinyin": "yánsè",
         "pinyinRaw": "yanse",
@@ -37128,12 +37128,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "你最喜欢什么颜色的衣服？",
         "exampleTranslation": "Bạn thích quần áo màu sắc gì nhất?",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0626.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0634.mp3",
         "videoWritingUrl": null,
         "orderIndex": 6
       },
       {
-        "vocabId": 627,
+        "vocabId": 635,
         "hanzi": "眼睛",
         "pinyin": "yǎnjing",
         "pinyinRaw": "yanjing",
@@ -37143,12 +37143,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "多看远处的绿色植物对眼睛好。",
         "exampleTranslation": "Nhìn nhiều cây cối màu xanh ở phía xa rất tốt cho mắt.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0627.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0635.mp3",
         "videoWritingUrl": null,
         "orderIndex": 7
       },
       {
-        "vocabId": 628,
+        "vocabId": 636,
         "hanzi": "药",
         "pinyin": "yào",
         "pinyinRaw": "yao",
@@ -37158,12 +37158,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "生病了就要按时吃药多喝水。",
         "exampleTranslation": "Bị ốm rồi thì phải uống thuốc đúng giờ và uống nhiều nước.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0628.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0636.mp3",
         "videoWritingUrl": null,
         "orderIndex": 8
       },
       {
-        "vocabId": 629,
+        "vocabId": 637,
         "hanzi": "药店",
         "pinyin": "yàodiàn",
         "pinyinRaw": "yaodian",
@@ -37173,7 +37173,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "医院对面有一家二十四小时营业的药店。",
         "exampleTranslation": "Đối diện bệnh viện có một hiệu thuốc mở cửa hai mươi tư giờ.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0629.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0637.mp3",
         "videoWritingUrl": null,
         "orderIndex": 9
       },
@@ -37208,7 +37208,7 @@ export const SEED_LESSONS = [
         "orderIndex": 11
       },
       {
-        "vocabId": 630,
+        "vocabId": 638,
         "hanzi": "已经",
         "pinyin": "yǐjīng",
         "pinyinRaw": "yijing",
@@ -37218,7 +37218,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "我已经把所有的课文都预习好了。",
         "exampleTranslation": "Tôi đã chuẩn bị trước tất cả các bài khóa xong rồi.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0630.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0638.mp3",
         "videoWritingUrl": null,
         "orderIndex": 12
       },
@@ -37238,7 +37238,7 @@ export const SEED_LESSONS = [
         "orderIndex": 13
       },
       {
-        "vocabId": 631,
+        "vocabId": 639,
         "hanzi": "意思",
         "pinyin": "yìsi",
         "pinyinRaw": "yisi",
@@ -37248,12 +37248,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "你能告诉我这个句子的具体意思吗？",
         "exampleTranslation": "Bạn có thể nói cho tôi biết ý nghĩa cụ thể của câu này không?",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0631.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0639.mp3",
         "videoWritingUrl": null,
         "orderIndex": 14
       },
       {
-        "vocabId": 632,
+        "vocabId": 640,
         "hanzi": "阴",
         "pinyin": "yīn",
         "pinyinRaw": "yin",
@@ -37263,12 +37263,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "今天天气阴沉沉的，好像要下雨了。",
         "exampleTranslation": "Thời tiết hôm nay u ám, hình như sắp mưa rồi.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0632.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0640.mp3",
         "videoWritingUrl": null,
         "orderIndex": 15
       },
       {
-        "vocabId": 633,
+        "vocabId": 641,
         "hanzi": "因为",
         "pinyin": "yīnwèi",
         "pinyinRaw": "yinwei",
@@ -37278,12 +37278,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "因为今天堵车，所以我迟到了十分钟。",
         "exampleTranslation": "Bởi vì hôm nay tắc đường, cho nên tôi đã đến muộn mười phút.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0633.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0641.mp3",
         "videoWritingUrl": null,
         "orderIndex": 16
       },
       {
-        "vocabId": 634,
+        "vocabId": 642,
         "hanzi": "游",
         "pinyin": "yóu",
         "pinyinRaw": "you",
@@ -37293,12 +37293,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "一群小鱼在清澈的溪水里自由自在地游。",
         "exampleTranslation": "Một đàn cá nhỏ đang tung tăng bơi lội trong dòng suối trong veo.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0634.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0642.mp3",
         "videoWritingUrl": null,
         "orderIndex": 17
       },
       {
-        "vocabId": 635,
+        "vocabId": 643,
         "hanzi": "游泳",
         "pinyin": "yóuyǒng",
         "pinyinRaw": "youyong",
@@ -37308,12 +37308,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "夏天很多人喜欢去海边游泳。",
         "exampleTranslation": "Mùa hè rất nhiều người thích đi biển bơi lội.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0635.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0643.mp3",
         "videoWritingUrl": null,
         "orderIndex": 18
       },
       {
-        "vocabId": 636,
+        "vocabId": 644,
         "hanzi": "有意思",
         "pinyin": "yǒu yìsi",
         "pinyinRaw": "youyisi",
@@ -37323,12 +37323,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "这本书写得很有意思，值得一读。",
         "exampleTranslation": "Cuốn sách này viết rất thú vị, đáng để đọc một lần.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0636.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0644.mp3",
         "videoWritingUrl": null,
         "orderIndex": 19
       },
       {
-        "vocabId": 637,
+        "vocabId": 645,
         "hanzi": "有时",
         "pinyin": "yǒushí",
         "pinyinRaw": "youshi",
@@ -37338,7 +37338,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "周末我有时去爬山，有时在家里看书。",
         "exampleTranslation": "Cuối tuần tôi thỉnh thoảng đi leo núi, thỉnh thoảng đọc sách ở nhà.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0637.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0645.mp3",
         "videoWritingUrl": null,
         "orderIndex": 20
       }
@@ -37388,7 +37388,7 @@ export const SEED_LESSONS = [
         "orderIndex": 2
       },
       {
-        "vocabId": 638,
+        "vocabId": 646,
         "hanzi": "鱼",
         "pinyin": "yú",
         "pinyinRaw": "yu",
@@ -37398,7 +37398,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "清蒸鱼是广东非常有名的一道菜。",
         "exampleTranslation": "Cá hấp thanh đạm là một món ăn rất nổi tiếng của Quảng Đông.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0638.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0646.mp3",
         "videoWritingUrl": null,
         "orderIndex": 3
       },
@@ -37418,7 +37418,7 @@ export const SEED_LESSONS = [
         "orderIndex": 4
       },
       {
-        "vocabId": 639,
+        "vocabId": 647,
         "hanzi": "运动",
         "pinyin": "yùndòng",
         "pinyinRaw": "yundong",
@@ -37428,7 +37428,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "每天坚持适量运动有利于身体健康。",
         "exampleTranslation": "Mỗi ngày kiên trì vận động điều độ rất có lợi cho sức khỏe.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0639.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0647.mp3",
         "videoWritingUrl": null,
         "orderIndex": 5
       },
@@ -37448,7 +37448,7 @@ export const SEED_LESSONS = [
         "orderIndex": 6
       },
       {
-        "vocabId": 640,
+        "vocabId": 648,
         "hanzi": "丈夫",
         "pinyin": "zhàngfu",
         "pinyinRaw": "zhangfu",
@@ -37458,12 +37458,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "她的丈夫是一位资深的大学教授。",
         "exampleTranslation": "Chồng của cô ấy là một giáo sư đại học kỳ cựu.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0640.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0648.mp3",
         "videoWritingUrl": null,
         "orderIndex": 7
       },
       {
-        "vocabId": 641,
+        "vocabId": 649,
         "hanzi": "这么",
         "pinyin": "zhème",
         "pinyinRaw": "zheme",
@@ -37473,12 +37473,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "你怎么走得这么快，等等我！",
         "exampleTranslation": "Sao bạn đi nhanh thế này, đợi tôi với!",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0641.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0649.mp3",
         "videoWritingUrl": null,
         "orderIndex": 8
       },
       {
-        "vocabId": 642,
+        "vocabId": 650,
         "hanzi": "这样",
         "pinyin": "zhèyàng",
         "pinyinRaw": "zheyang",
@@ -37488,7 +37488,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "这样做是完全正确的，不要改变。",
         "exampleTranslation": "Làm thế này là hoàn toàn chính xác, đừng thay đổi.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0642.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0650.mp3",
         "videoWritingUrl": null,
         "orderIndex": 9
       },
@@ -37523,7 +37523,7 @@ export const SEED_LESSONS = [
         "orderIndex": 11
       },
       {
-        "vocabId": 643,
+        "vocabId": 651,
         "hanzi": "周",
         "pinyin": "zhōu",
         "pinyinRaw": "zhou",
@@ -37533,7 +37533,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "我们下周一有一个很重要的中文考试。",
         "exampleTranslation": "Thứ hai tuần sau chúng tôi có một kỳ thi tiếng Trung rất quan trọng.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0643.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0651.mp3",
         "videoWritingUrl": null,
         "orderIndex": 12
       },
@@ -37553,7 +37553,7 @@ export const SEED_LESSONS = [
         "orderIndex": 13
       },
       {
-        "vocabId": 644,
+        "vocabId": 652,
         "hanzi": "自己",
         "pinyin": "zìjǐ",
         "pinyinRaw": "ziji",
@@ -37563,7 +37563,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "有些事情要靠自己去努力完成。",
         "exampleTranslation": "Có những việc phải dựa vào bản thân tự nỗ lực hoàn thành.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0644.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0652.mp3",
         "videoWritingUrl": null,
         "orderIndex": 14
       },
@@ -37598,7 +37598,7 @@ export const SEED_LESSONS = [
         "orderIndex": 16
       },
       {
-        "vocabId": 645,
+        "vocabId": 653,
         "hanzi": "足球",
         "pinyin": "zúqiú",
         "pinyinRaw": "zuqiu",
@@ -37608,7 +37608,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "世界杯足球比赛吸引了全世界的球迷。",
         "exampleTranslation": "Trận đấu bóng đá World Cup đã thu hút người hâm mộ bóng đá trên toàn thế giới.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0645.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0653.mp3",
         "videoWritingUrl": null,
         "orderIndex": 17
       },
@@ -37673,7 +37673,7 @@ export const SEED_LESSONS = [
     "updatedAt": "2026-08-02T10:30:00Z",
     "vocabularies": [
       {
-        "vocabId": 646,
+        "vocabId": 654,
         "hanzi": "阿姨",
         "pinyin": "āyí",
         "pinyinRaw": "ayi",
@@ -37683,12 +37683,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "王阿姨热心地帮我们照看孩子。",
         "exampleTranslation": "Dì Vương nhiệt tình giúp chúng tôi trông nom lũ trẻ.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0646.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0654.mp3",
         "videoWritingUrl": null,
         "orderIndex": 1
       },
       {
-        "vocabId": 647,
+        "vocabId": 655,
         "hanzi": "矮",
         "pinyin": "ǎi",
         "pinyinRaw": "ai",
@@ -37698,12 +37698,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "弟弟比哥哥矮了半个头。",
         "exampleTranslation": "Em trai thấp hơn anh trai nửa cái đầu.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0647.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0655.mp3",
         "videoWritingUrl": null,
         "orderIndex": 2
       },
       {
-        "vocabId": 648,
+        "vocabId": 656,
         "hanzi": "爱人",
         "pinyin": "àiren",
         "pinyinRaw": "airen",
@@ -37713,12 +37713,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "他和他的爱人感情非常融洽。",
         "exampleTranslation": "Anh ấy và người bạn đời tình cảm rất hòa thuận.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0648.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0656.mp3",
         "videoWritingUrl": null,
         "orderIndex": 3
       },
       {
-        "vocabId": 649,
+        "vocabId": 657,
         "hanzi": "安静",
         "pinyin": "ānjìng",
         "pinyinRaw": "anjing",
@@ -37728,12 +37728,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "请大家在图书馆里保持安静。",
         "exampleTranslation": "Xin mọi người hãy giữ trật tự trong thư viện.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0649.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0657.mp3",
         "videoWritingUrl": null,
         "orderIndex": 4
       },
       {
-        "vocabId": 650,
+        "vocabId": 658,
         "hanzi": "安全",
         "pinyin": "ānquán",
         "pinyinRaw": "anquan",
@@ -37743,12 +37743,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "过马路时一定要注意交通安全。",
         "exampleTranslation": "Khi qua đường nhất định phải chú ý an toàn giao thông.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0650.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0658.mp3",
         "videoWritingUrl": null,
         "orderIndex": 5
       },
       {
-        "vocabId": 651,
+        "vocabId": 659,
         "hanzi": "把",
         "pinyin": "bǎ",
         "pinyinRaw": "ba",
@@ -37758,12 +37758,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "请你把桌子上的书递给我。",
         "exampleTranslation": "Xin bạn hãy đưa cuốn sách trên bàn cho tôi.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0651.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0659.mp3",
         "videoWritingUrl": null,
         "orderIndex": 6
       },
       {
-        "vocabId": 652,
+        "vocabId": 660,
         "hanzi": "搬",
         "pinyin": "bān",
         "pinyinRaw": "ban",
@@ -37773,12 +37773,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "我们一起把这台重机器搬出去。",
         "exampleTranslation": "Chúng ta cùng khiêng cỗ máy nặng này ra ngoài.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0652.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0660.mp3",
         "videoWritingUrl": null,
         "orderIndex": 7
       },
       {
-        "vocabId": 653,
+        "vocabId": 661,
         "hanzi": "班级",
         "pinyin": "bānjí",
         "pinyinRaw": "banji",
@@ -37788,12 +37788,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "我们班级一共有三十名学生。",
         "exampleTranslation": "Lớp học của chúng tôi có tổng cộng ba mươi học sinh.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0653.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0661.mp3",
         "videoWritingUrl": null,
         "orderIndex": 8
       },
       {
-        "vocabId": 654,
+        "vocabId": 662,
         "hanzi": "搬家",
         "pinyin": "bānjiā",
         "pinyinRaw": "banjia",
@@ -37803,12 +37803,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "下个月我们全家就要搬家了。",
         "exampleTranslation": "Tháng sau cả gia đình chúng tôi sẽ chuyển nhà rồi.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0654.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0662.mp3",
         "videoWritingUrl": null,
         "orderIndex": 9
       },
       {
-        "vocabId": 655,
+        "vocabId": 663,
         "hanzi": "办",
         "pinyin": "bàn",
         "pinyinRaw": "ban",
@@ -37818,12 +37818,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "这件事情你打算怎么去办？",
         "exampleTranslation": "Chuyện này bạn dự định giải quyết như thế nào?",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0655.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0663.mp3",
         "videoWritingUrl": null,
         "orderIndex": 10
       },
       {
-        "vocabId": 656,
+        "vocabId": 664,
         "hanzi": "办法",
         "pinyin": "bànfǎ",
         "pinyinRaw": "banfa",
@@ -37833,12 +37833,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "大家都在想办法解决这个难题。",
         "exampleTranslation": "Mọi người đều đang nghĩ biện pháp giải quyết vấn đề khó khăn này.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0656.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0664.mp3",
         "videoWritingUrl": null,
         "orderIndex": 11
       },
       {
-        "vocabId": 657,
+        "vocabId": 665,
         "hanzi": "办公室",
         "pinyin": "bàngōngshì",
         "pinyinRaw": "bangongshi",
@@ -37848,7 +37848,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "王经理现在正在办公室处理文件。",
         "exampleTranslation": "Giám đốc Vương hiện đang ở văn phòng xử lý văn kiện.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0657.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0665.mp3",
         "videoWritingUrl": null,
         "orderIndex": 12
       },
@@ -37868,7 +37868,7 @@ export const SEED_LESSONS = [
         "orderIndex": 13
       },
       {
-        "vocabId": 658,
+        "vocabId": 666,
         "hanzi": "帮助",
         "pinyin": "bāngzhù",
         "pinyinRaw": "bangzhu",
@@ -37878,12 +37878,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "非常感谢你在我困难时给我的帮助。",
         "exampleTranslation": "Vô cùng cảm ơn sự giúp đỡ bạn đã dành cho tôi khi tôi gặp khó khăn.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0658.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0666.mp3",
         "videoWritingUrl": null,
         "orderIndex": 14
       },
       {
-        "vocabId": 659,
+        "vocabId": 667,
         "hanzi": "饱",
         "pinyin": "bǎo",
         "pinyinRaw": "bao",
@@ -37893,12 +37893,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "今天中午的菜太丰富，我都吃饱了。",
         "exampleTranslation": "Bữa trưa hôm nay nhiều món quá, tôi ăn no rồi.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0659.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0667.mp3",
         "videoWritingUrl": null,
         "orderIndex": 15
       },
       {
-        "vocabId": 660,
+        "vocabId": 668,
         "hanzi": "报纸",
         "pinyin": "bàozhǐ",
         "pinyinRaw": "baozhi",
@@ -37908,7 +37908,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "爷爷每天早晨都有看报纸的习惯。",
         "exampleTranslation": "Ông nội mỗi buổi sáng đều có thói quen đọc báo.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0660.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0668.mp3",
         "videoWritingUrl": null,
         "orderIndex": 16
       },
@@ -37928,7 +37928,7 @@ export const SEED_LESSONS = [
         "orderIndex": 17
       },
       {
-        "vocabId": 661,
+        "vocabId": 669,
         "hanzi": "北方",
         "pinyin": "běifāng",
         "pinyinRaw": "beifang",
@@ -37938,12 +37938,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "中国的北方冬天经常下大雪。",
         "exampleTranslation": "Miền bắc Trung Quốc vào mùa đông thường xuyên có tuyết rơi lớn.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0661.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0669.mp3",
         "videoWritingUrl": null,
         "orderIndex": 18
       },
       {
-        "vocabId": 662,
+        "vocabId": 670,
         "hanzi": "被",
         "pinyin": "bèi",
         "pinyinRaw": "bei",
@@ -37953,12 +37953,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "桌子上的蛋糕被调皮的小猫吃掉了。",
         "exampleTranslation": "Miếng bánh ngọt trên bàn đã bị chú mèo nghịch ngợm ăn mất rồi.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0662.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0670.mp3",
         "videoWritingUrl": null,
         "orderIndex": 19
       },
       {
-        "vocabId": 663,
+        "vocabId": 671,
         "hanzi": "笔记",
         "pinyin": "bǐjì",
         "pinyinRaw": "biji",
@@ -37968,7 +37968,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "上课时要认真做好课堂笔记。",
         "exampleTranslation": "Trong giờ học cần chăm chú ghi chép bài đầy đủ.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0663.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0671.mp3",
         "videoWritingUrl": null,
         "orderIndex": 20
       }
@@ -37988,7 +37988,7 @@ export const SEED_LESSONS = [
     "updatedAt": "2026-08-02T10:30:00Z",
     "vocabularies": [
       {
-        "vocabId": 664,
+        "vocabId": 672,
         "hanzi": "比较",
         "pinyin": "bǐjiào",
         "pinyinRaw": "bijiao",
@@ -37998,12 +37998,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "这门课程比我想象中要比较容易。",
         "exampleTranslation": "Môn học này tương đối dễ hơn so với tôi tưởng tượng.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0664.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0672.mp3",
         "videoWritingUrl": null,
         "orderIndex": 1
       },
       {
-        "vocabId": 665,
+        "vocabId": 673,
         "hanzi": "笔记本",
         "pinyin": "bǐjìběn",
         "pinyinRaw": "bijiben",
@@ -38013,12 +38013,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "这台笔记本电脑轻巧便携，很适合办公。",
         "exampleTranslation": "Chiếc máy tính xách tay này nhẹ nhàng tiện lợi, rất hợp cho công việc văn phòng.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0665.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0673.mp3",
         "videoWritingUrl": null,
         "orderIndex": 2
       },
       {
-        "vocabId": 666,
+        "vocabId": 674,
         "hanzi": "比如",
         "pinyin": "bǐrú",
         "pinyinRaw": "biru",
@@ -38028,12 +38028,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "很多水果维生素含量很高，比如橙子和猕猴桃。",
         "exampleTranslation": "Nhiều loại hoa quả hàm lượng vitamin rất cao, ví dụ như cam và kiwi.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0666.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0674.mp3",
         "videoWritingUrl": null,
         "orderIndex": 3
       },
       {
-        "vocabId": 667,
+        "vocabId": 675,
         "hanzi": "比赛",
         "pinyin": "bǐsài",
         "pinyinRaw": "bisai",
@@ -38043,12 +38043,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "他们学校的足球队赢得了这场比赛。",
         "exampleTranslation": "Đội bóng đá của trường họ đã thắng trong trận thi đấu này.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0667.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0675.mp3",
         "videoWritingUrl": null,
         "orderIndex": 4
       },
       {
-        "vocabId": 668,
+        "vocabId": 676,
         "hanzi": "必须",
         "pinyin": "bìxū",
         "pinyinRaw": "bixu",
@@ -38058,12 +38058,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "明天出发前大家必须带齐有效证件。",
         "exampleTranslation": "Trước khi xuất phát vào ngày mai mọi người bắt buộc phải mang đầy đủ giấy tờ tùy thân.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0668.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0676.mp3",
         "videoWritingUrl": null,
         "orderIndex": 5
       },
       {
-        "vocabId": 669,
+        "vocabId": 677,
         "hanzi": "变",
         "pinyin": "biàn",
         "pinyinRaw": "bian",
@@ -38073,12 +38073,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "几场秋雨过后，天气渐渐变凉了。",
         "exampleTranslation": "Sau vài cơn mưa thu, thời tiết dần dần trở nên se lạnh.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0669.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0677.mp3",
         "videoWritingUrl": null,
         "orderIndex": 6
       },
       {
-        "vocabId": 670,
+        "vocabId": 678,
         "hanzi": "遍",
         "pinyin": "biàn",
         "pinyinRaw": "bian",
@@ -38088,12 +38088,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "这篇长文章我认真读了三遍。",
         "exampleTranslation": "Bài văn dài này tôi đã chăm chú đọc ba lần từ đầu đến cuối.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0670.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0678.mp3",
         "videoWritingUrl": null,
         "orderIndex": 7
       },
       {
-        "vocabId": 671,
+        "vocabId": 679,
         "hanzi": "变成",
         "pinyin": "biànchéng",
         "pinyinRaw": "biancheng",
@@ -38103,12 +38103,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "经过刻苦努力，他变成了一位优秀的翻译官。",
         "exampleTranslation": "Qua nỗ lực miệt mài, anh ấy đã trở thành một phiên dịch viên ưu tú.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0671.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0679.mp3",
         "videoWritingUrl": null,
         "orderIndex": 8
       },
       {
-        "vocabId": 672,
+        "vocabId": 680,
         "hanzi": "变化",
         "pinyin": "biànhuà",
         "pinyinRaw": "bianhua",
@@ -38118,12 +38118,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "最近几年，这座城市发生了巨大的变化。",
         "exampleTranslation": "Những năm gần đây, thành phố này đã diễn ra sự thay đổi to lớn.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0672.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0680.mp3",
         "videoWritingUrl": null,
         "orderIndex": 9
       },
       {
-        "vocabId": 673,
+        "vocabId": 681,
         "hanzi": "表演",
         "pinyin": "biǎoyǎn",
         "pinyinRaw": "biaoyan",
@@ -38133,7 +38133,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "杂技团演员的表演赢得了全场热烈的掌声。",
         "exampleTranslation": "Màn biểu diễn của diễn viên đoàn xiếc đã nhận được tràng pháo tay nồng nhiệt từ khán phòng.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0673.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0681.mp3",
         "videoWritingUrl": null,
         "orderIndex": 10
       },
@@ -38168,7 +38168,7 @@ export const SEED_LESSONS = [
         "orderIndex": 12
       },
       {
-        "vocabId": 674,
+        "vocabId": 682,
         "hanzi": "宾馆",
         "pinyin": "bīnguǎn",
         "pinyinRaw": "binguan",
@@ -38178,12 +38178,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "这家涉外宾馆的设施非常现代化。",
         "exampleTranslation": "Cơ sở vật chất của khách sạn đón khách quốc tế này rất hiện đại.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0674.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0682.mp3",
         "videoWritingUrl": null,
         "orderIndex": 13
       },
       {
-        "vocabId": 675,
+        "vocabId": 683,
         "hanzi": "冰",
         "pinyin": "bīng",
         "pinyinRaw": "bing",
@@ -38193,12 +38193,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "湖面上结了一层厚厚坚硬的冰。",
         "exampleTranslation": "Trên mặt hồ đã đóng một lớp băng dày và cứng.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0675.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0683.mp3",
         "videoWritingUrl": null,
         "orderIndex": 14
       },
       {
-        "vocabId": 676,
+        "vocabId": 684,
         "hanzi": "冰激凌",
         "pinyin": "bīngjīlíng",
         "pinyinRaw": "bingjiling",
@@ -38208,12 +38208,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "炎热的夏日里吃一支冰激凌真解渴。",
         "exampleTranslation": "Trong ngày hè nóng nực ăn một que kem thật là đã khát.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0676.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0684.mp3",
         "videoWritingUrl": null,
         "orderIndex": 15
       },
       {
-        "vocabId": 677,
+        "vocabId": 685,
         "hanzi": "冰箱",
         "pinyin": "bīngxiāng",
         "pinyinRaw": "bingxiang",
@@ -38223,7 +38223,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "请把喝不完的鲜牛奶放进冰箱保鲜。",
         "exampleTranslation": "Xin hãy cất chỗ sữa tươi chưa uống hết vào tủ lạnh để bảo quản.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0677.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0685.mp3",
         "videoWritingUrl": null,
         "orderIndex": 16
       },
@@ -38243,7 +38243,7 @@ export const SEED_LESSONS = [
         "orderIndex": 17
       },
       {
-        "vocabId": 678,
+        "vocabId": 686,
         "hanzi": "不但",
         "pinyin": "búdàn",
         "pinyinRaw": "budan",
@@ -38253,12 +38253,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "他不但会说流利的汉语，还会说法语。",
         "exampleTranslation": "Anh ấy không những nói lưu loát tiếng Trung mà còn biết nói tiếng Pháp.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0678.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0686.mp3",
         "videoWritingUrl": null,
         "orderIndex": 18
       },
       {
-        "vocabId": 679,
+        "vocabId": 687,
         "hanzi": "不见",
         "pinyin": "bújiàn",
         "pinyinRaw": "bujian",
@@ -38268,7 +38268,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "刚刚还在桌上的钢笔怎么突然不见了？",
         "exampleTranslation": "Chiếc bút máy vừa nãy còn trên bàn sao bỗng nhiên không thấy đâu nữa?",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0679.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0687.mp3",
         "videoWritingUrl": null,
         "orderIndex": 19
       },
@@ -38303,7 +38303,7 @@ export const SEED_LESSONS = [
     "updatedAt": "2026-08-02T10:30:00Z",
     "vocabularies": [
       {
-        "vocabId": 680,
+        "vocabId": 688,
         "hanzi": "不同",
         "pinyin": "bù tóng",
         "pinyinRaw": "butong",
@@ -38313,12 +38313,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "每个人对幸福的定义都有所不同。",
         "exampleTranslation": "Mỗi người đối với định nghĩa về hạnh phúc đều có điểm khác nhau.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0680.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0688.mp3",
         "videoWritingUrl": null,
         "orderIndex": 1
       },
       {
-        "vocabId": 681,
+        "vocabId": 689,
         "hanzi": "不久",
         "pinyin": "bùjiǔ",
         "pinyinRaw": "bujiu",
@@ -38328,12 +38328,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "他们结婚不久就迎来了可爱的宝宝。",
         "exampleTranslation": "Họ kết hôn chẳng bao lâu thì đón chào một em bé kháu khỉnh.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0681.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0689.mp3",
         "videoWritingUrl": null,
         "orderIndex": 2
       },
       {
-        "vocabId": 682,
+        "vocabId": 690,
         "hanzi": "不行",
         "pinyin": "bùxíng",
         "pinyinRaw": "buxing",
@@ -38343,12 +38343,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "这样违反纪律的行为是绝对不行的。",
         "exampleTranslation": "Hành vi vi phạm kỷ luật như vậy là tuyệt đối không được.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0682.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0690.mp3",
         "videoWritingUrl": null,
         "orderIndex": 3
       },
       {
-        "vocabId": 683,
+        "vocabId": 691,
         "hanzi": "才",
         "pinyin": "cái",
         "pinyinRaw": "cai",
@@ -38358,12 +38358,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "经过一番周折，我们直到现在才到达目的地。",
         "exampleTranslation": "Sau bao trắc trở, mãi đến bây giờ chúng tôi mới tới được đích đến.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0683.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0691.mp3",
         "videoWritingUrl": null,
         "orderIndex": 4
       },
       {
-        "vocabId": 684,
+        "vocabId": 692,
         "hanzi": "菜单",
         "pinyin": "càidān",
         "pinyinRaw": "caidan",
@@ -38373,12 +38373,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "服务员，请给我们拿一份最新的菜单。",
         "exampleTranslation": "Phục vụ viên, xin hãy đem cho chúng tôi một cuốn thực đơn mới nhất.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0684.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0692.mp3",
         "videoWritingUrl": null,
         "orderIndex": 5
       },
       {
-        "vocabId": 685,
+        "vocabId": 693,
         "hanzi": "参加",
         "pinyin": "cānjiā",
         "pinyinRaw": "canjia",
@@ -38388,12 +38388,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "下周六我打算参加学校举行的汉字听写比赛。",
         "exampleTranslation": "Thứ bảy tuần sau tôi dự định tham gia cuộc thi nghe viết chữ Hán của trường.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0685.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0693.mp3",
         "videoWritingUrl": null,
         "orderIndex": 6
       },
       {
-        "vocabId": 686,
+        "vocabId": 694,
         "hanzi": "草",
         "pinyin": "cǎo",
         "pinyinRaw": "cao",
@@ -38403,12 +38403,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "山坡上长满了茂盛碧绿的小草。",
         "exampleTranslation": "Trên sườn núi mọc đầy những ngọn cỏ xanh tốt um tùm.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0686.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0694.mp3",
         "videoWritingUrl": null,
         "orderIndex": 7
       },
       {
-        "vocabId": 687,
+        "vocabId": 695,
         "hanzi": "草地",
         "pinyin": "cǎodì",
         "pinyinRaw": "caodi",
@@ -38418,12 +38418,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "孩子们在广阔的草地上开心地踢足球。",
         "exampleTranslation": "Lũ trẻ đang vui vẻ đá bóng trên bãi cỏ rộng thênh thang.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0687.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0695.mp3",
         "videoWritingUrl": null,
         "orderIndex": 8
       },
       {
-        "vocabId": 688,
+        "vocabId": 696,
         "hanzi": "层",
         "pinyin": "céng",
         "pinyinRaw": "ceng",
@@ -38433,12 +38433,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "我们的汉语教室在教学楼的三层。",
         "exampleTranslation": "Phòng học tiếng Trung của chúng tôi ở tầng ba của tòa nhà giảng dạy.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0688.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0696.mp3",
         "videoWritingUrl": null,
         "orderIndex": 9
       },
       {
-        "vocabId": 689,
+        "vocabId": 697,
         "hanzi": "查",
         "pinyin": "chá",
         "pinyinRaw": "cha",
@@ -38448,7 +38448,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "遇到不认识的生词可以用手机查词典。",
         "exampleTranslation": "Khi gặp từ mới không biết có thể dùng điện thoại tra từ điển.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0689.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0697.mp3",
         "videoWritingUrl": null,
         "orderIndex": 10
       },
@@ -38468,7 +38468,7 @@ export const SEED_LESSONS = [
         "orderIndex": 11
       },
       {
-        "vocabId": 690,
+        "vocabId": 698,
         "hanzi": "差不多",
         "pinyin": "chàbuduō",
         "pinyinRaw": "chabuduo",
@@ -38478,12 +38478,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "两个孩子的年龄差不多大，玩得很投机。",
         "exampleTranslation": "Độ tuổi của hai đứa trẻ xấp xỉ nhau, chơi với nhau rất hợp.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0690.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0698.mp3",
         "videoWritingUrl": null,
         "orderIndex": 12
       },
       {
-        "vocabId": 691,
+        "vocabId": 699,
         "hanzi": "尝",
         "pinyin": "cháng",
         "pinyinRaw": "chang",
@@ -38493,7 +38493,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "你快来尝尝我亲手做的新鲜草莓蛋糕。",
         "exampleTranslation": "Bạn mau tới nếm thử chiếc bánh kem dâu tây do tự tay tôi làm.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0691.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0699.mp3",
         "videoWritingUrl": null,
         "orderIndex": 13
       },
@@ -38513,7 +38513,7 @@ export const SEED_LESSONS = [
         "orderIndex": 14
       },
       {
-        "vocabId": 692,
+        "vocabId": 700,
         "hanzi": "常见",
         "pinyin": "cháng jiàn",
         "pinyinRaw": "changjian",
@@ -38523,12 +38523,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "这是一种在北方很常见的落叶植物。",
         "exampleTranslation": "Đây là một loại thực vật rụng lá rất thường thấy ở miền Bắc.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0692.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0700.mp3",
         "videoWritingUrl": null,
         "orderIndex": 15
       },
       {
-        "vocabId": 693,
+        "vocabId": 701,
         "hanzi": "常用",
         "pinyin": "cháng yòng",
         "pinyinRaw": "changyong",
@@ -38538,7 +38538,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "这本小册子收录了三百个常用汉字。",
         "exampleTranslation": "Cuốn cẩm nang nhỏ này thu thập ba trăm chữ Hán thông dụng.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0693.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0701.mp3",
         "videoWritingUrl": null,
         "orderIndex": 16
       },
@@ -38558,7 +38558,7 @@ export const SEED_LESSONS = [
         "orderIndex": 17
       },
       {
-        "vocabId": 694,
+        "vocabId": 702,
         "hanzi": "衬衫",
         "pinyin": "chènshān",
         "pinyinRaw": "chenshan",
@@ -38568,12 +38568,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "他穿了一件洁白挺括的衬衫去面试。",
         "exampleTranslation": "Anh ấy mặc một chiếc áo sơ mi trắng tinh phẳng phiu đi phỏng vấn.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0694.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0702.mp3",
         "videoWritingUrl": null,
         "orderIndex": 18
       },
       {
-        "vocabId": 695,
+        "vocabId": 703,
         "hanzi": "成绩",
         "pinyin": "chéngjì",
         "pinyinRaw": "chengji",
@@ -38583,12 +38583,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "经过刻苦努力，她的期末考试成绩名列前茅。",
         "exampleTranslation": "Nhờ nỗ lực chăm chỉ, thành tích thi cuối kỳ của cô ấy đứng hàng đầu.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0695.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0703.mp3",
         "videoWritingUrl": null,
         "orderIndex": 19
       },
       {
-        "vocabId": 696,
+        "vocabId": 704,
         "hanzi": "城市",
         "pinyin": "chéngshì",
         "pinyinRaw": "chengshi",
@@ -38598,7 +38598,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "上海是一座充满生机与机遇的现代化大城市。",
         "exampleTranslation": "Thượng Hải là một thành phố lớn hiện đại tràn đầy sức sống và cơ hội.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0696.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0704.mp3",
         "videoWritingUrl": null,
         "orderIndex": 20
       }
@@ -38618,7 +38618,7 @@ export const SEED_LESSONS = [
     "updatedAt": "2026-08-02T10:30:00Z",
     "vocabularies": [
       {
-        "vocabId": 697,
+        "vocabId": 705,
         "hanzi": "迟到",
         "pinyin": "chídào",
         "pinyinRaw": "chidao",
@@ -38628,12 +38628,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "因为早高峰堵车，他今天上班迟到了十分钟。",
         "exampleTranslation": "Vì tắc đường vào giờ cao điểm buổi sáng, hôm nay anh ấy đi làm muộn mười phút.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0697.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0705.mp3",
         "videoWritingUrl": null,
         "orderIndex": 1
       },
       {
-        "vocabId": 698,
+        "vocabId": 706,
         "hanzi": "出发",
         "pinyin": "chūfā",
         "pinyinRaw": "chufa",
@@ -38643,12 +38643,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "明天清晨六点我们准时在校门口集合出发。",
         "exampleTranslation": "Sáu giờ sáng mai chúng tôi tập trung đúng giờ ở cổng trường để xuất phát.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0698.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0706.mp3",
         "videoWritingUrl": null,
         "orderIndex": 2
       },
       {
-        "vocabId": 699,
+        "vocabId": 707,
         "hanzi": "出生",
         "pinyin": "chūshēng",
         "pinyinRaw": "chusheng",
@@ -38658,12 +38658,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "他出生在一个风景优美的水乡小镇。",
         "exampleTranslation": "Anh ấy sinh ra ở một thị trấn sông nước phong cảnh hữu tình.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0699.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0707.mp3",
         "videoWritingUrl": null,
         "orderIndex": 3
       },
       {
-        "vocabId": 700,
+        "vocabId": 708,
         "hanzi": "出院",
         "pinyin": "chūyuàn",
         "pinyinRaw": "chuyuan",
@@ -38673,12 +38673,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "经过医生的精心治疗，奶奶今天终于出院了。",
         "exampleTranslation": "Sau thời gian được bác sĩ tận tình điều trị, bà nội hôm nay rốt cuộc đã xuất viện rồi.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0700.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0708.mp3",
         "videoWritingUrl": null,
         "orderIndex": 4
       },
       {
-        "vocabId": 701,
+        "vocabId": 709,
         "hanzi": "初中",
         "pinyin": "chūzhōng",
         "pinyinRaw": "chuzhong",
@@ -38688,12 +38688,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "我们是从初中开始就同班的好朋友。",
         "exampleTranslation": "Chúng tôi là đôi bạn thân học cùng lớp từ thời cấp hai.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0701.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0709.mp3",
         "videoWritingUrl": null,
         "orderIndex": 5
       },
       {
-        "vocabId": 702,
+        "vocabId": 710,
         "hanzi": "除了",
         "pinyin": "chúle",
         "pinyinRaw": "chule",
@@ -38703,12 +38703,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "除了英语以外，他还自学了简单的日常日语。",
         "exampleTranslation": "Ngoài tiếng Anh ra, anh ấy còn tự học thêm tiếng Nhật giao tiếp đơn giản.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0702.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0710.mp3",
         "videoWritingUrl": null,
         "orderIndex": 6
       },
       {
-        "vocabId": 703,
+        "vocabId": 711,
         "hanzi": "船",
         "pinyin": "chuán",
         "pinyinRaw": "chuan",
@@ -38718,12 +38718,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "江面上缓缓驶过几艘满载货物的大船。",
         "exampleTranslation": "Trên mặt sông chầm chậm lướt qua mấy con thuyền lớn chở đầy hàng hóa.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0703.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0711.mp3",
         "videoWritingUrl": null,
         "orderIndex": 7
       },
       {
-        "vocabId": 704,
+        "vocabId": 712,
         "hanzi": "春天",
         "pinyin": "chūntiān",
         "pinyinRaw": "chuntian",
@@ -38733,12 +38733,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "春天万物复苏，公园里百花齐放格外绚丽。",
         "exampleTranslation": "Mùa xuân vạn vật hồi sinh, trong công viên trăm hoa đua nở vô cùng rực rỡ.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0704.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0712.mp3",
         "videoWritingUrl": null,
         "orderIndex": 8
       },
       {
-        "vocabId": 705,
+        "vocabId": 713,
         "hanzi": "词典",
         "pinyin": "cídiǎn",
         "pinyinRaw": "cidian",
@@ -38748,12 +38748,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "遇到生词时查词典是最扎实的学习习惯。",
         "exampleTranslation": "Khi gặp từ mới tra từ điển là thói quen học tập vững chắc nhất.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0705.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0713.mp3",
         "videoWritingUrl": null,
         "orderIndex": 9
       },
       {
-        "vocabId": 706,
+        "vocabId": 714,
         "hanzi": "聪明",
         "pinyin": "cōngmíng",
         "pinyinRaw": "congming",
@@ -38763,12 +38763,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "小王非常聪明伶俐，总能迅速领会领导的意图。",
         "exampleTranslation": "Tiểu Vương rất thông minh lanh lợi, luôn nhanh chóng nắm bắt được ý đồ của cấp trên.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0706.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0714.mp3",
         "videoWritingUrl": null,
         "orderIndex": 10
       },
       {
-        "vocabId": 707,
+        "vocabId": 715,
         "hanzi": "打扫",
         "pinyin": "dǎsǎo",
         "pinyinRaw": "dasao",
@@ -38778,12 +38778,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "周末全家人一起把屋子彻底打扫得干干净净。",
         "exampleTranslation": "Cuối tuần cả nhà cùng nhau quét dọn căn nhà sạch sẽ tinh tươm.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0707.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0715.mp3",
         "videoWritingUrl": null,
         "orderIndex": 11
       },
       {
-        "vocabId": 708,
+        "vocabId": 716,
         "hanzi": "打算",
         "pinyin": "dǎsuàn",
         "pinyinRaw": "dasuan",
@@ -38793,12 +38793,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "放假后我打算去拜访多年未见的老朋友。",
         "exampleTranslation": "Sau khi nghỉ lễ tôi dự định đi thăm người bạn cũ nhiều năm chưa gặp.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0708.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0716.mp3",
         "videoWritingUrl": null,
         "orderIndex": 12
       },
       {
-        "vocabId": 709,
+        "vocabId": 717,
         "hanzi": "大概",
         "pinyin": "dàgài",
         "pinyinRaw": "dagai",
@@ -38808,12 +38808,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "从这里坐车到市中心大概需要四十分钟。",
         "exampleTranslation": "Từ đây đi xe vào trung tâm thành phố đại khái cần bốn mươi phút.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0709.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0717.mp3",
         "videoWritingUrl": null,
         "orderIndex": 13
       },
       {
-        "vocabId": 710,
+        "vocabId": 718,
         "hanzi": "大人",
         "pinyin": "dàren",
         "pinyinRaw": "daren",
@@ -38823,12 +38823,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "大人们正在客厅里商量春节的聚会安排。",
         "exampleTranslation": "Người lớn đang ở phòng khách bàn bạc sắp xếp buổi tụ họp dịp Tết.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0710.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0718.mp3",
         "videoWritingUrl": null,
         "orderIndex": 14
       },
       {
-        "vocabId": 711,
+        "vocabId": 719,
         "hanzi": "大小",
         "pinyin": "dàxiǎo",
         "pinyinRaw": "daxiao",
@@ -38838,12 +38838,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "这双皮鞋的大小正合适，穿着很舒服。",
         "exampleTranslation": "Kích cỡ của đôi giày da này vừa vặn, đi rất êm chân.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0711.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0719.mp3",
         "videoWritingUrl": null,
         "orderIndex": 15
       },
       {
-        "vocabId": 712,
+        "vocabId": 720,
         "hanzi": "大熊猫",
         "pinyin": "dàxióngmāo",
         "pinyinRaw": "daxiongmao",
@@ -38853,12 +38853,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "憨态可掬的大熊猫深受世界各国人民的喜爱。",
         "exampleTranslation": "Những chú gấu trúc lớn ngộ nghĩnh đáng yêu được người dân khắp thế giới yêu thích.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0712.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0720.mp3",
         "videoWritingUrl": null,
         "orderIndex": 16
       },
       {
-        "vocabId": 713,
+        "vocabId": 721,
         "hanzi": "大衣",
         "pinyin": "dàyī",
         "pinyinRaw": "dayi",
@@ -38868,12 +38868,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "冬天出门一定要穿上厚实保暖的羊毛大衣。",
         "exampleTranslation": "Mùa đông ra ngoài nhất định phải mặc chiếc áo khoác dạ len dày dặn giữ ấm.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0713.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0721.mp3",
         "videoWritingUrl": null,
         "orderIndex": 17
       },
       {
-        "vocabId": 714,
+        "vocabId": 722,
         "hanzi": "带",
         "pinyin": "dài",
         "pinyinRaw": "dai",
@@ -38883,12 +38883,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "明天去郊游记得带好雨伞和足够的水。",
         "exampleTranslation": "Ngày mai đi dã ngoại nhớ mang theo ô và đủ nước uống.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0714.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0722.mp3",
         "videoWritingUrl": null,
         "orderIndex": 18
       },
       {
-        "vocabId": 715,
+        "vocabId": 723,
         "hanzi": "担心",
         "pinyin": "dānxīn",
         "pinyinRaw": "danxin",
@@ -38898,12 +38898,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "妈妈总是担心一个人在异国他乡求学的我。",
         "exampleTranslation": "Mẹ lúc nào cũng lo lắng cho tôi một mình học tập nơi đất khách quê người.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0715.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0723.mp3",
         "videoWritingUrl": null,
         "orderIndex": 19
       },
       {
-        "vocabId": 716,
+        "vocabId": 724,
         "hanzi": "蛋糕",
         "pinyin": "dàngāo",
         "pinyinRaw": "dangao",
@@ -38913,7 +38913,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "生日聚会上，大家一起品尝美味的水果蛋糕。",
         "exampleTranslation": "Trong bữa tiệc sinh nhật, mọi người cùng thưởng thức chiếc bánh kem hoa quả thơm ngon.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0716.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0724.mp3",
         "videoWritingUrl": null,
         "orderIndex": 20
       }
@@ -38933,7 +38933,7 @@ export const SEED_LESSONS = [
     "updatedAt": "2026-08-02T10:30:00Z",
     "vocabularies": [
       {
-        "vocabId": 717,
+        "vocabId": 725,
         "hanzi": "当然",
         "pinyin": "dāngrán",
         "pinyinRaw": "dangran",
@@ -38943,12 +38943,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "朋友有难，我们当然应该全力以赴提供帮助。",
         "exampleTranslation": "Bạn bè gặp khó khăn, chúng ta đương nhiên nên dốc hết sức giúp đỡ.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0717.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0725.mp3",
         "videoWritingUrl": null,
         "orderIndex": 1
       },
       {
-        "vocabId": 718,
+        "vocabId": 726,
         "hanzi": "到处",
         "pinyin": "dàochù",
         "pinyinRaw": "daochu",
@@ -38958,12 +38958,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "春天一到，漫山遍野到处盛开着五颜六色的野花。",
         "exampleTranslation": "Mùa xuân vừa đến, khắp đồi núi mọi nơi nở rộ những bông hoa dại muôn màu muôn vẻ.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0718.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0726.mp3",
         "videoWritingUrl": null,
         "orderIndex": 2
       },
       {
-        "vocabId": 719,
+        "vocabId": 727,
         "hanzi": "得",
         "pinyin": "dé",
         "pinyinRaw": "de",
@@ -38973,7 +38973,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "他在这次中文朗诵大赛中得了一等奖。",
         "exampleTranslation": "Cậu ấy đã đạt được giải nhất trong cuộc thi ngâm thơ tiếng Trung lần này.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0719.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0727.mp3",
         "videoWritingUrl": null,
         "orderIndex": 3
       },
@@ -38993,7 +38993,7 @@ export const SEED_LESSONS = [
         "orderIndex": 4
       },
       {
-        "vocabId": 720,
+        "vocabId": 728,
         "hanzi": "得分",
         "pinyin": "défēn",
         "pinyinRaw": "defen",
@@ -39003,12 +39003,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "在前锋的精彩配合下，校足球队率先得分。",
         "exampleTranslation": "Dưới sự phối hợp ăn ý của tiền đạo, đội bóng đá trường đã dẫn trước ghi điểm.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0720.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0728.mp3",
         "videoWritingUrl": null,
         "orderIndex": 5
       },
       {
-        "vocabId": 721,
+        "vocabId": 729,
         "hanzi": "的话",
         "pinyin": "dehuà",
         "pinyinRaw": "dehua",
@@ -39018,12 +39018,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "如果明天不下雨的话，我们就按原计划去爬山。",
         "exampleTranslation": "Nếu ngày mai trời không mưa, chúng ta sẽ theo kế hoạch cũ đi leo núi.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0721.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0729.mp3",
         "videoWritingUrl": null,
         "orderIndex": 6
       },
       {
-        "vocabId": 722,
+        "vocabId": 730,
         "hanzi": "得",
         "pinyin": "děi",
         "pinyinRaw": "dei",
@@ -39033,12 +39033,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "时间不早了，我得马上赶回公司处理紧急事务。",
         "exampleTranslation": "Thời gian không còn sớm nữa, tôi phải mau chóng quay về công ty xử lý việc gấp.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0722.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0730.mp3",
         "videoWritingUrl": null,
         "orderIndex": 7
       },
       {
-        "vocabId": 723,
+        "vocabId": 731,
         "hanzi": "灯",
         "pinyin": "dēng",
         "pinyinRaw": "deng",
@@ -39048,7 +39048,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "夜晚的书桌前，台灯散发着柔和温馨的光线。",
         "exampleTranslation": "Trước bàn học ban đêm, ngọn đèn bàn tỏa ra ánh sáng ấm áp dịu nhẹ.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0723.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0731.mp3",
         "videoWritingUrl": null,
         "orderIndex": 8
       },
@@ -39128,7 +39128,7 @@ export const SEED_LESSONS = [
         "orderIndex": 13
       },
       {
-        "vocabId": 724,
+        "vocabId": 732,
         "hanzi": "电梯",
         "pinyin": "diàntī",
         "pinyinRaw": "dianti",
@@ -39138,12 +39138,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "高峰期乘坐电梯请大家自觉遵守秩序排队。",
         "exampleTranslation": "Giờ cao điểm đi thang máy xin mọi người hãy tự giác tuân thủ trật tự xếp hàng.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0724.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0732.mp3",
         "videoWritingUrl": null,
         "orderIndex": 14
       },
       {
-        "vocabId": 725,
+        "vocabId": 733,
         "hanzi": "电子书",
         "pinyin": "diànzǐshū",
         "pinyinRaw": "dianzishu",
@@ -39153,12 +39153,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "用阅读器看电子书非常方便，随时随地都能学。",
         "exampleTranslation": "Dùng máy đọc sách xem sách điện tử rất tiện lợi, có thể học mọi lúc mọi nơi.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0725.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0733.mp3",
         "videoWritingUrl": null,
         "orderIndex": 15
       },
       {
-        "vocabId": 726,
+        "vocabId": 734,
         "hanzi": "丢",
         "pinyin": "diū",
         "pinyinRaw": "diu",
@@ -39168,7 +39168,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "他不小心把刚刚借来的图书给弄丢了。",
         "exampleTranslation": "Anh ấy sơ ý làm mất cuốn sách vừa mới mượn về.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0726.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0734.mp3",
         "videoWritingUrl": null,
         "orderIndex": 16
       },
@@ -39188,7 +39188,7 @@ export const SEED_LESSONS = [
         "orderIndex": 17
       },
       {
-        "vocabId": 727,
+        "vocabId": 735,
         "hanzi": "东北",
         "pinyin": "dōngběi",
         "pinyinRaw": "dongbei",
@@ -39198,12 +39198,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "中国的东北地区有广袤肥沃的黑土地和壮丽雪景。",
         "exampleTranslation": "Vùng đông bắc Trung Quốc có vùng đất đen màu mỡ bao la và cảnh tuyết tráng lệ.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0727.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0735.mp3",
         "videoWritingUrl": null,
         "orderIndex": 18
       },
       {
-        "vocabId": 728,
+        "vocabId": 736,
         "hanzi": "东方",
         "pinyin": "dōngfāng",
         "pinyinRaw": "dongfang",
@@ -39213,12 +39213,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "太阳从东方冉冉升起，照亮了崭新的一天。",
         "exampleTranslation": "Mặt trời từ phương đông từ từ nhô lên, chiếu sáng một ngày mới tinh khôi.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0728.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0736.mp3",
         "videoWritingUrl": null,
         "orderIndex": 19
       },
       {
-        "vocabId": 729,
+        "vocabId": 737,
         "hanzi": "东南",
         "pinyin": "dōngnán",
         "pinyinRaw": "dongnan",
@@ -39228,7 +39228,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "东南亚地区以宜人的热带海岛风光闻名世界。",
         "exampleTranslation": "Khu vực Đông Nam Á nổi tiếng thế giới với phong cảnh đảo nhiệt đới dễ chịu.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0729.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0737.mp3",
         "videoWritingUrl": null,
         "orderIndex": 20
       }
@@ -39248,7 +39248,7 @@ export const SEED_LESSONS = [
     "updatedAt": "2026-08-02T10:30:00Z",
     "vocabularies": [
       {
-        "vocabId": 730,
+        "vocabId": 738,
         "hanzi": "冬天",
         "pinyin": "dōngtiān",
         "pinyinRaw": "dongtian",
@@ -39258,12 +39258,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "北方冬天的气温常常会降到零下十几度。",
         "exampleTranslation": "Nhiệt độ mùa đông ở miền bắc thường giảm xuống âm mười mấy độ.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0730.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0738.mp3",
         "videoWritingUrl": null,
         "orderIndex": 1
       },
       {
-        "vocabId": 731,
+        "vocabId": 739,
         "hanzi": "懂得",
         "pinyin": "dǒngde",
         "pinyinRaw": "dongde",
@@ -39273,12 +39273,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "经过老师的循循善诱，他终于懂得如何解这道题了。",
         "exampleTranslation": "Nhờ thầy giáo ân cần chỉ bảo, cậu ấy rốt cuộc đã hiểu được cách giải bài toán này.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0731.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0739.mp3",
         "videoWritingUrl": null,
         "orderIndex": 2
       },
       {
-        "vocabId": 732,
+        "vocabId": 740,
         "hanzi": "动物",
         "pinyin": "dòngwù",
         "pinyinRaw": "dongwu",
@@ -39288,12 +39288,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "关爱和保护身边的流浪小动物是善良的表现。",
         "exampleTranslation": "Yêu thương và bảo vệ động vật nhỏ lang thang quanh mình là biểu hiện của lòng nhân ái.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0732.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0740.mp3",
         "videoWritingUrl": null,
         "orderIndex": 3
       },
       {
-        "vocabId": 733,
+        "vocabId": 741,
         "hanzi": "动物园",
         "pinyin": "dòngwùyuán",
         "pinyinRaw": "dongwuyuan",
@@ -39303,12 +39303,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "周末许多家长带着孩子去动物园观察各种鸟类。",
         "exampleTranslation": "Cuối tuần nhiều phụ huynh dẫn con đi sở thú quan sát các loài chim.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0733.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0741.mp3",
         "videoWritingUrl": null,
         "orderIndex": 4
       },
       {
-        "vocabId": 734,
+        "vocabId": 742,
         "hanzi": "短",
         "pinyin": "duǎn",
         "pinyinRaw": "duan",
@@ -39318,12 +39318,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "这段假期虽然很短，但我们过得非常充实愉快。",
         "exampleTranslation": "Kỳ nghỉ này tuy rất ngắn nhưng chúng tôi đã trải qua vô cùng trọn vẹn và vui vẻ.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0734.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0742.mp3",
         "videoWritingUrl": null,
         "orderIndex": 5
       },
       {
-        "vocabId": 735,
+        "vocabId": 743,
         "hanzi": "短裤",
         "pinyin": "duǎnkù",
         "pinyinRaw": "duanku",
@@ -39333,12 +39333,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "夏天气温高，大家都喜欢穿轻爽透气的短裤。",
         "exampleTranslation": "Mùa hè nhiệt độ cao, mọi người đều thích mặc quần soóc thoáng mát nhẹ nhàng.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0735.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0743.mp3",
         "videoWritingUrl": null,
         "orderIndex": 6
       },
       {
-        "vocabId": 736,
+        "vocabId": 744,
         "hanzi": "段",
         "pinyin": "duàn",
         "pinyinRaw": "duan",
@@ -39348,12 +39348,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "这段精彩的课文需要大家在下课后背诵下来。",
         "exampleTranslation": "Đoạn văn bài khóa đặc sắc này cần mọi người học thuộc sau giờ học.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0736.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0744.mp3",
         "videoWritingUrl": null,
         "orderIndex": 7
       },
       {
-        "vocabId": 737,
+        "vocabId": 745,
         "hanzi": "锻炼",
         "pinyin": "duànliàn",
         "pinyinRaw": "duanlian",
@@ -39363,12 +39363,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "每天坚持慢跑锻炼有助于增强心肺功能。",
         "exampleTranslation": "Mỗi ngày kiên trì chạy bộ rèn luyện giúp tăng cường chức năng tim phổi.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0737.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0745.mp3",
         "videoWritingUrl": null,
         "orderIndex": 8
       },
       {
-        "vocabId": 738,
+        "vocabId": 746,
         "hanzi": "对话",
         "pinyin": "duìhuà",
         "pinyinRaw": "duihua",
@@ -39378,7 +39378,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "两位老朋友在咖啡馆里进行着亲切的面对面对话。",
         "exampleTranslation": "Hai người bạn cũ đang có cuộc đối thoại trực tiếp thân mật trong quán cà phê.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0738.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0746.mp3",
         "videoWritingUrl": null,
         "orderIndex": 9
       },
@@ -39398,7 +39398,7 @@ export const SEED_LESSONS = [
         "orderIndex": 10
       },
       {
-        "vocabId": 739,
+        "vocabId": 747,
         "hanzi": "而且",
         "pinyin": "érqiě",
         "pinyinRaw": "erqie",
@@ -39408,12 +39408,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "她不仅歌唱得动听，而且舞姿也十分优美。",
         "exampleTranslation": "Cô ấy không chỉ hát rất êm tai mà hơn nữa vũ điệu cũng vô cùng uyển chuyển.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0739.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0747.mp3",
         "videoWritingUrl": null,
         "orderIndex": 11
       },
       {
-        "vocabId": 740,
+        "vocabId": 748,
         "hanzi": "耳朵",
         "pinyin": "ěrduo",
         "pinyinRaw": "erduo",
@@ -39423,12 +39423,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "保护耳朵健康，平时听音乐音量不要开得过大。",
         "exampleTranslation": "Bảo vệ đôi tai khỏe mạnh, thường ngày nghe nhạc âm lượng đừng mở quá to.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0740.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0748.mp3",
         "videoWritingUrl": null,
         "orderIndex": 12
       },
       {
-        "vocabId": 741,
+        "vocabId": 749,
         "hanzi": "耳机",
         "pinyin": "ěrjī",
         "pinyinRaw": "erji",
@@ -39438,12 +39438,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "在安静的公共自习室里听录音请一定要戴上耳机。",
         "exampleTranslation": "Trong phòng tự học công cộng yên tĩnh nghe băng ghi âm xin nhất định phải đeo tai nghe.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0741.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0749.mp3",
         "videoWritingUrl": null,
         "orderIndex": 13
       },
       {
-        "vocabId": 742,
+        "vocabId": 750,
         "hanzi": "发",
         "pinyin": "fā",
         "pinyinRaw": "fa",
@@ -39453,12 +39453,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "我已经把修改好的电子版报告发到您的邮箱里了。",
         "exampleTranslation": "Tôi đã gửi bản báo cáo điện tử đã sửa vào hòm thư của bạn rồi.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0742.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0750.mp3",
         "videoWritingUrl": null,
         "orderIndex": 14
       },
       {
-        "vocabId": 743,
+        "vocabId": 751,
         "hanzi": "发烧",
         "pinyin": "fāshāo",
         "pinyinRaw": "fashao",
@@ -39468,12 +39468,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "孩子今天额头发烧发烫，需要马上送医院检查。",
         "exampleTranslation": "Trán em bé hôm nay sốt nóng ran, cần lập tức đưa đến bệnh viện khám.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0743.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0751.mp3",
         "videoWritingUrl": null,
         "orderIndex": 15
       },
       {
-        "vocabId": 744,
+        "vocabId": 752,
         "hanzi": "发生",
         "pinyin": "fāshēng",
         "pinyinRaw": "fasheng",
@@ -39483,12 +39483,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "十字路口发生了一起因闯红灯引起的轻微擦伤事故。",
         "exampleTranslation": "Tại ngã tư đã xảy ra một vụ va quẹt nhẹ do vượt đèn đỏ.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0744.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0752.mp3",
         "videoWritingUrl": null,
         "orderIndex": 16
       },
       {
-        "vocabId": 745,
+        "vocabId": 753,
         "hanzi": "发现",
         "pinyin": "fāxiàn",
         "pinyinRaw": "faxian",
@@ -39498,12 +39498,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "科学家在显微镜下发现了这种全新微生物的结构。",
         "exampleTranslation": "Các nhà khoa học dưới kính hiển vi đã phát hiện ra cấu trúc của loài vi sinh vật hoàn toàn mới này.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0745.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0753.mp3",
         "videoWritingUrl": null,
         "orderIndex": 17
       },
       {
-        "vocabId": 746,
+        "vocabId": 754,
         "hanzi": "发展",
         "pinyin": "fāzhǎn",
         "pinyinRaw": "fazhan",
@@ -39513,12 +39513,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "随着科技的飞速发展，人工智能深刻改变着世界。",
         "exampleTranslation": "Cùng với sự phát triển thần tốc của công nghệ, trí tuệ nhân tạo đang thay đổi sâu sắc thế giới.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0746.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0754.mp3",
         "videoWritingUrl": null,
         "orderIndex": 18
       },
       {
-        "vocabId": 747,
+        "vocabId": 755,
         "hanzi": "方便",
         "pinyin": "fāngbiàn",
         "pinyinRaw": "fangbian",
@@ -39528,12 +39528,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "移动支付的全面普及给人们的日常生活带来了极大方便。",
         "exampleTranslation": "Sự phổ cập toàn diện của thanh toán di động mang lại sự thuận tiện to lớn cho cuộc sống thường ngày.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0747.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0755.mp3",
         "videoWritingUrl": null,
         "orderIndex": 19
       },
       {
-        "vocabId": 748,
+        "vocabId": 756,
         "hanzi": "方便面",
         "pinyin": "fāngbiànmiàn",
         "pinyinRaw": "fangbianmian",
@@ -39543,7 +39543,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "虽然方便面快捷美味，但平时还是应该多吃新鲜饭菜。",
         "exampleTranslation": "Tuy mì ăn liền nhanh gọn ngon miệng nhưng thường ngày vẫn nên ăn nhiều cơm canh tươi ngon.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0748.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0756.mp3",
         "videoWritingUrl": null,
         "orderIndex": 20
       }
@@ -39563,7 +39563,7 @@ export const SEED_LESSONS = [
     "updatedAt": "2026-08-02T10:30:00Z",
     "vocabularies": [
       {
-        "vocabId": 749,
+        "vocabId": 757,
         "hanzi": "方法",
         "pinyin": "fāngfǎ",
         "pinyinRaw": "fangfa",
@@ -39573,12 +39573,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "掌握科学有效的背诵方法能够极大提高词汇记忆速度。",
         "exampleTranslation": "Nắm vững phương pháp học thuộc khoa học hiệu quả có thể nâng cao tốc độ ghi nhớ từ vựng rất nhiều.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0749.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0757.mp3",
         "videoWritingUrl": null,
         "orderIndex": 1
       },
       {
-        "vocabId": 750,
+        "vocabId": 758,
         "hanzi": "方向",
         "pinyin": "fāngxiàng",
         "pinyinRaw": "fangxiang",
@@ -39588,7 +39588,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "指南针在茫茫的大海上始终为水手们指引正确方向。",
         "exampleTranslation": "Chiếc la bàn trên biển cả bao la luôn chỉ dẫn phương hướng chính xác cho các thủy thủ.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0750.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0758.mp3",
         "videoWritingUrl": null,
         "orderIndex": 2
       },
@@ -39638,7 +39638,7 @@ export const SEED_LESSONS = [
         "orderIndex": 5
       },
       {
-        "vocabId": 751,
+        "vocabId": 759,
         "hanzi": "放心",
         "pinyin": "fàngxīn",
         "pinyinRaw": "fangxin",
@@ -39648,7 +39648,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "有经验丰富的老医生主刀，请家属们尽管放心。",
         "exampleTranslation": "Có bác sĩ lâu năm giàu kinh nghiệm mổ chính, xin người nhà hãy yên tâm.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0751.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0759.mp3",
         "videoWritingUrl": null,
         "orderIndex": 6
       },
@@ -39668,7 +39668,7 @@ export const SEED_LESSONS = [
         "orderIndex": 7
       },
       {
-        "vocabId": 752,
+        "vocabId": 760,
         "hanzi": "分开",
         "pinyin": "fēnkāi",
         "pinyinRaw": "fenkai",
@@ -39678,7 +39678,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "毕业后大家虽然分开了，但深厚的友谊永不褪色。",
         "exampleTranslation": "Sau khi tốt nghiệp tuy mọi người đã tách rời nhưng tình bạn sâu sắc không bao giờ phai nhạt.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0752.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0760.mp3",
         "videoWritingUrl": null,
         "orderIndex": 8
       },
@@ -39698,7 +39698,7 @@ export const SEED_LESSONS = [
         "orderIndex": 9
       },
       {
-        "vocabId": 753,
+        "vocabId": 761,
         "hanzi": "封",
         "pinyin": "fēng",
         "pinyinRaw": "feng",
@@ -39708,12 +39708,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "他给远方的父母寄去了一封充满真情的家书。",
         "exampleTranslation": "Anh ấy đã gửi về cho cha mẹ ở phương xa một phong thư nhà chan chứa tình cảm chân thành.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0753.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0761.mp3",
         "videoWritingUrl": null,
         "orderIndex": 10
       },
       {
-        "vocabId": 754,
+        "vocabId": 762,
         "hanzi": "夫妻",
         "pinyin": "fūqī",
         "pinyinRaw": "fuqi",
@@ -39723,12 +39723,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "这对老夫妻相濡以沫走过了整整五十个春秋。",
         "exampleTranslation": "Cặp vợ chồng già này đã gắn bó sớm tối bên nhau trải qua trọn vẹn năm mươi mùa xuân thu.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0754.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0762.mp3",
         "videoWritingUrl": null,
         "orderIndex": 11
       },
       {
-        "vocabId": 755,
+        "vocabId": 763,
         "hanzi": "服务",
         "pinyin": "fúwù",
         "pinyinRaw": "fuwu",
@@ -39738,12 +39738,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "这家航空公司的空乘人员以周到热情的高品质服务闻名。",
         "exampleTranslation": "Đội ngũ tiếp viên của hãng hàng không này nổi tiếng với dịch vụ chu đáo nhiệt tình chất lượng cao.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0755.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0763.mp3",
         "videoWritingUrl": null,
         "orderIndex": 12
       },
       {
-        "vocabId": 756,
+        "vocabId": 764,
         "hanzi": "附近",
         "pinyin": "fùjìn",
         "pinyinRaw": "fujin",
@@ -39753,12 +39753,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "学校附近生活配套设施齐全，有许多便利店和餐馆。",
         "exampleTranslation": "Vùng lân cận trường học các tiện ích sinh hoạt rất đầy đủ, có nhiều cửa hàng tiện lợi và quán ăn.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0756.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0764.mp3",
         "videoWritingUrl": null,
         "orderIndex": 13
       },
       {
-        "vocabId": 757,
+        "vocabId": 765,
         "hanzi": "复习",
         "pinyin": "fùxí",
         "pinyinRaw": "fuxi",
@@ -39768,12 +39768,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "期末考试前大家都在抓紧时间全面复习所学知识。",
         "exampleTranslation": "Trước kỳ thi cuối kỳ mọi người đều đang tranh thủ thời gian ôn tập toàn diện kiến thức đã học.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0757.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0765.mp3",
         "videoWritingUrl": null,
         "orderIndex": 14
       },
       {
-        "vocabId": 758,
+        "vocabId": 766,
         "hanzi": "该",
         "pinyin": "gāi",
         "pinyinRaw": "gai",
@@ -39783,7 +39783,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "大家轮流值日，今天按照规定该轮到你打扫卫生了。",
         "exampleTranslation": "Mọi người luân phiên trực nhật, hôm nay theo quy định nên đến lượt bạn quét dọn vệ sinh rồi.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0758.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0766.mp3",
         "videoWritingUrl": null,
         "orderIndex": 15
       },
@@ -39803,7 +39803,7 @@ export const SEED_LESSONS = [
         "orderIndex": 16
       },
       {
-        "vocabId": 759,
+        "vocabId": 767,
         "hanzi": "感兴趣",
         "pinyin": "gǎn xìngqù",
         "pinyinRaw": "ganxingqu",
@@ -39813,12 +39813,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "他对中国悠久独特的传统陶瓷艺术非常感兴趣。",
         "exampleTranslation": "Anh ấy vô cùng có hứng thú với nghệ thuật gốm sứ truyền thống lâu đời độc đáo của Trung Quốc.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0759.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0767.mp3",
         "videoWritingUrl": null,
         "orderIndex": 17
       },
       {
-        "vocabId": 760,
+        "vocabId": 768,
         "hanzi": "感到",
         "pinyin": "gǎndào",
         "pinyinRaw": "gandao",
@@ -39828,12 +39828,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "看到学生们取得了优异的成绩，老师感到无比欣慰。",
         "exampleTranslation": "Nhìn thấy các học sinh đạt được thành tích xuất sắc, thầy giáo cảm thấy vô cùng an lòng và tự hào.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0760.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0768.mp3",
         "videoWritingUrl": null,
         "orderIndex": 18
       },
       {
-        "vocabId": 761,
+        "vocabId": 769,
         "hanzi": "感冒",
         "pinyin": "gǎnmào",
         "pinyinRaw": "ganmao",
@@ -39843,7 +39843,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "最近流感流行，如果不幸感冒了一定要多休息多喝水。",
         "exampleTranslation": "Gần đây cúm đang lây lan, nếu không may bị cảm cúm nhất định phải nghỉ ngơi nhiều và uống nhiều nước.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0761.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0769.mp3",
         "videoWritingUrl": null,
         "orderIndex": 19
       },
@@ -39878,7 +39878,7 @@ export const SEED_LESSONS = [
     "updatedAt": "2026-08-02T10:30:00Z",
     "vocabularies": [
       {
-        "vocabId": 762,
+        "vocabId": 770,
         "hanzi": "刚",
         "pinyin": "gāng",
         "pinyinRaw": "gang",
@@ -39888,12 +39888,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "新泡的热茶温度刚合适，喝一口满嘴留香。",
         "exampleTranslation": "Tách trà nóng mới pha nhiệt độ vừa vặn, nhấp một ngụm hương thơm lưu lại đầy vòm miệng.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0762.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0770.mp3",
         "videoWritingUrl": null,
         "orderIndex": 1
       },
       {
-        "vocabId": 763,
+        "vocabId": 771,
         "hanzi": "刚才",
         "pinyin": "gāngcái",
         "pinyinRaw": "gangcai",
@@ -39903,12 +39903,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "他刚才还在操场跑步，现在已经回宿舍冲凉了。",
         "exampleTranslation": "Cậu ấy vừa nãy còn chạy bộ ở sân vận động, bây giờ đã về ký túc xá tắm mát rồi.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0763.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0771.mp3",
         "videoWritingUrl": null,
         "orderIndex": 2
       },
       {
-        "vocabId": 764,
+        "vocabId": 772,
         "hanzi": "刚刚",
         "pinyin": "gānggāng",
         "pinyinRaw": "ganggang",
@@ -39918,12 +39918,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "妈妈刚刚烤好的香甜饼干散发着诱人的奶香味。",
         "exampleTranslation": "Món bánh quy thơm ngọt mẹ vừa mới nướng xong tỏa ra hương thơm ngậy của sữa đầy cuốn hút.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0764.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0772.mp3",
         "videoWritingUrl": null,
         "orderIndex": 3
       },
       {
-        "vocabId": 765,
+        "vocabId": 773,
         "hanzi": "高铁",
         "pinyin": "gāotiě",
         "pinyinRaw": "gaotie",
@@ -39933,12 +39933,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "乘坐高铁从北京到上海只需要四个多小时。",
         "exampleTranslation": "Ngồi tàu cao tốc từ Bắc Kinh đến Thượng Hải chỉ mất hơn bốn tiếng đồng hồ.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0765.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0773.mp3",
         "videoWritingUrl": null,
         "orderIndex": 4
       },
       {
-        "vocabId": 766,
+        "vocabId": 774,
         "hanzi": "根据",
         "pinyin": "gēnjù",
         "pinyinRaw": "genju",
@@ -39948,12 +39948,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "我们要根据实际的市场调研数据来制定营销策略。",
         "exampleTranslation": "Chúng ta phải căn cứ vào số liệu điều tra thị trường thực tế để hoạch định chiến lược tiếp thị.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0766.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0774.mp3",
         "videoWritingUrl": null,
         "orderIndex": 5
       },
       {
-        "vocabId": 767,
+        "vocabId": 775,
         "hanzi": "更",
         "pinyin": "gèng",
         "pinyinRaw": "geng",
@@ -39963,12 +39963,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "雨过天晴之后，整座青山显得更加青翠欲滴。",
         "exampleTranslation": "Sau cơn mưa trời hửng nắng, toàn bộ ngọn núi xanh hiện lên càng thêm mướt mát xanh tươi.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0767.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0775.mp3",
         "videoWritingUrl": null,
         "orderIndex": 6
       },
       {
-        "vocabId": 768,
+        "vocabId": 776,
         "hanzi": "公斤",
         "pinyin": "gōngjīn",
         "pinyinRaw": "gongjin",
@@ -39978,12 +39978,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "请给我称两公斤新鲜红透的富士苹果。",
         "exampleTranslation": "Xin hãy cân giúp tôi hai kilôgam táo Phú Sĩ đỏ tươi chín mọng.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0768.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0776.mp3",
         "videoWritingUrl": null,
         "orderIndex": 7
       },
       {
-        "vocabId": 769,
+        "vocabId": 777,
         "hanzi": "公园",
         "pinyin": "gōngyuán",
         "pinyinRaw": "gongyuan",
@@ -39993,12 +39993,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "清晨许多老年人在绿树成荫的城市公园里打太极拳。",
         "exampleTranslation": "Sáng sớm nhiều người cao tuổi tập thái cực quyền trong công viên thành phố rợp bóng cây xanh.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0769.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0777.mp3",
         "videoWritingUrl": null,
         "orderIndex": 8
       },
       {
-        "vocabId": 770,
+        "vocabId": 778,
         "hanzi": "工作日",
         "pinyin": "gōngzuòrì",
         "pinyinRaw": "gongzuori",
@@ -40008,12 +40008,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "银行在工作日正常对外营业，周末仅办理部分业务。",
         "exampleTranslation": "Ngân hàng mở cửa giao dịch bình thường vào ngày làm việc, cuối tuần chỉ xử lý một phần nghiệp vụ.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0770.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0778.mp3",
         "videoWritingUrl": null,
         "orderIndex": 9
       },
       {
-        "vocabId": 771,
+        "vocabId": 779,
         "hanzi": "故事",
         "pinyin": "gùshi",
         "pinyinRaw": "gushi",
@@ -40023,12 +40023,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "睡前给孩子讲一个生动有趣的寓言故事能够启发智慧。",
         "exampleTranslation": "Trước giờ ngủ kể cho con nghe một câu chuyện ngụ ngôn sinh động thú vị có thể gợi mở trí tuệ.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0771.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0779.mp3",
         "videoWritingUrl": null,
         "orderIndex": 10
       },
       {
-        "vocabId": 772,
+        "vocabId": 780,
         "hanzi": "刮",
         "pinyin": "guā",
         "pinyinRaw": "gua",
@@ -40038,7 +40038,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "呼啸的北风刮得树叶沙沙作响漫天飞舞。",
         "exampleTranslation": "Cơn gió bắc rít từng cơn thổi lá cây xào xạc bay ngập trời.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0772.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0780.mp3",
         "videoWritingUrl": null,
         "orderIndex": 11
       },
@@ -40058,7 +40058,7 @@ export const SEED_LESSONS = [
         "orderIndex": 12
       },
       {
-        "vocabId": 773,
+        "vocabId": 781,
         "hanzi": "关机",
         "pinyin": "guānjī",
         "pinyinRaw": "guanji",
@@ -40068,12 +40068,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "飞机起飞和降落阶段请旅客们务必自觉关机。",
         "exampleTranslation": "Giai đoạn máy bay cất cánh và hạ cánh xin hành khách nhất thiết tự giác tắt máy.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0773.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0781.mp3",
         "videoWritingUrl": null,
         "orderIndex": 13
       },
       {
-        "vocabId": 774,
+        "vocabId": 782,
         "hanzi": "关系",
         "pinyin": "guānxì",
         "pinyinRaw": "guanxi",
@@ -40083,12 +40083,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "良好的邻里关系有助于营造和谐温馨的居住环境。",
         "exampleTranslation": "Mối quan hệ hàng xóm láng giềng tốt đẹp giúp tạo dựng môi trường sống hòa thuận ấm cúng.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0774.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0782.mp3",
         "videoWritingUrl": null,
         "orderIndex": 14
       },
       {
-        "vocabId": 775,
+        "vocabId": 783,
         "hanzi": "关心",
         "pinyin": "guānxīn",
         "pinyinRaw": "guanxin",
@@ -40098,12 +40098,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "父母无微不至的关心是我们成长路上最坚强的后盾。",
         "exampleTranslation": "Sự quan tâm chu đáo từng li từng tí của cha mẹ là chỗ dựa vững chắc nhất trên đường ta khôn lớn.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0775.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0783.mp3",
         "videoWritingUrl": null,
         "orderIndex": 15
       },
       {
-        "vocabId": 776,
+        "vocabId": 784,
         "hanzi": "关于",
         "pinyin": "guānyú",
         "pinyinRaw": "guanyu",
@@ -40113,12 +40113,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "今天下午有一场关于环境保护的专业专题学术讲座。",
         "exampleTranslation": "Chiều hôm nay có một buổi tọa đàm học thuật chuyên đề về bảo vệ môi trường.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0776.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0784.mp3",
         "videoWritingUrl": null,
         "orderIndex": 16
       },
       {
-        "vocabId": 777,
+        "vocabId": 785,
         "hanzi": "关注",
         "pinyin": "guānzhù",
         "pinyinRaw": "guanzhu",
@@ -40128,7 +40128,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "欢迎大家持续关注我们公众号发布的最新权威资讯。",
         "exampleTranslation": "Hoan nghênh mọi người tiếp tục theo dõi các thông tin uy tín mới nhất đăng tải trên tài khoản chính thức của chúng tôi.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0777.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0785.mp3",
         "videoWritingUrl": null,
         "orderIndex": 17
       },
@@ -40148,7 +40148,7 @@ export const SEED_LESSONS = [
         "orderIndex": 18
       },
       {
-        "vocabId": 778,
+        "vocabId": 786,
         "hanzi": "过节",
         "pinyin": "guòjié",
         "pinyinRaw": "guojie",
@@ -40158,12 +40158,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "每逢过节，家家户户门前都会张贴喜庆的红色春联。",
         "exampleTranslation": "Mỗi dịp đón ngày lễ, trước cửa mỗi nhà đều dán đôi câu đối đỏ rộn ràng đón xuân.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0778.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0786.mp3",
         "videoWritingUrl": null,
         "orderIndex": 19
       },
       {
-        "vocabId": 779,
+        "vocabId": 787,
         "hanzi": "过去",
         "pinyin": "guòqù",
         "pinyinRaw": "guoqu",
@@ -40173,7 +40173,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "过去的经验教训能够为未来的前行指引正确方向。",
         "exampleTranslation": "Những kinh nghiệm và bài học trong quá khứ có thể chỉ dẫn phương hướng đúng đắn cho chặng đường phía trước.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0779.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0787.mp3",
         "videoWritingUrl": null,
         "orderIndex": 20
       }
@@ -40193,7 +40193,7 @@ export const SEED_LESSONS = [
     "updatedAt": "2026-08-02T10:30:00Z",
     "vocabularies": [
       {
-        "vocabId": 780,
+        "vocabId": 788,
         "hanzi": "海",
         "pinyin": "hǎi",
         "pinyinRaw": "hai",
@@ -40203,12 +40203,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "蔚蓝辽阔的大海边，海鸥在波涛之上展翅翱翔。",
         "exampleTranslation": "Bên bờ biển xanh thẳm bao la, đàn hải âu dang rộng đôi cánh lượn bay trên sóng biếc.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0780.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0788.mp3",
         "videoWritingUrl": null,
         "orderIndex": 1
       },
       {
-        "vocabId": 781,
+        "vocabId": 789,
         "hanzi": "害怕",
         "pinyin": "hàipà",
         "pinyinRaw": "haipa",
@@ -40218,12 +40218,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "面对突如其来的困难，勇敢坚强的人从不感到害怕。",
         "exampleTranslation": "Đối diện với khó khăn ập đến bất ngờ, người dũng cảm kiên cường chưa từng biết sợ hãi.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0781.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0789.mp3",
         "videoWritingUrl": null,
         "orderIndex": 2
       },
       {
-        "vocabId": 782,
+        "vocabId": 790,
         "hanzi": "好多",
         "pinyin": "hǎoduō",
         "pinyinRaw": "haoduo",
@@ -40233,12 +40233,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "他在中国留学的几年里结识了好多志同道合的好朋友。",
         "exampleTranslation": "Trong mấy năm du học tại Trung Quốc anh ấy đã làm quen được rất nhiều người bạn thân cùng chí hướng.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0782.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0790.mp3",
         "videoWritingUrl": null,
         "orderIndex": 3
       },
       {
-        "vocabId": 783,
+        "vocabId": 791,
         "hanzi": "好久",
         "pinyin": "hǎojiǔ",
         "pinyinRaw": "haojiu",
@@ -40248,12 +40248,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "我们已经好久没有坐在一起促膝长谈了。",
         "exampleTranslation": "Chúng ta đã lâu lắm rồi không ngồi cùng nhau trò chuyện tâm tình.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0783.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0791.mp3",
         "videoWritingUrl": null,
         "orderIndex": 4
       },
       {
-        "vocabId": 784,
+        "vocabId": 792,
         "hanzi": "好像",
         "pinyin": "hǎoxiàng",
         "pinyinRaw": "haoxiang",
@@ -40263,12 +40263,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "看这阴沉沉的天色，外面好像马上就要下雷阵雨了。",
         "exampleTranslation": "Nhìn sắc trời u ám thế này, hình như bên ngoài sắp sửa đổ mưa rào sấm chớp rồi.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0784.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0792.mp3",
         "videoWritingUrl": null,
         "orderIndex": 5
       },
       {
-        "vocabId": 785,
+        "vocabId": 793,
         "hanzi": "号码",
         "pinyin": "hàomǎ",
         "pinyinRaw": "haoma",
@@ -40278,12 +40278,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "请在回执单上清晰工整地留下您的手机联系号码。",
         "exampleTranslation": "Xin hãy để lại số điện thoại di động liên lạc của bạn một cách rõ ràng ngay ngắn trên phiếu biên nhận.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0785.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0793.mp3",
         "videoWritingUrl": null,
         "orderIndex": 6
       },
       {
-        "vocabId": 786,
+        "vocabId": 794,
         "hanzi": "河",
         "pinyin": "hé",
         "pinyinRaw": "he",
@@ -40293,12 +40293,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "一条清澈碧绿的母亲河穿过整座古老悠远的小镇。",
         "exampleTranslation": "Một dòng sông mẹ trong xanh hiền hòa chảy xuyên qua toàn bộ thị trấn cổ kính xa xưa.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0786.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0794.mp3",
         "videoWritingUrl": null,
         "orderIndex": 7
       },
       {
-        "vocabId": 787,
+        "vocabId": 795,
         "hanzi": "合适",
         "pinyin": "héshì",
         "pinyinRaw": "heshi",
@@ -40308,12 +40308,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "找一份自己真正喜欢且各方面合适的工作并不容易。",
         "exampleTranslation": "Tìm được một công việc mà bản thân thực sự yêu thích và mọi mặt đều phù hợp quả thực không dễ.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0787.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0795.mp3",
         "videoWritingUrl": null,
         "orderIndex": 8
       },
       {
-        "vocabId": 788,
+        "vocabId": 796,
         "hanzi": "黑板",
         "pinyin": "hēibǎn",
         "pinyinRaw": "heiban",
@@ -40323,12 +40323,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "上课时老师在黑板上用白色粉笔工整地书写重点汉字。",
         "exampleTranslation": "Trong giờ học thầy giáo dùng phấn trắng viết nắn nót các chữ Hán trọng tâm lên bảng đen.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0788.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0796.mp3",
         "videoWritingUrl": null,
         "orderIndex": 9
       },
       {
-        "vocabId": 789,
+        "vocabId": 797,
         "hanzi": "红绿灯",
         "pinyin": "hóng-lǜdēng",
         "pinyinRaw": "hongludeng",
@@ -40338,12 +40338,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "过繁忙十字路口一定要严格看清红绿灯指示再通行。",
         "exampleTranslation": "Khi qua ngã tư bận rộn nhất định phải nhìn thật kỹ tín hiệu đèn giao thông rồi mới qua đường.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0789.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0797.mp3",
         "videoWritingUrl": null,
         "orderIndex": 10
       },
       {
-        "vocabId": 790,
+        "vocabId": 798,
         "hanzi": "后来",
         "pinyin": "hòulái",
         "pinyinRaw": "houlai",
@@ -40353,12 +40353,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "他后来凭借刻苦不懈的钻研成为了一名行业领军专家。",
         "exampleTranslation": "Về sau nhờ sự nghiên cứu miệt mài không ngừng anh ấy đã trở thành một chuyên gia đầu ngành.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0790.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0798.mp3",
         "videoWritingUrl": null,
         "orderIndex": 11
       },
       {
-        "vocabId": 791,
+        "vocabId": 799,
         "hanzi": "后年",
         "pinyin": "hòunián",
         "pinyinRaw": "hounian",
@@ -40368,7 +40368,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "按照学制规划，她预计将在后年夏天顺利完成硕士学业。",
         "exampleTranslation": "Theo kế hoạch đào tạo, cô ấy dự kiến sẽ hoàn thành thuận lợi chương trình thạc sĩ vào mùa hè năm kia.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0791.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0799.mp3",
         "videoWritingUrl": null,
         "orderIndex": 12
       },
@@ -40388,7 +40388,7 @@ export const SEED_LESSONS = [
         "orderIndex": 13
       },
       {
-        "vocabId": 792,
+        "vocabId": 800,
         "hanzi": "护照",
         "pinyin": "hùzhào",
         "pinyinRaw": "huzhao",
@@ -40398,12 +40398,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "出国旅游前一定要仔细检查本人护照的有效签证期限。",
         "exampleTranslation": "Trước khi ra nước ngoài du lịch nhất định phải kiểm tra kỹ thời hạn thị thực còn hiệu lực trên hộ chiếu cá nhân.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0792.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0800.mp3",
         "videoWritingUrl": null,
         "orderIndex": 14
       },
       {
-        "vocabId": 793,
+        "vocabId": 801,
         "hanzi": "花园",
         "pinyin": "huāyuán",
         "pinyinRaw": "huayuan",
@@ -40413,12 +40413,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "小区的花园里春天百花争艳，草木青翠宜人。",
         "exampleTranslation": "Trong vườn hoa của khu dân cư mùa xuân trăm hoa đua nở, cây cỏ xanh tươi dễ chịu.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0793.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0801.mp3",
         "videoWritingUrl": null,
         "orderIndex": 15
       },
       {
-        "vocabId": 794,
+        "vocabId": 802,
         "hanzi": "画家",
         "pinyin": "huàjiā",
         "pinyinRaw": "huajia",
@@ -40428,12 +40428,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "著名中国画画家齐白石笔下的人物花鸟跃然纸上。",
         "exampleTranslation": "Nhân vật, hoa cỏ chim muông dưới ngòi bút của họa sĩ tranh Trung Quốc trứ danh Tề Bạch Thạch sống động như thật.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0794.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0802.mp3",
         "videoWritingUrl": null,
         "orderIndex": 16
       },
       {
-        "vocabId": 795,
+        "vocabId": 803,
         "hanzi": "欢迎",
         "pinyin": "huānyíng",
         "pinyinRaw": "huanying",
@@ -40443,7 +40443,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "热烈欢迎来自五湖四海的新留学生来到我们大学深造。",
         "exampleTranslation": "Nhiệt liệt chào đón các tân du học sinh đến từ bốn phương về học tập nâng cao tại trường đại học chúng tôi.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0795.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0803.mp3",
         "videoWritingUrl": null,
         "orderIndex": 17
       },
@@ -40463,7 +40463,7 @@ export const SEED_LESSONS = [
         "orderIndex": 18
       },
       {
-        "vocabId": 796,
+        "vocabId": 804,
         "hanzi": "环境",
         "pinyin": "huánjìng",
         "pinyinRaw": "huanjing",
@@ -40473,12 +40473,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "保护生态环境是全人类共同的重大责任。",
         "exampleTranslation": "Bảo vệ môi trường sinh thái là trách nhiệm lớn lao chung của toàn nhân loại.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0796.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0804.mp3",
         "videoWritingUrl": null,
         "orderIndex": 19
       },
       {
-        "vocabId": 797,
+        "vocabId": 805,
         "hanzi": "换",
         "pinyin": "huàn",
         "pinyinRaw": "huan",
@@ -40488,7 +40488,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "我想去中国银行把一些美元换成人民币。",
         "exampleTranslation": "Tôi muốn đến Ngân hàng Trung Quốc đổi một ít đô la Mỹ lấy nhân dân tệ.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0797.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0805.mp3",
         "videoWritingUrl": null,
         "orderIndex": 20
       }
@@ -40508,7 +40508,7 @@ export const SEED_LESSONS = [
     "updatedAt": "2026-08-02T10:30:00Z",
     "vocabularies": [
       {
-        "vocabId": 798,
+        "vocabId": 806,
         "hanzi": "黄色",
         "pinyin": "huángsè",
         "pinyinRaw": "huangse",
@@ -40518,7 +40518,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "秋天到了，银杏树的叶子都变成了金黄色。",
         "exampleTranslation": "Mùa thu đến rồi, lá cây ngân hạnh đều biến thành màu vàng óng.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0798.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0806.mp3",
         "videoWritingUrl": null,
         "orderIndex": 1
       },
@@ -40538,7 +40538,7 @@ export const SEED_LESSONS = [
         "orderIndex": 2
       },
       {
-        "vocabId": 799,
+        "vocabId": 807,
         "hanzi": "会",
         "pinyin": "huì",
         "pinyinRaw": "hui",
@@ -40548,12 +40548,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "全体部门负责人正在三楼会议室开会。",
         "exampleTranslation": "Toàn thể người phụ trách bộ phận đang họp tại phòng hội nghị tầng ba.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0799.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0807.mp3",
         "videoWritingUrl": null,
         "orderIndex": 3
       },
       {
-        "vocabId": 800,
+        "vocabId": 808,
         "hanzi": "会议",
         "pinyin": "huìyì",
         "pinyinRaw": "huiyi",
@@ -40563,12 +40563,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "国际气候变化峰会是一场非常重要的会议。",
         "exampleTranslation": "Hội nghị thượng đỉnh về biến đổi khí hậu quốc tế là một cuộc họp vô cùng quan trọng.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0800.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0808.mp3",
         "videoWritingUrl": null,
         "orderIndex": 4
       },
       {
-        "vocabId": 801,
+        "vocabId": 809,
         "hanzi": "或",
         "pinyin": "huò",
         "pinyinRaw": "huo",
@@ -40578,12 +40578,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "明天下午你可以来图书馆找我，或给我发邮件。",
         "exampleTranslation": "Chiều mai bạn có thể đến thư viện tìm tôi, hoặc gửi email cho tôi.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0801.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0809.mp3",
         "videoWritingUrl": null,
         "orderIndex": 5
       },
       {
-        "vocabId": 802,
+        "vocabId": 810,
         "hanzi": "或者",
         "pinyin": "huòzhě",
         "pinyinRaw": "huozhe",
@@ -40593,12 +40593,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "周末我通常在宿舍看书或者去操场锻炼身体。",
         "exampleTranslation": "Cuối tuần tôi thường đọc sách ở ký túc xá hoặc ra sân vận động rèn luyện thân thể.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0802.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0810.mp3",
         "videoWritingUrl": null,
         "orderIndex": 6
       },
       {
-        "vocabId": 803,
+        "vocabId": 811,
         "hanzi": "鸡",
         "pinyin": "jī",
         "pinyinRaw": "ji",
@@ -40608,12 +40608,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "农场里散养的土鸡每天清晨都会喔喔啼叫。",
         "exampleTranslation": "Những chú gà nuôi thả trong trang trại sáng sớm nào cũng gáy vang.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0803.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0811.mp3",
         "videoWritingUrl": null,
         "orderIndex": 7
       },
       {
-        "vocabId": 804,
+        "vocabId": 812,
         "hanzi": "几乎",
         "pinyin": "jīhū",
         "pinyinRaw": "jihu",
@@ -40623,12 +40623,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "他今天忙得不可开交，几乎连喝水的时间都没有。",
         "exampleTranslation": "Hôm nay anh ấy bận túi bụi, hầu như ngay cả thời gian uống nước cũng không có.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0804.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0812.mp3",
         "videoWritingUrl": null,
         "orderIndex": 8
       },
       {
-        "vocabId": 805,
+        "vocabId": 813,
         "hanzi": "机会",
         "pinyin": "jīhuì",
         "pinyinRaw": "jihui",
@@ -40638,12 +40638,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "能够去北京大学交流学习是一次非常难得的机会。",
         "exampleTranslation": "Có thể đến Đại học Bắc Kinh giao lưu học tập là một cơ hội vô cùng quý báu.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0805.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0813.mp3",
         "videoWritingUrl": null,
         "orderIndex": 9
       },
       {
-        "vocabId": 806,
+        "vocabId": 814,
         "hanzi": "极",
         "pinyin": "jí",
         "pinyinRaw": "ji",
@@ -40653,12 +40653,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "经历了漫长的旅途，大家此刻感到极度疲惫。",
         "exampleTranslation": "Trải qua chuyến đi dài đằng đẵng, mọi người lúc này cảm thấy cực kỳ mệt mỏi.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0806.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0814.mp3",
         "videoWritingUrl": null,
         "orderIndex": 10
       },
       {
-        "vocabId": 807,
+        "vocabId": 815,
         "hanzi": "急",
         "pinyin": "jí",
         "pinyinRaw": "ji",
@@ -40668,7 +40668,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "他有紧急公事需要处理，走得非常急促。",
         "exampleTranslation": "Anh ấy có công vụ khẩn cấp cần giải quyết, bước đi vô cùng vội vã.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0807.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0815.mp3",
         "videoWritingUrl": null,
         "orderIndex": 11
       },
@@ -40688,7 +40688,7 @@ export const SEED_LESSONS = [
         "orderIndex": 12
       },
       {
-        "vocabId": 808,
+        "vocabId": 816,
         "hanzi": "季",
         "pinyin": "jì",
         "pinyinRaw": "ji",
@@ -40698,12 +40698,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "秋季是一年之中气候最宜人舒适的美好季节。",
         "exampleTranslation": "Mùa thu là mùa đẹp đẽ dễ chịu và thoải mái nhất trong năm.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0808.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0816.mp3",
         "videoWritingUrl": null,
         "orderIndex": 13
       },
       {
-        "vocabId": 809,
+        "vocabId": 817,
         "hanzi": "季节",
         "pinyin": "jìjié",
         "pinyinRaw": "jijie",
@@ -40713,12 +40713,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "一年之中你最喜欢哪个季节？",
         "exampleTranslation": "Trong một năm bạn thích nhất mùa nào?",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0809.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0817.mp3",
         "videoWritingUrl": null,
         "orderIndex": 14
       },
       {
-        "vocabId": 810,
+        "vocabId": 818,
         "hanzi": "加",
         "pinyin": "jiā",
         "pinyinRaw": "jia",
@@ -40728,12 +40728,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "这杯热咖啡太苦了，请帮我加一点儿牛奶和糖。",
         "exampleTranslation": "Tách cà phê nóng này đắng quá, xin hãy giúp tôi thêm chút sữa và đường.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0810.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0818.mp3",
         "videoWritingUrl": null,
         "orderIndex": 15
       },
       {
-        "vocabId": 811,
+        "vocabId": 819,
         "hanzi": "假期",
         "pinyin": "jiàqī",
         "pinyinRaw": "jiaqi",
@@ -40743,12 +40743,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "漫长充实的暑期假期是学生们放松充电的好时光。",
         "exampleTranslation": "Kỳ nghỉ hè dài trọn vẹn là khoảng thời gian tuyệt vời để học sinh thư giãn và nạp lại năng lượng.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0811.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0819.mp3",
         "videoWritingUrl": null,
         "orderIndex": 16
       },
       {
-        "vocabId": 812,
+        "vocabId": 820,
         "hanzi": "坚持",
         "pinyin": "jiānchí",
         "pinyinRaw": "jianchi",
@@ -40758,12 +40758,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "只有持之以恒地坚持练习，口语水平才能突飞猛进。",
         "exampleTranslation": "Chỉ có kiên trì luyện tập không ngừng thì trình độ khẩu ngữ mới tiến bộ vượt bậc.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0812.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0820.mp3",
         "videoWritingUrl": null,
         "orderIndex": 17
       },
       {
-        "vocabId": 813,
+        "vocabId": 821,
         "hanzi": "检查",
         "pinyin": "jiǎnchá",
         "pinyinRaw": "jiancha",
@@ -40773,12 +40773,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "交卷前务必仔细检查一遍姓名和考号是否填对。",
         "exampleTranslation": "Trước khi nộp bài thi nhất thiết phải kiểm tra kỹ một lượt xem họ tên và số báo danh đã điền đúng chưa.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0813.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0821.mp3",
         "videoWritingUrl": null,
         "orderIndex": 18
       },
       {
-        "vocabId": 814,
+        "vocabId": 822,
         "hanzi": "简单",
         "pinyin": "jiǎndān",
         "pinyinRaw": "jiandan",
@@ -40788,12 +40788,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "这道汉语语法题其实比大家想象的要简单得多。",
         "exampleTranslation": "Câu ngữ pháp tiếng Trung này thực ra đơn giản hơn mọi người tưởng tượng nhiều.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0814.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0822.mp3",
         "videoWritingUrl": null,
         "orderIndex": 19
       },
       {
-        "vocabId": 815,
+        "vocabId": 823,
         "hanzi": "检票",
         "pinyin": "jiǎnpiào",
         "pinyinRaw": "jianpiao",
@@ -40803,7 +40803,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "高铁还有十五分钟就要发车了，检票口已经开放。",
         "exampleTranslation": "Tàu cao tốc còn mười lăm phút nữa là khởi hành, cửa soát vé đã mở rồi.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0815.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0823.mp3",
         "videoWritingUrl": null,
         "orderIndex": 20
       }
@@ -40823,7 +40823,7 @@ export const SEED_LESSONS = [
     "updatedAt": "2026-08-02T10:30:00Z",
     "vocabularies": [
       {
-        "vocabId": 816,
+        "vocabId": 824,
         "hanzi": "健康",
         "pinyin": "jiànkāng",
         "pinyinRaw": "jiankang",
@@ -40833,7 +40833,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "平时保持均衡饮食和规律作息有助于身心健康。",
         "exampleTranslation": "Thường ngày duy trì ăn uống điều độ và nghỉ ngơi điều độ giúp thân thể khỏe mạnh.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0816.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0824.mp3",
         "videoWritingUrl": null,
         "orderIndex": 1
       },
@@ -40853,7 +40853,7 @@ export const SEED_LESSONS = [
         "orderIndex": 2
       },
       {
-        "vocabId": 817,
+        "vocabId": 825,
         "hanzi": "讲",
         "pinyin": "jiǎng",
         "pinyinRaw": "jiang",
@@ -40863,12 +40863,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "王教授今天在学术报告厅给我们讲中国当代文学。",
         "exampleTranslation": "Giáo sư Vương hôm nay ở hội trường học thuật giảng cho chúng tôi nghe về văn học đương đại Trung Quốc.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0817.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0825.mp3",
         "videoWritingUrl": null,
         "orderIndex": 3
       },
       {
-        "vocabId": 818,
+        "vocabId": 826,
         "hanzi": "角",
         "pinyin": "jiǎo",
         "pinyinRaw": "jiao",
@@ -40878,12 +40878,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "房间的一角静静地摆放着一把古色古香的吉他。",
         "exampleTranslation": "Ở một góc phòng lặng lẽ đặt một cây đàn ghi-ta mang nét cổ kính.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0818.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0826.mp3",
         "videoWritingUrl": null,
         "orderIndex": 4
       },
       {
-        "vocabId": 819,
+        "vocabId": 827,
         "hanzi": "脚",
         "pinyin": "jiǎo",
         "pinyinRaw": "jiao",
@@ -40893,12 +40893,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "昨天登山走了好几公里山路，今天双脚格外酸痛。",
         "exampleTranslation": "Hôm qua leo núi đi bộ mấy cây số đường đèo, hôm nay hai bàn chân đặc biệt mỏi nhừ.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0819.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0827.mp3",
         "videoWritingUrl": null,
         "orderIndex": 5
       },
       {
-        "vocabId": 820,
+        "vocabId": 828,
         "hanzi": "接",
         "pinyin": "jiē",
         "pinyinRaw": "jie",
@@ -40908,12 +40908,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "他刚才去火车站接远道而来的父母了。",
         "exampleTranslation": "Vừa nãy anh ấy ra ga xe lửa đón cha mẹ từ xa đến rồi.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0820.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0828.mp3",
         "videoWritingUrl": null,
         "orderIndex": 6
       },
       {
-        "vocabId": 821,
+        "vocabId": 829,
         "hanzi": "街",
         "pinyin": "jiē",
         "pinyinRaw": "jie",
@@ -40923,12 +40923,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "周末繁华的步行街上人来人往，热闹非凡。",
         "exampleTranslation": "Cuối tuần trên con phố đi bộ sầm uất người qua kẻ lại, vô cùng náo nhiệt.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0821.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0829.mp3",
         "videoWritingUrl": null,
         "orderIndex": 7
       },
       {
-        "vocabId": 822,
+        "vocabId": 830,
         "hanzi": "节",
         "pinyin": "jié",
         "pinyinRaw": "jie",
@@ -40938,12 +40938,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "今天上午我们连着上了三节非常重要的专业课。",
         "exampleTranslation": "Sáng nay chúng tôi học liền ba tiết môn chuyên ngành rất quan trọng.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0822.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0830.mp3",
         "videoWritingUrl": null,
         "orderIndex": 8
       },
       {
-        "vocabId": 823,
+        "vocabId": 831,
         "hanzi": "结婚",
         "pinyin": "jiéhūn",
         "pinyinRaw": "jiehun",
@@ -40953,12 +40953,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "他们相恋五年之后，决定在今年国庆节结婚。",
         "exampleTranslation": "Sau năm năm yêu nhau, họ quyết định kết hôn vào dịp Quốc khánh năm nay.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0823.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0831.mp3",
         "videoWritingUrl": null,
         "orderIndex": 9
       },
       {
-        "vocabId": 824,
+        "vocabId": 832,
         "hanzi": "节目",
         "pinyin": "jiémù",
         "pinyinRaw": "jiemu",
@@ -40968,12 +40968,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "今晚电视文艺晚会上的舞蹈节目精彩纷呈。",
         "exampleTranslation": "Tiết mục múa trong đêm hội văn nghệ truyền hình tối nay vô cùng đặc sắc.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0824.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0832.mp3",
         "videoWritingUrl": null,
         "orderIndex": 10
       },
       {
-        "vocabId": 825,
+        "vocabId": 833,
         "hanzi": "节日",
         "pinyin": "jiérì",
         "pinyinRaw": "jieri",
@@ -40983,12 +40983,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "春节是中国民间最隆重热闹的传统节日。",
         "exampleTranslation": "Tết Nguyên Đán là ngày lễ truyền thống long trọng và náo nhiệt nhất trong dân gian Trung Hoa.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0825.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0833.mp3",
         "videoWritingUrl": null,
         "orderIndex": 11
       },
       {
-        "vocabId": 826,
+        "vocabId": 834,
         "hanzi": "结束",
         "pinyin": "jiéshù",
         "pinyinRaw": "jieshu",
@@ -40998,12 +40998,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "期末考试全部结束后，大家开心地走出考场。",
         "exampleTranslation": "Sau khi toàn bộ kỳ thi cuối kỳ kết thúc, mọi người vui vẻ bước ra khỏi phòng thi.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0826.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0834.mp3",
         "videoWritingUrl": null,
         "orderIndex": 12
       },
       {
-        "vocabId": 827,
+        "vocabId": 835,
         "hanzi": "解决",
         "pinyin": "jiějué",
         "pinyinRaw": "jiejue",
@@ -41013,12 +41013,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "经过大家集思广益，这个棘手的难题终于解决了。",
         "exampleTranslation": "Nhờ mọi người cùng nhau hiến kế, vấn đề hóc búa này rốt cuộc đã được giải quyết rồi.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0827.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0835.mp3",
         "videoWritingUrl": null,
         "orderIndex": 13
       },
       {
-        "vocabId": 828,
+        "vocabId": 836,
         "hanzi": "姐妹",
         "pinyin": "jiěmèi",
         "pinyinRaw": "jiemei",
@@ -41028,12 +41028,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "这对亲姐妹长得十分相像，感情也格外亲密。",
         "exampleTranslation": "Hai chị em ruột này ngoại hình rất giống nhau, tình cảm cũng vô cùng thân thiết.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0828.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0836.mp3",
         "videoWritingUrl": null,
         "orderIndex": 14
       },
       {
-        "vocabId": 829,
+        "vocabId": 837,
         "hanzi": "借",
         "pinyin": "jiè",
         "pinyinRaw": "jie",
@@ -41043,12 +41043,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "请问我可以在大学图书馆借几本外语参考书吗？",
         "exampleTranslation": "Xin hỏi tôi có thể mượn mấy cuốn sách tham khảo ngoại ngữ ở thư viện đại học không?",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0829.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0837.mp3",
         "videoWritingUrl": null,
         "orderIndex": 15
       },
       {
-        "vocabId": 830,
+        "vocabId": 838,
         "hanzi": "斤",
         "pinyin": "jīn",
         "pinyinRaw": "jin",
@@ -41058,12 +41058,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "他在果蔬超市买了三斤新鲜脆甜的水蜜桃。",
         "exampleTranslation": "Anh ấy đã mua ba cân đào mật giòn ngọt tươi ngon ở siêu thị rau quả.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0830.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0838.mp3",
         "videoWritingUrl": null,
         "orderIndex": 16
       },
       {
-        "vocabId": 831,
+        "vocabId": 839,
         "hanzi": "经过",
         "pinyin": "jīngguò",
         "pinyinRaw": "jingguo",
@@ -41073,12 +41073,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "经过多轮严格选拔，他顺利入选了国家集训队。",
         "exampleTranslation": "Trải qua nhiều vòng tuyển chọn khắt khe, anh ấy đã thuận lợi lọt vào đội tuyển tập huấn quốc gia.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0831.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0839.mp3",
         "videoWritingUrl": null,
         "orderIndex": 17
       },
       {
-        "vocabId": 832,
+        "vocabId": 840,
         "hanzi": "经理",
         "pinyin": "jīnglǐ",
         "pinyinRaw": "jingli",
@@ -41088,12 +41088,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "李经理正在会议室与重要客户商谈业务合作。",
         "exampleTranslation": "Giám đốc Lý đang cùng khách hàng quan trọng bàn bạc hợp tác kinh doanh trong phòng họp.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0832.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0840.mp3",
         "videoWritingUrl": null,
         "orderIndex": 18
       },
       {
-        "vocabId": 833,
+        "vocabId": 841,
         "hanzi": "久",
         "pinyin": "jiǔ",
         "pinyinRaw": "jiu",
@@ -41103,12 +41103,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "我们已经分别好久了，今天相见格外激动。",
         "exampleTranslation": "Chúng tôi đã chia tay nhau lâu lắm rồi, hôm nay gặp lại vô cùng xúc động.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0833.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0841.mp3",
         "videoWritingUrl": null,
         "orderIndex": 19
       },
       {
-        "vocabId": 834,
+        "vocabId": 842,
         "hanzi": "酒",
         "pinyin": "jiǔ",
         "pinyinRaw": "jiu",
@@ -41118,7 +41118,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "中国茶文化与酒文化在历史上都源远流长。",
         "exampleTranslation": "Văn hóa trà và văn hóa rượu Trung Hoa trong lịch sử đều có nguồn gốc sâu xa lâu đời.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0834.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0842.mp3",
         "videoWritingUrl": null,
         "orderIndex": 20
       }
@@ -41138,7 +41138,7 @@ export const SEED_LESSONS = [
     "updatedAt": "2026-08-02T10:30:00Z",
     "vocabularies": [
       {
-        "vocabId": 835,
+        "vocabId": 843,
         "hanzi": "旧",
         "pinyin": "jiù",
         "pinyinRaw": "jiu",
@@ -41148,12 +41148,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "这本泛黄的旧相册里珍藏着许多童年的珍贵回忆。",
         "exampleTranslation": "Trong cuốn an-bum ảnh cũ ố vàng này lưu giữ bao kỷ niệm quý giá thời thơ ấu.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0835.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0843.mp3",
         "videoWritingUrl": null,
         "orderIndex": 1
       },
       {
-        "vocabId": 836,
+        "vocabId": 844,
         "hanzi": "句",
         "pinyin": "jù",
         "pinyinRaw": "ju",
@@ -41163,12 +41163,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "请大家用今天学到的三个重点生词各造一句话。",
         "exampleTranslation": "Xin mọi người hãy dùng ba từ mới trọng tâm học hôm nay để đặt một câu văn.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0836.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0844.mp3",
         "videoWritingUrl": null,
         "orderIndex": 2
       },
       {
-        "vocabId": 837,
+        "vocabId": 845,
         "hanzi": "句子",
         "pinyin": "jùzi",
         "pinyinRaw": "juzi",
@@ -41178,12 +41178,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "写文章要做到语法正确、句子通顺自然。",
         "exampleTranslation": "Viết văn cần đạt được ngữ pháp chính xác, câu cú mạch lạc trôi chảy tự nhiên.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0837.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0845.mp3",
         "videoWritingUrl": null,
         "orderIndex": 3
       },
       {
-        "vocabId": 838,
+        "vocabId": 846,
         "hanzi": "决定",
         "pinyin": "juédìng",
         "pinyinRaw": "jueding",
@@ -41193,12 +41193,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "经过深思熟虑，他决定留在母校攻读博士学位。",
         "exampleTranslation": "Sau khi suy nghĩ chín chắn, anh ấy quyết định ở lại trường cũ học tiếp tiến sĩ.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0838.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0846.mp3",
         "videoWritingUrl": null,
         "orderIndex": 4
       },
       {
-        "vocabId": 839,
+        "vocabId": 847,
         "hanzi": "卡",
         "pinyin": "kǎ",
         "pinyinRaw": "ka",
@@ -41208,12 +41208,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "在食堂刷校园卡用餐既快捷又安全方便。",
         "exampleTranslation": "Quẹt thẻ sinh viên trong căng tin ăn cơm vừa nhanh vừa an toàn tiện lợi.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0839.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0847.mp3",
         "videoWritingUrl": null,
         "orderIndex": 5
       },
       {
-        "vocabId": 840,
+        "vocabId": 848,
         "hanzi": "开花",
         "pinyin": "kāihuā",
         "pinyinRaw": "kaihua",
@@ -41223,7 +41223,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "春天到了，院子里的樱花树悄然开花了。",
         "exampleTranslation": "Mùa xuân đến rồi, cây hoa anh đào trong sân đã lặng lẽ nở hoa.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0840.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0848.mp3",
         "videoWritingUrl": null,
         "orderIndex": 6
       },
@@ -41243,7 +41243,7 @@ export const SEED_LESSONS = [
         "orderIndex": 7
       },
       {
-        "vocabId": 841,
+        "vocabId": 849,
         "hanzi": "开机",
         "pinyin": "kāijī",
         "pinyinRaw": "kaiji",
@@ -41253,12 +41253,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "飞机安全降落滑行完毕后，乘客们纷纷开机。",
         "exampleTranslation": "Sau khi máy bay hạ cánh an toàn chạy xong đường băng, các hành khách rủ nhau mở máy.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0841.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0849.mp3",
         "videoWritingUrl": null,
         "orderIndex": 8
       },
       {
-        "vocabId": 842,
+        "vocabId": 850,
         "hanzi": "开心",
         "pinyin": "kāixīn",
         "pinyinRaw": "kaixin",
@@ -41268,12 +41268,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "得知考试通过的好消息，大家心里都感到非常开心。",
         "exampleTranslation": "Biết được tin vui thi đỗ, trong lòng mọi người đều cảm thấy vô cùng phấn khởi.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0842.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0850.mp3",
         "videoWritingUrl": null,
         "orderIndex": 9
       },
       {
-        "vocabId": 843,
+        "vocabId": 851,
         "hanzi": "看来",
         "pinyin": "kànlái",
         "pinyinRaw": "kanlai",
@@ -41283,12 +41283,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "看今天这乌云密布的天气，看来一场暴雨不可避免。",
         "exampleTranslation": "Nhìn sắc trời mây đen vần vũ hôm nay, xem ra một cơn mưa dông khó lòng tránh khỏi.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0843.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0851.mp3",
         "videoWritingUrl": null,
         "orderIndex": 10
       },
       {
-        "vocabId": 844,
+        "vocabId": 852,
         "hanzi": "可",
         "pinyin": "kě",
         "pinyinRaw": "ke",
@@ -41298,7 +41298,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "这本关于历史的故事书写得通俗易懂，真是一本可读的好书。",
         "exampleTranslation": "Cuốn sách truyện lịch sử này viết rất dễ hiểu, quả là một cuốn sách đáng đọc.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0844.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0852.mp3",
         "videoWritingUrl": null,
         "orderIndex": 11
       },
@@ -41318,7 +41318,7 @@ export const SEED_LESSONS = [
         "orderIndex": 12
       },
       {
-        "vocabId": 845,
+        "vocabId": 853,
         "hanzi": "可爱",
         "pinyin": "kě’ài",
         "pinyinRaw": "keai",
@@ -41328,12 +41328,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "草坪上奔跑玩耍的小泰迪狗长得真是太可爱了。",
         "exampleTranslation": "Chú chó Teddy nhỏ chạy nhảy đùa nghịch trên bãi cỏ trông thật là đáng yêu quá.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0845.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0853.mp3",
         "videoWritingUrl": null,
         "orderIndex": 13
       },
       {
-        "vocabId": 846,
+        "vocabId": 854,
         "hanzi": "可是",
         "pinyin": "kěshì",
         "pinyinRaw": "keshi",
@@ -41343,12 +41343,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "虽然他已经尽了最大努力，可是比赛结果还是留有遗憾。",
         "exampleTranslation": "Tuy anh ấy đã cố hết sức mình, nhưng mà kết quả thi đấu vẫn còn chút tiếc nuối.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0846.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0854.mp3",
         "videoWritingUrl": null,
         "orderIndex": 14
       },
       {
-        "vocabId": 847,
+        "vocabId": 855,
         "hanzi": "刻",
         "pinyin": "kè",
         "pinyinRaw": "ke",
@@ -41358,7 +41358,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "现在是八点一刻，距离早自习开始还有十五分钟。",
         "exampleTranslation": "Bây giờ là tám giờ một khắc, cách giờ bắt đầu tự học buổi sáng còn mười lăm phút.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0847.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0855.mp3",
         "videoWritingUrl": null,
         "orderIndex": 15
       },
@@ -41378,7 +41378,7 @@ export const SEED_LESSONS = [
         "orderIndex": 16
       },
       {
-        "vocabId": 848,
+        "vocabId": 856,
         "hanzi": "客人",
         "pinyin": "kèrén",
         "pinyinRaw": "keren",
@@ -41388,7 +41388,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "今天家里来了一位远道而来的尊贵客人。",
         "exampleTranslation": "Hôm nay trong nhà có một vị khách quý từ xa đến chơi.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0848.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0856.mp3",
         "videoWritingUrl": null,
         "orderIndex": 17
       },
@@ -41408,7 +41408,7 @@ export const SEED_LESSONS = [
         "orderIndex": 18
       },
       {
-        "vocabId": 849,
+        "vocabId": 857,
         "hanzi": "空调",
         "pinyin": "kōngtiáo",
         "pinyinRaw": "kongtiao",
@@ -41418,12 +41418,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "炎热难耐的夏季，在开着空调的房间里格外清爽。",
         "exampleTranslation": "Mùa hè nóng bức khó chịu, ở trong căn phòng bật điều hòa đặc biệt mát mẻ.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0849.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0857.mp3",
         "videoWritingUrl": null,
         "orderIndex": 19
       },
       {
-        "vocabId": 850,
+        "vocabId": 858,
         "hanzi": "哭",
         "pinyin": "kū",
         "pinyinRaw": "ku",
@@ -41433,7 +41433,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "小姑娘摔倒擦破了膝盖，委屈地哭了起来。",
         "exampleTranslation": "Bé gái bị ngã trầy xước đầu gối, ấm ức òa khóc nức nở.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0850.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0858.mp3",
         "videoWritingUrl": null,
         "orderIndex": 20
       }
@@ -41453,7 +41453,7 @@ export const SEED_LESSONS = [
     "updatedAt": "2026-08-02T10:30:00Z",
     "vocabularies": [
       {
-        "vocabId": 851,
+        "vocabId": 859,
         "hanzi": "筷子",
         "pinyin": "kuàizi",
         "pinyinRaw": "kuaizi",
@@ -41463,12 +41463,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "学会熟练使用筷子是了解中国饮食文化的第一步。",
         "exampleTranslation": "Học được cách dùng đũa thành thạo là bước đầu tiên để tìm hiểu văn hóa ẩm thực Trung Quốc.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0851.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0859.mp3",
         "videoWritingUrl": null,
         "orderIndex": 1
       },
       {
-        "vocabId": 852,
+        "vocabId": 860,
         "hanzi": "矿泉水",
         "pinyin": "kuàngquánshuǐ",
         "pinyinRaw": "kuangquanshui",
@@ -41478,12 +41478,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "运动过后请及时饮用适量的矿泉水补充身体水分。",
         "exampleTranslation": "Sau khi vận động xin hãy kịp thời uống lượng nước khoáng thích hợp để bù nước cho cơ thể.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0852.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0860.mp3",
         "videoWritingUrl": null,
         "orderIndex": 2
       },
       {
-        "vocabId": 853,
+        "vocabId": 861,
         "hanzi": "来自",
         "pinyin": "láizì",
         "pinyinRaw": "laizi",
@@ -41493,12 +41493,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "我们班的留学生来自世界各地不同的友好国家。",
         "exampleTranslation": "Du học sinh lớp chúng tôi đến từ các quốc gia hữu nghị khác nhau trên khắp thế giới.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0853.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0861.mp3",
         "videoWritingUrl": null,
         "orderIndex": 3
       },
       {
-        "vocabId": 854,
+        "vocabId": 862,
         "hanzi": "蓝",
         "pinyin": "lán",
         "pinyinRaw": "lan",
@@ -41508,7 +41508,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "晴空万里的大海上倒映着一片深邃蔚蓝的天空。",
         "exampleTranslation": "Trên mặt biển trong xanh vạn dặm soi bóng một vòm trời xanh thẳm bao la.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0854.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0862.mp3",
         "videoWritingUrl": null,
         "orderIndex": 4
       },
@@ -41543,7 +41543,7 @@ export const SEED_LESSONS = [
         "orderIndex": 6
       },
       {
-        "vocabId": 855,
+        "vocabId": 863,
         "hanzi": "离开",
         "pinyin": "líkāi",
         "pinyinRaw": "likai",
@@ -41553,12 +41553,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "他依依不舍地挥手告别，离开了生活多年的故乡。",
         "exampleTranslation": "Anh ấy lưu luyến vẫy tay từ biệt, rời khỏi quê hương nơi mình đã gắn bó bao năm.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0855.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0863.mp3",
         "videoWritingUrl": null,
         "orderIndex": 7
       },
       {
-        "vocabId": 856,
+        "vocabId": 864,
         "hanzi": "礼物",
         "pinyin": "lǐwù",
         "pinyinRaw": "liwu",
@@ -41568,12 +41568,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "这套精致的中国茶具是朋友送给我的珍贵生日礼物。",
         "exampleTranslation": "Bộ ấm chén trà Trung Quốc tinh tế này là món quà sinh nhật quý giá người bạn tặng tôi.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0856.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0864.mp3",
         "videoWritingUrl": null,
         "orderIndex": 8
       },
       {
-        "vocabId": 857,
+        "vocabId": 865,
         "hanzi": "历史",
         "pinyin": "lìshǐ",
         "pinyinRaw": "lishi",
@@ -41583,12 +41583,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "北京故宫是一座承载着数百年厚重历史的宏伟建筑。",
         "exampleTranslation": "Tử Cấm Thành Bắc Kinh là một công trình kiến trúc đồ sộ chở che bề dày lịch sử hàng trăm năm.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0857.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0865.mp3",
         "videoWritingUrl": null,
         "orderIndex": 9
       },
       {
-        "vocabId": 858,
+        "vocabId": 866,
         "hanzi": "脸",
         "pinyin": "liǎn",
         "pinyinRaw": "lian",
@@ -41598,12 +41598,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "清晨用冷水洗脸能让人立刻精神振奋。",
         "exampleTranslation": "Buổi sáng dùng nước lạnh rửa mặt có thể giúp con người lập tức tỉnh táo tinh thần.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0858.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0866.mp3",
         "videoWritingUrl": null,
         "orderIndex": 10
       },
       {
-        "vocabId": 859,
+        "vocabId": 867,
         "hanzi": "练",
         "pinyin": "liàn",
         "pinyinRaw": "lian",
@@ -41613,12 +41613,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "想要写出一手刚劲有力漂亮的毛笔字需要常年勤学苦练。",
         "exampleTranslation": "Muốn viết được nét chữ bút lông cứng cáp đẹp đẽ cần phải dày công rèn luyện qua năm tháng.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0859.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0867.mp3",
         "videoWritingUrl": null,
         "orderIndex": 11
       },
       {
-        "vocabId": 860,
+        "vocabId": 868,
         "hanzi": "练习",
         "pinyin": "liànxí",
         "pinyinRaw": "lianxi",
@@ -41628,12 +41628,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "课后请大家认真完成教材配套的各课语法练习。",
         "exampleTranslation": "Sau giờ học xin mọi người chăm chỉ hoàn thành bài tập ngữ pháp từng bài trong sách giáo khoa.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0860.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0868.mp3",
         "videoWritingUrl": null,
         "orderIndex": 12
       },
       {
-        "vocabId": 861,
+        "vocabId": 869,
         "hanzi": "凉快",
         "pinyin": "liángkuai",
         "pinyinRaw": "liangkuai",
@@ -41643,12 +41643,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "秋天傍晚的微风徐徐吹来，让人感到格外凉快舒适。",
         "exampleTranslation": "Gió chiều mùa thu hiu hiu thổi tới, khiến người ta cảm thấy đặc biệt mát mẻ dễ chịu.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0861.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0869.mp3",
         "videoWritingUrl": null,
         "orderIndex": 13
       },
       {
-        "vocabId": 862,
+        "vocabId": 870,
         "hanzi": "辆",
         "pinyin": "liàng",
         "pinyinRaw": "liang",
@@ -41658,12 +41658,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "校门口整齐停放着一辆环保的新能源公交车。",
         "exampleTranslation": "Trước cổng trường đỗ ngay ngắn một chiếc xe buýt năng lượng mới thân thiện với môi trường.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0862.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0870.mp3",
         "videoWritingUrl": null,
         "orderIndex": 14
       },
       {
-        "vocabId": 863,
+        "vocabId": 871,
         "hanzi": "聊",
         "pinyin": "liáo",
         "pinyinRaw": "liao",
@@ -41673,12 +41673,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "老同学们围坐在一起愉快地聊着往昔校园里的趣事。",
         "exampleTranslation": "Các bạn học cũ quây quần bên nhau vui vẻ trò chuyện về những kỷ niệm vui thời đi học.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0863.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0871.mp3",
         "videoWritingUrl": null,
         "orderIndex": 15
       },
       {
-        "vocabId": 864,
+        "vocabId": 872,
         "hanzi": "聊天儿",
         "pinyin": "liáotiānr",
         "pinyinRaw": "liaotianr",
@@ -41688,12 +41688,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "下午闲暇时喝茶聊天儿是老舍茶馆里最具特色的风景。",
         "exampleTranslation": "Chiều rảnh rỗi uống trà tán gẫu là nét phong cảnh đặc sắc nhất ở quán trà Lão Xá.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0864.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0872.mp3",
         "videoWritingUrl": null,
         "orderIndex": 16
       },
       {
-        "vocabId": 865,
+        "vocabId": 873,
         "hanzi": "了解",
         "pinyin": "liǎojiě",
         "pinyinRaw": "liaojie",
@@ -41703,12 +41703,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "通过这次实地深入走访，我们更全面地了解了当地风俗。",
         "exampleTranslation": "Thông qua chuyến đi thực tế sâu sát này, chúng tôi đã hiểu rõ toàn diện hơn về phong tục địa phương.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0865.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0873.mp3",
         "videoWritingUrl": null,
         "orderIndex": 17
       },
       {
-        "vocabId": 866,
+        "vocabId": 874,
         "hanzi": "邻居",
         "pinyin": "línjū",
         "pinyinRaw": "linju",
@@ -41718,12 +41718,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "我和隔壁邻居的关系非常融洽。",
         "exampleTranslation": "Tôi và người hàng xóm bên cạnh quan hệ rất hòa thuận.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0866.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0874.mp3",
         "videoWritingUrl": null,
         "orderIndex": 18
       },
       {
-        "vocabId": 867,
+        "vocabId": 875,
         "hanzi": "留学",
         "pinyin": "liúxué",
         "pinyinRaw": "liuxue",
@@ -41733,12 +41733,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "他从小立志长大后去世界知名顶尖学府留学深造。",
         "exampleTranslation": "Từ nhỏ cậu ấy đã lập chí lớn lên sẽ đi du học nâng cao tại trường đại học hàng đầu thế giới.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0867.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0875.mp3",
         "videoWritingUrl": null,
         "orderIndex": 19
       },
       {
-        "vocabId": 868,
+        "vocabId": 876,
         "hanzi": "留学生",
         "pinyin": "liúxuéshēng",
         "pinyinRaw": "liuxuesheng",
@@ -41748,7 +41748,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "我们大学每年招收数百名来自世界各地的国际留学生。",
         "exampleTranslation": "Trường đại học chúng tôi mỗi năm tuyển sinh hàng trăm du học sinh quốc tế đến từ khắp nơi trên thế giới.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0868.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0876.mp3",
         "videoWritingUrl": null,
         "orderIndex": 20
       }
@@ -41768,7 +41768,7 @@ export const SEED_LESSONS = [
     "updatedAt": "2026-08-02T10:30:00Z",
     "vocabularies": [
       {
-        "vocabId": 869,
+        "vocabId": 877,
         "hanzi": "楼梯",
         "pinyin": "lóutī",
         "pinyinRaw": "louti",
@@ -41778,12 +41778,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "为了强身健体，他每天坚持步行上下楼梯而不乘电梯。",
         "exampleTranslation": "Để rèn luyện sức khỏe, anh ấy mỗi ngày kiên trì đi bộ lên xuống cầu thang thay vì đi thang máy.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0869.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0877.mp3",
         "videoWritingUrl": null,
         "orderIndex": 1
       },
       {
-        "vocabId": 870,
+        "vocabId": 878,
         "hanzi": "路边",
         "pinyin": "lùbiān",
         "pinyinRaw": "lubian",
@@ -41793,7 +41793,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "夏日路边整齐栽种着许多枝繁叶茂的高大梧桐树。",
         "exampleTranslation": "Mùa hè ven đường trồng ngay ngắn nhiều cây ngô đồng to lớn cành lá tốt tươi.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0870.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0878.mp3",
         "videoWritingUrl": null,
         "orderIndex": 2
       },
@@ -41813,7 +41813,7 @@ export const SEED_LESSONS = [
         "orderIndex": 3
       },
       {
-        "vocabId": 871,
+        "vocabId": 879,
         "hanzi": "马",
         "pinyin": "mǎ",
         "pinyinRaw": "ma",
@@ -41823,7 +41823,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "在辽阔广袤的内蒙古大草原上，骏马正在欢快奔腾。",
         "exampleTranslation": "Trên thảo nguyên Nội Mông bao la bát ngát, đàn tuấn mã đang vui vẻ tung vó phi nước đại.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0871.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0879.mp3",
         "videoWritingUrl": null,
         "orderIndex": 4
       },
@@ -41858,7 +41858,7 @@ export const SEED_LESSONS = [
         "orderIndex": 6
       },
       {
-        "vocabId": 872,
+        "vocabId": 880,
         "hanzi": "满意",
         "pinyin": "mǎnyì",
         "pinyinRaw": "manyi",
@@ -41868,7 +41868,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "客户对我们团队这次高质量高效提交的设计方案十分满意。",
         "exampleTranslation": "Khách hàng vô cùng hài lòng với phương án thiết kế chất lượng cao tiến độ nhanh mà đội ngũ chúng tôi nộp lần này.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0872.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0880.mp3",
         "videoWritingUrl": null,
         "orderIndex": 7
       },
@@ -41888,7 +41888,7 @@ export const SEED_LESSONS = [
         "orderIndex": 8
       },
       {
-        "vocabId": 873,
+        "vocabId": 881,
         "hanzi": "米",
         "pinyin": "mǐ",
         "pinyinRaw": "mi",
@@ -41898,12 +41898,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "大米是中国南方家庭每天餐桌上不可或缺的主食。",
         "exampleTranslation": "Gạo là lương thực chính không thể thiếu trên bàn ăn mỗi ngày của các gia đình miền Nam Trung Quốc.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0873.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0881.mp3",
         "videoWritingUrl": null,
         "orderIndex": 9
       },
       {
-        "vocabId": 874,
+        "vocabId": 882,
         "hanzi": "面前",
         "pinyin": "miànqián",
         "pinyinRaw": "mianqian",
@@ -41913,7 +41913,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "面对摆在面前的全新挑战，我们应当坚定信心迎难而上。",
         "exampleTranslation": "Đối diện với thử thách hoàn toàn mới bày ra trước mặt, chúng ta cần vững tin dũng cảm xốc tới.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0874.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0882.mp3",
         "videoWritingUrl": null,
         "orderIndex": 10
       },
@@ -41933,7 +41933,7 @@ export const SEED_LESSONS = [
         "orderIndex": 11
       },
       {
-        "vocabId": 875,
+        "vocabId": 883,
         "hanzi": "名单",
         "pinyin": "míngdān",
         "pinyinRaw": "mingdan",
@@ -41943,12 +41943,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "期末奖学金评选名单已经正式公布在学院官方公告栏上。",
         "exampleTranslation": "Danh sách bình chọn học bổng cuối kỳ đã chính thức niêm yết trên bảng thông báo chính thức của học viện.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0875.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0883.mp3",
         "videoWritingUrl": null,
         "orderIndex": 12
       },
       {
-        "vocabId": 876,
+        "vocabId": 884,
         "hanzi": "名人",
         "pinyin": "míngrén",
         "pinyinRaw": "mingren",
@@ -41958,7 +41958,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "不少文化名人都曾在这座百年老校里驻足讲学留下佳话。",
         "exampleTranslation": "Không ít danh nhân văn hóa từng dừng bước giảng dạy tại ngôi trường trăm năm này để lại giai thoại đẹp.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0876.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0884.mp3",
         "videoWritingUrl": null,
         "orderIndex": 13
       },
@@ -41993,7 +41993,7 @@ export const SEED_LESSONS = [
         "orderIndex": 15
       },
       {
-        "vocabId": 877,
+        "vocabId": 885,
         "hanzi": "南方",
         "pinyin": "nánfāng",
         "pinyinRaw": "nanfang",
@@ -42003,12 +42003,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "中国南方水网纵横密布，气候温暖湿润景色宜人。",
         "exampleTranslation": "Miền nam Trung Quốc sông ngòi dày đặc chằng chịt, khí hậu ấm áp ẩm ướt cảnh sắc hữu tình.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0877.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0885.mp3",
         "videoWritingUrl": null,
         "orderIndex": 16
       },
       {
-        "vocabId": 878,
+        "vocabId": 886,
         "hanzi": "难过",
         "pinyin": "nánguò",
         "pinyinRaw": "nanguo",
@@ -42018,12 +42018,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "听到心爱的小宠物生病住院的消息，她心里难过极了。",
         "exampleTranslation": "Nghe tin thú cưng yêu quý bị ốm phải nhập viện, trong lòng cô ấy buồn bã vô cùng.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0878.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0886.mp3",
         "videoWritingUrl": null,
         "orderIndex": 17
       },
       {
-        "vocabId": 879,
+        "vocabId": 887,
         "hanzi": "难看",
         "pinyin": "nánkàn",
         "pinyinRaw": "nankan",
@@ -42033,7 +42033,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "虽然字迹写得有点儿难看，但内容条理十分严密清晰。",
         "exampleTranslation": "Tuy nét chữ viết có phần hơi khó coi nhưng nội dung lại vô cùng mạch lạc chặt chẽ.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0879.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0887.mp3",
         "videoWritingUrl": null,
         "orderIndex": 18
       },
@@ -42083,7 +42083,7 @@ export const SEED_LESSONS = [
     "updatedAt": "2026-08-02T10:30:00Z",
     "vocabularies": [
       {
-        "vocabId": 880,
+        "vocabId": 888,
         "hanzi": "难题",
         "pinyin": "nántí",
         "pinyinRaw": "nanti",
@@ -42093,12 +42093,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "面对这道奥数难题，同学们集思广益展开了热烈讨论。",
         "exampleTranslation": "Đối diện với bài toán khó thi học sinh giỏi này, các bạn học sinh cùng nhau hiến kế thảo luận sôi nổi.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0880.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0888.mp3",
         "videoWritingUrl": null,
         "orderIndex": 1
       },
       {
-        "vocabId": 881,
+        "vocabId": 889,
         "hanzi": "难听",
         "pinyin": "nántīng",
         "pinyinRaw": "nanting",
@@ -42108,12 +42108,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "这把老旧的小提琴音准不准，拉出来的声音十分难听。",
         "exampleTranslation": "Cây đàn vĩ cầm cũ kỹ này dây không chuẩn, kéo ra âm thanh vô cùng chói tai.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0881.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0889.mp3",
         "videoWritingUrl": null,
         "orderIndex": 2
       },
       {
-        "vocabId": 882,
+        "vocabId": 890,
         "hanzi": "年级",
         "pinyin": "niánjí",
         "pinyinRaw": "nianji",
@@ -42123,12 +42123,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "他今年刚刚升入大学三年级，开始接触专业核心课程。",
         "exampleTranslation": "Năm nay anh ấy vừa lên năm thứ ba đại học, bắt đầu tiếp cận các môn học cốt lõi chuyên ngành.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0882.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0890.mp3",
         "videoWritingUrl": null,
         "orderIndex": 3
       },
       {
-        "vocabId": 883,
+        "vocabId": 891,
         "hanzi": "年轻",
         "pinyin": "niánqīng",
         "pinyinRaw": "nianqing",
@@ -42138,12 +42138,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "他虽然年轻，但是工作经验非常丰富。",
         "exampleTranslation": "Anh ấy tuy trẻ tuổi nhưng kinh nghiệm làm việc rất phong phú.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0883.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0891.mp3",
         "videoWritingUrl": null,
         "orderIndex": 4
       },
       {
-        "vocabId": 884,
+        "vocabId": 892,
         "hanzi": "牛",
         "pinyin": "niú",
         "pinyinRaw": "niu",
@@ -42153,12 +42153,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "老黄牛在田野间默默耕作，是中国勤劳奉献的传统象征。",
         "exampleTranslation": "Chú bò vàng lặng lẽ cày bừa trên đồng ruộng, là biểu tượng truyền thống cho sự cần cù cống hiến của Trung Hoa.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0884.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0892.mp3",
         "videoWritingUrl": null,
         "orderIndex": 5
       },
       {
-        "vocabId": 885,
+        "vocabId": 893,
         "hanzi": "努力",
         "pinyin": "nǔlì",
         "pinyinRaw": "nuli",
@@ -42168,7 +42168,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "只要今天脚踏实地努力拼搏，明天的梦想就一定能实现。",
         "exampleTranslation": "Chỉ cần hôm nay vững bước nỗ lực hết mình, ước mơ ngày mai nhất định sẽ trở thành hiện thực.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0885.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0893.mp3",
         "videoWritingUrl": null,
         "orderIndex": 6
       },
@@ -42203,7 +42203,7 @@ export const SEED_LESSONS = [
         "orderIndex": 8
       },
       {
-        "vocabId": 886,
+        "vocabId": 894,
         "hanzi": "爬",
         "pinyin": "pá",
         "pinyinRaw": "pa",
@@ -42213,12 +42213,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "秋高气爽的重阳节，登高爬山是中华民族的古老传统。",
         "exampleTranslation": "Dịp Tết Trùng Cửu thu cao khí mát, leo núi lên cao là truyền thống ngàn đời của dân tộc Trung Hoa.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0886.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0894.mp3",
         "videoWritingUrl": null,
         "orderIndex": 9
       },
       {
-        "vocabId": 887,
+        "vocabId": 895,
         "hanzi": "怕",
         "pinyin": "pà",
         "pinyinRaw": "pa",
@@ -42228,12 +42228,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "暴风雨快要来临了，怕是今天下午的户外活动不得不取消。",
         "exampleTranslation": "Bão dông sắp kéo đến rồi, e rằng hoạt động ngoài trời chiều nay buộc phải hủy bỏ.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0887.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0895.mp3",
         "videoWritingUrl": null,
         "orderIndex": 10
       },
       {
-        "vocabId": 888,
+        "vocabId": 896,
         "hanzi": "拍照",
         "pinyin": "pāizhào",
         "pinyinRaw": "paizhao",
@@ -42243,12 +42243,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "金秋时节游客们纷纷在枫叶林前驻足拍照留念。",
         "exampleTranslation": "Tiết trời thu vàng du khách rủ nhau dừng bước chụp ảnh lưu niệm trước rừng lá phong.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0888.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0896.mp3",
         "videoWritingUrl": null,
         "orderIndex": 11
       },
       {
-        "vocabId": 889,
+        "vocabId": 897,
         "hanzi": "盘子",
         "pinyin": "pánzi",
         "pinyinRaw": "panzi",
@@ -42258,12 +42258,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "服务员麻利地将洗得干干净净的白色瓷质盘子摆上餐桌。",
         "exampleTranslation": "Người phục vụ nhanh nhẹn bày những chiếc đĩa sứ trắng sạch bong lên bàn ăn.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0889.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0897.mp3",
         "videoWritingUrl": null,
         "orderIndex": 12
       },
       {
-        "vocabId": 890,
+        "vocabId": 898,
         "hanzi": "胖",
         "pinyin": "pàng",
         "pinyinRaw": "pang",
@@ -42273,12 +42273,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "猫咪经过几个月的精心喂养，长成了一只胖乎乎的大橘猫。",
         "exampleTranslation": "Chú mèo qua vài tháng được chăm bẵm cẩn thận đã lớn thành một chú mèo mướp vàng béo tròn xoe.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0890.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0898.mp3",
         "videoWritingUrl": null,
         "orderIndex": 13
       },
       {
-        "vocabId": 891,
+        "vocabId": 899,
         "hanzi": "啤酒",
         "pinyin": "píjiǔ",
         "pinyinRaw": "pijiu",
@@ -42288,12 +42288,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "青岛啤酒是中国享誉世界知名品牌的传统酿造饮品之一。",
         "exampleTranslation": "Bia Thanh Đảo là một trong những thức uống ủ truyền thống mang thương hiệu nổi tiếng thế giới của Trung Quốc.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0891.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0899.mp3",
         "videoWritingUrl": null,
         "orderIndex": 14
       },
       {
-        "vocabId": 892,
+        "vocabId": 900,
         "hanzi": "平时",
         "pinyin": "píngshí",
         "pinyinRaw": "pingshi",
@@ -42303,12 +42303,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "平时多注重身体保健锻炼，生病的概率就会大大降低。",
         "exampleTranslation": "Bình thường chú trọng chăm sóc sức khỏe và rèn luyện, tỷ lệ mắc bệnh sẽ giảm đi rất nhiều.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0892.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0900.mp3",
         "videoWritingUrl": null,
         "orderIndex": 15
       },
       {
-        "vocabId": 893,
+        "vocabId": 901,
         "hanzi": "瓶子",
         "pinyin": "píngzi",
         "pinyinRaw": "pingzi",
@@ -42318,12 +42318,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "请把用完的空塑料瓶子随手投入可回收物垃圾箱内。",
         "exampleTranslation": "Xin hãy tiện tay vứt chiếc chai nhựa rỗng dùng xong vào thùng rác tái chế.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0893.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0901.mp3",
         "videoWritingUrl": null,
         "orderIndex": 16
       },
       {
-        "vocabId": 894,
+        "vocabId": 902,
         "hanzi": "骑",
         "pinyin": "qí",
         "pinyinRaw": "qi",
@@ -42333,12 +42333,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "骑共享单车穿行在大街小巷不仅低碳环保而且锻炼身体。",
         "exampleTranslation": "Đi xe đạp công cộng qua lại trên các ngõ phố không chỉ giảm khí thải bảo vệ môi trường mà còn rèn luyện sức khỏe.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0894.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0902.mp3",
         "videoWritingUrl": null,
         "orderIndex": 17
       },
       {
-        "vocabId": 895,
+        "vocabId": 903,
         "hanzi": "奇怪",
         "pinyin": "qíguài",
         "pinyinRaw": "qiguai",
@@ -42348,12 +42348,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "这只小鸟发出了一种以前从未听过的奇怪叫声。",
         "exampleTranslation": "Chú chim nhỏ này phát ra một tiếng kêu kỳ lạ chưa từng nghe thấy bao giờ.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0895.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0903.mp3",
         "videoWritingUrl": null,
         "orderIndex": 18
       },
       {
-        "vocabId": 896,
+        "vocabId": 904,
         "hanzi": "其实",
         "pinyin": "qíshí",
         "pinyinRaw": "qishi",
@@ -42363,12 +42363,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "学中文看似很难，其实只要掌握了汉字规律就会变得很有趣。",
         "exampleTranslation": "Học tiếng Trung nhìn qua có vẻ khó, thực ra chỉ cần nắm chắc quy luật chữ Hán sẽ trở nên rất thú vị.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0896.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0904.mp3",
         "videoWritingUrl": null,
         "orderIndex": 19
       },
       {
-        "vocabId": 897,
+        "vocabId": 905,
         "hanzi": "其他",
         "pinyin": "qítā",
         "pinyinRaw": "qita",
@@ -42378,7 +42378,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "除了这个问题以外，大家还有其他需要补充的意见吗？",
         "exampleTranslation": "Ngoài vấn đề này ra, mọi người còn có ý kiến nào khác cần bổ sung không?",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0897.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0905.mp3",
         "videoWritingUrl": null,
         "orderIndex": 20
       }
@@ -42413,7 +42413,7 @@ export const SEED_LESSONS = [
         "orderIndex": 1
       },
       {
-        "vocabId": 898,
+        "vocabId": 906,
         "hanzi": "起飞",
         "pinyin": "qǐfēi",
         "pinyinRaw": "qifei",
@@ -42423,7 +42423,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "飞往北京的大型民航客机准点在跑道上起飞升空。",
         "exampleTranslation": "Chuyến bay chở khách dân dụng cỡ lớn đi Bắc Kinh cất cánh bay lên đúng giờ trên đường băng.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0898.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0906.mp3",
         "videoWritingUrl": null,
         "orderIndex": 2
       },
@@ -42443,7 +42443,7 @@ export const SEED_LESSONS = [
         "orderIndex": 3
       },
       {
-        "vocabId": 899,
+        "vocabId": 907,
         "hanzi": "铅笔",
         "pinyin": "qiānbǐ",
         "pinyinRaw": "qianbi",
@@ -42453,12 +42453,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "小学生初学写汉字时通常选用硬度适中的木质铅笔。",
         "exampleTranslation": "Học sinh tiểu học khi mới bắt đầu học viết chữ Hán thường chọn bút chì gỗ có độ cứng vừa phải.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0899.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0907.mp3",
         "videoWritingUrl": null,
         "orderIndex": 4
       },
       {
-        "vocabId": 900,
+        "vocabId": 908,
         "hanzi": "前年",
         "pinyin": "qiánnián",
         "pinyinRaw": "qiannian",
@@ -42468,7 +42468,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "我们全家在前年春节曾一起去哈尔滨观赏冰雕艺术。",
         "exampleTranslation": "Cả gia đình chúng tôi dịp Tết năm kia từng cùng nhau đi Cáp Nhĩ Tân ngắm nghệ thuật điêu khắc băng.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0900.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0908.mp3",
         "videoWritingUrl": null,
         "orderIndex": 5
       },
@@ -42488,7 +42488,7 @@ export const SEED_LESSONS = [
         "orderIndex": 6
       },
       {
-        "vocabId": 901,
+        "vocabId": 909,
         "hanzi": "清楚",
         "pinyin": "qīngchu",
         "pinyinRaw": "qingchu",
@@ -42498,7 +42498,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "老师把解题步骤详细写在黑板上，字迹格外清楚。",
         "exampleTranslation": "Thầy giáo viết các bước giải bài chi tiết lên bảng đen, nét chữ đặc biệt rõ ràng.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0901.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0909.mp3",
         "videoWritingUrl": null,
         "orderIndex": 7
       },
@@ -42518,7 +42518,7 @@ export const SEED_LESSONS = [
         "orderIndex": 8
       },
       {
-        "vocabId": 902,
+        "vocabId": 910,
         "hanzi": "请客",
         "pinyin": "qǐngkè",
         "pinyinRaw": "qingke",
@@ -42528,12 +42528,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "今天我通过了汉语水平考试，晚上一定要请客庆祝一下！",
         "exampleTranslation": "Hôm nay tôi đã vượt qua kỳ thi năng lực Hán ngữ, tối nay nhất định phải khao một chầu để ăn mừng!",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0902.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0910.mp3",
         "videoWritingUrl": null,
         "orderIndex": 9
       },
       {
-        "vocabId": 903,
+        "vocabId": 911,
         "hanzi": "秋天",
         "pinyin": "qiūtiān",
         "pinyinRaw": "qiutian",
@@ -42543,12 +42543,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "秋天是硕果累累五谷丰登的金黄色丰收季节。",
         "exampleTranslation": "Mùa thu là mùa thu hoạch vàng óng trĩu quả mùa màng bội thu.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0903.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0911.mp3",
         "videoWritingUrl": null,
         "orderIndex": 10
       },
       {
-        "vocabId": 904,
+        "vocabId": 912,
         "hanzi": "球场",
         "pinyin": "qiúchǎng",
         "pinyinRaw": "qiuchang",
@@ -42558,12 +42558,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "下午放学后，宽阔的绿茵球场上活跃着热爱运动的学生。",
         "exampleTranslation": "Chiều sau giờ tan học, trên sân bóng cỏ xanh rộng lớn rộn ràng các bạn học sinh yêu thích thể thao.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0904.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0912.mp3",
         "videoWritingUrl": null,
         "orderIndex": 11
       },
       {
-        "vocabId": 905,
+        "vocabId": 913,
         "hanzi": "裙子",
         "pinyin": "qúnzi",
         "pinyinRaw": "qunzi",
@@ -42573,12 +42573,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "这条红色的裙子非常适合你。",
         "exampleTranslation": "Chiếc váy màu đỏ này rất hợp với bạn.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0905.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0913.mp3",
         "videoWritingUrl": null,
         "orderIndex": 12
       },
       {
-        "vocabId": 906,
+        "vocabId": 914,
         "hanzi": "然后",
         "pinyin": "ránhòu",
         "pinyinRaw": "ranhou",
@@ -42588,12 +42588,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "我们先参观了国家博物馆，然后一起漫步天安门广场。",
         "exampleTranslation": "Chúng tôi tham quan Bảo tàng Quốc gia trước, sau đó cùng nhau tản bộ trên Quảng trường Thiên An Môn.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0906.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0914.mp3",
         "videoWritingUrl": null,
         "orderIndex": 13
       },
       {
-        "vocabId": 907,
+        "vocabId": 915,
         "hanzi": "热情",
         "pinyin": "rèqíng",
         "pinyinRaw": "reqing",
@@ -42603,12 +42603,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "当地百姓非常热情好客，端出最好的特色美食招待远方客人。",
         "exampleTranslation": "Người dân địa phương vô cùng nhiệt tình hiếu khách, bưng ra những món ngon đặc sản nhất thết đãi khách phương xa.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0907.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0915.mp3",
         "videoWritingUrl": null,
         "orderIndex": 14
       },
       {
-        "vocabId": 908,
+        "vocabId": 916,
         "hanzi": "认得",
         "pinyin": "rènde",
         "pinyinRaw": "rende",
@@ -42618,12 +42618,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "多年未见，老同学在茫茫人海中依然一眼就认得彼此。",
         "exampleTranslation": "Nhiều năm chưa gặp, đôi bạn học cũ giữa biển người mênh mông vẫn nhận ra nhau ngay từ cái nhìn đầu tiên.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0908.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0916.mp3",
         "videoWritingUrl": null,
         "orderIndex": 15
       },
       {
-        "vocabId": 909,
+        "vocabId": 917,
         "hanzi": "认为",
         "pinyin": "rènwéi",
         "pinyinRaw": "renwei",
@@ -42633,7 +42633,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "大多数专家认为这种绿色能源具有非常广阔的应用前景。",
         "exampleTranslation": "Đa số các chuyên gia cho rằng loại năng lượng xanh này có triển vọng ứng dụng vô cùng rộng mở.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0909.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0917.mp3",
         "videoWritingUrl": null,
         "orderIndex": 16
       },
@@ -42653,7 +42653,7 @@ export const SEED_LESSONS = [
         "orderIndex": 17
       },
       {
-        "vocabId": 910,
+        "vocabId": 918,
         "hanzi": "容易",
         "pinyin": "róngyì",
         "pinyinRaw": "rongyi",
@@ -42663,12 +42663,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "天下无难事，只要肯登攀，没有克服不了的容易或艰难。",
         "exampleTranslation": "Dưới gầm trời không việc gì khó, chỉ cần quyết chí trèo cao, không có gian nan hay dễ dàng nào không vượt qua được.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0910.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0918.mp3",
         "videoWritingUrl": null,
         "orderIndex": 18
       },
       {
-        "vocabId": 911,
+        "vocabId": 919,
         "hanzi": "如果",
         "pinyin": "rúguǒ",
         "pinyinRaw": "ruguo",
@@ -42678,12 +42678,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "如果明天下大雨，我们原定的户外长跑活动就改为室内进行。",
         "exampleTranslation": "Nếu như ngày mai trời mưa to, hoạt động chạy bền ngoài trời đã định của chúng ta sẽ chuyển sang tổ chức trong nhà.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0911.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0919.mp3",
         "videoWritingUrl": null,
         "orderIndex": 19
       },
       {
-        "vocabId": 912,
+        "vocabId": 920,
         "hanzi": "伞",
         "pinyin": "sǎn",
         "pinyinRaw": "san",
@@ -42693,7 +42693,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "夏季多阵雨，出门包里常备一把折叠伞防患于未然。",
         "exampleTranslation": "Mùa hè hay có mưa dông, trong túi ra ngoài thường để sẵn một chiếc ô gấp để phòng khi cần.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0912.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0920.mp3",
         "videoWritingUrl": null,
         "orderIndex": 20
       }
@@ -42713,7 +42713,7 @@ export const SEED_LESSONS = [
     "updatedAt": "2026-08-02T10:30:00Z",
     "vocabularies": [
       {
-        "vocabId": 913,
+        "vocabId": 921,
         "hanzi": "扫",
         "pinyin": "sǎo",
         "pinyinRaw": "sao",
@@ -42723,12 +42723,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "环卫工人们清晨五点就拿起大扫帚把马路打扫得干干净净。",
         "exampleTranslation": "Các công nhân vệ sinh môi trường từ năm giờ sáng đã cầm chổi lớn quét dọn đường phố sạch bong.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0913.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0921.mp3",
         "videoWritingUrl": null,
         "orderIndex": 1
       },
       {
-        "vocabId": 914,
+        "vocabId": 922,
         "hanzi": "沙发",
         "pinyin": "shāfā",
         "pinyinRaw": "shafa",
@@ -42738,7 +42738,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "结束了一整天繁忙的工作后，瘫坐在舒适柔软的沙发上最惬意。",
         "exampleTranslation": "Sau khi kết thúc một ngày làm việc bận rộn, ngả lưng trên chiếc sofa êm ái mềm mại là thư thái nhất.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0914.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0922.mp3",
         "videoWritingUrl": null,
         "orderIndex": 2
       },
@@ -42758,7 +42758,7 @@ export const SEED_LESSONS = [
         "orderIndex": 3
       },
       {
-        "vocabId": 915,
+        "vocabId": 923,
         "hanzi": "上衣",
         "pinyin": "shàngyī",
         "pinyinRaw": "shangyi",
@@ -42768,12 +42768,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "他今天穿了一件深蓝色的保暖夹克上衣去上班。",
         "exampleTranslation": "Hôm nay anh ấy mặc một chiếc áo khoác ấm màu xanh lam sẫm đi làm.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0915.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0923.mp3",
         "videoWritingUrl": null,
         "orderIndex": 4
       },
       {
-        "vocabId": 916,
+        "vocabId": 924,
         "hanzi": "勺子",
         "pinyin": "sháozi",
         "pinyinRaw": "shaozi",
@@ -42783,12 +42783,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "喝热汤的时候请用专用的陶瓷小勺子，避免烫伤。",
         "exampleTranslation": "Khi húp canh nóng xin hãy dùng chiếc thìa sứ chuyên dụng để tránh bị bỏng.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0916.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0924.mp3",
         "videoWritingUrl": null,
         "orderIndex": 5
       },
       {
-        "vocabId": 917,
+        "vocabId": 925,
         "hanzi": "身边",
         "pinyin": "shēnbiān",
         "pinyinRaw": "shenbian",
@@ -42798,12 +42798,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "无论走到天涯海角，亲人的深情牵挂永远陪伴在我们身边。",
         "exampleTranslation": "Dù có đi đến chân trời góc biển, tình cảm chở che của người thân mãi luôn đồng hành bên cạnh chúng ta.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0917.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0925.mp3",
         "videoWritingUrl": null,
         "orderIndex": 6
       },
       {
-        "vocabId": 918,
+        "vocabId": 926,
         "hanzi": "身高",
         "pinyin": "shēngāo",
         "pinyinRaw": "shengao",
@@ -42813,12 +42813,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "定期测量身高体重是监测青少年儿童健康发育的重要指标。",
         "exampleTranslation": "Đo chiều cao cân nặng định kỳ là chỉ số quan trọng để theo dõi sự phát triển thể chất của thanh thiếu niên trẻ em.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0918.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0926.mp3",
         "videoWritingUrl": null,
         "orderIndex": 7
       },
       {
-        "vocabId": 919,
+        "vocabId": 927,
         "hanzi": "声",
         "pinyin": "shēng",
         "pinyinRaw": "sheng",
@@ -42828,12 +42828,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "远处群山间传来了一声清脆悦耳的鸟鸣。",
         "exampleTranslation": "Giữa những ngọn núi xa xa vọng lại một tiếng chim hót lảnh lót êm tai.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0919.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0927.mp3",
         "videoWritingUrl": null,
         "orderIndex": 8
       },
       {
-        "vocabId": 920,
+        "vocabId": 928,
         "hanzi": "生活",
         "pinyin": "shēnghuó",
         "pinyinRaw": "shenghuo",
@@ -42843,7 +42843,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "积极乐观的人生态度能够让平凡的生活充满欢歌笑语。",
         "exampleTranslation": "Thái độ nhân sinh tích cực lạc quan có thể làm cho cuộc sống bình dị tràn đầy tiếng cười và lời ca.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0920.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0928.mp3",
         "videoWritingUrl": null,
         "orderIndex": 9
       },
@@ -42863,7 +42863,7 @@ export const SEED_LESSONS = [
         "orderIndex": 10
       },
       {
-        "vocabId": 921,
+        "vocabId": 929,
         "hanzi": "声音",
         "pinyin": "shēngyīn",
         "pinyinRaw": "shengyin",
@@ -42873,12 +42873,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "教室里传出了同学们整齐响亮的朗读课文声音。",
         "exampleTranslation": "Trong phòng học vang lên âm thanh đọc bài khóa đồng thanh to rõ của các bạn học sinh.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0921.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0929.mp3",
         "videoWritingUrl": null,
         "orderIndex": 11
       },
       {
-        "vocabId": 922,
+        "vocabId": 930,
         "hanzi": "市",
         "pinyin": "shì",
         "pinyinRaw": "shi",
@@ -42888,7 +42888,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "这座沿海开放城市近年来经济活力十足，发展迅速。",
         "exampleTranslation": "Thành phố mở ven biển này những năm gần đây sức sống kinh tế dồi dào, phát triển thần tốc.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0922.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0930.mp3",
         "videoWritingUrl": null,
         "orderIndex": 12
       },
@@ -42908,7 +42908,7 @@ export const SEED_LESSONS = [
         "orderIndex": 13
       },
       {
-        "vocabId": 923,
+        "vocabId": 931,
         "hanzi": "室",
         "pinyin": "shì",
         "pinyinRaw": "shi",
@@ -42918,12 +42918,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "我们在三楼的安静图书阅览室里认真查阅文献资料。",
         "exampleTranslation": "Chúng tôi ở trong phòng đọc sách yên tĩnh tại tầng ba chăm chú tra cứu tài liệu văn kiện.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0923.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0931.mp3",
         "videoWritingUrl": null,
         "orderIndex": 14
       },
       {
-        "vocabId": 924,
+        "vocabId": 932,
         "hanzi": "世界",
         "pinyin": "shìjiè",
         "pinyinRaw": "shijie",
@@ -42933,12 +42933,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "互联网技术彻底拉近了世界各国人民之间的距离。",
         "exampleTranslation": "Công nghệ internet đã kéo lại gần hoàn toàn khoảng cách giữa nhân dân các nước trên toàn thế giới.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0924.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0932.mp3",
         "videoWritingUrl": null,
         "orderIndex": 15
       },
       {
-        "vocabId": 925,
+        "vocabId": 933,
         "hanzi": "收",
         "pinyin": "shōu",
         "pinyinRaw": "shou",
@@ -42948,12 +42948,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "期末离校前请同学们把个人物品妥善收拾干净带走。",
         "exampleTranslation": "Trước khi rời trường cuối kỳ xin các bạn học sinh thu dọn gọn gàng đồ đạc cá nhân mang về.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0925.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0933.mp3",
         "videoWritingUrl": null,
         "orderIndex": 16
       },
       {
-        "vocabId": 926,
+        "vocabId": 934,
         "hanzi": "收到",
         "pinyin": "shōudào",
         "pinyinRaw": "shoudao",
@@ -42963,12 +42963,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "今天下午我终于收到了大学录取通知书的挂号信。",
         "exampleTranslation": "Chiều nay tôi rốt cuộc đã nhận được thư bảo đảm báo tin trúng tuyển đại học.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0926.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0934.mp3",
         "videoWritingUrl": null,
         "orderIndex": 17
       },
       {
-        "vocabId": 927,
+        "vocabId": 935,
         "hanzi": "受",
         "pinyin": "shòu",
         "pinyinRaw": "shou",
@@ -42978,12 +42978,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "无论遇到多么严酷的考验，他都勇敢经受住了考验。",
         "exampleTranslation": "Dù gặp phải khảo nghiệm khắc nghiệt đến đâu, anh ấy đều dũng cảm vượt qua chịu đựng.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0927.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0935.mp3",
         "videoWritingUrl": null,
         "orderIndex": 18
       },
       {
-        "vocabId": 928,
+        "vocabId": 936,
         "hanzi": "瘦",
         "pinyin": "shòu",
         "pinyinRaw": "shou",
@@ -42993,12 +42993,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "几个月坚持规律锻炼和健康膳食，他明显瘦了一圈。",
         "exampleTranslation": "Mấy tháng kiên trì rèn luyện điều độ và ăn uống lành mạnh, anh ấy đã gầy đi trông thấy.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0928.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0936.mp3",
         "videoWritingUrl": null,
         "orderIndex": 19
       },
       {
-        "vocabId": 929,
+        "vocabId": 937,
         "hanzi": "受到",
         "pinyin": "shòudào",
         "pinyinRaw": "shoudao",
@@ -43008,7 +43008,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "这名年轻志愿者的无私奉献精神受到了社会各界广泛好评。",
         "exampleTranslation": "Tinh thần cống hiến vô tư của bạn tình nguyện viên trẻ này đã nhận được sự khen ngợi rộng rãi từ các giới xã hội.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0929.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0937.mp3",
         "videoWritingUrl": null,
         "orderIndex": 20
       }
@@ -43028,7 +43028,7 @@ export const SEED_LESSONS = [
     "updatedAt": "2026-08-02T10:30:00Z",
     "vocabularies": [
       {
-        "vocabId": 930,
+        "vocabId": 938,
         "hanzi": "叔叔",
         "pinyin": "shūshu",
         "pinyinRaw": "shushu",
@@ -43038,7 +43038,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "热心的邻居张叔叔常常帮大伙儿维修各种损坏的小家电。",
         "exampleTranslation": "Bác Trương hàng xóm nhiệt tình thường hay giúp mọi người sửa chữa các đồ điện gia dụng nhỏ bị hỏng.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0930.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0938.mp3",
         "videoWritingUrl": null,
         "orderIndex": 1
       },
@@ -43058,7 +43058,7 @@ export const SEED_LESSONS = [
         "orderIndex": 2
       },
       {
-        "vocabId": 931,
+        "vocabId": 939,
         "hanzi": "数学",
         "pinyin": "shùxué",
         "pinyinRaw": "shuxue",
@@ -43068,12 +43068,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "学好基础数学能够培养人严谨缜密的逻辑思维能力。",
         "exampleTranslation": "Học tốt toán học cơ bản có thể bồi dưỡng năng lực tư duy logic chặt chẽ cẩn trọng cho con người.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0931.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0939.mp3",
         "videoWritingUrl": null,
         "orderIndex": 3
       },
       {
-        "vocabId": 932,
+        "vocabId": 940,
         "hanzi": "刷",
         "pinyin": "shuā",
         "pinyinRaw": "shua",
@@ -43083,12 +43083,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "每天早晚认真刷牙是保持口腔卫生预防龋齿的基本要求。",
         "exampleTranslation": "Mỗi sáng tối chăm chỉ đánh răng là yêu cầu cơ bản để giữ vệ sinh răng miệng phòng ngừa sâu răng.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0932.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0940.mp3",
         "videoWritingUrl": null,
         "orderIndex": 4
       },
       {
-        "vocabId": 933,
+        "vocabId": 941,
         "hanzi": "双",
         "pinyin": "shuāng",
         "pinyinRaw": "shuang",
@@ -43098,12 +43098,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "过年时妈妈给我买了一双崭新的白色运动鞋。",
         "exampleTranslation": "Dịp đón tết mẹ đã mua cho tôi một đôi giày thể thao màu trắng mới tinh.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0933.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0941.mp3",
         "videoWritingUrl": null,
         "orderIndex": 5
       },
       {
-        "vocabId": 934,
+        "vocabId": 942,
         "hanzi": "水平",
         "pinyin": "shuǐpíng",
         "pinyinRaw": "shuiping",
@@ -43113,12 +43113,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "经过半年沉浸式学习，他的汉语口语水平有了质的飞跃。",
         "exampleTranslation": "Qua nửa năm học tập đắm chìm, trình độ khẩu ngữ tiếng Trung của anh ấy đã có bước tiến nhảy vọt về chất.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0934.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0942.mp3",
         "videoWritingUrl": null,
         "orderIndex": 6
       },
       {
-        "vocabId": 935,
+        "vocabId": 943,
         "hanzi": "司机",
         "pinyin": "sījī",
         "pinyinRaw": "siji",
@@ -43128,12 +43128,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "公交车老司机行车经验极其丰富，驾驶技术平稳安全。",
         "exampleTranslation": "Bác tài xế xe buýt lâu năm kinh nghiệm lái xe cực kỳ phong phú, kỹ thuật điều khiển xe êm ái an toàn.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0935.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0943.mp3",
         "videoWritingUrl": null,
         "orderIndex": 7
       },
       {
-        "vocabId": 936,
+        "vocabId": 944,
         "hanzi": "四季",
         "pinyin": "sìjì",
         "pinyinRaw": "siji",
@@ -43143,12 +43143,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "昆明气候宜人四季如春，享有春城的美誉。",
         "exampleTranslation": "Côn Minh khí hậu dễ chịu bốn mùa như xuân, được ngợi ca với danh xưng Thành phố Mùa Xuân.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0936.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0944.mp3",
         "videoWritingUrl": null,
         "orderIndex": 8
       },
       {
-        "vocabId": 937,
+        "vocabId": 945,
         "hanzi": "太阳",
         "pinyin": "tàiyáng",
         "pinyinRaw": "taiyang",
@@ -43158,12 +43158,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "明媚温暖的太阳照耀着大地，融化了冰封的雪水。",
         "exampleTranslation": "Mặt trời ấm áp rực rỡ chiếu rọi đất trời, làm tan chảy dòng nước tuyết đóng băng.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0937.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0945.mp3",
         "videoWritingUrl": null,
         "orderIndex": 9
       },
       {
-        "vocabId": 938,
+        "vocabId": 946,
         "hanzi": "糖",
         "pinyin": "táng",
         "pinyinRaw": "tang",
@@ -43173,12 +43173,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "小孩子吃完含糖糖果后要及时漱口以防止蛀牙。",
         "exampleTranslation": "Trẻ nhỏ sau khi ăn kẹo ngọt có đường cần kịp thời súc miệng để phòng tránh sâu răng.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0938.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0946.mp3",
         "videoWritingUrl": null,
         "orderIndex": 10
       },
       {
-        "vocabId": 939,
+        "vocabId": 947,
         "hanzi": "特别",
         "pinyin": "tèbié",
         "pinyinRaw": "tebie",
@@ -43188,12 +43188,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "今天全班同学为老师准备了一份特别有意义的教师节礼物。",
         "exampleTranslation": "Hôm nay toàn thể học sinh trong lớp đã chuẩn bị cho thầy cô một món quà ngày Nhà giáo đặc biệt có ý nghĩa.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0939.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0947.mp3",
         "videoWritingUrl": null,
         "orderIndex": 11
       },
       {
-        "vocabId": 940,
+        "vocabId": 948,
         "hanzi": "提高",
         "pinyin": "tígāo",
         "pinyinRaw": "tigao",
@@ -43203,12 +43203,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "坚持每天阅读中文原版报刊能够显著提高阅读理解速度。",
         "exampleTranslation": "Kiên trì mỗi ngày đọc báo chí ấn bản gốc tiếng Trung có thể nâng cao tốc độ đọc hiểu một cách rõ rệt.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0940.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0948.mp3",
         "videoWritingUrl": null,
         "orderIndex": 12
       },
       {
-        "vocabId": 941,
+        "vocabId": 949,
         "hanzi": "体育",
         "pinyin": "tǐyù",
         "pinyinRaw": "tiyu",
@@ -43218,12 +43218,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "学校每年春季都按时举办盛大的全校性体育运动会。",
         "exampleTranslation": "Trường học mỗi năm vào mùa xuân đều tổ chức đại hội thể dục thể thao toàn trường tưng bừng đúng hẹn.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0941.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0949.mp3",
         "videoWritingUrl": null,
         "orderIndex": 13
       },
       {
-        "vocabId": 942,
+        "vocabId": 950,
         "hanzi": "体育馆",
         "pinyin": "tǐyùguǎn",
         "pinyinRaw": "tiyuguan",
@@ -43233,12 +43233,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "这座现代化体育馆能承办国际一流规格的羽毛球比赛。",
         "exampleTranslation": "Nhà thi đấu hiện đại này có thể tổ chức các giải thi đấu cầu lông quy mô tiêu chuẩn hàng đầu quốc tế.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0942.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0950.mp3",
         "videoWritingUrl": null,
         "orderIndex": 14
       },
       {
-        "vocabId": 943,
+        "vocabId": 951,
         "hanzi": "甜",
         "pinyin": "tián",
         "pinyinRaw": "tian",
@@ -43248,12 +43248,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "新疆吐鲁番昼夜温差大，出产的葡萄格外甘甜多汁。",
         "exampleTranslation": "Thổ Lỗ Phiên ở Tân Cương chênh lệch nhiệt độ ngày đêm lớn, nho sản xuất ra đặc biệt ngọt ngào mọng nước.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0943.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0951.mp3",
         "videoWritingUrl": null,
         "orderIndex": 15
       },
       {
-        "vocabId": 944,
+        "vocabId": 952,
         "hanzi": "跳",
         "pinyin": "tiào",
         "pinyinRaw": "tiao",
@@ -43263,12 +43263,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "欢快的小袋鼠在草原上一下又一下敏捷地跳跃着。",
         "exampleTranslation": "Những chú chuột túi nhỏ tinh nghịch thoăn thoắt nhảy từng bước từng bước trên đồng cỏ.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0944.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0952.mp3",
         "videoWritingUrl": null,
         "orderIndex": 16
       },
       {
-        "vocabId": 945,
+        "vocabId": 953,
         "hanzi": "听说",
         "pinyin": "tīngshuō",
         "pinyinRaw": "tingshuo",
@@ -43278,12 +43278,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "听说下周学校艺术节将有一场精彩的中外学生大合唱。",
         "exampleTranslation": "Nghe nói tuần sau trong ngày hội nghệ thuật của trường sẽ có một màn hợp xướng tuyệt vời của sinh viên trong và ngoài nước.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0945.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0953.mp3",
         "videoWritingUrl": null,
         "orderIndex": 17
       },
       {
-        "vocabId": 946,
+        "vocabId": 954,
         "hanzi": "挺",
         "pinyin": "tǐng",
         "pinyinRaw": "ting",
@@ -43293,12 +43293,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "这本新出版的历史小说写得挺有深度的。",
         "exampleTranslation": "Cuốn tiểu thuyết lịch sử mới xuất bản này viết rất có chiều sâu.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0946.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0954.mp3",
         "videoWritingUrl": null,
         "orderIndex": 18
       },
       {
-        "vocabId": 947,
+        "vocabId": 955,
         "hanzi": "同事",
         "pinyin": "tóngshì",
         "pinyinRaw": "tongshi",
@@ -43308,12 +43308,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "我和部门里的几位同事相处得非常融洽愉快。",
         "exampleTranslation": "Tôi và vài đồng nghiệp trong bộ phận sống chan hòa hòa thuận với nhau rất vui vẻ.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0947.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0955.mp3",
         "videoWritingUrl": null,
         "orderIndex": 19
       },
       {
-        "vocabId": 948,
+        "vocabId": 956,
         "hanzi": "同意",
         "pinyin": "tóngyì",
         "pinyinRaw": "tongyi",
@@ -43323,7 +43323,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "经过充分讨论，大家一致同意采纳这个创新方案。",
         "exampleTranslation": "Sau khi thảo luận kỹ lưỡng, mọi người nhất trí đồng ý tiếp thu phương án đổi mới này.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0948.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0956.mp3",
         "videoWritingUrl": null,
         "orderIndex": 20
       }
@@ -43343,7 +43343,7 @@ export const SEED_LESSONS = [
     "updatedAt": "2026-08-02T10:30:00Z",
     "vocabularies": [
       {
-        "vocabId": 949,
+        "vocabId": 957,
         "hanzi": "头发",
         "pinyin": "tóufa",
         "pinyinRaw": "toufa",
@@ -43353,12 +43353,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "她留着一头乌黑柔顺的长头发，显得格外温婉。",
         "exampleTranslation": "Cô ấy để một mái tóc dài đen nhánh mềm mượt, trông đặc biệt dịu dàng đằm thắm.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0949.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0957.mp3",
         "videoWritingUrl": null,
         "orderIndex": 1
       },
       {
-        "vocabId": 950,
+        "vocabId": 958,
         "hanzi": "突然",
         "pinyin": "tūrán",
         "pinyinRaw": "turan",
@@ -43368,7 +43368,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "刚才还是晴空万里，突然间就下起了瓢泼大雨。",
         "exampleTranslation": "Vừa nãy trời còn trong xanh vạn dặm, bỗng chốc đã đổ cơn mưa như trút nước.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0950.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0958.mp3",
         "videoWritingUrl": null,
         "orderIndex": 2
       },
@@ -43388,7 +43388,7 @@ export const SEED_LESSONS = [
         "orderIndex": 3
       },
       {
-        "vocabId": 951,
+        "vocabId": 959,
         "hanzi": "腿",
         "pinyin": "tuǐ",
         "pinyinRaw": "tui",
@@ -43398,12 +43398,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "踢足球时不慎拉伤了腿部肌肉，需要好好静养。",
         "exampleTranslation": "Khi đá bóng không may bị căng cơ chân, cần tĩnh dưỡng nghỉ ngơi cẩn thận.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0951.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0959.mp3",
         "videoWritingUrl": null,
         "orderIndex": 4
       },
       {
-        "vocabId": 952,
+        "vocabId": 960,
         "hanzi": "外地",
         "pinyin": "wàidì",
         "pinyinRaw": "waidi",
@@ -43413,12 +43413,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "许多来自外地的游客趁着黄金周假期来北京观光。",
         "exampleTranslation": "Rất nhiều du khách đến từ nơi khác tranh thủ kỳ nghỉ tuần lễ vàng đến Bắc Kinh tham quan.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0952.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0960.mp3",
         "videoWritingUrl": null,
         "orderIndex": 5
       },
       {
-        "vocabId": 953,
+        "vocabId": 961,
         "hanzi": "外卖",
         "pinyin": "wàimài",
         "pinyinRaw": "waimai",
@@ -43428,7 +43428,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "下班晚了不想做饭，点一份热乎乎的外卖很方便。",
         "exampleTranslation": "Tan sở muộn không muốn nấu cơm, gọi một suất đồ ăn giao tận nơi nóng hổi rất tiện.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0953.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0961.mp3",
         "videoWritingUrl": null,
         "orderIndex": 6
       },
@@ -43448,7 +43448,7 @@ export const SEED_LESSONS = [
         "orderIndex": 7
       },
       {
-        "vocabId": 954,
+        "vocabId": 962,
         "hanzi": "完成",
         "pinyin": "wánchéng",
         "pinyinRaw": "wancheng",
@@ -43458,12 +43458,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "我们团队在截止日期前保质保量地完成了整个项目。",
         "exampleTranslation": "Nhóm chúng tôi trước thời hạn chót đã hoàn thành toàn bộ dự án đảm bảo chất lượng và số lượng.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0954.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0962.mp3",
         "videoWritingUrl": null,
         "orderIndex": 8
       },
       {
-        "vocabId": 955,
+        "vocabId": 963,
         "hanzi": "碗",
         "pinyin": "wǎn",
         "pinyinRaw": "wan",
@@ -43473,12 +43473,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "妈妈在厨房里盛了一碗热气腾腾的鸡汤端给我。",
         "exampleTranslation": "Mẹ múc một bát canh gà bốc khói nghi ngút trong bếp bưng cho tôi.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0955.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0963.mp3",
         "videoWritingUrl": null,
         "orderIndex": 9
       },
       {
-        "vocabId": 956,
+        "vocabId": 964,
         "hanzi": "晚点",
         "pinyin": "wǎndiǎn",
         "pinyinRaw": "wandian",
@@ -43488,12 +43488,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "由于暴风雪天气影响，多趟北上的列车出现晚点。",
         "exampleTranslation": "Do ảnh hưởng của thời tiết bão tuyết, nhiều chuyến tàu chạy về phía bắc đã bị trễ giờ.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0956.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0964.mp3",
         "videoWritingUrl": null,
         "orderIndex": 10
       },
       {
-        "vocabId": 957,
+        "vocabId": 965,
         "hanzi": "晚会",
         "pinyin": "wǎnhuì",
         "pinyinRaw": "wanhui",
@@ -43503,12 +43503,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "学校举行的新春迎新晚会节目精彩纷呈引人入胜。",
         "exampleTranslation": "Đêm dạ hội đón mừng năm mới do trường tổ chức các tiết mục vô cùng đặc sắc cuốn hút.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0957.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0965.mp3",
         "videoWritingUrl": null,
         "orderIndex": 11
       },
       {
-        "vocabId": 958,
+        "vocabId": 966,
         "hanzi": "网球",
         "pinyin": "wǎngqiú",
         "pinyinRaw": "wangqiu",
@@ -43518,12 +43518,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "他每个周末都约上朋友去体育馆打两小时网球。",
         "exampleTranslation": "Cứ mỗi cuối tuần anh ấy đều hẹn bạn bè đến nhà thi đấu chơi quần vợt hai tiếng.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0958.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0966.mp3",
         "videoWritingUrl": null,
         "orderIndex": 12
       },
       {
-        "vocabId": 959,
+        "vocabId": 967,
         "hanzi": "网站",
         "pinyin": "wǎngzhàn",
         "pinyinRaw": "wangzhan",
@@ -43533,7 +43533,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "欢迎访问我们学校官方网站查询最新招生简章。",
         "exampleTranslation": "Hoan nghênh truy cập trang web chính thức của trường chúng tôi để tra cứu thông báo tuyển sinh mới nhất.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0959.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0967.mp3",
         "videoWritingUrl": null,
         "orderIndex": 13
       },
@@ -43553,7 +43553,7 @@ export const SEED_LESSONS = [
         "orderIndex": 14
       },
       {
-        "vocabId": 960,
+        "vocabId": 968,
         "hanzi": "为",
         "pinyin": "wèi",
         "pinyinRaw": "wei",
@@ -43563,12 +43563,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "大家都在为实现中华民族的伟大复兴而努力奋斗。",
         "exampleTranslation": "Mọi người đều đang vì mục tiêu phấn đấu thực hiện sự phục hưng vĩ đại của dân tộc.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0960.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0968.mp3",
         "videoWritingUrl": null,
         "orderIndex": 15
       },
       {
-        "vocabId": 961,
+        "vocabId": 969,
         "hanzi": "为了",
         "pinyin": "wèile",
         "pinyinRaw": "weile",
@@ -43578,12 +43578,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "为了能够顺利通过汉语水平考试，他每天刻苦练习听力。",
         "exampleTranslation": "Để có thể vượt qua kỳ thi năng lực tiếng Trung một cách thuận lợi, anh ấy mỗi ngày khổ luyện nghe.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0961.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0969.mp3",
         "videoWritingUrl": null,
         "orderIndex": 16
       },
       {
-        "vocabId": 962,
+        "vocabId": 970,
         "hanzi": "卫生间",
         "pinyin": "wèishēngjiān",
         "pinyinRaw": "weishengjian",
@@ -43593,12 +43593,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "请问图书馆二楼的卫生间应该往哪个方向走？",
         "exampleTranslation": "Xin hỏi nhà vệ sinh ở tầng hai thư viện nên đi theo hướng nào?",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0962.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0970.mp3",
         "videoWritingUrl": null,
         "orderIndex": 17
       },
       {
-        "vocabId": 963,
+        "vocabId": 971,
         "hanzi": "文化",
         "pinyin": "wénhuà",
         "pinyinRaw": "wenhua",
@@ -43608,12 +43608,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "博大精深的中华传统文化吸引了世界各地的汉学爱好者。",
         "exampleTranslation": "Văn hóa truyền thống Trung Hoa sâu rộng uyên bác đã thu hút những người yêu thích Hán học khắp nơi trên thế giới.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0963.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0971.mp3",
         "videoWritingUrl": null,
         "orderIndex": 18
       },
       {
-        "vocabId": 964,
+        "vocabId": 972,
         "hanzi": "屋子",
         "pinyin": "wūzi",
         "pinyinRaw": "wuzi",
@@ -43623,7 +43623,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "阳光洒进这间整洁宽敞的屋子里，让人倍感温馨。",
         "exampleTranslation": "Ánh nắng chan hòa rọi vào căn phòng sạch sẽ rộng rãi này, khiến lòng người thêm ấm áp.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0964.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0972.mp3",
         "videoWritingUrl": null,
         "orderIndex": 19
       },
@@ -43658,7 +43658,7 @@ export const SEED_LESSONS = [
     "updatedAt": "2026-08-02T10:30:00Z",
     "vocabularies": [
       {
-        "vocabId": 965,
+        "vocabId": 973,
         "hanzi": "西北",
         "pinyin": "xīběi",
         "pinyinRaw": "xibei",
@@ -43668,12 +43668,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "中国西北地区有着雄浑辽阔的大漠戈壁风光。",
         "exampleTranslation": "Vùng tây bắc Trung Quốc có phong cảnh sa mạc sa mạc đá mênh mông hùng vĩ.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0965.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0973.mp3",
         "videoWritingUrl": null,
         "orderIndex": 1
       },
       {
-        "vocabId": 966,
+        "vocabId": 974,
         "hanzi": "西方",
         "pinyin": "xīfāng",
         "pinyinRaw": "xifang",
@@ -43683,12 +43683,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "中西方文化交流与对话促进了不同文明之间的互鉴。",
         "exampleTranslation": "Giao lưu và đối thoại văn hóa giữa Trung Hoa và phương Tây đã thúc đẩy sự học hỏi lẫn nhau giữa các nền văn minh.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0966.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0974.mp3",
         "videoWritingUrl": null,
         "orderIndex": 2
       },
       {
-        "vocabId": 967,
+        "vocabId": 975,
         "hanzi": "西瓜",
         "pinyin": "xīguā",
         "pinyinRaw": "xigua",
@@ -43698,12 +43698,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "炎炎酷暑夏日里，切开一个冰镇西瓜格外清甜解暑。",
         "exampleTranslation": "Trong ngày hè nắng nóng gay gắt, bổ một quả dưa hấu ướp lạnh đặc biệt ngọt mát xua tan cái nóng.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0967.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0975.mp3",
         "videoWritingUrl": null,
         "orderIndex": 3
       },
       {
-        "vocabId": 968,
+        "vocabId": 976,
         "hanzi": "西南",
         "pinyin": "xīnán",
         "pinyinRaw": "xinan",
@@ -43713,12 +43713,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "中国西南的云南省素有彩云之南和动植物王国的美誉。",
         "exampleTranslation": "Tỉnh Vân Nam ở vùng tây nam Trung Quốc vốn có danh xưng miền nam mây ngũ sắc và vương quốc động thực vật.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0968.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0976.mp3",
         "videoWritingUrl": null,
         "orderIndex": 4
       },
       {
-        "vocabId": 969,
+        "vocabId": 977,
         "hanzi": "习惯",
         "pinyin": "xíguàn",
         "pinyinRaw": "xiguan",
@@ -43728,12 +43728,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "养成每天坚持晨读的好习惯将让人终身受益无穷。",
         "exampleTranslation": "Rèn luyện thói quen tốt kiên trì đọc sách buổi sáng mỗi ngày sẽ khiến con người ta được hưởng lợi vô cùng suốt đời.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0969.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0977.mp3",
         "videoWritingUrl": null,
         "orderIndex": 5
       },
       {
-        "vocabId": 970,
+        "vocabId": 978,
         "hanzi": "喜爱",
         "pinyin": "xǐ’ài",
         "pinyinRaw": "xiai",
@@ -43743,12 +43743,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "这首经典的中国民间乐曲深受各年龄段群众的喜爱。",
         "exampleTranslation": "Khúc nhạc dân gian Trung Hoa kinh điển này được quần chúng ở mọi lứa tuổi vô cùng mến chuộng.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0970.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0978.mp3",
         "videoWritingUrl": null,
         "orderIndex": 6
       },
       {
-        "vocabId": 971,
+        "vocabId": 979,
         "hanzi": "洗衣机",
         "pinyin": "xǐyījī",
         "pinyinRaw": "xiyiji",
@@ -43758,12 +43758,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "全自动滚筒洗衣机的普及彻底解放了人们的双手。",
         "exampleTranslation": "Sự phổ cập của máy giặt lồng ngang hoàn toàn tự động đã giải phóng hoàn toàn đôi bàn tay con người.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0971.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0979.mp3",
         "videoWritingUrl": null,
         "orderIndex": 7
       },
       {
-        "vocabId": 972,
+        "vocabId": 980,
         "hanzi": "洗澡",
         "pinyin": "xǐzǎo",
         "pinyinRaw": "xizao",
@@ -43773,12 +43773,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "每天晚上睡前洗澡是个好习惯。",
         "exampleTranslation": "Mỗi tối tắm trước khi đi ngủ là một thói quen tốt.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0972.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0980.mp3",
         "videoWritingUrl": null,
         "orderIndex": 8
       },
       {
-        "vocabId": 973,
+        "vocabId": 981,
         "hanzi": "夏天",
         "pinyin": "xiàtiān",
         "pinyinRaw": "xiatian",
@@ -43788,7 +43788,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "夏天池塘里荷花盛开，粉红翠绿相映成趣美不胜收。",
         "exampleTranslation": "Mùa hè hoa sen trong đầm nở rộ, hồng thắm xanh tươi hòa quyện tạo nên cảnh đẹp khó tả.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0973.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0981.mp3",
         "videoWritingUrl": null,
         "orderIndex": 9
       },
@@ -43808,7 +43808,7 @@ export const SEED_LESSONS = [
         "orderIndex": 10
       },
       {
-        "vocabId": 974,
+        "vocabId": 982,
         "hanzi": "香蕉",
         "pinyin": "xiāngjiāo",
         "pinyinRaw": "xiangjiao",
@@ -43818,12 +43818,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "香蕉富含丰富的钾元素，是运动后补充能量的理想水果。",
         "exampleTranslation": "Quả chuối giàu nguyên tố kali phong phú, là loại hoa quả lý tưởng để bổ sung năng lượng sau vận động.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0974.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0982.mp3",
         "videoWritingUrl": null,
         "orderIndex": 11
       },
       {
-        "vocabId": 975,
+        "vocabId": 983,
         "hanzi": "相信",
         "pinyin": "xiāngxìn",
         "pinyinRaw": "xiangxin",
@@ -43833,12 +43833,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "我相信只要坚持努力，就一定能成功。",
         "exampleTranslation": "Tôi tin rằng chỉ cần kiên trì nỗ lực thì nhất định sẽ thành công.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0975.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0983.mp3",
         "videoWritingUrl": null,
         "orderIndex": 12
       },
       {
-        "vocabId": 976,
+        "vocabId": 984,
         "hanzi": "箱子",
         "pinyin": "xiāngzi",
         "pinyinRaw": "xiangzi",
@@ -43848,12 +43848,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "出发远行前，他将随身换洗衣物整齐地装入旅行箱子里。",
         "exampleTranslation": "Trước khi lên đường đi xa, anh ấy xếp gọn quần áo thay thường ngày vào trong chiếc vali du lịch.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0976.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0984.mp3",
         "videoWritingUrl": null,
         "orderIndex": 13
       },
       {
-        "vocabId": 977,
+        "vocabId": 985,
         "hanzi": "向",
         "pinyin": "xiàng",
         "pinyinRaw": "xiang",
@@ -43863,12 +43863,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "清晨的向日葵迎着冉冉升起的红日，始终坚定地向着阳光。",
         "exampleTranslation": "Hoa hướng dương buổi sớm đón vầng thái dương đỏ rực đang mọc, luôn hướng về phía ánh sáng một cách kiên định.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0977.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0985.mp3",
         "videoWritingUrl": null,
         "orderIndex": 14
       },
       {
-        "vocabId": 978,
+        "vocabId": 986,
         "hanzi": "像",
         "pinyin": "xiàng",
         "pinyinRaw": "xiang",
@@ -43878,12 +43878,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "那双清澈明亮的大眼睛像天空中闪烁的晶莹繁星。",
         "exampleTranslation": "Đôi mắt to tròn trong sáng long lanh kia giống như muôn ngàn vì sao lấp lánh trên bầu trời.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0978.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0986.mp3",
         "videoWritingUrl": null,
         "orderIndex": 15
       },
       {
-        "vocabId": 979,
+        "vocabId": 987,
         "hanzi": "相机",
         "pinyin": "xiàngjī",
         "pinyinRaw": "xiangji",
@@ -43893,12 +43893,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "摄影师拿起专业单反相机，精准记录下飞鸟展翅的瞬间。",
         "exampleTranslation": "Nhiếp ảnh gia cầm máy ảnh chuyên dụng lên, ghi lại chuẩn xác khoảnh khắc đàn chim sải cánh tung bay.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0979.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0987.mp3",
         "videoWritingUrl": null,
         "orderIndex": 16
       },
       {
-        "vocabId": 980,
+        "vocabId": 988,
         "hanzi": "小区",
         "pinyin": "xiǎoqū",
         "pinyinRaw": "xiaoqu",
@@ -43908,12 +43908,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "我们小区的绿化覆盖率很高，生活配套设施也一应俱全。",
         "exampleTranslation": "Tỷ lệ phủ xanh của khu dân cư chúng tôi rất cao, các tiện ích sinh hoạt cũng đầy đủ vẹn toàn.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0980.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0988.mp3",
         "videoWritingUrl": null,
         "orderIndex": 17
       },
       {
-        "vocabId": 981,
+        "vocabId": 989,
         "hanzi": "小心",
         "pinyin": "xiǎoxīn",
         "pinyinRaw": "xiaoxin",
@@ -43923,12 +43923,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "下雨天路面湿滑，骑车出行一定要格外小心慢行。",
         "exampleTranslation": "Ngày mưa mặt đường trơn ướt, đi xe ra ngoài nhất định phải đặc biệt cẩn thận đi chậm rãi.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0981.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0989.mp3",
         "videoWritingUrl": null,
         "orderIndex": 18
       },
       {
-        "vocabId": 982,
+        "vocabId": 990,
         "hanzi": "校园",
         "pinyin": "xiàoyuán",
         "pinyinRaw": "xiaoyuan",
@@ -43938,12 +43938,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "秋日的大学校园里落叶金黄，处处洋溢着青春的书卷气。",
         "exampleTranslation": "Khuôn viên trường đại học ngày thu lá vàng rơi ngập lối, khắp nơi tràn ngập hơi thở thanh xuân đèn sách.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0982.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0990.mp3",
         "videoWritingUrl": null,
         "orderIndex": 19
       },
       {
-        "vocabId": 983,
+        "vocabId": 991,
         "hanzi": "校长",
         "pinyin": "xiàozhǎng",
         "pinyinRaw": "xiaozhang",
@@ -43953,7 +43953,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "在毕业典礼上，德高望重的老校长发表了语重心长的讲话。",
         "exampleTranslation": "Trong lễ tốt nghiệp, vị hiệu trưởng già đức cao vọng trọng đã phát biểu những lời dặn dò thấm thía sâu sắc.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0983.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0991.mp3",
         "videoWritingUrl": null,
         "orderIndex": 20
       }
@@ -43973,7 +43973,7 @@ export const SEED_LESSONS = [
     "updatedAt": "2026-08-02T10:30:00Z",
     "vocabularies": [
       {
-        "vocabId": 984,
+        "vocabId": 992,
         "hanzi": "鞋",
         "pinyin": "xié",
         "pinyinRaw": "xie",
@@ -43983,12 +43983,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "登山一定要穿一双防滑耐磨透气性能良好的专业徒步鞋。",
         "exampleTranslation": "Đi leo núi nhất định phải đi một đôi giày đi bộ chuyên dụng chống trượt mài mòn và thoáng khí tốt.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0984.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0992.mp3",
         "videoWritingUrl": null,
         "orderIndex": 1
       },
       {
-        "vocabId": 985,
+        "vocabId": 993,
         "hanzi": "心里",
         "pinyin": "xīnlǐ",
         "pinyinRaw": "xinli",
@@ -43998,7 +43998,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "听到远方家人的平安报信，他悬在心里的石头终于落地了。",
         "exampleTranslation": "Nghe được tin báo bình an của người thân ở phương xa, tảng đá đè nặng trong lòng anh ấy rốt cuộc đã rơi xuống.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0985.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0993.mp3",
         "videoWritingUrl": null,
         "orderIndex": 2
       },
@@ -44018,7 +44018,7 @@ export const SEED_LESSONS = [
         "orderIndex": 3
       },
       {
-        "vocabId": 986,
+        "vocabId": 994,
         "hanzi": "新闻",
         "pinyin": "xīnwén",
         "pinyinRaw": "xinwen",
@@ -44028,12 +44028,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "爷爷每天傍晚准时收看中央电视台的新闻联播节目。",
         "exampleTranslation": "Ông nội mỗi buổi chập tối đều đúng giờ đón xem chương trình thời sự của đài truyền hình trung ương.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0986.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0994.mp3",
         "videoWritingUrl": null,
         "orderIndex": 4
       },
       {
-        "vocabId": 987,
+        "vocabId": 995,
         "hanzi": "新鲜",
         "pinyin": "xīnxiān",
         "pinyinRaw": "xinxian",
@@ -44043,12 +44043,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "清晨早市上的各种蔬菜瓜果都带着露珠，格外新鲜脆甜。",
         "exampleTranslation": "Các loại rau củ hoa quả ở chợ sớm ban mai còn đọng giọt sương, đặc biệt tươi ngon giòn ngọt.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0987.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0995.mp3",
         "videoWritingUrl": null,
         "orderIndex": 5
       },
       {
-        "vocabId": 988,
+        "vocabId": 996,
         "hanzi": "信",
         "pinyin": "xìn",
         "pinyinRaw": "xin",
@@ -44058,12 +44058,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "今天下午我收到了朋友寄来的一封信。",
         "exampleTranslation": "Chiều nay tôi đã nhận được một bức thư bạn gửi đến.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0988.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0996.mp3",
         "videoWritingUrl": null,
         "orderIndex": 6
       },
       {
-        "vocabId": 989,
+        "vocabId": 997,
         "hanzi": "信用卡",
         "pinyin": "xìnyòngkǎ",
         "pinyinRaw": "xinyongka",
@@ -44073,7 +44073,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "使用信用卡进行境外刷卡消费时要注意保管好个人信息安全。",
         "exampleTranslation": "Khi dùng thẻ tín dụng quẹt thẻ chi tiêu ở nước ngoài cần chú ý bảo vệ an toàn thông tin cá nhân.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0989.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0997.mp3",
         "videoWritingUrl": null,
         "orderIndex": 7
       },
@@ -44093,7 +44093,7 @@ export const SEED_LESSONS = [
         "orderIndex": 8
       },
       {
-        "vocabId": 990,
+        "vocabId": 998,
         "hanzi": "行李",
         "pinyin": "xíngli",
         "pinyinRaw": "xingli",
@@ -44103,12 +44103,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "乘坐高铁时，大件随身行李请有序存放在车厢连接处的行李架上。",
         "exampleTranslation": "Khi đi tàu cao tốc, hành lý cồng kềnh mang theo xin hãy để ngay ngắn trên giá để hành lý ở nơi nối toa.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0990.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0998.mp3",
         "videoWritingUrl": null,
         "orderIndex": 9
       },
       {
-        "vocabId": 991,
+        "vocabId": 999,
         "hanzi": "兴趣",
         "pinyin": "xìngqù",
         "pinyinRaw": "xingqu",
@@ -44118,12 +44118,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "培养对中华书法艺术的浓厚兴趣能够修身养性陶冶情操。",
         "exampleTranslation": "Bồi dưỡng niềm hứng thú sâu sắc với nghệ thuật thư pháp Trung Hoa có thể tu dưỡng tâm tính nuôi dưỡng tâm hồn.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0991.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_0999.mp3",
         "videoWritingUrl": null,
         "orderIndex": 10
       },
       {
-        "vocabId": 992,
+        "vocabId": 1000,
         "hanzi": "休假",
         "pinyin": "xiūjià",
         "pinyinRaw": "xiujia",
@@ -44133,12 +44133,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "忙碌了整整一年，他终于批准休假一周陪伴年迈的父母。",
         "exampleTranslation": "Sau một năm ròng rã bận rộn, anh ấy rốt cuộc đã được duyệt nghỉ phép một tuần để ở bên cha mẹ già.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0992.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1000.mp3",
         "videoWritingUrl": null,
         "orderIndex": 11
       },
       {
-        "vocabId": 993,
+        "vocabId": 1001,
         "hanzi": "需要",
         "pinyin": "xūyào",
         "pinyinRaw": "xuyao",
@@ -44148,12 +44148,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "完成这项复杂的科研攻关任务需要团队全体成员精诚协作。",
         "exampleTranslation": "Hoàn thành nhiệm vụ nghiên cứu khoa học phức tạp này đòi hỏi toàn thể thành viên trong đội ngũ phải hợp tác chân thành.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0993.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1001.mp3",
         "videoWritingUrl": null,
         "orderIndex": 12
       },
       {
-        "vocabId": 994,
+        "vocabId": 1002,
         "hanzi": "选",
         "pinyin": "xuǎn",
         "pinyinRaw": "xuan",
@@ -44163,12 +44163,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "大学期间选一门自己真正热爱又具有发展前景的专业至关重要。",
         "exampleTranslation": "Thời đại học chọn được một chuyên ngành bản thân thực sự đam mê lại có triển vọng phát triển là vô cùng quan trọng.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0994.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1002.mp3",
         "videoWritingUrl": null,
         "orderIndex": 13
       },
       {
-        "vocabId": 995,
+        "vocabId": 1003,
         "hanzi": "选择",
         "pinyin": "xuǎnzé",
         "pinyinRaw": "xuanze",
@@ -44178,12 +44178,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "面对人生的重大十字路口，我们要坚定而清醒地做出正确选择。",
         "exampleTranslation": "Đối diện với ngã rẽ lớn của cuộc đời, chúng ta cần phải kiên định và tỉnh táo đưa ra sự lựa chọn đúng đắn.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0995.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1003.mp3",
         "videoWritingUrl": null,
         "orderIndex": 14
       },
       {
-        "vocabId": 996,
+        "vocabId": 1004,
         "hanzi": "学期",
         "pinyin": "xuéqī",
         "pinyinRaw": "xueqi",
@@ -44193,12 +44193,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "新学期伊始，同学们个个精神饱满地投入到紧张的学习中。",
         "exampleTranslation": "Học kỳ mới vừa bắt đầu, các bạn học sinh ai nấy đều tràn đầy tinh thần hăng say bước vào học tập khẩn trương.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0996.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1004.mp3",
         "videoWritingUrl": null,
         "orderIndex": 15
       },
       {
-        "vocabId": 997,
+        "vocabId": 1005,
         "hanzi": "牙",
         "pinyin": "yá",
         "pinyinRaw": "ya",
@@ -44208,12 +44208,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "保持牙齿健康整洁，每天坚持饭后漱口和正确早晚刷牙。",
         "exampleTranslation": "Giữ hàm răng khỏe mạnh sạch sẽ, mỗi ngày kiên trì súc miệng sau bữa ăn và đánh răng đúng cách sáng tối.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0997.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1005.mp3",
         "videoWritingUrl": null,
         "orderIndex": 16
       },
       {
-        "vocabId": 998,
+        "vocabId": 1006,
         "hanzi": "牙刷",
         "pinyin": "yáshuā",
         "pinyinRaw": "yashua",
@@ -44223,12 +44223,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "牙医建议大家每隔两到三个月就应该定期更换一次新牙刷。",
         "exampleTranslation": "Bác sĩ nha khoa khuyên mọi người cứ cách hai đến ba tháng nên định kỳ thay bàn chải đánh răng mới một lần.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0998.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1006.mp3",
         "videoWritingUrl": null,
         "orderIndex": 17
       },
       {
-        "vocabId": 999,
+        "vocabId": 1007,
         "hanzi": "羊",
         "pinyin": "yáng",
         "pinyinRaw": "yang",
@@ -44238,12 +44238,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "茫茫草原上一群洁白如雪的绵羊正在悠闲惬意地啃食青草。",
         "exampleTranslation": "Trên thảo nguyên bao la một đàn cừu trắng muốt như tuyết đang thong thả gặm cỏ xanh.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_0999.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1007.mp3",
         "videoWritingUrl": null,
         "orderIndex": 18
       },
       {
-        "vocabId": 1000,
+        "vocabId": 1008,
         "hanzi": "养",
         "pinyin": "yǎng",
         "pinyinRaw": "yang",
@@ -44253,12 +44253,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "退休后的爷爷在宽敞的后院里养了许多名贵兰花和观赏金鱼。",
         "exampleTranslation": "Sau khi nghỉ hưu ông nội nuôi trồng rất nhiều hoa lan quý và cá vàng ngắm cảnh ở khoảng sân sau rộng rãi.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1000.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1008.mp3",
         "videoWritingUrl": null,
         "orderIndex": 19
       },
       {
-        "vocabId": 1001,
+        "vocabId": 1009,
         "hanzi": "要求",
         "pinyin": "yāoqiú",
         "pinyinRaw": "yaoqiu",
@@ -44268,7 +44268,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "老师对我们的汉字笔画书写顺序和字形结构有着严格要求。",
         "exampleTranslation": "Thầy giáo có yêu cầu rất khắt khe đối với thứ tự nét bút chữ Hán và kết cấu nét chữ của chúng tôi.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1001.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1009.mp3",
         "videoWritingUrl": null,
         "orderIndex": 20
       }
@@ -44303,7 +44303,7 @@ export const SEED_LESSONS = [
         "orderIndex": 1
       },
       {
-        "vocabId": 1002,
+        "vocabId": 1010,
         "hanzi": "一定",
         "pinyin": "yídìng",
         "pinyinRaw": "yiding",
@@ -44313,12 +44313,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "只要持之以恒坚持不懈，你的中文水平就一定能取得飞跃进步。",
         "exampleTranslation": "Chỉ cần kiên trì không ngừng nghỉ thì trình độ tiếng Trung của bạn nhất định sẽ đạt được bước tiến nhảy vọt.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1002.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1010.mp3",
         "videoWritingUrl": null,
         "orderIndex": 2
       },
       {
-        "vocabId": 1003,
+        "vocabId": 1011,
         "hanzi": "一共",
         "pinyin": "yígòng",
         "pinyinRaw": "yigong",
@@ -44328,7 +44328,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "我们班级一共有来自十几个国家的三十五名留学生。",
         "exampleTranslation": "Lớp học của chúng tôi tổng cộng có ba mươi lăm bạn du học sinh đến từ mười mấy quốc gia.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1003.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1011.mp3",
         "videoWritingUrl": null,
         "orderIndex": 3
       },
@@ -44363,7 +44363,7 @@ export const SEED_LESSONS = [
         "orderIndex": 5
       },
       {
-        "vocabId": 1004,
+        "vocabId": 1012,
         "hanzi": "以后",
         "pinyin": "yǐhòu",
         "pinyinRaw": "yihou",
@@ -44373,12 +44373,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "经过这次教训以后，他做事变得格外沉着稳重与严谨细致。",
         "exampleTranslation": "Sau bài học lần này về sau anh ấy làm việc trở nên đặc biệt điềm tĩnh chín chắn và cẩn trọng tỉ mỉ.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1004.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1012.mp3",
         "videoWritingUrl": null,
         "orderIndex": 6
       },
       {
-        "vocabId": 1005,
+        "vocabId": 1013,
         "hanzi": "以前",
         "pinyin": "yǐqián",
         "pinyinRaw": "yiqian",
@@ -44388,12 +44388,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "在来中国留学以前，他已经自学了半年的基础汉语语音知识。",
         "exampleTranslation": "Trước khi đến Trung Quốc du học, anh ấy đã tự học kiến thức ngữ âm tiếng Trung cơ bản nửa năm.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1005.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1013.mp3",
         "videoWritingUrl": null,
         "orderIndex": 7
       },
       {
-        "vocabId": 1006,
+        "vocabId": 1014,
         "hanzi": "以上",
         "pinyin": "yǐshàng",
         "pinyinRaw": "yishang",
@@ -44403,12 +44403,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "凡是汉语水平考试成绩在两百分以上的考生均可申请该项奖学金。",
         "exampleTranslation": "Phàm là thí sinh có điểm thi năng lực Hán ngữ đạt từ hai trăm điểm trở lên đều có thể nộp đơn xin học bổng này.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1006.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1014.mp3",
         "videoWritingUrl": null,
         "orderIndex": 8
       },
       {
-        "vocabId": 1007,
+        "vocabId": 1015,
         "hanzi": "以外",
         "pinyin": "yǐwài",
         "pinyinRaw": "yiwai",
@@ -44418,12 +44418,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "除了上课学习专业知识以外，他还积极参加各类社会公益实践活动。",
         "exampleTranslation": "Ngoài việc lên lớp học kiến thức chuyên ngành ra, anh ấy còn tích cực tham gia các hoạt động thực tiễn công ích xã hội.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1007.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1015.mp3",
         "videoWritingUrl": null,
         "orderIndex": 9
       },
       {
-        "vocabId": 1008,
+        "vocabId": 1016,
         "hanzi": "以为",
         "pinyin": "yǐwéi",
         "pinyinRaw": "yiwei",
@@ -44433,12 +44433,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "我原本以为今天下午会下大雨，没想到天空反而放晴万里无云。",
         "exampleTranslation": "Tôi vốn tưởng rằng chiều nay sẽ mưa to, không ngờ trời lại hửng nắng trong xanh không một gợn mây.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1008.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1016.mp3",
         "videoWritingUrl": null,
         "orderIndex": 10
       },
       {
-        "vocabId": 1009,
+        "vocabId": 1017,
         "hanzi": "以下",
         "pinyin": "yǐxià",
         "pinyinRaw": "yixia",
@@ -44448,12 +44448,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "气温骤降到零摄氏度以下时，道路表面极易结冰造成行车困难。",
         "exampleTranslation": "Khi nhiệt độ giảm đột ngột xuống dưới không độ C, mặt đường rất dễ đóng băng gây khó khăn cho việc đi lại.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1009.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1017.mp3",
         "videoWritingUrl": null,
         "orderIndex": 11
       },
       {
-        "vocabId": 1010,
+        "vocabId": 1018,
         "hanzi": "一般",
         "pinyin": "yìbān",
         "pinyinRaw": "yiban",
@@ -44463,7 +44463,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "在日常生活中，他一般习惯在早晨六点准时起床晨练跑步。",
         "exampleTranslation": "Trong đời sống thường ngày, anh ấy thông thường có thói quen thức dậy đúng sáu giờ sáng để tập thể dục chạy bộ.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1010.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1018.mp3",
         "videoWritingUrl": null,
         "orderIndex": 12
       },
@@ -44483,7 +44483,7 @@ export const SEED_LESSONS = [
         "orderIndex": 13
       },
       {
-        "vocabId": 1011,
+        "vocabId": 1019,
         "hanzi": "一直",
         "pinyin": "yìzhí",
         "pinyinRaw": "yizhi",
@@ -44493,12 +44493,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "从校门口沿着这条林荫大道一直往前走，右手边就是图书馆。",
         "exampleTranslation": "Từ cổng trường dọc theo đại lộ rợp bóng cây này đi thẳng mãi về phía trước, bên tay phải chính là thư viện.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1011.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1019.mp3",
         "videoWritingUrl": null,
         "orderIndex": 14
       },
       {
-        "vocabId": 1012,
+        "vocabId": 1020,
         "hanzi": "音乐",
         "pinyin": "yīnyuè",
         "pinyinRaw": "yinyue",
@@ -44508,12 +44508,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "闲暇时听听古典音乐能让人心情放松。",
         "exampleTranslation": "Lúc rảnh rỗi nghe chút âm nhạc cổ điển có thể giúp tâm trạng thư giãn.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1012.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1020.mp3",
         "videoWritingUrl": null,
         "orderIndex": 15
       },
       {
-        "vocabId": 1013,
+        "vocabId": 1021,
         "hanzi": "银行",
         "pinyin": "yínháng",
         "pinyinRaw": "yinhang",
@@ -44523,12 +44523,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "他今天下午请假去中国银行办理跨境学费转账业务。",
         "exampleTranslation": "Chiều nay anh ấy xin nghỉ phép đến Ngân hàng Trung Quốc làm thủ tục chuyển khoản học phí qua biên giới.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1013.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1021.mp3",
         "videoWritingUrl": null,
         "orderIndex": 16
       },
       {
-        "vocabId": 1014,
+        "vocabId": 1022,
         "hanzi": "银行卡",
         "pinyin": "yínhángkǎ",
         "pinyinRaw": "yinhangka",
@@ -44538,12 +44538,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "在自动取款机办理业务后，请务必随手收好您的银行卡与凭条。",
         "exampleTranslation": "Sau khi giao dịch tại cây ATM, xin nhất thiết hãy cất kỹ thẻ ngân hàng và biên lai của bạn.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1014.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1022.mp3",
         "videoWritingUrl": null,
         "orderIndex": 17
       },
       {
-        "vocabId": 1015,
+        "vocabId": 1023,
         "hanzi": "饮料",
         "pinyin": "yǐnliào",
         "pinyinRaw": "yinliao",
@@ -44553,12 +44553,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "夏天冷饮店里供应着各种用新鲜水果鲜榨的冰镇健康饮料。",
         "exampleTranslation": "Mùa hè tiệm đồ uống lạnh cung cấp nhiều loại đồ uống giải khát mát lạnh bổ dưỡng ép từ hoa quả tươi.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1015.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1023.mp3",
         "videoWritingUrl": null,
         "orderIndex": 18
       },
       {
-        "vocabId": 1016,
+        "vocabId": 1024,
         "hanzi": "应该",
         "pinyin": "yīnggāi",
         "pinyinRaw": "yinggai",
@@ -44568,12 +44568,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "遇到不懂的语法难点时，大家应该主动大胆向授课老师请教。",
         "exampleTranslation": "Khi gặp điểm khó ngữ pháp không hiểu, mọi người nên chủ động mạnh dạn thỉnh giáo thầy cô giảng dạy.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1016.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1024.mp3",
         "videoWritingUrl": null,
         "orderIndex": 19
       },
       {
-        "vocabId": 1017,
+        "vocabId": 1025,
         "hanzi": "影响",
         "pinyin": "yǐngxiǎng",
         "pinyinRaw": "yingxiang",
@@ -44583,7 +44583,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "在公共阅览室里大声接打电话会严重影响其他读者的安静阅读。",
         "exampleTranslation": "Nói chuyện điện thoại to trong phòng đọc công cộng sẽ ảnh hưởng nghiêm trọng đến việc đọc sách yên tĩnh của người khác.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1017.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1025.mp3",
         "videoWritingUrl": null,
         "orderIndex": 20
       }
@@ -44618,7 +44618,7 @@ export const SEED_LESSONS = [
         "orderIndex": 1
       },
       {
-        "vocabId": 1018,
+        "vocabId": 1026,
         "hanzi": "邮件",
         "pinyin": "yóujiàn",
         "pinyinRaw": "youjian",
@@ -44628,12 +44628,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "他刚刚收到了海外合作大学招生办发来的一封正式录取确认邮件。",
         "exampleTranslation": "Anh ấy vừa nhận được một bức thư điện tử xác nhận trúng tuyển chính thức từ phòng tuyển sinh đại học đối tác ở nước ngoài.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1018.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1026.mp3",
         "videoWritingUrl": null,
         "orderIndex": 2
       },
       {
-        "vocabId": 1019,
+        "vocabId": 1027,
         "hanzi": "游客",
         "pinyin": "yóukè",
         "pinyinRaw": "youke",
@@ -44643,12 +44643,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "每年金秋十月都有成千上万的中外游客登临北京八达岭长城。",
         "exampleTranslation": "Hằng năm vào tháng mười mùa thu vàng có hàng vạn du khách trong và ngoài nước bước lên Vạn Lý Trường Thành Bát Đạt Lĩnh Bắc Kinh.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1019.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1027.mp3",
         "videoWritingUrl": null,
         "orderIndex": 3
       },
       {
-        "vocabId": 1020,
+        "vocabId": 1028,
         "hanzi": "游戏",
         "pinyin": "yóuxì",
         "pinyinRaw": "youxi",
@@ -44658,12 +44658,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "适度玩益智类电子游戏可以开发智力，但沉迷其中则有害学业。",
         "exampleTranslation": "Chơi game điện tử rèn luyện trí tuệ ở mức độ vừa phải có thể phát triển trí thông minh, nhưng sa đà vào đó sẽ hại cho việc học hành.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1020.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1028.mp3",
         "videoWritingUrl": null,
         "orderIndex": 4
       },
       {
-        "vocabId": 1021,
+        "vocabId": 1029,
         "hanzi": "邮箱",
         "pinyin": "yóuxiāng",
         "pinyinRaw": "youxiang",
@@ -44673,12 +44673,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "请在个人简历里务必准确注明您经常查阅的常用电子邮箱地址。",
         "exampleTranslation": "Trong sơ yếu lý lịch cá nhân xin nhất định phải ghi rõ ràng địa chỉ hộp thư điện tử thường dùng của bạn.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1021.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1029.mp3",
         "videoWritingUrl": null,
         "orderIndex": 5
       },
       {
-        "vocabId": 1022,
+        "vocabId": 1030,
         "hanzi": "有关",
         "pinyin": "yǒuguān",
         "pinyinRaw": "youguan",
@@ -44688,7 +44688,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "有关这次学术研讨会的具体日程安排已经正式公布在学院网上了。",
         "exampleTranslation": "Lịch trình cụ thể có liên quan đến hội thảo học thuật lần này đã được đăng tải chính thức trên trang mạng của học viện.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1022.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1030.mp3",
         "videoWritingUrl": null,
         "orderIndex": 6
       },
@@ -44723,7 +44723,7 @@ export const SEED_LESSONS = [
         "orderIndex": 8
       },
       {
-        "vocabId": 1023,
+        "vocabId": 1031,
         "hanzi": "又",
         "pinyin": "yòu",
         "pinyinRaw": "you",
@@ -44733,12 +44733,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "今天下午天空中下着蒙蒙细雨，刮着微风，天气又清凉又舒适。",
         "exampleTranslation": "Chiều nay trên trời đổ cơn mưa phùn lất phất, gió thoảng hiu hiu, thời tiết vừa mát mẻ lại vừa dễ chịu.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1023.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1031.mp3",
         "videoWritingUrl": null,
         "orderIndex": 9
       },
       {
-        "vocabId": 1024,
+        "vocabId": 1032,
         "hanzi": "羽毛球",
         "pinyin": "yǔmáoqiú",
         "pinyinRaw": "yumaoqiu",
@@ -44748,12 +44748,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "下课后体育馆的羽毛球场地总是非常抢手，挤满了运动健儿。",
         "exampleTranslation": "Sau giờ tan học sân cầu lông của nhà thi đấu lúc nào cũng rất đắt khách, chật kín các bạn trẻ yêu thể thao.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1024.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1032.mp3",
         "videoWritingUrl": null,
         "orderIndex": 10
       },
       {
-        "vocabId": 1025,
+        "vocabId": 1033,
         "hanzi": "语言",
         "pinyin": "yǔyán",
         "pinyinRaw": "yuyan",
@@ -44763,12 +44763,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "语言不仅是人类交流思想的工具，更是了解一个民族文化的桥梁。",
         "exampleTranslation": "Ngôn ngữ không chỉ là công cụ giao lưu tư tưởng của con người mà còn là chiếc cầu nối để tìm hiểu văn hóa của một dân tộc.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1025.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1033.mp3",
         "videoWritingUrl": null,
         "orderIndex": 11
       },
       {
-        "vocabId": 1026,
+        "vocabId": 1034,
         "hanzi": "雨衣",
         "pinyin": "yǔyī",
         "pinyinRaw": "yuyi",
@@ -44778,12 +44778,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "夏日骑电动车出门前一定要在车座底下备上一件轻便的雨衣。",
         "exampleTranslation": "Mùa hè trước khi đi xe máy điện ra ngoài nhất định phải để sẵn một chiếc áo mưa tiện lợi dưới cốp xe.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1026.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1034.mp3",
         "videoWritingUrl": null,
         "orderIndex": 12
       },
       {
-        "vocabId": 1027,
+        "vocabId": 1035,
         "hanzi": "遇到",
         "pinyin": "yùdào",
         "pinyinRaw": "yudao",
@@ -44793,12 +44793,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "在异国求学道路上难免会遇到挫折，关键在于拥有克服困难的勇气。",
         "exampleTranslation": "Trên con đường du học nơi đất khách khó lòng tránh khỏi gặp phải trắc trở, điều cốt lõi nằm ở lòng dũng cảm vượt qua khó khăn.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1027.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1035.mp3",
         "videoWritingUrl": null,
         "orderIndex": 13
       },
       {
-        "vocabId": 1028,
+        "vocabId": 1036,
         "hanzi": "遇见",
         "pinyin": "yùjiàn",
         "pinyinRaw": "yujian",
@@ -44808,12 +44808,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "今天在大学图书馆借书处偶然遇见了多年未曾联络的中学校友。",
         "exampleTranslation": "Hôm nay ở nơi mượn sách thư viện đại học tình cờ bắt gặp người bạn học thời cấp hai nhiều năm chưa từng liên lạc.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1028.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1036.mp3",
         "videoWritingUrl": null,
         "orderIndex": 14
       },
       {
-        "vocabId": 1029,
+        "vocabId": 1037,
         "hanzi": "园",
         "pinyin": "yuán",
         "pinyinRaw": "yuan",
@@ -44823,12 +44823,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "周末漫步在环境清幽的城市公园里，让人心旷神怡扫尽一周疲惫。",
         "exampleTranslation": "Cuối tuần dạo bước trong công viên thành phố môi trường thanh tĩnh làm lòng người sảng khoái xua tan mệt mỏi cả tuần.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1029.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1037.mp3",
         "videoWritingUrl": null,
         "orderIndex": 15
       },
       {
-        "vocabId": 1030,
+        "vocabId": 1038,
         "hanzi": "员",
         "pinyin": "yuán",
         "pinyinRaw": "yuan",
@@ -44838,12 +44838,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "全体工作人员以热情高度的责任心为本次大赛提供了周密保障。",
         "exampleTranslation": "Toàn thể nhân viên làm việc với tinh thần trách nhiệm nhiệt tình cao đã đem đến sự bảo đảm chu đáo cho cuộc thi lần này.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1030.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1038.mp3",
         "videoWritingUrl": null,
         "orderIndex": 16
       },
       {
-        "vocabId": 1031,
+        "vocabId": 1039,
         "hanzi": "愿意",
         "pinyin": "yuànyì",
         "pinyinRaw": "yuanyi",
@@ -44853,12 +44853,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "如果有机会去偏远贫困山区支教，我非常愿意奉献自己的一份力量。",
         "exampleTranslation": "Nếu có cơ hội được đến miền núi xa xôi nghèo khó dạy học tình nguyện, tôi rất sẵn lòng cống hiến một phần sức lực của mình.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1031.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1039.mp3",
         "videoWritingUrl": null,
         "orderIndex": 17
       },
       {
-        "vocabId": 1032,
+        "vocabId": 1040,
         "hanzi": "越",
         "pinyin": "yuè",
         "pinyinRaw": "yue",
@@ -44868,12 +44868,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "经过持之以恒的刻苦苦练，他的中文发音咬字越来越地道标准了。",
         "exampleTranslation": "Qua thời gian khổ luyện kiên trì không ngừng, phát âm nhả chữ tiếng Trung của cậu ấy càng ngày càng chuẩn xác tự nhiên.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1032.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1040.mp3",
         "videoWritingUrl": null,
         "orderIndex": 18
       },
       {
-        "vocabId": 1033,
+        "vocabId": 1041,
         "hanzi": "月亮",
         "pinyin": "yuèliang",
         "pinyinRaw": "yueliang",
@@ -44883,22 +44883,22 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "八月十五中秋佳节之夜，天空中挂着一轮皎洁如玉的明亮月亮。",
         "exampleTranslation": "Đêm tết Trung thu rằm tháng tám, trên bầu trời treo một vầng trăng sáng vằng vặc trong ngần như ngọc.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1033.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1041.mp3",
         "videoWritingUrl": null,
         "orderIndex": 19
       },
       {
-        "vocabId": 1034,
+        "vocabId": 1042,
         "hanzi": "运动会",
         "pinyin": "yùndònghuì",
         "pinyinRaw": "yundonghui",
         "meaningHanViet": "Vận Động Hội",
-        "meaningVi": "Đại hội thể thao, hội thao",
+        "meaningVi": "Đại hội thể thao; hội thao",
         "hskLevel": 3,
         "hskStandard": "HSK 3.0",
-        "exampleSentence": "在一年一度的春季田径运动会上，运动健儿们顽强拼搏屡创佳绩。",
-        "exampleTranslation": "Tại đại hội thể thao điền kinh mùa xuân thường niên, các vận động viên ngoan cường nỗ lực liên tiếp lập thành tích tốt.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1034.mp3",
+        "exampleSentence": "学校下个月开运动会。",
+        "exampleTranslation": "Trường học tháng sau tổ chức đại hội thể thao.",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1042.mp3",
         "videoWritingUrl": null,
         "orderIndex": 20
       }
@@ -44918,7 +44918,7 @@ export const SEED_LESSONS = [
     "updatedAt": "2026-08-02T10:30:00Z",
     "vocabularies": [
       {
-        "vocabId": 1035,
+        "vocabId": 1043,
         "hanzi": "运动员",
         "pinyin": "yùndòngyuán",
         "pinyinRaw": "yundongyuan",
@@ -44928,12 +44928,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "优秀运动员们在国际赛场上顽强拼搏，为祖国赢得了巨大的荣誉。",
         "exampleTranslation": "Các vận động viên ưu tú kiên cường thi đấu trên đấu trường quốc tế, mang lại vinh quang to lớn cho tổ quốc.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1035.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1043.mp3",
         "videoWritingUrl": null,
         "orderIndex": 1
       },
       {
-        "vocabId": 1036,
+        "vocabId": 1044,
         "hanzi": "咱们",
         "pinyin": "zánmen",
         "pinyinRaw": "zanmen",
@@ -44943,12 +44943,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "既然大家都在这里，咱们就抓紧时间坐下来商量具体分工吧。",
         "exampleTranslation": "Nếu mọi người đều ở đây rồi, chúng mình mau tranh thủ thời gian ngồi lại bàn bạc phân công cụ thể nhé.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1036.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1044.mp3",
         "videoWritingUrl": null,
         "orderIndex": 2
       },
       {
-        "vocabId": 1037,
+        "vocabId": 1045,
         "hanzi": "脏",
         "pinyin": "zāng",
         "pinyinRaw": "zang",
@@ -44958,12 +44958,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "踢完足球回到家后请先把脏衣服换下来放进洗衣篮里。",
         "exampleTranslation": "Đá bóng xong về nhà xin hãy thay bộ quần áo bẩn ra trước rồi để vào giỏ giặt.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1037.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1045.mp3",
         "videoWritingUrl": null,
         "orderIndex": 3
       },
       {
-        "vocabId": 1038,
+        "vocabId": 1046,
         "hanzi": "怎么办",
         "pinyin": "zěnme bàn",
         "pinyinRaw": "zenmeban",
@@ -44973,12 +44973,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "马上就要开始正式演讲了，我的幻灯片突然打不开怎么办？",
         "exampleTranslation": "Sắp bắt đầu bài thuyết trình chính thức rồi, slide của tôi đột nhiên không mở được thì phải làm sao bây giờ?",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1038.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1046.mp3",
         "videoWritingUrl": null,
         "orderIndex": 4
       },
       {
-        "vocabId": 1039,
+        "vocabId": 1047,
         "hanzi": "怎样",
         "pinyin": "zěnyàng",
         "pinyinRaw": "zenyang",
@@ -44988,12 +44988,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "请问我们要怎样才能在短时间内快速提高汉语听力与口语表达？",
         "exampleTranslation": "Xin hỏi chúng ta phải làm thế nào mới có thể nhanh chóng nâng cao kỹ năng nghe và biểu đạt khẩu ngữ tiếng Trung trong thời gian ngắn?",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1039.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1047.mp3",
         "videoWritingUrl": null,
         "orderIndex": 5
       },
       {
-        "vocabId": 1040,
+        "vocabId": 1048,
         "hanzi": "站",
         "pinyin": "zhàn",
         "pinyinRaw": "zhan",
@@ -45003,12 +45003,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "公交车上大家都站着，没有空座位。",
         "exampleTranslation": "Trên xe buýt mọi người đều đứng, không có chỗ ngồi trống.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1040.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1048.mp3",
         "videoWritingUrl": null,
         "orderIndex": 6
       },
       {
-        "vocabId": 1041,
+        "vocabId": 1049,
         "hanzi": "张",
         "pinyin": "zhāng",
         "pinyinRaw": "zhang",
@@ -45018,12 +45018,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "请在桌上铺开一张崭新雪白的宣纸，我们马上要开始练习国画。",
         "exampleTranslation": "Xin hãy trải một tờ giấy xuyến trắng tinh mới lên bàn, chúng ta sắp bắt đầu luyện vẽ tranh thủy mặc.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1041.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1049.mp3",
         "videoWritingUrl": null,
         "orderIndex": 7
       },
       {
-        "vocabId": 1042,
+        "vocabId": 1050,
         "hanzi": "长",
         "pinyin": "zhǎng",
         "pinyinRaw": "zhang",
@@ -45032,13 +45032,13 @@ export const SEED_LESSONS = [
         "hskLevel": 3,
         "hskStandard": "HSK 3.0",
         "exampleSentence": "他长得很高。",
-        "exampleTranslation": "Anh ấy lớn lên rất cao.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1042.mp3",
+        "exampleTranslation": "Anh ấy lớn lên rất cao / dáng người rất cao.",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1050.mp3",
         "videoWritingUrl": null,
         "orderIndex": 8
       },
       {
-        "vocabId": 1043,
+        "vocabId": 1051,
         "hanzi": "着急",
         "pinyin": "zháojí",
         "pinyinRaw": "zhaoji",
@@ -45048,12 +45048,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "快迟到了，他心里感到非常着急。",
         "exampleTranslation": "Sắp muộn rồi, trong lòng anh ấy cảm thấy rất sốt ruột.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1043.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1051.mp3",
         "videoWritingUrl": null,
         "orderIndex": 9
       },
       {
-        "vocabId": 1044,
+        "vocabId": 1052,
         "hanzi": "照",
         "pinyin": "zhào",
         "pinyinRaw": "zhao",
@@ -45063,12 +45063,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "温暖的阳光照在湖面上，风景十分美丽。",
         "exampleTranslation": "Ánh nắng ấm áp chiếu lên mặt hồ, phong cảnh vô cùng đẹp đẽ.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1044.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1052.mp3",
         "videoWritingUrl": null,
         "orderIndex": 10
       },
       {
-        "vocabId": 1045,
+        "vocabId": 1053,
         "hanzi": "照顾",
         "pinyin": "zhàogù",
         "pinyinRaw": "zhaogu",
@@ -45078,12 +45078,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "父母生病住院期间，他请假在医院病床前无微不至地悉心照顾。",
         "exampleTranslation": "Thời gian cha mẹ ốm nằm viện, anh ấy xin nghỉ phép túc trực trước giường bệnh chăm sóc ân cần chu đáo.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1045.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1053.mp3",
         "videoWritingUrl": null,
         "orderIndex": 11
       },
       {
-        "vocabId": 1046,
+        "vocabId": 1054,
         "hanzi": "照片",
         "pinyin": "zhàopiàn",
         "pinyinRaw": "zhaopian",
@@ -45093,12 +45093,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "翻开珍藏多年的毕业纪念相册，一张张泛黄的老照片唤醒了青春。",
         "exampleTranslation": "Lật mở cuốn an-bum kỷ yếu tốt nghiệp trân quý bao năm, từng bức ảnh cũ ố vàng đánh thức cả tuổi thanh xuân.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1046.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1054.mp3",
         "videoWritingUrl": null,
         "orderIndex": 12
       },
       {
-        "vocabId": 1047,
+        "vocabId": 1055,
         "hanzi": "照相",
         "pinyin": "zhàoxiàng",
         "pinyinRaw": "zhaoxiang",
@@ -45108,12 +45108,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "来到雄伟壮丽的长城烽火台前，游客们纷纷拿出手机照相留念。",
         "exampleTranslation": "Đến trước đài phong hỏa Vạn Lý Trường Thành hùng vĩ tráng lệ, du khách rủ nhau lấy điện thoại ra chụp ảnh kỷ niệm.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1047.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1055.mp3",
         "videoWritingUrl": null,
         "orderIndex": 13
       },
       {
-        "vocabId": 1048,
+        "vocabId": 1056,
         "hanzi": "直到",
         "pinyin": "zhídào",
         "pinyinRaw": "zhidao",
@@ -45123,12 +45123,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "大家在图书馆自习室里全神贯注地复习，直到深夜闭馆才依依不舍离开。",
         "exampleTranslation": "Mọi người chăm chú ôn tập trong phòng tự học thư viện, mãi đến khi thư viện đóng cửa lúc đêm muộn mới lưu luyến ra về.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1048.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1056.mp3",
         "videoWritingUrl": null,
         "orderIndex": 14
       },
       {
-        "vocabId": 1049,
+        "vocabId": 1057,
         "hanzi": "只",
         "pinyin": "zhǐ",
         "pinyinRaw": "zhi",
@@ -45138,12 +45138,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "虽然路途遥远坎坷，但只要心中有梦，我们就只管风雨兼程。",
         "exampleTranslation": "Tuy đường sá xa xôi gập ghềnh nhưng chỉ cần trong lòng có ước mơ, chúng ta chỉ việc vững bước dãi gió dầm mưa.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1049.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1057.mp3",
         "videoWritingUrl": null,
         "orderIndex": 15
       },
       {
-        "vocabId": 1050,
+        "vocabId": 1058,
         "hanzi": "纸",
         "pinyin": "zhǐ",
         "pinyinRaw": "zhi",
@@ -45153,12 +45153,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "请大家在分发下来的空白答题纸上规范端正地写下答案。",
         "exampleTranslation": "Xin mọi người hãy viết câu trả lời ngay ngắn chuẩn mực lên tờ giấy làm bài thi trắng được phát.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1050.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1058.mp3",
         "videoWritingUrl": null,
         "orderIndex": 16
       },
       {
-        "vocabId": 1051,
+        "vocabId": 1059,
         "hanzi": "只能",
         "pinyin": "zhǐ néng",
         "pinyinRaw": "zhineng",
@@ -45168,12 +45168,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "因为突降大暴雨航班被迫取消，我们只能改乘次日早晨的高铁。",
         "exampleTranslation": "Do mưa dông bất ngờ chuyến bay bị buộc hủy bỏ, chúng tôi đành phải đổi sang đi tàu cao tốc sáng hôm sau.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1051.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1059.mp3",
         "videoWritingUrl": null,
         "orderIndex": 17
       },
       {
-        "vocabId": 1052,
+        "vocabId": 1060,
         "hanzi": "只是",
         "pinyin": "zhǐshì",
         "pinyinRaw": "zhishi",
@@ -45183,12 +45183,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "他平时性格内向不善言辞，并不是骄傲自满，只是有些腼腆害羞。",
         "exampleTranslation": "Anh ấy thường ngày tính tình hướng nội ít nói, không phải là kiêu ngạo tự mãn mà chỉ là có phần e thẹn ngượng ngùng.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1052.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1060.mp3",
         "videoWritingUrl": null,
         "orderIndex": 18
       },
       {
-        "vocabId": 1053,
+        "vocabId": 1061,
         "hanzi": "只要",
         "pinyin": "zhǐyào",
         "pinyinRaw": "zhiyao",
@@ -45198,12 +45198,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "世上无难事，只要肯登攀，任何艰难险阻都终将被勇敢者踩在脚下。",
         "exampleTranslation": "Trên đời không việc gì khó chỉ cần chịu khó trèo lên, bất kỳ chông gai hiểm trở nào rốt cuộc cũng bị người dũng cảm giẫm dưới chân.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1053.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1061.mp3",
         "videoWritingUrl": null,
         "orderIndex": 19
       },
       {
-        "vocabId": 1054,
+        "vocabId": 1062,
         "hanzi": "只有",
         "pinyin": "zhǐyǒu",
         "pinyinRaw": "zhiyou",
@@ -45213,7 +45213,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "只有脚踏实地持之以恒地刻苦努力，才能最终攀登科学事业的高峰。",
         "exampleTranslation": "Chỉ có vững bước kiên trì nỗ lực hết mình mới có thể leo lên đến đỉnh cao của sự nghiệp khoa học.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1054.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1062.mp3",
         "videoWritingUrl": null,
         "orderIndex": 20
       }
@@ -45263,7 +45263,7 @@ export const SEED_LESSONS = [
         "orderIndex": 2
       },
       {
-        "vocabId": 1055,
+        "vocabId": 1063,
         "hanzi": "终于",
         "pinyin": "zhōngyú",
         "pinyinRaw": "zhongyu",
@@ -45273,12 +45273,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "经过无数次推倒重来的艰辛探索，科研团队终于攻克了这项技术难题。",
         "exampleTranslation": "Trải qua vô số lần tìm tòi gian khổ làm đi làm lại, nhóm nghiên cứu khoa học cuối cùng đã khắc phục được cửa ải công nghệ khó khăn này.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1055.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1063.mp3",
         "videoWritingUrl": null,
         "orderIndex": 3
       },
       {
-        "vocabId": 1056,
+        "vocabId": 1064,
         "hanzi": "种",
         "pinyin": "zhǒng",
         "pinyinRaw": "zhong",
@@ -45288,7 +45288,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "植物园里温室精心培育着数百种形态各异的珍稀热带植物。",
         "exampleTranslation": "Trong nhà kính vườn thực vật chăm bẵm tỉ mỉ hàng trăm loài thực vật nhiệt đới quý hiếm hình thái muôn vẻ.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1056.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1064.mp3",
         "videoWritingUrl": null,
         "orderIndex": 4
       },
@@ -45308,7 +45308,7 @@ export const SEED_LESSONS = [
         "orderIndex": 5
       },
       {
-        "vocabId": 1057,
+        "vocabId": 1065,
         "hanzi": "周末",
         "pinyin": "zhōumò",
         "pinyinRaw": "zhoumo",
@@ -45318,12 +45318,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "周末闲暇时我喜欢约上两三好友一起去郊外露营亲近大自然。",
         "exampleTranslation": "Dịp rảnh rỗi cuối tuần tôi thích rủ hai ba người bạn thân cùng nhau đi cắm trại ngoại ô hòa mình với thiên nhiên.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1057.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1065.mp3",
         "videoWritingUrl": null,
         "orderIndex": 6
       },
       {
-        "vocabId": 1058,
+        "vocabId": 1066,
         "hanzi": "主要",
         "pinyin": "zhǔyào",
         "pinyinRaw": "zhuyao",
@@ -45333,12 +45333,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "这篇学术论文的主要学术贡献在于提出了全新的数据分析计算模型。",
         "exampleTranslation": "Đóng góp học thuật chủ yếu của luận văn này nằm ở việc đề xuất một mô hình tính toán phân tích dữ liệu hoàn toàn mới.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1058.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1066.mp3",
         "videoWritingUrl": null,
         "orderIndex": 7
       },
       {
-        "vocabId": 1059,
+        "vocabId": 1067,
         "hanzi": "注意",
         "pinyin": "zhùyì",
         "pinyinRaw": "zhuyi",
@@ -45348,12 +45348,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "在实验室进行化学实验操作时，请大家严格注意人身防范安全。",
         "exampleTranslation": "Khi thực hiện thao tác thí nghiệm hóa học trong phòng thí nghiệm, xin mọi người nghiêm ngặt chú ý an toàn phòng hộ bản thân.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1059.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1067.mp3",
         "videoWritingUrl": null,
         "orderIndex": 8
       },
       {
-        "vocabId": 1060,
+        "vocabId": 1068,
         "hanzi": "住院",
         "pinyin": "zhùyuàn",
         "pinyinRaw": "zhuyuan",
@@ -45363,12 +45363,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "爷爷因突发急性胃肠炎在医院住院观察治疗了一个星期。",
         "exampleTranslation": "Ông nội vì viêm dạ dày ruột cấp tính đột phát đã nằm viện theo dõi điều trị một tuần lễ.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1060.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1068.mp3",
         "videoWritingUrl": null,
         "orderIndex": 9
       },
       {
-        "vocabId": 1061,
+        "vocabId": 1069,
         "hanzi": "字典",
         "pinyin": "zìdiǎn",
         "pinyinRaw": "zidian",
@@ -45378,12 +45378,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "遇到笔画复杂生僻的罕见汉字，查阅新华字典是最权威的选择。",
         "exampleTranslation": "Khi gặp chữ Hán hiếm nét bút phức tạp, tra cứu Tân Hoa Tự Điển là sự lựa chọn uy tín nhất.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1061.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1069.mp3",
         "videoWritingUrl": null,
         "orderIndex": 10
       },
       {
-        "vocabId": 1062,
+        "vocabId": 1070,
         "hanzi": "自行车",
         "pinyin": "zìxíngchē",
         "pinyinRaw": "zixingche",
@@ -45393,7 +45393,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "早晨骑自行车穿行在绿意盎然的校园林荫道上格外惬意清爽。",
         "exampleTranslation": "Buổi sáng đạp xe đạp qua lại trên con đường rợp bóng cây xanh mướt của khuôn viên trường thật là thư thái thanh lành.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1062.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1070.mp3",
         "videoWritingUrl": null,
         "orderIndex": 11
       },
@@ -45413,7 +45413,7 @@ export const SEED_LESSONS = [
         "orderIndex": 12
       },
       {
-        "vocabId": 1063,
+        "vocabId": 1071,
         "hanzi": "总",
         "pinyin": "zǒng",
         "pinyinRaw": "zong",
@@ -45423,12 +45423,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "他在日常团队合作中总是任劳任怨，深受领导和同事们的信任。",
         "exampleTranslation": "Trong công việc hợp tác nhóm thường ngày anh ấy luôn không nề hà khó nhọc, được lãnh đạo và đồng nghiệp vô cùng tín nhiệm.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1063.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1071.mp3",
         "videoWritingUrl": null,
         "orderIndex": 13
       },
       {
-        "vocabId": 1064,
+        "vocabId": 1072,
         "hanzi": "总是",
         "pinyin": "zǒngshì",
         "pinyinRaw": "zongshi",
@@ -45438,12 +45438,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "妈妈总是无微不至地关心着在外地求学的儿女的健康与饮食。",
         "exampleTranslation": "Mẹ lúc nào cũng ân cần chu đáo quan tâm đến sức khỏe và bữa ăn của con cái đang học tập nơi phương xa.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1064.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1072.mp3",
         "videoWritingUrl": null,
         "orderIndex": 14
       },
       {
-        "vocabId": 1065,
+        "vocabId": 1073,
         "hanzi": "嘴",
         "pinyin": "zuǐ",
         "pinyinRaw": "zui",
@@ -45453,7 +45453,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "感冒发烧咳嗽的时候要多补充温水，保持嘴唇与咽喉部湿润。",
         "exampleTranslation": "Khi bị cảm cúm sốt ho cần uống bổ sung nhiều nước ấm để giữ cho môi và cổ họng luôn ẩm mượt.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1065.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1073.mp3",
         "videoWritingUrl": null,
         "orderIndex": 15
       },
@@ -45488,7 +45488,7 @@ export const SEED_LESSONS = [
         "orderIndex": 17
       },
       {
-        "vocabId": 1066,
+        "vocabId": 1074,
         "hanzi": "最近",
         "pinyin": "zuìjìn",
         "pinyinRaw": "zuijin",
@@ -45498,12 +45498,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "最近天气气温变化剧烈无常，出门时请大家随时注意添衣保暖。",
         "exampleTranslation": "Thời tiết dạo này nhiệt độ thay đổi thất thường dữ dội, khi ra ngoài xin mọi người chú ý mặc thêm áo ấm.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1066.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1074.mp3",
         "videoWritingUrl": null,
         "orderIndex": 18
       },
       {
-        "vocabId": 1067,
+        "vocabId": 1075,
         "hanzi": "做客",
         "pinyin": "zuòkè",
         "pinyinRaw": "zuoke",
@@ -45513,12 +45513,12 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "周末王老师热情邀请我们几位外国留学生去他家里做客品尝家常菜。",
         "exampleTranslation": "Cuối tuần thầy Vương nhiệt tình mời mấy bạn lưu học sinh nước ngoài chúng tôi đến nhà chơi làm khách nếm món ăn gia đình.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1067.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1075.mp3",
         "videoWritingUrl": null,
         "orderIndex": 19
       },
       {
-        "vocabId": 1068,
+        "vocabId": 1076,
         "hanzi": "作业",
         "pinyin": "zuòyè",
         "pinyinRaw": "zuoye",
@@ -45528,7 +45528,7 @@ export const SEED_LESSONS = [
         "hskStandard": "HSK 3.0",
         "exampleSentence": "每天放学回到家后，他总是自觉认真地先独立完成各科家庭作业。",
         "exampleTranslation": "Mỗi ngày tan trường về đến nhà, cậu ấy luôn tự giác chăm chỉ hoàn thành độc lập bài tập về nhà các môn trước.",
-        "audioUrl": "/assets/audio/vocabulary/vocab_1068.mp3",
+        "audioUrl": "/assets/audio/vocabulary/vocab_1076.mp3",
         "videoWritingUrl": null,
         "orderIndex": 20
       }
@@ -45632,7 +45632,8 @@ export const SEED_SRS_CARDS = [
     "easeFactor": 2.5,
     "intervalDays": 0,
     "nextReviewAt": "2026-10-14T08:19:04.413Z",
-    "isNew": false
+    "isNew": false,
+    "vocabId": 296
   },
   {
     "cardId": 2,
@@ -45651,7 +45652,8 @@ export const SEED_SRS_CARDS = [
     "easeFactor": 2.5,
     "intervalDays": 0,
     "nextReviewAt": "2026-10-14T08:19:04.413Z",
-    "isNew": false
+    "isNew": false,
+    "vocabId": 505
   },
   {
     "cardId": 3,
@@ -45670,7 +45672,8 @@ export const SEED_SRS_CARDS = [
     "easeFactor": 2.5,
     "intervalDays": 1,
     "nextReviewAt": "2026-11-20T08:00:00.000Z",
-    "isNew": false
+    "isNew": false,
+    "vocabId": 410
   },
   {
     "cardId": 4,
@@ -45689,7 +45692,8 @@ export const SEED_SRS_CARDS = [
     "easeFactor": 2.5,
     "intervalDays": 1,
     "nextReviewAt": "2026-11-20T08:00:00.000Z",
-    "isNew": false
+    "isNew": false,
+    "vocabId": 32
   },
   {
     "cardId": 5,
@@ -45708,7 +45712,8 @@ export const SEED_SRS_CARDS = [
     "easeFactor": 2.5,
     "intervalDays": 1,
     "nextReviewAt": "2026-11-20T08:00:00.000Z",
-    "isNew": false
+    "isNew": false,
+    "vocabId": 93
   },
   {
     "cardId": 6,
@@ -45727,18 +45732,19 @@ export const SEED_SRS_CARDS = [
     "easeFactor": 2.5,
     "intervalDays": 1,
     "nextReviewAt": "2026-11-20T08:00:00.000Z",
-    "isNew": false
+    "isNew": false,
+    "vocabId": 233
   },
   {
     "cardId": 7,
     "itemType": "VOCABULARY",
-    "itemId": 515,
+    "itemId": 523,
     "lessonId": 1,
     "cardType": "READING",
     "hanzi": "没事",
-    "pinyin": "fēnzhōng",
-    "meaningVi": "Phút (thời gian)",
-    "meaningHanViet": "Phân Chung",
+    "pinyin": "méishì",
+    "meaningVi": "Không có gì, không sao, rảnh rỗi",
+    "meaningHanViet": "Một Sự",
     "exampleSentence": "别担心，我没事。",
     "exampleTranslation": "Đừng lo, tôi không sao.",
     "strokeCount": 4,
@@ -45746,7 +45752,8 @@ export const SEED_SRS_CARDS = [
     "easeFactor": 2.5,
     "intervalDays": 1,
     "nextReviewAt": "2026-11-20T08:00:00.000Z",
-    "isNew": false
+    "isNew": false,
+    "vocabId": 523
   },
   {
     "cardId": 8,
@@ -45765,18 +45772,19 @@ export const SEED_SRS_CARDS = [
     "easeFactor": 2.5,
     "intervalDays": 1,
     "nextReviewAt": "2026-11-20T08:00:00.000Z",
-    "isNew": false
+    "isNew": false,
+    "vocabId": 454
   },
   {
     "cardId": 9,
     "itemType": "VOCABULARY",
-    "itemId": 518,
+    "itemId": 526,
     "lessonId": 1,
     "cardType": "READING",
     "hanzi": "你好",
-    "pinyin": "jiàn",
-    "meaningVi": "Chiếc, cái, kiện (lượng từ cho quần áo, sự việc)",
-    "meaningHanViet": "Kiện",
+    "pinyin": "nǐ hǎo",
+    "meaningVi": "Xin chào",
+    "meaningHanViet": "Nễ Hảo",
     "exampleSentence": "你好！很高兴认识你。",
     "exampleTranslation": "Xin chào! Rất vui được quen biết bạn.",
     "strokeCount": 4,
@@ -45784,7 +45792,8 @@ export const SEED_SRS_CARDS = [
     "easeFactor": 2.5,
     "intervalDays": 1,
     "nextReviewAt": "2026-11-20T08:00:00.000Z",
-    "isNew": false
+    "isNew": false,
+    "vocabId": 526
   },
   {
     "cardId": 10,
@@ -45792,7 +45801,7 @@ export const SEED_SRS_CARDS = [
     "itemId": 274,
     "lessonId": 1,
     "cardType": "READING",
-    "hanzi": "您好",
+    "hanzi": "您",
     "pinyin": "nín",
     "meaningVi": "Ngài, ông, bà (đại từ nhân xưng kính trọng)",
     "meaningHanViet": "Nâm",
@@ -45803,7 +45812,8 @@ export const SEED_SRS_CARDS = [
     "easeFactor": 2.5,
     "intervalDays": 1,
     "nextReviewAt": "2026-11-20T08:00:00.000Z",
-    "isNew": false
+    "isNew": false,
+    "vocabId": 274
   },
   {
     "cardId": 11,
@@ -45822,7 +45832,8 @@ export const SEED_SRS_CARDS = [
     "easeFactor": 2.5,
     "intervalDays": 1,
     "nextReviewAt": "2026-11-20T08:00:00.000Z",
-    "isNew": false
+    "isNew": false,
+    "vocabId": 379
   },
   {
     "cardId": 12,
@@ -45841,7 +45852,8 @@ export const SEED_SRS_CARDS = [
     "easeFactor": 2.5,
     "intervalDays": 1,
     "nextReviewAt": "2026-11-20T08:00:00.000Z",
-    "isNew": false
+    "isNew": false,
+    "vocabId": 349
   },
   {
     "cardId": 13,
@@ -45860,7 +45872,8 @@ export const SEED_SRS_CARDS = [
     "easeFactor": 2.5,
     "intervalDays": 1,
     "nextReviewAt": "2026-11-20T08:00:00.000Z",
-    "isNew": false
+    "isNew": false,
+    "vocabId": 350
   },
   {
     "cardId": 14,
@@ -45879,7 +45892,8 @@ export const SEED_SRS_CARDS = [
     "easeFactor": 2.5,
     "intervalDays": 1,
     "nextReviewAt": "2026-11-20T08:00:00.000Z",
-    "isNew": false
+    "isNew": false,
+    "vocabId": 173
   },
   {
     "cardId": 15,
@@ -45898,7 +45912,8 @@ export const SEED_SRS_CARDS = [
     "easeFactor": 2.5,
     "intervalDays": 1,
     "nextReviewAt": "2026-11-20T08:00:00.000Z",
-    "isNew": false
+    "isNew": false,
+    "vocabId": 306
   },
   {
     "cardId": 16,
@@ -45917,7 +45932,8 @@ export const SEED_SRS_CARDS = [
     "easeFactor": 2.5,
     "intervalDays": 1,
     "nextReviewAt": "2026-11-20T08:00:00.000Z",
-    "isNew": false
+    "isNew": false,
+    "vocabId": 138
   },
   {
     "cardId": 17,
@@ -45936,7 +45952,8 @@ export const SEED_SRS_CARDS = [
     "easeFactor": 2.5,
     "intervalDays": 1,
     "nextReviewAt": "2026-11-20T08:00:00.000Z",
-    "isNew": false
+    "isNew": false,
+    "vocabId": 92
   },
   {
     "cardId": 18,
@@ -45955,7 +45972,8 @@ export const SEED_SRS_CARDS = [
     "easeFactor": 2.5,
     "intervalDays": 1,
     "nextReviewAt": "2026-11-20T08:00:00.000Z",
-    "isNew": false
+    "isNew": false,
+    "vocabId": 34
   },
   {
     "cardId": 19,
@@ -45974,7 +45992,8 @@ export const SEED_SRS_CARDS = [
     "easeFactor": 2.5,
     "intervalDays": 1,
     "nextReviewAt": "2026-11-20T08:00:00.000Z",
-    "isNew": false
+    "isNew": false,
+    "vocabId": 416
   },
   {
     "cardId": 20,
@@ -45993,7 +46012,8 @@ export const SEED_SRS_CARDS = [
     "easeFactor": 2.5,
     "intervalDays": 1,
     "nextReviewAt": "2026-11-20T08:00:00.000Z",
-    "isNew": false
+    "isNew": false,
+    "vocabId": 5
   },
   {
     "cardId": 21,
@@ -46087,12 +46107,6 @@ export const SEED_SRS_CARDS = [
   }
 ];
 
-/**
- * =============================================================================
- * AUTHORITATIVE KANGXI PRIMARY RADICAL LOOKUP (CHAR_TO_RADICAL_MAP)
- * Maps individual Chinese characters to their primary canonical Kangxi Radical ID (1..214).
- * =============================================================================
- */
 export const CHAR_TO_RADICAL_MAP = Object.freeze({
   "一": 1,
   "七": 1,

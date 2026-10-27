@@ -83,9 +83,35 @@ Tài liệu này là **Bản kiểm kê và đặc tả cấu trúc giáo trình
 | 42 | HSK3-17 | **HSK 3 - Bài 17: Nhà cửa, Trang phục & Cảm nhận** | Bất động sản, phong cách thời trang, thị hiếu | 20 |
 | 43 | HSK3-18 | **HSK 3 - Bài 18: Toán học, Đồng nghiệp & Đồng ý** | Tính toán số liệu, đàm phán hợp đồng, thống nhất ý kiến | 20 |
 | 44 | HSK3-19 | **HSK 3 - Bài 19: Thư viện, Văn hóa & Căn phòng** | Không gian đọc, di sản văn hóa, bài trí phòng ở | 20 |
-| 45 | HSK3-20 | **HSK 2 - Bài 20: Phương hướng, Thói quen & Hiệu trưởng** | Lãnh đạo trường học, rèn luyện thói quen tốt | 20 |
+| 45 | HSK3-20 | **HSK 3 - Bài 20: Phương hướng, Thói quen & Hiệu trưởng** | Lãnh đạo trường học, rèn luyện thói quen tốt | 20 |
 | 46 | HSK3-21 | **HSK 3 - Bài 21: Tin tức, Báo chí & Yêu cầu** | Điểm tin thời sự, xuất bản truyền thông, yêu cầu kỹ thuật | 20 |
 | 47 | HSK3-22 | **HSK 3 - Bài 22: Trang sách, Tương đồng & Ảnh hưởng** | Trích dẫn tài liệu, so sánh văn phong, tác động xã hội | 20 |
 | 48 | HSK3-23 | **HSK 3 - Bài 23: Trò chơi, Hòm thư & Đại hội thể thao** | Giải trí điện tử, thư tín quốc tế, thi đấu Olympic | 20 |
 | 49 | HSK3-24 | **HSK 3 - Bài 24: Vận động viên, Vệ sinh & Điều kiện** | Vận động viên chuyên nghiệp, điều kiện sinh hoạt | 20 |
 | 50 | HSK3-25 | **HSK 3 - Bài 25: Trọng tâm, Cuộc sống & Bài tập về nhà** | Đúc kết trọng tâm ngữ pháp, bài tập tổng kết | 20 |
+
+---
+
+## 3. Kiến Trúc Đồng Bộ Từ Vựng Giáo Trình & Vòng Đời Lặp Lại Đa Chu Kỳ (Multi-Pass SRS)
+
+### 3.1. Đồng Bộ Hoá Tuyệt Đối 50 Bài Học Với Migration `V30`
+Toàn bộ 50 bài học (1.000 từ vựng giáo trình) được đồng bộ nhất quán 100% giữa 4 phân hệ cốt lõi:
+1. **Cơ sở dữ liệu Backend**: Migration `V30__seed_standardized_curriculum_50_lessons_1000_words.sql`.
+2. **Kho Dữ Liệu Demo Client**: `SEED_LESSONS` và `SEED_SRS_CARDS` trong `frontend/js/api/demo-seed-data.js`.
+3. **Phân Hệ Ôn Tập SRS**: `HSK1_TOPICS`, `HSK2_TOPICS`, `HSK3_TOPICS` trong `frontend/js/pages/srs-review-page.js`.
+4. **Bộ Nhớ Trình Duyệt Học Viên**: `CURRENT_DATASET_VERSION = 11` trong `frontend/js/api/demo-fallback-engine.js` đảm bảo tự động dọn sạch các bản ghi localStorage cũ bị lệch ID.
+
+Hệ thống đã triệt tiêu hoàn toàn **567 trường hợp lệch vocabId** lịch sử (xung đột ID giữa các bài, ví dụ `出租车` ID 504 bị trùng với `哪些`, `大家` ID 505 trùng với `请问`). Giờ đây mỗi từ vựng trên toàn bộ 50 bài đều sở hữu định danh kinh điển (`canonical vocabId`) duy nhất, ngăn chặn triệt để hiện tượng rò rỉ trạng thái đến hạn từ bài này sang bài khác.
+
+### 3.2. Vòng Đời Lặp Lại Đa Chu Kỳ Khi Học Lại Bài (Lần 3, Lần 4)
+Khi học viên ôn tập hoặc học lại một bài học nhiều lần (Lần 1, Lần 2, Lần 3, Lần 4...):
+- **Lần 1 (Khởi tạo học mới)**: Cả 20 từ vựng được nạp vào phiên. Đánh giá "1 - Học lại" tạo trạng thái quên (`interval = 0`, `repetitions = 0`), tự động xếp lại vào cuối phiên để học ngay (`requeue`) và giữ nguyên trạng thái ĐẾN HẠN trong danh mục. Đánh giá "2..4" tạo khoảng cách ôn tập đầu tiên (`interval = 1 ngày` hoặc 2 phút ở chế độ test).
+- **Lần 2 (Ôn tập sớm / Học lại)**:
+  - Nếu đánh giá "1 - Học lại": Quy tắc SuperMemo SM-2 cho phép ghi nhận Lapse ngay lập tức mà không bị chặn bởi kiểm tra đến hạn, cập nhật chính xác số thẻ đến hạn trong danh mục (ví dụ từ 2 thẻ lên 5 thẻ).
+  - Nếu đánh giá "2..4" khi thẻ chưa đến hạn: Backend phòng thủ chống gian lận/cày điểm với mã phản hồi `409 CONFLICT` ("Thẻ chưa đến hạn ôn tập"). Frontend bắt lỗi 409 an toàn và chuyển tiếp thẻ tiếp theo mà không ghi đè chu kỳ SM-2.
+- **Lần 3 & Lần 4 (Chu kỳ ngắt quãng mở rộng SM-2)**:
+  - Thẻ nhớ thành công lần 1: $I(1) = 1$ ngày.
+  - Thẻ nhớ thành công lần 2: $I(2) = 6$ ngày.
+  - Thẻ nhớ thành công lần 3: $I(3) = \lceil I(2) \times EF \rceil \approx 15$ ngày (với $EF = 2.50$).
+  - Thẻ nhớ thành công lần 4: $I(4) = \lceil I(3) \times EF' \rceil \approx 38$ ngày.
+  - Bất kỳ khi nào ở lần 3 hay lần 4 học viên đánh giá "1 - Học lại", chu kỳ lập tức quay về $I=0$, $repetitions=0$, $EF$ giảm $0.80$, và từ vựng ngay lập tức xuất hiện trong danh mục cần ôn tập hôm nay.
