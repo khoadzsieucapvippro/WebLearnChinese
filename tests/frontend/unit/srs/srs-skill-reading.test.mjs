@@ -627,6 +627,32 @@ describe('SRS Reading Room & AI Assessment Tests', () => {
       assert.strictEqual(controller.dom.readingStateError.classList.contains('d-none'), false);
     });
 
+    test('handleRecordingFinished rejects pure zero silence (muted microphone)', async () => {
+      const controller = new SrsReviewController();
+      controller.dom = {
+        readingStateError: makeEl('div'),
+        readingErrorTitle: makeEl('div'),
+        readingErrorMessage: makeEl('div'),
+        readingErrorAdvice: makeEl('div'),
+        btnReadingNext: makeEl('button')
+      };
+      controller.readingAudioContext = { state: 'running' };
+      controller.readingPeakRms = 0; // Pure digital silence / muted mic
+      controller.readingSpeechFrames = 0;
+
+      let assessCalled = false;
+      controller.assessReadingPronunciation = () => { assessCalled = true; };
+
+      const dummyBlob = { size: 500, type: 'audio/webm' };
+      await controller.handleRecordingFinished(dummyBlob);
+
+      // Server should NOT be called
+      assert.strictEqual(assessCalled, false);
+      // Friendly pedagogical error state should be rendered
+      assert.strictEqual(controller.dom.readingErrorTitle.textContent, 'Không phát hiện thấy tiếng nói');
+      assert.strictEqual(controller.dom.readingStateError.classList.contains('d-none'), false);
+    });
+
     test('cleanUpReadingMedia properly cleans up VAD interval, AudioContext, and resets peak RMS', () => {
       const controller = new SrsReviewController();
       let closedAudioCtx = false;
@@ -651,13 +677,13 @@ describe('SRS Reading Room & AI Assessment Tests', () => {
   });
 
   describe('8. Completed State Action Buttons & Session Progression (Phần D & E)', () => {
-    test('restartCurrentSession triggers startTopicSession when lessonId was completed', () => {
+    test('restartCurrentSession triggers startTopicSession with review action when lessonId was completed', () => {
       const controller = new SrsReviewController();
       controller.activeMode = 'reading';
       controller.syncToolbarUi = () => {};
       controller._lastCompletedSession = {
         lessonId: 5,
-        activeAction: 'all',
+        activeAction: 'continue',
         activeMode: 'reading'
       };
 
@@ -665,14 +691,14 @@ describe('SRS Reading Room & AI Assessment Tests', () => {
       controller.startTopicSession = (topicId, action) => {
         restartCalled = true;
         assert.strictEqual(topicId, 5);
-        assert.strictEqual(action, 'all');
+        assert.strictEqual(action, 'review'); // Must start with review from card 0
       };
 
       controller.restartCurrentSession();
       assert.strictEqual(restartCalled, true);
     });
 
-    test('restartCurrentSession triggers startChapterSession when chapterIdx was completed', () => {
+    test('restartCurrentSession triggers startChapterSession with deck and review action', () => {
       const controller = new SrsReviewController();
       controller.activeMode = 'reading';
       controller.syncToolbarUi = () => {};
@@ -683,16 +709,18 @@ describe('SRS Reading Room & AI Assessment Tests', () => {
       };
 
       let chapterCalled = false;
-      controller.startChapterSession = (idx) => {
+      controller.startChapterSession = (deck, idx, action) => {
         chapterCalled = true;
+        assert.strictEqual(deck, 'radicals50');
         assert.strictEqual(idx, 2);
+        assert.strictEqual(action, 'review');
       };
 
       controller.restartCurrentSession();
       assert.strictEqual(chapterCalled, true);
     });
 
-    test('advanceToNextChapter advances to next topic or displays completion toast', () => {
+    test('advanceToNextChapter advances to next topic with continue action', () => {
       const controller = new SrsReviewController();
       controller.activeMode = 'reading';
       controller.syncToolbarUi = () => {};
@@ -706,10 +734,29 @@ describe('SRS Reading Room & AI Assessment Tests', () => {
       controller.startTopicSession = (topicId, action) => {
         nextTopicCalled = true;
         assert.strictEqual(topicId, 2);
+        assert.strictEqual(action, 'continue');
       };
 
       controller.advanceToNextChapter();
       assert.strictEqual(nextTopicCalled, true);
+      assert.strictEqual(controller.currentChapterIdx, 1);
+    });
+
+    test('startChapterSession handles polymorphic arguments defensively (chapterIdx without deck)', async () => {
+      const controller = new SrsReviewController();
+      controller.activeMode = 'reading';
+      controller.activeGroup = 'radicals50';
+      controller.fetchRadicalsData = async () => {};
+      controller.commonRadicals = Array.from({ length: 50 }, (_, i) => ({ radicalId: i + 1, character: '字', pinyin: 'zì' }));
+      let queueInited = false;
+      controller.initSessionQueue = (queue, isReview, startIndex) => {
+        queueInited = true;
+        assert.strictEqual(queue.length, 10);
+        assert.strictEqual(controller.currentChapterIdx, 1);
+        assert.strictEqual(startIndex, 0);
+      };
+      await controller.startChapterSession(1, 'review');
+      assert.strictEqual(queueInited, true);
     });
   });
 });

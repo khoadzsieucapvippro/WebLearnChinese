@@ -1,7 +1,15 @@
 import io
+import sys
 import math
 import numpy as np
 import soundfile as sf
+
+if hasattr(sys.stdout, 'reconfigure'):
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+    except Exception:
+        pass
+
 from app.core.tone_sandhi import parse_target_syllables
 from app.core.audio_gate import decode_audio_to_mono_16k, inspect_audio_quality
 from app.core.pitch_tracker import extract_f0_contour, normalize_to_chao_scale, segment_and_interpolate_syllables

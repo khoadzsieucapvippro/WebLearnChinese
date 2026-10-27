@@ -11257,17 +11257,31 @@ export class SrsReviewController {
 
   /**
    * Starts review session for a specific chapter within 50 or 214 radicals.
-   * @param {'radicals50'|'radicals214'} deck
-   * @param {number} chapterIdx - 0-indexed chapter
-   * @param {'start'|'continue'|'review'|'due'} action
+   * @param {'radicals50'|'radicals214'|number} deckOrIdx
+   * @param {number|'start'|'continue'|'review'|'due'} [chapterIdx] - 0-indexed chapter
+   * @param {'start'|'continue'|'review'|'due'} [action='continue']
    */
-  async startChapterSession(deck, chapterIdx, action = 'continue') {
+  async startChapterSession(deckOrIdx, chapterIdx, action = 'continue') {
+    let deck = this.activeGroup || 'radicals50';
+    let idx = 0;
+    let act = action;
+    if (typeof deckOrIdx === 'number') {
+      idx = deckOrIdx;
+      if (typeof chapterIdx === 'string') {
+        act = chapterIdx;
+      }
+    } else {
+      deck = deckOrIdx || (this.activeGroup || 'radicals50');
+      idx = typeof chapterIdx === 'number' ? chapterIdx : 0;
+      act = action || 'continue';
+    }
+
     this.cleanupTimer();
     this.destroyWritingEngines();
-    this.activeAction = action;
-    this.mode = action === 'due' ? 'DUE_CARDS' : 'CATALOG_TOPIC';
+    this.activeAction = act;
+    this.mode = act === 'due' ? 'DUE_CARDS' : 'CATALOG_TOPIC';
     this.activeGroup = deck;
-    this.currentChapterIdx = chapterIdx;
+    this.currentChapterIdx = idx;
     this.lessonId = null;
     this.radicalId = null;
     this.vocabId = null;
@@ -11278,42 +11292,42 @@ export class SrsReviewController {
     if (deck === 'radicals50') {
       await this.fetchRadicalsData();
       const list = this.commonRadicals.length > 0 ? this.commonRadicals : this.fullRadicalsCatalog.slice(0, 50);
-      const start = chapterIdx * 10;
-      const end = Math.min((chapterIdx + 1) * 10, list.length);
+      const start = idx * 10;
+      const end = Math.min((idx + 1) * 10, list.length);
       const chapterRadicals = list.slice(start, end);
       items = chapterRadicals.map(r => this.normalizeRadicalCard(r));
-      chapterTitle = `Chặng ${String(chapterIdx + 1).padStart(2, '0')} — Bộ thủ ${start + 1} đến ${end}`;
+      chapterTitle = `Chặng ${String(idx + 1).padStart(2, '0')} — Bộ thủ ${start + 1} đến ${end}`;
     } else if (deck === 'radicals214') {
       await this.fetchRadicalsData();
-      const start = chapterIdx * 20;
-      const end = Math.min((chapterIdx + 1) * 20, 214);
+      const start = idx * 20;
+      const end = Math.min((idx + 1) * 20, 214);
       const chapterRadicals = this.fullRadicalsCatalog.slice(start, end);
       items = chapterRadicals.map(r => this.normalizeRadicalCard(r));
-      chapterTitle = `Chặng ${String(chapterIdx + 1).padStart(2, '0')} — Bộ thủ ${start + 1} đến ${end}`;
+      chapterTitle = `Chặng ${String(idx + 1).padStart(2, '0')} — Bộ thủ ${start + 1} đến ${end}`;
     }
 
     this.currentChapterTitle = chapterTitle;
-    this.currentChapterIdx = chapterIdx;
+    this.currentChapterIdx = idx;
 
     updateReviewUrl({
       mode: this.activeMode,
       group: deck,
-      chapter: chapterIdx,
-      action
+      chapter: idx,
+      action: act
     });
 
     const progress = getProgress(this.activeMode)?.[deck] || {};
-    const chapKey = `chapter_${chapterIdx}`;
+    const chapKey = `chapter_${idx}`;
     const savedIndex = progress[chapKey] || 0;
 
     let queue = [];
-    if (action === 'start') {
+    if (act === 'start') {
       queue = items;
       this.initSessionQueue(queue, false, 0);
-    } else if (action === 'review') {
+    } else if (act === 'review') {
       queue = items;
       this.initSessionQueue(queue, true, 0);
-    } else if (action === 'due') {
+    } else if (act === 'due') {
       if (authManager.isAuthenticated() && (!this.dueItemsCache?.radicals || this.dueItemsCache.radicals.length === 0)) {
         await this.fetchDueCounts();
       }
@@ -12067,10 +12081,8 @@ export class SrsReviewController {
     let matchedTopic = null;
     let topicIndex = -1;
 
-    if (this.currentChapterIdx !== null && topics[this.currentChapterIdx]) {
-      topicIndex = this.currentChapterIdx;
-      matchedTopic = topics[topicIndex];
-    } else {
+    // Prioritize explicit topicId matching when topicId is provided
+    if (topicId) {
       topicIndex = topics.findIndex(t => Number(t.topicId) === Number(topicId) || Number(t.backendLessonId) === Number(topicId) || Number(t.topicId) === Number(effectiveLessonId) || Number(t.backendLessonId) === Number(effectiveLessonId));
       if (topicIndex >= 0) {
         matchedTopic = topics[topicIndex];
@@ -12092,6 +12104,11 @@ export class SrsReviewController {
           }
         }
       }
+    }
+
+    if (!matchedTopic && this.currentChapterIdx !== null && topics[this.currentChapterIdx]) {
+      topicIndex = this.currentChapterIdx;
+      matchedTopic = topics[topicIndex];
     }
 
     if (topicIndex >= 0) {
@@ -14598,7 +14615,8 @@ export class SrsReviewController {
     }
 
     // Client-side VAD check: Reject pure silence or faint background hiss before sending to server
-    if (typeof this.readingPeakRms === 'number' && this.readingPeakRms > 0 && this.readingPeakRms < 0.015 && (this.readingSpeechFrames || 0) < 2) {
+    const vadActive = Boolean(this.readingAudioContext || typeof this.readingSpeechFrames === 'number' || (typeof this.readingPeakRms === 'number' && this.readingPeakRms >= 0));
+    if (vadActive && (this.readingPeakRms || 0) < 0.015 && (this.readingSpeechFrames || 0) < 2) {
       this.cleanUpReadingMedia();
       this.showReadingError(
         'Không phát hiện thấy tiếng nói',
@@ -15652,11 +15670,15 @@ export class SrsReviewController {
     this.syncToolbarUi();
 
     if (s.lessonId) {
-      this.startTopicSession(s.lessonId, s.activeAction || 'all');
+      this.currentChapterIdx = s.currentChapterIdx ?? null;
+      this.startTopicSession(s.lessonId, 'review');
     } else if (s.currentChapterIdx !== null && s.currentChapterIdx !== undefined) {
-      this.startChapterSession(s.currentChapterIdx);
+      const deck = s.activeGroup || this.activeGroup || 'radicals50';
+      this.startChapterSession(deck, s.currentChapterIdx, 'review');
     } else if (s.targetVocabId) {
-      this.startVocabSession(s.targetVocabId);
+      this.startVocabSession(s.targetVocabId, 'review');
+    } else if (s.targetRadicalId) {
+      this.startRadicalSession(s.targetRadicalId, 'review');
     } else {
       this.startReview(s.activeAction || 'all');
     }
@@ -15677,7 +15699,8 @@ export class SrsReviewController {
       const curIdx = topics.findIndex(t => Number(t.topicId) === Number(s.lessonId) || Number(t.backendLessonId) === Number(s.lessonId));
       if (curIdx !== -1 && curIdx + 1 < topics.length) {
         const nextTopic = topics[curIdx + 1];
-        this.startTopicSession(nextTopic.topicId || nextTopic.backendLessonId, 'all');
+        this.currentChapterIdx = curIdx + 1;
+        this.startTopicSession(nextTopic.topicId || nextTopic.backendLessonId, 'continue');
       } else {
         showToast({
           type: 'info',
@@ -15687,9 +15710,10 @@ export class SrsReviewController {
         this.backToSelection();
       }
     } else if (s.currentChapterIdx !== null && s.currentChapterIdx !== undefined) {
-      const maxChap = s.activeGroup === 'radicals50' ? 5 : 11;
+      const deck = s.activeGroup || this.activeGroup || 'radicals50';
+      const maxChap = deck === 'radicals50' ? 5 : 11;
       if (s.currentChapterIdx + 1 < maxChap) {
-        this.startChapterSession(s.currentChapterIdx + 1);
+        this.startChapterSession(deck, s.currentChapterIdx + 1, 'start');
       } else {
         showToast({
           type: 'info',
