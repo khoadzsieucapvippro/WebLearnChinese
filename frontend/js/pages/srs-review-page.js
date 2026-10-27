@@ -10888,6 +10888,9 @@ export class SrsReviewController {
           this.fetchDueCounts();
         }
       }, 15000);
+      if (this.catalogDueRefreshInterval && typeof this.catalogDueRefreshInterval.unref === 'function') {
+        this.catalogDueRefreshInterval.unref();
+      }
     }
   }
 
@@ -12645,6 +12648,9 @@ export class SrsReviewController {
         this.dom.timerBadge.textContent = `⏱️ ${formatElapsedSeconds(elapsed)}`;
       }
     }, 1000);
+    if (this.timerInterval && typeof this.timerInterval.unref === 'function') {
+      this.timerInterval.unref();
+    }
   }
 
   /**
@@ -15061,10 +15067,29 @@ export class SrsReviewController {
           lessonId: card.lessonId || this.lessonId
         });
 
-        await apiClient('/srs/review', {
-          method: 'POST',
-          body: payload
-        });
+        try {
+          await apiClient('/srs/review', {
+            method: 'POST',
+            body: payload
+          });
+        } catch (apiErr) {
+          // Backward-compatibility: If live backend hasn't finished deploying V33 yet and rejects 'FLASHCARD'
+          // with validation error on cardType, retry gracefully with legacy 'READING'
+          const isCardTypeValidationError = (apiErr?.status === 400 || apiErr?.code === 'VALIDATION_ERROR') && (
+            (apiErr.errors && Array.isArray(apiErr.errors) && apiErr.errors.some(e => String(e).toLowerCase().includes('cardtype'))) ||
+            (apiErr.message && String(apiErr.message).toLowerCase().includes('cardtype'))
+          );
+          if (payload.cardType === 'FLASHCARD' && isCardTypeValidationError) {
+            console.warn('[SRS Review] Backend rejected cardType FLASHCARD, retrying with legacy fallback READING');
+            payload.cardType = 'READING';
+            await apiClient('/srs/review', {
+              method: 'POST',
+              body: payload
+            });
+          } else {
+            throw apiErr;
+          }
+        }
       }
 
       // Optimistic update of local due items cache

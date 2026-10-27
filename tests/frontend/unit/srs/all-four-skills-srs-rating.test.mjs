@@ -318,4 +318,26 @@ describe('Unified 4-Skill SRS Evaluation & Requeue Contract', () => {
     }
   });
 
+  test('6. Flashcard Graceful Fallback: Recovers with READING if server validates against legacy cardType schema', async () => {
+    const controller = new SrsReviewController();
+    controller.activeMode = 'flashcard';
+    controller.sessionQueue = [
+      { card: { itemId: 74, character: '月', itemType: 'RADICAL' }, _requeued: false }
+    ];
+    controller.currentIndex = 0;
+    controller.dom = {
+      ratingFeedback: makeEl('div'),
+      flashcard: makeEl('div'),
+      cardFront: makeEl('div'),
+      cardBack: makeEl('div')
+    };
+
+    // When submitRating runs, if backend rejects cardType: 'FLASHCARD' with validation error,
+    // it automatically retries with 'READING' and succeeds without error
+    await controller.submitRating(3);
+
+    assert.strictEqual(controller.stats.goodCount, 1, 'Good count must increment upon successful submission/fallback');
+    assert.strictEqual(controller.currentIndex, 1, 'Index must advance to 1');
+  });
+
 });

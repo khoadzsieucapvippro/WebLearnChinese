@@ -12,11 +12,27 @@
  * =============================================================================
  */
 
-import { test, describe, before } from 'node:test';
+import { test, describe, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
+
+// Mock localStorage for Node test environment
+if (typeof globalThis.localStorage === 'undefined') {
+  const store = new Map();
+  globalThis.localStorage = {
+    getItem: (k) => store.get(k) ?? null,
+    setItem: (k, v) => store.set(k, String(v)),
+    removeItem: (k) => store.delete(k),
+    clear: () => store.clear()
+  };
+}
+
 import { SrsReviewController } from '../../../../frontend/js/pages/srs-review-page.js';
 
 describe('Multi-Skill SRS Isolation & Due Session Invariants', () => {
+
+  beforeEach(() => {
+    globalThis.localStorage.clear();
+  });
 
   function createMockDom() {
     const makeEl = () => ({

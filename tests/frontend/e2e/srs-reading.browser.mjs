@@ -299,7 +299,7 @@ describe('Browser E2E: SRS Reading Room & AI Assessment', () => {
     }
   });
 
-  test('SR-03: Quick skill switcher highlights Đọc button as active', async () => {
+  test('SR-03: Active session strictly isolates Reading mode container with zero mid-session switch toolbar', async () => {
     const { page, context } = await createMonitoredPage(browser);
     try {
       await setupReadingMockBackend(page);
@@ -309,11 +309,11 @@ describe('Browser E2E: SRS Reading Room & AI Assessment', () => {
 
       await page.locator('#srsActiveSession').waitFor({ state: 'visible', timeout: 8000 });
 
-      const isReadingBtnActive = await page.$eval('#quickSkillReading', el => el.classList.contains('active'));
-      assert.strictEqual(isReadingBtnActive, true, 'Quick skill reading button must be active');
+      const isReadingContainerVisible = await page.$eval('#srsReadingContainer', el => !el.classList.contains('d-none'));
+      assert.strictEqual(isReadingContainerVisible, true, 'Reading container must be active');
 
-      const isFlashcardActive = await page.$eval('#quickSkillFlashcard', el => el.classList.contains('active'));
-      assert.strictEqual(isFlashcardActive, false, 'Quick skill flashcard button must not be active');
+      const quickSkillToolbarExists = await page.$('#quickSkillReading');
+      assert.strictEqual(quickSkillToolbarExists, null, 'Quick skill switcher must be removed to enforce skill isolation');
     } finally {
       await context.close();
     }

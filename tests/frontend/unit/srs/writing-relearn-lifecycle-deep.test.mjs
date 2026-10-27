@@ -12,11 +12,87 @@
  * =============================================================================
  */
 
-import { test, describe } from 'node:test';
+import { test, describe, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
+
+// Mock localStorage for Node test environment
+if (typeof globalThis.localStorage === 'undefined') {
+  const store = new Map();
+  globalThis.localStorage = {
+    getItem: (k) => store.get(k) ?? null,
+    setItem: (k, v) => store.set(k, String(v)),
+    removeItem: (k) => store.delete(k),
+    clear: () => store.clear()
+  };
+}
+
+// Mock DOM element factory
+function makeEl(tag = 'div') {
+  const classes = new Set();
+  const attrs = new Map();
+  const children = [];
+  const el = {
+    tagName: tag.toUpperCase(),
+    id: '',
+    children,
+    value: '',
+    disabled: false,
+    textContent: '',
+    style: {},
+    focus: () => {},
+    blur: () => {},
+    get className() { return Array.from(classes).join(' '); },
+    set className(val) {
+      classes.clear();
+      if (typeof val === 'string') val.split(/\s+/).filter(Boolean).forEach(c => classes.add(c));
+    },
+    classList: {
+      add: (...cls) => cls.forEach(c => classes.add(c)),
+      remove: (...cls) => cls.forEach(c => classes.delete(c)),
+      toggle: (c, force) => {
+        if (force === undefined) {
+          classes.has(c) ? classes.delete(c) : classes.add(c);
+        } else if (force) {
+          classes.add(c);
+        } else {
+          classes.delete(c);
+        }
+      },
+      contains: (c) => classes.has(c)
+    },
+    setAttribute: (k, v) => { attrs.set(k, String(v)); if (k === 'id') el.id = String(v); },
+    getAttribute: (k) => attrs.get(k) ?? null,
+    removeAttribute: (k) => attrs.delete(k),
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    dispatchEvent: () => {},
+    replaceChildren: (...ch) => { children.length = 0; if (ch.length) children.push(...ch); },
+    appendChild: (ch) => { children.push(ch); return ch; },
+    removeChild: (ch) => { const i = children.indexOf(ch); if (i !== -1) children.splice(i, 1); return ch; },
+    remove: () => {},
+    querySelectorAll: () => [],
+    querySelector: () => null
+  };
+  return el;
+}
+
+if (typeof global.document === 'undefined') {
+  global.document = {
+    body: makeEl('body'),
+    createElement: (tag) => makeEl(tag),
+    getElementById: () => null,
+    querySelector: () => null,
+    querySelectorAll: () => []
+  };
+}
+
 import { SrsReviewController } from '../../../../frontend/js/pages/srs-review-page.js';
 
 describe('Writing Relearn & Review Lifecycle Deep Verification', () => {
+
+  beforeEach(() => {
+    globalThis.localStorage.clear();
+  });
 
   test('1. "Học lại" from Catalog (action === "review") preserves "Học tiếp" progress', async () => {
     const controller = new SrsReviewController();
