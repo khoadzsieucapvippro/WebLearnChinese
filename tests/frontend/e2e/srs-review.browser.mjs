@@ -606,7 +606,7 @@ describe('Browser E2E: Interactive SRS Flashcard Review Session (9C.3)', () => {
         });
       });
 
-      await page.goto(`${baseUrl}/srs-review.html?lessonId=10`, { waitUntil: 'domcontentloaded' });
+      await page.goto(`${baseUrl}/srs-review.html?lessonId=10&action=due`, { waitUntil: 'domcontentloaded' });
       await page.locator('#srsActiveSession').waitFor({ state: 'visible', timeout: 5000 });
 
       assert.strictEqual(requestedLessonParam, '10', 'Endpoint must be requested with lessonId=10');
