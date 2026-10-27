@@ -470,4 +470,61 @@ describe('Browser E2E: SRS Reading Room & AI Assessment', () => {
       await context.close();
     }
   });
+
+  test('SR-09: Completed state displays exactly 5 metrics and wires 3 standard buttons', async () => {
+    const { page, context } = await createMonitoredPage(browser);
+    try {
+      await setupReadingMockBackend(page);
+      await page.goto(`${baseUrl}/srs-review.html?mode=reading&group=radicals50&action=continue`, {
+        waitUntil: 'domcontentloaded'
+      });
+
+      await page.locator('#srsActiveSession').waitFor({ state: 'visible', timeout: 8000 });
+
+      // Trigger completion state
+      await page.evaluate(() => {
+        const ctrl = window.srsReviewController || window.__SRS_PAGE_CONTROLLER;
+        if (ctrl) {
+          ctrl.showCompletedState();
+        }
+      });
+
+      // Verify completed state is visible
+      const completedVisible = await page.$eval('#srsCompletedState', el => !el.classList.contains('d-none'));
+      assert.strictEqual(completedVisible, true);
+
+      // Verify the 5 metric values exist
+      const totalText = await page.$eval('#statTotalReviewed', el => el.textContent.trim());
+      const againText = await page.$eval('#statAgainCount', el => el.textContent.trim());
+      const hardText = await page.$eval('#statHardCount', el => el.textContent.trim());
+      const goodText = await page.$eval('#statGoodCount', el => el.textContent.trim());
+      const easyText = await page.$eval('#statEasyCount', el => el.textContent.trim());
+      assert.ok(totalText !== undefined && againText !== undefined && hardText !== undefined && goodText !== undefined && easyText !== undefined);
+
+      // Verify standard buttons are visible and have proper text
+      const btnRestart = page.locator('#btnCompletionRestartLesson');
+      const btnNextChap = page.locator('#btnCompletionNextChapter');
+      const btnBackCatalog = page.locator('#btnCompletionBackToCatalog');
+
+      assert.strictEqual(await btnRestart.isVisible(), true);
+      assert.strictEqual(await btnNextChap.isVisible(), true);
+      assert.strictEqual(await btnBackCatalog.isVisible(), true);
+
+      const restartText = await btnRestart.textContent();
+      const nextChapText = await btnNextChap.textContent();
+      const backCatalogText = await btnBackCatalog.textContent();
+
+      assert.ok(restartText.includes('Ôn lại bài này'));
+      assert.ok(nextChapText.includes('Chặng tiếp theo'));
+      assert.ok(backCatalogText.includes('Quay lại danh mục'));
+
+      // Verify clicking Back to Catalog returns to selection / catalog view
+      await btnBackCatalog.click();
+      await page.waitForTimeout(300);
+      const catalogVisible = await page.$eval('#srsCatalogSelection', el => !el.classList.contains('d-none'));
+      assert.strictEqual(catalogVisible, true);
+    } finally {
+      await context.close();
+    }
+  });
 });

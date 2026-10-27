@@ -7,9 +7,10 @@ from typing import Tuple, Optional, Dict, Any
 
 TARGET_SAMPLE_RATE = 16000
 MIN_DURATION_SEC = 0.35
-MIN_RMS_THRESHOLD = 0.006  # roughly -44 dBFS
+MIN_PEAK_AMPLITUDE = 0.04   # Absolute peak amplitude threshold to reject silence/ambient mic hiss
+MIN_RMS_THRESHOLD = 0.012   # roughly -38 dBFS (human speech threshold)
 MAX_CLIPPING_RATIO = 0.02   # 2% clipping
-MIN_DYNAMIC_RANGE_DB = 8.0  # Heuristic RMS dynamic range (p90 / p10 energy contrast)
+MIN_DYNAMIC_RANGE_DB = 10.0 # Heuristic RMS dynamic range (p90 / p10 energy contrast)
 MIN_SNR_DB = MIN_DYNAMIC_RANGE_DB  # Backwards compatibility alias
 
 def decode_audio_to_mono_16k(audio_bytes: bytes) -> Tuple[np.ndarray, int]:
@@ -79,6 +80,18 @@ def inspect_audio_quality(pcm: np.ndarray, sr: int = TARGET_SAMPLE_RATE) -> Dict
             "retry_advice": "Vui lòng giữ micro và phát âm trọn vẹn từ mục tiêu."
         }
         
+    # Peak Amplitude Gate (silence and ambient mic hiss rejection)
+    peak_amplitude = float(np.max(np.abs(pcm)))
+    if peak_amplitude < MIN_PEAK_AMPLITUDE:
+        return {
+            "scorable": False,
+            "status": "not_scorable",
+            "duration": duration,
+            "peak_amplitude": peak_amplitude,
+            "reason": "Không phát hiện thấy tiếng nói (bản ghi âm chỉ có khoảng lặng hoặc tiếng ồn quá nhỏ).",
+            "retry_advice": "Vui lòng giữ micro gần miệng hơn và đọc to, rõ ràng từ mục tiêu."
+        }
+
     # Clipping Gate (|x| >= 0.99)
     clipping_samples = np.sum(np.abs(pcm) >= 0.99)
     clipping_ratio = float(clipping_samples) / float(len(pcm))
@@ -122,8 +135,8 @@ def inspect_audio_quality(pcm: np.ndarray, sr: int = TARGET_SAMPLE_RATE) -> Dict
         dynamic_range_db = 20.0 * math.log10(signal_peak / noise_floor)
         snr_db = dynamic_range_db  # Backwards compatibility alias
         
-        # Check voiced ratio (frames with energy > 2.5x noise floor)
-        voiced_frames = np.sum(frames > (noise_floor * 2.5))
+        # Check voiced ratio (frames with energy > 2.8x noise floor)
+        voiced_frames = np.sum(frames > (noise_floor * 2.8))
         voiced_ratio = float(voiced_frames) / float(len(frames))
         
         if dynamic_range_db < MIN_DYNAMIC_RANGE_DB:
@@ -137,16 +150,17 @@ def inspect_audio_quality(pcm: np.ndarray, sr: int = TARGET_SAMPLE_RATE) -> Dict
                 "retry_advice": "Vui lòng di chuyển đến không gian yên tĩnh hơn để luyện đọc."
             }
             
-        if voiced_ratio < 0.15:
+        if voiced_ratio < 0.15 or voiced_frames < 8:
             return {
                 "scorable": False,
                 "status": "not_scorable",
                 "duration": duration,
                 "voiced_ratio": voiced_ratio,
+                "voiced_frames": int(voiced_frames),
                 "snr_db": snr_db,
                 "dynamic_range_db": snr_db,
-                "reason": "Thời lượng phát âm hữu thanh quá ít so với khoảng lặng.",
-                "retry_advice": "Vui lòng phát âm rõ ràng, liền mạch."
+                "reason": "Thời lượng phát âm hữu thanh quá ít (chỉ có tạp âm ngắn hoặc khoảng lặng).",
+                "retry_advice": "Vui lòng phát âm rõ ràng, ngân vang trọn vẹn từ mục tiêu."
             }
     else:
         snr_db = 20.0

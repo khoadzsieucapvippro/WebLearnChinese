@@ -16,6 +16,8 @@
 
 import { test, describe, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
 
 // Mock localStorage for Node test environment
 if (typeof globalThis.localStorage === 'undefined') {
@@ -569,6 +571,145 @@ describe('SRS Reading Room & AI Assessment Tests', () => {
 
       await controller.nextReadingItem();
       assert.strictEqual(submittedRating, 1);
+    });
+  });
+
+  describe('6. Pedagogical Feedback & Absence of Rigid Technical Notice (Phần A & D)', () => {
+    test('srs-review.html strictly omits rigid technical notice (F0, Chao 5-scale disclaimer)', () => {
+      const htmlPath = path.resolve('frontend/srs-review.html');
+      const htmlContent = fs.readFileSync(htmlPath, 'utf8');
+
+      // Rigid technical disclaimer must be completely absent
+      assert.strictEqual(htmlContent.includes('🎯 Đánh giá thanh điệu (Tone Evaluation)'), false);
+      assert.strictEqual(htmlContent.includes('Phân tích đường cao độ F0 theo thang chuẩn Chao'), false);
+      assert.strictEqual(htmlContent.includes('không nhận diện chữ ASR'), false);
+
+      // Friendly pedagogical analyzing state
+      assert.strictEqual(htmlContent.includes('Đang lắng nghe và đánh giá phát âm của bạn...'), true);
+
+      // Label "Số thẻ hoàn thành" in completed statistics
+      assert.strictEqual(htmlContent.includes('Số thẻ hoàn thành'), true);
+
+      // Strictly omit item 2 (Tỷ lệ thành công) and item 3 (Thời gian trung bình mỗi thẻ)
+      assert.strictEqual(htmlContent.includes('Tỷ lệ thành công'), false);
+      assert.strictEqual(htmlContent.includes('Thời gian trung bình mỗi thẻ'), false);
+
+      // 3 standard completion action buttons must exist
+      assert.strictEqual(htmlContent.includes('id="btnCompletionRestartLesson"'), true);
+      assert.strictEqual(htmlContent.includes('id="btnCompletionNextChapter"'), true);
+      assert.strictEqual(htmlContent.includes('id="btnCompletionBackToCatalog"'), true);
+    });
+  });
+
+  describe('7. Web Audio Client-side VAD & Silence Rejection (Phần B)', () => {
+    test('handleRecordingFinished rejects pure silence / low energy without calling server', async () => {
+      const controller = new SrsReviewController();
+      controller.dom = {
+        readingStateError: makeEl('div'),
+        readingErrorTitle: makeEl('div'),
+        readingErrorMessage: makeEl('div'),
+        readingErrorAdvice: makeEl('div'),
+        btnReadingNext: makeEl('button')
+      };
+      controller.readingPeakRms = 0.005; // Low energy silence
+      controller.readingSpeechFrames = 0; // No speech detected
+
+      let assessCalled = false;
+      controller.assessReadingPronunciation = () => { assessCalled = true; };
+
+      const dummyBlob = { size: 500, type: 'audio/webm' };
+      await controller.handleRecordingFinished(dummyBlob);
+
+      // Server should NOT be called
+      assert.strictEqual(assessCalled, false);
+      // Friendly pedagogical error state should be rendered
+      assert.strictEqual(controller.dom.readingErrorTitle.textContent, 'Không phát hiện thấy tiếng nói');
+      assert.strictEqual(controller.dom.readingStateError.classList.contains('d-none'), false);
+    });
+
+    test('cleanUpReadingMedia properly cleans up VAD interval, AudioContext, and resets peak RMS', () => {
+      const controller = new SrsReviewController();
+      let closedAudioCtx = false;
+      controller.readingAudioContext = {
+        state: 'running',
+        close: () => { closedAudioCtx = true; }
+      };
+      controller.readingVadInterval = setInterval(() => {}, 1000);
+      controller.readingPeakRms = 0.08;
+      controller.readingSpeechFrames = 15;
+      controller.readingAnalyser = {};
+
+      controller.cleanUpReadingMedia();
+
+      assert.strictEqual(controller.readingVadInterval, null);
+      assert.strictEqual(controller.readingAudioContext, null);
+      assert.strictEqual(closedAudioCtx, true);
+      assert.strictEqual(controller.readingAnalyser, null);
+      assert.strictEqual(controller.readingPeakRms, 0);
+      assert.strictEqual(controller.readingSpeechFrames, 0);
+    });
+  });
+
+  describe('8. Completed State Action Buttons & Session Progression (Phần D & E)', () => {
+    test('restartCurrentSession triggers startTopicSession when lessonId was completed', () => {
+      const controller = new SrsReviewController();
+      controller.activeMode = 'reading';
+      controller.syncToolbarUi = () => {};
+      controller._lastCompletedSession = {
+        lessonId: 5,
+        activeAction: 'all',
+        activeMode: 'reading'
+      };
+
+      let restartCalled = false;
+      controller.startTopicSession = (topicId, action) => {
+        restartCalled = true;
+        assert.strictEqual(topicId, 5);
+        assert.strictEqual(action, 'all');
+      };
+
+      controller.restartCurrentSession();
+      assert.strictEqual(restartCalled, true);
+    });
+
+    test('restartCurrentSession triggers startChapterSession when chapterIdx was completed', () => {
+      const controller = new SrsReviewController();
+      controller.activeMode = 'reading';
+      controller.syncToolbarUi = () => {};
+      controller._lastCompletedSession = {
+        currentChapterIdx: 2,
+        activeGroup: 'radicals50',
+        activeMode: 'reading'
+      };
+
+      let chapterCalled = false;
+      controller.startChapterSession = (idx) => {
+        chapterCalled = true;
+        assert.strictEqual(idx, 2);
+      };
+
+      controller.restartCurrentSession();
+      assert.strictEqual(chapterCalled, true);
+    });
+
+    test('advanceToNextChapter advances to next topic or displays completion toast', () => {
+      const controller = new SrsReviewController();
+      controller.activeMode = 'reading';
+      controller.syncToolbarUi = () => {};
+      controller._lastCompletedSession = {
+        lessonId: 1, // HSK 1 lesson 1
+        activeGroup: 'hsk1',
+        activeMode: 'reading'
+      };
+
+      let nextTopicCalled = false;
+      controller.startTopicSession = (topicId, action) => {
+        nextTopicCalled = true;
+        assert.strictEqual(topicId, 2);
+      };
+
+      controller.advanceToNextChapter();
+      assert.strictEqual(nextTopicCalled, true);
     });
   });
 });

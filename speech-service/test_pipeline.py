@@ -50,13 +50,19 @@ def test_audio_gates():
     assert not q["scorable"] and q["status"] == "not_scorable"
     print("  [PASS] Short audio rejected (< 0.35s)")
 
-    # 2. Silence
+    # 2. Silence / Faint Mic Hiss
     silence_pcm = np.random.normal(0, 0.001, int(1.0 * sr)).astype(np.float32)
     q = inspect_audio_quality(silence_pcm, sr)
     assert not q["scorable"] and q["status"] == "not_scorable"
-    print("  [PASS] Silence rejected (RMS < 0.006)")
+    print("  [PASS] Silence rejected (RMS < 0.012, Peak < 0.04)")
 
-    # 3. Clipping
+    # 3. Ambient Fan Noise / Continuous Mic Hum (Low dynamic range)
+    fan_noise_pcm = (np.random.normal(0, 0.015, int(1.0 * sr)) + 0.01 * np.sin(2 * np.pi * 60 * np.linspace(0, 1.0, int(1.0 * sr)))).astype(np.float32)
+    q = inspect_audio_quality(fan_noise_pcm, sr)
+    assert not q["scorable"] and q["status"] == "not_scorable"
+    print("  [PASS] Ambient fan / hum noise rejected (Low dynamic range contrast)")
+
+    # 4. Clipping
     clipped_pcm = np.random.normal(0, 0.3, int(1.0 * sr)).astype(np.float32)
     clipped_pcm[:int(0.05 * len(clipped_pcm))] = 1.0 # 5% clipping
     q = inspect_audio_quality(clipped_pcm, sr)

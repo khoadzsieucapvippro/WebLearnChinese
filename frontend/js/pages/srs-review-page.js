@@ -9992,6 +9992,8 @@ export class SrsReviewController {
       completedTitle: document.getElementById('srsCompletedTitle'),
       completedDescription: document.getElementById('srsCompletedDescription'),
       btnRestartSession: document.getElementById('btnRestartSession'),
+      btnCompletionRestartLesson: document.getElementById('btnCompletionRestartLesson'),
+      btnCompletionNextChapter: document.getElementById('btnCompletionNextChapter'),
       btnCompletionBackToCatalog: document.getElementById('btnCompletionBackToCatalog'),
 
       // Top Toolbar: 4 Modes
@@ -10285,12 +10287,20 @@ export class SrsReviewController {
     if (this.dom.btnCompletionBackToCatalog) {
       this.dom.btnCompletionBackToCatalog.addEventListener('click', () => this.backToSelection());
     }
+    if (this.dom.btnCompletionRestartLesson) {
+      this.dom.btnCompletionRestartLesson.addEventListener('click', () => this.restartCurrentSession());
+    }
+    if (this.dom.btnCompletionNextChapter) {
+      this.dom.btnCompletionNextChapter.addEventListener('click', () => this.advanceToNextChapter());
+    }
     if (this.dom.btnRestartSession) {
       this.dom.btnRestartSession.addEventListener('click', (e) => {
         if (this.stats && this.stats.againCount > 0 && this.lessonId) {
           e.preventDefault();
           this.mode = 'DUE_CARDS';
           this.startTopicSession(this.lessonId, 'due');
+        } else {
+          this.restartCurrentSession();
         }
       });
     }
@@ -14434,6 +14444,43 @@ export class SrsReviewController {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       this.readingStream = stream;
 
+      // Real-time Web Audio API Energy & Voice Activity Detection (Client VAD)
+      this.readingPeakRms = 0;
+      this.readingSpeechFrames = 0;
+      const AudioCtx = typeof window !== 'undefined' ? (window.AudioContext || window.webkitAudioContext) : null;
+      if (AudioCtx) {
+        try {
+          const audioCtx = new AudioCtx();
+          const source = audioCtx.createMediaStreamSource(stream);
+          const analyser = audioCtx.createAnalyser();
+          analyser.fftSize = 512;
+          source.connect(analyser);
+          this.readingAudioContext = audioCtx;
+          this.readingAnalyser = analyser;
+
+          const buffer = new Float32Array(analyser.fftSize);
+          this.readingVadInterval = setInterval(() => {
+            if (!this.readingAnalyser) return;
+            try {
+              this.readingAnalyser.getFloatTimeDomainData(buffer);
+              let sumSq = 0;
+              for (let i = 0; i < buffer.length; i++) {
+                sumSq += buffer[i] * buffer[i];
+              }
+              const rms = Math.sqrt(sumSq / buffer.length);
+              if (rms > this.readingPeakRms) {
+                this.readingPeakRms = rms;
+              }
+              if (rms > 0.02) {
+                this.readingSpeechFrames++;
+              }
+            } catch (e) {}
+          }, 100);
+        } catch (e) {
+          console.warn('[SRS Reading] Web Audio VAD setup note:', e);
+        }
+      }
+
       let mimeType = 'audio/webm';
       if (typeof MediaRecorder !== 'undefined' && typeof MediaRecorder.isTypeSupported === 'function') {
         if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
@@ -14546,6 +14593,17 @@ export class SrsReviewController {
         'Bản ghi âm quá ngắn',
         'Bản ghi âm chưa ghi nhận được âm thanh rõ ràng. Vui lòng giữ micro và đọc to chữ Hán mục tiêu.',
         'Hãy bấm "Thử đọc lại", đọc to và rõ âm tiết tiếng Trung.'
+      );
+      return;
+    }
+
+    // Client-side VAD check: Reject pure silence or faint background hiss before sending to server
+    if (typeof this.readingPeakRms === 'number' && this.readingPeakRms > 0 && this.readingPeakRms < 0.015 && (this.readingSpeechFrames || 0) < 2) {
+      this.cleanUpReadingMedia();
+      this.showReadingError(
+        'Không phát hiện thấy tiếng nói',
+        'Bản ghi âm chỉ có khoảng lặng hoặc tiếng ồn nhỏ xung quanh. Hệ thống từ chối chấm điểm ảo.',
+        'Vui lòng nhấn "Thử đọc lại", đọc to và rõ chữ Hán mục tiêu vào micro.'
       );
       return;
     }
@@ -14876,13 +14934,21 @@ export class SrsReviewController {
     }
     this.currentUserAudioBlob = null;
 
-    if (this.currentUserAudioElement) {
-      try {
-        this.currentUserAudioElement.pause();
-        this.currentUserAudioElement.src = '';
-      } catch (e) {}
-      this.currentUserAudioElement = null;
+    if (this.readingVadInterval) {
+      clearInterval(this.readingVadInterval);
+      this.readingVadInterval = null;
     }
+    if (this.readingAudioContext) {
+      try {
+        if (this.readingAudioContext.state !== 'closed') {
+          this.readingAudioContext.close();
+        }
+      } catch (e) {}
+      this.readingAudioContext = null;
+    }
+    this.readingAnalyser = null;
+    this.readingPeakRms = 0;
+    this.readingSpeechFrames = 0;
     this.readingAudioChunks = [];
   }
 
@@ -15464,8 +15530,20 @@ export class SrsReviewController {
     this.destroyListeningIme();
     this.cleanUpReadingMedia();
     this.destroyCardBackWritingEngines();
-    speechController.cancel();
     this._autoPlayedListeningCardKey = null;
+
+    // Cache the completed session context for standard action buttons
+    this._lastCompletedSession = {
+      lessonId: this.lessonId,
+      currentChapterIdx: this.currentChapterIdx,
+      activeGroup: this.activeGroup,
+      activeMode: this.activeMode,
+      activeAction: this.activeAction,
+      targetVocabId: this.targetVocabId,
+      targetRadicalId: this.targetRadicalId,
+      isReviewMode: this.isReviewMode
+    };
+
     this.setViewState('completed');
 
     if (this.dom.completedTitle) {
@@ -15561,6 +15639,67 @@ export class SrsReviewController {
 
     if (authManager.isAuthenticated()) {
       this.fetchDueCounts();
+    }
+  }
+
+  /**
+   * Restarts the completed session from card 0 ("Ôn lại bài này").
+   */
+  restartCurrentSession() {
+    const s = this._lastCompletedSession || {};
+    const mode = s.activeMode || this.activeMode || 'flashcard';
+    this.activeMode = mode;
+    this.syncToolbarUi();
+
+    if (s.lessonId) {
+      this.startTopicSession(s.lessonId, s.activeAction || 'all');
+    } else if (s.currentChapterIdx !== null && s.currentChapterIdx !== undefined) {
+      this.startChapterSession(s.currentChapterIdx);
+    } else if (s.targetVocabId) {
+      this.startVocabSession(s.targetVocabId);
+    } else {
+      this.startReview(s.activeAction || 'all');
+    }
+  }
+
+  /**
+   * Advances to the next chapter or topic ("Chặng tiếp theo").
+   */
+  advanceToNextChapter() {
+    const s = this._lastCompletedSession || {};
+    const mode = s.activeMode || this.activeMode || 'flashcard';
+    this.activeMode = mode;
+    this.syncToolbarUi();
+
+    if (s.lessonId) {
+      const level = s.activeGroup === 'hsk2' ? 2 : (s.activeGroup === 'hsk3' ? 3 : 1);
+      const topics = level === 2 ? HSK2_TOPICS : (level === 3 ? HSK3_TOPICS : HSK1_TOPICS);
+      const curIdx = topics.findIndex(t => Number(t.topicId) === Number(s.lessonId) || Number(t.backendLessonId) === Number(s.lessonId));
+      if (curIdx !== -1 && curIdx + 1 < topics.length) {
+        const nextTopic = topics[curIdx + 1];
+        this.startTopicSession(nextTopic.topicId || nextTopic.backendLessonId, 'all');
+      } else {
+        showToast({
+          type: 'info',
+          title: 'Hoàn thành cấp độ',
+          message: 'Bạn đã hoàn thành tất cả bài học của cấp độ này!'
+        });
+        this.backToSelection();
+      }
+    } else if (s.currentChapterIdx !== null && s.currentChapterIdx !== undefined) {
+      const maxChap = s.activeGroup === 'radicals50' ? 5 : 11;
+      if (s.currentChapterIdx + 1 < maxChap) {
+        this.startChapterSession(s.currentChapterIdx + 1);
+      } else {
+        showToast({
+          type: 'info',
+          title: 'Hoàn thành giáo trình',
+          message: 'Bạn đã hoàn thành tất cả các chặng của giáo trình này!'
+        });
+        this.backToSelection();
+      }
+    } else {
+      this.backToSelection();
     }
   }
 

@@ -153,7 +153,7 @@ async def evaluate_reading(
 
     # 4. F0 pitch extraction and Chao normalization
     times, f0, voiced = extract_f0_contour(pcm, sr)
-    if int(np.sum(voiced)) < 3:
+    if int(np.sum(voiced)) < 8:
         return JSONResponse(
             status_code=200,
             content={
@@ -162,9 +162,9 @@ async def evaluate_reading(
                 "targetPinyin": pinyin_str,
                 "overallScore": None,
                 "confidence": "LOW",
-                "summaryVi": "Không phát hiện đủ âm sắc giọng nói (thiếu đường cao độ F0) để đánh giá thanh điệu.",
-                "retryAdvice": "Vui lòng giữ micro và phát âm to rõ ràng, ngân vang trọn vẹn âm tiết.",
-                "limitations": "Số khung hữu thanh F0 dưới ngưỡng tối thiểu (3 khung) để phân tích ngữ điệu."
+                "summaryVi": "Không phát hiện thấy tiếng nói của bạn (chỉ ghi nhận khoảng lặng hoặc tạp âm môi trường).",
+                "retryAdvice": "Vui lòng giữ micro và đọc to, rõ ràng từ mục tiêu.",
+                "limitations": "Số khung hữu thanh dưới ngưỡng tối thiểu (80ms) để đánh giá phát âm."
             }
         )
 

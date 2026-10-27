@@ -395,9 +395,32 @@ Toàn bộ hiện trạng kỹ thuật của **`TASK-4.3`: SRS Phòng Luyện Vi
 
 ---
 
-### 5.5. Kế Hoạch Tiếp Theo: `TASK-4.4` (SRS Phòng Luyện Đọc) & `TASK-4.5` (SRS Phòng Luyện Nghe)
-Sau khi `TASK-4.3` đã hoàn tất kiểm toán và sẵn sàng nghiệm thu, hai nhiệm vụ tiếp theo của Sprint 4 là:
+### 5.5. Nghiệm Thu Hoàn Tất: `TASK-4.4` (SRS Phòng Luyện Đọc) & `TASK-4.5` (SRS Phòng Luyện Nghe)
+Cả hai kỹ năng Luyện Đọc và Luyện Nghe đã được kiểm toán toàn diện, chuẩn hóa quy chuẩn đánh giá 1–4 SM-2 và hoàn thiện 100%:
+
 1. **`TASK-4.4`: SRS Phòng Luyện Đọc (`srs-review.html?mode=reading`, `cardType = 'READING'`)**:
-   - Kiểm tra cơ chế câu hỏi trắc nghiệm/nhận diện chữ Hán, hiển thị Pinyin/Nghĩa ẩn/hiện, tính điểm SRS dựa trên kết quả trả lời.
+   - Tích hợp chuẩn Web Audio VAD kiểm tra năng lượng trực tiếp phía Client, từ chối bản ghi chỉ có khoảng lặng hoặc tạp âm gió/quạt trước khi gửi lên server.
+   - Microservice Python FastAPI `speech-service` phân tích đường cao độ F0, thang chuẩn Chao và quy đổi điểm số thành thang điểm 1..4 chuẩn mực SM-2:
+     * $\ge 85$ điểm $\rightarrow$ Rating 4 (Easy).
+     * $70 \sim 84$ điểm $\rightarrow$ Rating 3 (Good).
+     * $45 \sim 69$ điểm $\rightarrow$ Rating 2 (Hard).
+     * $< 45$ điểm hoặc phát âm sai thanh điệu $\rightarrow$ Rating 1 (Again, tự động Requeue đưa thẻ về cuối phiên).
+   - `tests/frontend/unit/srs/srs-skill-reading.test.mjs`: **PASS 100%**.
+   - `tests/frontend/e2e/srs-reading.browser.mjs`: **8/8 tests PASS**.
+   - `speech-service/test_pipeline.py`: **ALL SPEECH ENGINE TESTS PASSED SUCCESSFULLY! ✓**.
+
 2. **`TASK-4.5`: SRS Phòng Luyện Nghe (`srs-review.html?mode=listening`, `cardType = 'LISTENING'`)**:
-   - Kiểm tra phát âm thanh tự động, cơ chế gõ Pinyin hoặc chọn đáp án qua âm thanh, tích hợp micro/phát âm chuẩn.
+   - Tự động phát âm thanh khi nạp thẻ mới, bộ gõ ảo IME tiếng Trung hỗ trợ nhập trực quan và đồng bộ bàn phím vật lý.
+   - Đánh giá SM-2 chuẩn hóa 1..4 dựa trên số lần nghe lại và số lần nhập sai:
+     * 0 lỗi, 0 nghe lại $\rightarrow$ Rating 4 (Easy).
+     * 0 lỗi, 1 nghe lại $\rightarrow$ Rating 3 (Good).
+     * 1 lỗi hoặc $\ge 3$ lần nghe lại $\rightarrow$ Rating 2 (Hard).
+     * $\ge 3$ lỗi $\rightarrow$ Rating 1 (Again, tự động Requeue đưa thẻ về cuối phiên).
+   - Bộ 3 nút điều hướng chuẩn tại màn hình kết thúc: Ôn lại bài này (`btnCompletionRestartLesson`), Chặng tiếp theo (`btnCompletionNextChapter`), Quay lại danh mục (`btnCompletionBackToCatalog`).
+   - `tests/frontend/e2e/srs-listening.browser.mjs`: **9/9 tests PASS**.
+
+3. **Tổng Kết Sprint 4 (Đấu Trường Ôn Tập SRS)**:
+   - 4 phân hệ (`FLASHCARD`, `WRITING`, `LISTENING`, `READING`) vận hành phân tách độc lập $100\%$ cả ở tầng CSDL TiDB Cloud, Backend Spring Boot và Frontend Single-Page Controller.
+   - Toàn bộ ma trận kiểm thử Fast Tier: **1.082/1.082 tests PASS** (265 suites).
+   - Blackbox dual-track E2E runner: **74/74 tests PASS**.
+

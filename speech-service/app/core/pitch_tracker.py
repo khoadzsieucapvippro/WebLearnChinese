@@ -30,13 +30,15 @@ def extract_f0_contour(pcm: np.ndarray, sr: int = 16000) -> Tuple[np.ndarray, np
     emphasized = np.append(pcm[0], pcm[1:] - 0.95 * pcm[:-1])
     window = np.hanning(frame_len)
     
-    # Threshold for voicing based on energy
+    # Threshold for voicing based on energy with absolute floor to reject silence/noise
+    MIN_VOICED_FRAME_ENERGY = 0.02
     frame_energies = []
     for i in range(num_frames):
         start = i * hop_len
         f_raw = pcm[start:start + frame_len]
-        frame_energies.append(np.sum(f_raw ** 2))
-    energy_threshold = np.percentile(frame_energies, 20) * 1.5 + 1e-6
+        frame_energies.append(float(np.sum(f_raw ** 2)))
+    p20_energy = float(np.percentile(frame_energies, 20)) if frame_energies else 0.0
+    energy_threshold = max(MIN_VOICED_FRAME_ENERGY, p20_energy * 2.0)
     
     for i in range(num_frames):
         start = i * hop_len
@@ -64,8 +66,8 @@ def extract_f0_contour(pcm: np.ndarray, sr: int = 16000) -> Tuple[np.ndarray, np
         zero_lag_val = autocorr[0] + 1e-9
         norm_peak = peak_val / zero_lag_val
         
-        # Voicing decision threshold (normalized correlation > 0.35)
-        if norm_peak > 0.35:
+        # Voicing decision threshold (normalized correlation > 0.42 for human harmonicity)
+        if norm_peak > 0.42:
             # Parabolic interpolation for fine-pitch frequency
             if 0 < peak_idx < len(autocorr) - 1:
                 alpha = autocorr[peak_idx - 1]
@@ -81,6 +83,15 @@ def extract_f0_contour(pcm: np.ndarray, sr: int = 16000) -> Tuple[np.ndarray, np
             if MIN_F0_HZ <= pitch_hz <= MAX_F0_HZ:
                 f0[i] = pitch_hz
                 voiced[i] = True
+
+    # Purge isolated 1-frame spikes (spurious clicks/keyboard taps)
+    for i in range(len(voiced)):
+        if voiced[i]:
+            prev_v = voiced[i - 1] if i > 0 else False
+            next_v = voiced[i + 1] if i < len(voiced) - 1 else False
+            if not prev_v and not next_v:
+                voiced[i] = False
+                f0[i] = 0.0
 
     return times, f0, voiced
 

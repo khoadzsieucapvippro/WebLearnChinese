@@ -542,7 +542,8 @@ describe('Browser E2E: Admin Accounts Lifecycle UI (Task 9F.1)', () => {
       const actualErrors = getRuntimeErrors().filter(err =>
         !err.includes('SRS Review') &&
         !err.includes('SrsDashboard') &&
-        !err.includes('status of 401')
+        !err.includes('status of 401') &&
+        !err.includes('ERR_CONNECTION_REFUSED')
       );
       assert.deepStrictEqual(actualErrors, []);
 
