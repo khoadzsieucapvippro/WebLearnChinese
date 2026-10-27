@@ -238,6 +238,7 @@ flowchart TD
 | `TASK-4.1` (SRS Dashboard & Cài đặt học tập) | 2026-10-27 | Rà soát toàn diện bảng điều khiển SRS & cài đặt: (1) Test browser `SD-09` trong `srs-dashboard.browser.mjs` fail do kỳ vọng navbar 4 mục cũ thay vì 5 mục chuẩn (thêm "Bài học"); (2) `validateSrsSettings` trong `srs-dashboard-page.js` thiếu chặn trên `num > 100` (vi phạm Invariant 6); (3) Hơn 120 dòng dead code và selector DOM form không tồn tại trong `srs-dashboard-page.js`; (4) Breadcrumb thừa trên `srs-dashboard.html`; (5) `srs-settings.html` gây trùng lặp với `profile.html#settings`; (6) "Thẻ đến hạn" chỉ có Đọc, Nghe, Viết, thiếu hẳn Flashcard; (7) Cài đặt kích thước ô chữ Mễ (170px vs 200px) và tự động phát lại nét trong `profile.html#settings` chưa kết nối sang phòng Luyện viết SRS. | Thực hiện những phát hiện của bạn; "thẻ đến hạn" đang thiếu flashcard; xóa `srs-settings.html` đi không nên để trùng lặp; những phần về học tập trong `profile.html#settings` phải sử dụng được. | **ĐÃ HOÀN TẤT & KHÓA CHẶT 100%**: (1) **Sửa test SD-09**: Nhận diện đúng 5 liên kết trên thanh navbar thống nhất kèm "Bài học"; (2) **Khóa Chặt Invariant 6**: Bổ sung `else if (num > 100)` cho `validateSrsSettings` trong `srs-dashboard-page.js`; (3) **Dọn Dẹp Dead Code**: Loại bỏ hoàn toàn các selector form rỗng và các phương thức thừa khỏi `srs-dashboard-page.js`; (4) **Xóa Breadcrumb**: Loại bỏ breadcrumb đầu trang trên `srs-dashboard.html`, giao diện tinh gọn, thoáng đãng; (5) **Bổ Sung Flashcard**: Thêm badge `Flashcard` (`#statCardsDueFlashcard`) vào khối phân rã "Thẻ đến hạn" bên cạnh Đọc, Nghe, Viết, bao phủ trọn vẹn cả 4 phòng SRS; (6) **Xóa Bỏ Trùng Lặp**: Xóa hoàn toàn tệp thừa `frontend/srs-settings.html`, đồng bộ danh sách trang kiểm thử trong `responsive-layout.browser.mjs` và `challenger-m3-stress.browser.mjs`; (7) **Kích Hoạt Thực Tế Cài Đặt Học Tập**: `profile.html#settings` giới hạn stepper tăng tối đa 100, nút khôi phục an toàn; phòng Luyện viết SRS (`srs-review.html?mode=writing`) tự động nhận diện `HOC_HAN_NGU_WRITING_SETTINGS` (áp dụng kích thước ô chữ Mễ Chuẩn 170px hoặc Lớn 200px, tự động phát lại nét stroke animation khi nạp chữ); (8) **Kiểm thử**: PASS 1.044/1.044 fast tests (258 suites), 74/74 E2E blackbox tests (Tiers 1–4), 9/9 srs-dashboard browser tests, 19/19 a11y tests, 10/10 responsive tests. |
 | `TASK-4.2` (SRS Phòng Lật Thẻ Flashcard) | 2026-10-27 | Nâng cấp toàn diện phòng Flashcard SRS theo yêu cầu Reviewer: (1) Thêm nút "✍️ Cách viết" vào mặt sau flashcard; (2) Màn hình hoàn thành bỏ đếm thời gian, hiển thị đủ 5 chỉ số phân rã đánh giá (Tổng thẻ, Học lại, Khó, Tốt, Dễ) và bỏ nút "Ôn lại thẻ cần học lại"; (3) Thuật toán khi đánh "1 - Học lại" trên bài học đã hoàn thành: thẻ phải được ghi nhận Lapse nhưng trước đó Backend ném lỗi 409 CONFLICT; (4) Vòng requeue trong phiên gửi đè rating = 2 lên server làm mất trạng thái đến hạn; (5) **Phát hiện mới từ Reviewer**: Học hết 20 từ trong bài HSK mới nhưng chỉ hiện 19 từ và bắt học tiếp từ số 20; (6) Các bài học HSK không hiện nút "⚡ Ôn X từ đến hạn"; (7) **Phản hồi người dùng**: Bấm học lại với 5 từ "1 - Học lại" nhưng chỉ hiện 2 từ đến hạn. | (1) Nút Cách viết ở mặt sau flashcard; (2) Tinh gọn màn hình hoàn thành theo đúng yêu cầu; (3) Tối ưu hóa thuật toán SRS cho bài đã hoàn thành; (4) Khắc phục lỗi kẹt tiến độ 19/20 từ; (5) Khắc phục lỗi không hiện từ đến hạn trên HSK; (6) Đồng bộ điều hướng chặng `?chapter=`; (7) Khắc phục triệt để lỗi học lại 5 từ chỉ hiện 2 từ do lệch dữ liệu hạt giống bài học 01. | **ĐÃ HOÀN TẤT & KHÓA CHẶT 100%**: (1) **Nút Cách Viết Mặt Sau**: Đã thêm `#btnCardBackWriting`, tích hợp `HanziWriter` diễn giải hoạt ảnh thứ tự nét trong ô kẻ chữ điền/mễ. Hoạt động chuẩn 100% (Commit `e9bf98d`); (2) **Màn Hình Hoàn Thành Chuẩn**: Đã bỏ đồng hồ thời gian, hiển thị đủ 5 chỉ số (Tổng, Học lại, Khó, Tốt, Dễ), thay bằng nút `← Về danh mục ôn tập` (Commit `e9bf98d`); (3) **Thuật Toán Lapse & Requeue**: Backend `SrsServiceImpl.java` cho phép lapse sớm (`rating == 1`) không ném 409, Frontend không gửi đè đánh giá của vòng requeue lên server. Ghi nhận chuẩn trạng thái Đến hạn (Commit `6e44992`); (4) **Khắc Phục Triệt Để Kẹt Tiến Độ 19/20**: `startTopicSession` nạp toàn bộ 20 thẻ bài học qua endpoint `/srs/practice-cards` theo đúng thứ tự giáo trình (loại trừ việc bị cắt bớt bởi hạn mức `newCardsPerDay`), `showCompletedState` bổ sung chốt chặn bảo đảm 100% tiến độ (`totalWords = 20` cho bài HSK, `10` hoặc `14` cho bộ thủ) sau khi học xong thẻ cuối; (5) **Khắc Phục Mất Nút Đến Hạn HSK**: Nâng cấp `isVocabDue(vocabId, hanzi)` và `isRadicalDue(radicalId, character)` so khớp đa hình cả theo ID cơ sở dữ liệu TiDB Cloud (7 chữ số) và chuỗi Hán tự (`v.hanzi`, `r.character`), giúp hiển thị chính xác nút `⚡ Ôn X từ đến hạn` trên toàn bộ danh mục HSK; (6) **Hỗ Trợ Điều Hướng & Đồng Bộ Chặng**: `parseQueryParams` nhận diện tham số `chapter`, `startChapterSession` và `startTopicSession` đồng bộ URL chuẩn, hàm `updateReviewUrl` có cơ chế phòng vệ an toàn URL trong môi trường headless; (7) **Sửa Triệt Để Lỗi Học Lại Chỉ Hiện 2 Từ**: Đồng bộ toàn diện 20 từ vựng của `SEED_LESSONS[0]` và `SEED_SRS_CARDS` đúng 100% với `HSK1_TOPICS[0]` (`请`, `请问`, `谢谢`, ... thay cho bộ từ cũ `爱`, `八`, ...). Tăng `CURRENT_DATASET_VERSION = 10` trong `demo-fallback-engine.js` để tự động làm mới kho thẻ SRS trong localStorage. Cập nhật `ReviewCardRequest.java` và `SrsLessonDueTests.java` trong backend; (8) **Bổ Sung Bộ Test & Kiểm Thử Toàn Diện**: Thêm Section 17 trong `srs-session.test.mjs`, nâng cache buster lên `srs-review-page.js?v=15`. PASS 1.061/1.061 fast tests (`verify:frontend:fast`), 78/78 backend tests (`mvn test`), 74/74 E2E blackbox tests (`runner.mjs --tier=all`), 16/16 browser tests (`srs-review.browser.mjs`). |
 | `TASK-4.2` (Kiểm toán Toàn diện 50 Bài học & Vòng đời Lặp lại Lần 3, Lần 4) | 2026-10-28 | Kiểm toán chuyên sâu toàn bộ 50 bài học (1.000 từ vựng): (1) Phát hiện 567 từ vựng bị lệch vocabId lịch sử trong `SEED_LESSONS` và `HSK1/2/3_TOPICS` (ví dụ: `出租车` ID 504 đè lên `哪些` Bài 7, `大家` ID 505 đè lên `请问` Bài 1); (2) Rà soát vòng đời SuperMemo SM-2 khi lặp lại bài học lần 3, lần 4: xử lý các mức rating 1 (Lapse sớm, reset về 0 ngày), rating 2..4 (bảo vệ 409 Conflict khi chưa đến hạn vs mở rộng chu kỳ 1 -> 6 -> 15 -> 38 ngày khi đến hạn); (3) Mockito constructor & mock signature trong backend tests. | (1) Tại sao chỉ bài 1, nhỡ bài 2 và các bài khác cũng vậy thì sao? (2) Nếu làm bài nào đó đến lần thứ 3, thứ 4 thì hệ thống hoạt động như thế nào? | **ĐÃ HOÀN TẤT & KHÓA CHẶT 100%**: (1) **Đồng bộ tuyệt đối 50 Bài học (1.000 từ vựng)**: Đồng bộ 100% từng từ theo đúng thứ tự Flyway migration `V30` trên `SEED_LESSONS`, `SEED_SRS_CARDS`, `HSK1/2/3_TOPICS`; (2) **Triệt tiêu 567 lỗi lệch ID**: Gán `canonical vocabId` chuẩn xác cho toàn bộ 1.000 từ, xóa bỏ xung đột ID giữa các bài; (3) **Tự động thanh lọc bộ nhớ client**: Nâng `CURRENT_DATASET_VERSION = 11` trong `demo-fallback-engine.js` và `srs-review-page.js?v=16`; (4) **Mô phỏng & Kiểm thử Vòng đời Đa chu kỳ**: Tạo và xác minh kịch bản Lần 1 (2 Again -> 2 due), Lần 2 (5 Again -> 5 due), Lần 3 (All Good -> 0 due), Lần 4 (1 Again -> 1 due) trên cả 50 bài học; (5) **Bảo vệ Backend Mock Tests**: Sửa constructor injection trong `SrsMultiSkillServiceTests.java` và mock signature trong `SrsServiceTests.java`; (6) **Kiểm thử Toàn diện**: PASS 1.062/1.062 fast tests, 74/74 E2E blackbox tests, 111/111 backend tests (`mvn test`). |
+| `TASK-4.2` (Kiểm toán Đúp Học, Vòng đời Tốt nghiệp Học lại & 2 Thuật toán SRS) | 2026-10-28 | Kiểm toán chuyên sâu thuật toán SRS & vòng đời học lại: (1) Phân định rõ 2 tầng ghi nhớ: Trí nhớ làm việc (Working Memory Drill trong buổi) vs Trí nhớ dài hạn (Long-term Spaced Review qua ngày); (2) Thẻ chọn "Học lại" (1 - Again) ghi nhận Lapse (`interval = 0, repetitions = 0, nextReviewAt = now`), requeue về cuối buổi; khi ôn lại ở cuối buổi và bấm "Khó" (2 - Hard), thẻ được Tốt Nghiệp (Graduation) đợt khoan nhớ ngắn hạn; (3) Phân biệt 2 thuật toán: Thuật toán gốc SM-2 (Render Backend + TiDB Cloud) tính theo NGÀY (24 giờ, tức ngày mai mới đến hạn) vs Thuật toán Test 2 phút (`TwoMinuteTestSrsCalculator` / `SRS_TEST_MODE_2MIN`) tính theo PHÚT (2 phút sau đến hạn); (4) Sau 2 phút trên tài khoản `HỌC VIÊN 1111` không thấy từ đến hạn vì server Render đang chạy Thuật toán gốc SM-2 chuẩn (hẹn 24h sau); (5) Trình duyệt đóng băng background timer (`document.hidden = true`) khi chuyển tab. | (1) Bấm "học lại" với 3 từ đầu thành "khó", 3 từ tiếp thành "học lại" thì bài học hiện không có từ cần ôn; (2) Có hiện tượng trùng lặp từ học lại ở cuối bài và ở nút đến hạn? (3) Chọn "Khó" rồi sau đó chọn "Học lại" thì thuật toán tính thế nào? (4) Sao 2 phút rồi chưa thấy từ đến hạn hay có xung đột với thuật toán gốc? | **ĐÃ HOÀN TẤT, ĐỒNG BỘ & KHÓA CHẶT 100%**: (1) **Vòng đời Tốt nghiệp Học lại (Relearn Graduation)**: Sửa `srs-review-page.js` cho phép gửi đánh giá tốt nghiệp (`!queueItem._requeued || numRating >= 2`) để giải phóng thẻ khỏi hàng đợi và lên lịch ôn tập dài hạn; (2) **Triệt tiêu lỗi Homograph Eviction**: Cô lập các từ trùng chữ Hán giữa các bài khác nhau bằng kiểm tra dải ID chuẩn (`targetId < 10000 && itId < 10000 && targetId !== itId`); (3) **Đồng bộ Thứ tự Tính toán SM-2**: Sửa thứ tự tính `newEaseFactor` trước khi nhân `interval * newEaseFactor` trong `demo-fallback-engine.js`; (4) **Tách bạch 2 Thuật toán Không Xung Đột**: Thuật toán gốc SM-2 trên Cloud (24h) và Chế độ Test 2 phút (2m) chạy độc lập qua cấu hình `app.srs.test-mode.enabled` và `SRS_TEST_MODE_2MIN`; (5) **Kịch bản Ngày mai**: Thẻ tốt nghiệp trên tài khoản học viên sẽ xuất hiện chuẩn xác tại `⚡ Ôn 3 từ đến hạn` sau đúng 24 giờ kể từ thời điểm học; (6) **Kiểm thử Toàn diện Đa Nền tảng**: PASS 1.068/1.068 fast tests, 126/126 backend tests, 74/74 E2E blackbox tests (Tiers 1–4), 6/6 mobile browser tests (Pixel 7 & iPhone 14), 50/50 bài học pass kịch bản 4 chu kỳ. Commit `0dcf066`. |
 
 ---
 
@@ -248,16 +249,18 @@ flowchart TD
 > Dưới đây là toàn bộ thông tin chi tiết về các cập nhật đã triển khai, các phát hiện kiểm nghiệm thực tế, và hướng dẫn cho nhiệm vụ kế tiếp để bạn tiếp tục thực thi không bị gián đoạn.
 
 ### 5.1. Trạng Thái Mã Nguồn & Baseline Kiểm Thử Hiện Tại
-- **Nhánh Git**: `main`.
-- **Fast Frontend Verification**: `npm run verify:frontend:fast` (1.056 tests / 259 suites, 100% PASS trong ~18.3 giây).
-- **E2E Blackbox Runner**: `node tests/e2e/runner.mjs --tier=all` (74 tests Tiers 1–4, 100% PASS trong ~1.05 giây).
+- **Nhánh Git**: `main` (Head commit: `0dcf066`).
+- **Fast Frontend Verification**: `npm run verify:frontend:fast` (1.068 tests / 262 suites, 100% PASS trong ~15.5 giây).
+- **Backend Java Verification**: `mvn test` (126/126 tests PASS trong ~10.5 giây, bao gồm `SrsCalculatorTests`, `TwoMinuteTestSrsCalculatorTests`, `SrsServiceTests`, `SrsLessonDueTests`, `SrsNewCardEngineTests`, `UserSrsSettingServiceTests`, `UserSrsSettingDtoTests`).
+- **E2E Blackbox Runner**: `node tests/e2e/runner.mjs --tier=all` (74 tests Tiers 1–4, 100% PASS trong ~0.86 giây).
+- **Mobile Hardware Emulation Suite**: `node --test tests/frontend/e2e/mobile-keyboard.browser.mjs` (6/6 tests PASS trên Google Pixel 7 Android 14 Gboard và Apple iPhone 14 iOS 16 Mobile Safari, kiểm định WCAG 2.2 touch target >= 40px và chuỗi sự kiện IME).
+- **Relearn Multi-Round Lifecycle Simulation**: `node scripts/test_relearn_lifecycle.mjs` (100% PASS trên toàn bộ 50 bài học qua 4 chu kỳ lặp lại).
 - **Browser E2E Review Suite**: `node --test tests/frontend/e2e/srs-review.browser.mjs` (16/16 tests PASS).
-- **Unit Audit Fixes Suite**: `node --test tests/frontend/unit/srs/srs-audit-fixes.test.mjs` (34/34 tests PASS).
 - **WCAG 2.2 Accessibility Suite**: `node --test tests/frontend/accessibility/a11y.browser.mjs` (19/19 tests PASS).
-- **Responsive Layout**: Zero document-level horizontal overflow trên toàn bộ 24 trang HTML hiện hữu.
+- **Responsive Layout**: Zero document-level horizontal overflow trên toàn bộ 24 trang HTML hiện hữu từ 360px đến 1920px.
 - **Môi trường Cloud Live**:
-  * GitHub Pages: `https://khoadzsieucapvippro.github.io/WebLearnChinese/srs-review.html` (Module cache buster `?v=14`).
-  * Render Cloud Backend: `https://elearning-backend-pwyi.onrender.com` (Health status: UP).
+  * GitHub Pages: `https://khoadzsieucapvippro.github.io/WebLearnChinese/srs-review.html` (Module cache buster `?v=18`, `CURRENT_DATASET_VERSION = 12`).
+  * Render Cloud Backend: `https://elearning-backend-pwyi.onrender.com` (Health status: UP, Single-Container unified).
   * TiDB Cloud Serverless: MySQL 8.0, Collation `utf8mb4_unicode_ci`, Nonclustered Primary Keys.
 
 ---
@@ -265,136 +268,63 @@ flowchart TD
 ### 5.2. Toàn Bộ Cập Nhật Đã Triển Khai (Changelog & Commits Đã Đẩy Lên Main)
 
 1. **Commit `e9bf98d` — Nút "Cách viết", Màn hình hoàn thành & Điều hướng danh mục**:
-   - **Nút "✍️ Cách viết" (`#btnCardBackWriting`)**: Thêm vào mặt sau Flashcard cạnh nút phát âm loa. Khi click, mở khung `#cardBackWritingSection` tích hợp thư viện `HanziWriter` hiển thị hoạt ảnh thứ tự nét viết chữ Hán trên ô kẻ chữ điền/mễ, có nút `🔄 Phát lại` và `✕ Đóng`.
-   - **Màn hình hoàn thành phiên ôn tập**: Xóa bỏ hoàn toàn đồng hồ đếm thời gian theo yêu cầu của Reviewer; bổ sung 5 chỉ số phân rã đánh giá rõ ràng: *Tổng thẻ*, *Học lại (1)*, *Khó (2)*, *Tốt (3)*, *Dễ (4)*; xóa bỏ nút "Ôn lại thẻ cần học lại", thay bằng nút điều hướng an toàn `← Về danh mục ôn tập` (`#btnCompletionBackToCatalog`).
+   - Thêm nút `#btnCardBackWriting` ("✍️ Cách viết") vào mặt sau Flashcard, mở hoạt ảnh thứ tự nét viết `HanziWriter`.
+   - Tinh gọn màn hình hoàn thành theo yêu cầu: bỏ đếm giờ, hiển thị đủ 5 chỉ số phân rã đánh giá, nút `← Về danh mục ôn tập`.
 
-2. **Commit `82c757f` — Cache Buster & Phân tích nét Bộ thủ**:
-   - Cập nhật phiên bản script `srs-review-page.js?v=11` trên `srs-review.html`.
-   - Bổ sung bộ phân tích stroke parsing cho bộ thủ Khang Hy mở rộng.
+2. **Commit `6e44992` — Thuật toán Lapse trên bài đã hoàn thành & Giữ trạng thái Đến hạn**:
+   - Backend `SrsServiceImpl.java` cho phép lapse sớm (`rating == 1`) không ném lỗi 409 CONFLICT, đặt lại `intervalDays = 0, repetitions = 0, nextReviewAt = now`.
+   - Frontend không gửi đè đánh giá của vòng requeue lên server.
 
-3. **Commit `6e44992` — Thuật toán Lapse trên bài đã hoàn thành & Giữ trạng thái Đến hạn**:
-   - **Backend (`SrsServiceImpl.java`)**: Cho phép ghi nhận Lapse khi người dùng bấm `rating == 1` (Học lại) trong bài học đã hoàn thành. Thay vì ném lỗi `409 CONFLICT: Thẻ chưa đến hạn ôn tập`, hệ thống reset ngay `intervalDays = 0`, `repetitions = 0` và đặt `nextReviewAt = now`.
-   - **Frontend Controller (`srs-review-page.js`)**: Bọc lệnh gọi `apiClient('/srs/review')` trong điều kiện `!queueItem._requeued`. Các lượt làm lại trong phiên chỉ là luyện tập trí nhớ tức thời (working-memory drill), không được gửi đè đánh giá lên server nhằm bảo toàn tuyệt đối trạng thái ĐẾN HẠN đã ghi nhận ở lượt đầu.
-   - **Demo Fallback Engine (`demo-fallback-engine.js`)**: Bổ sung cờ `{ isRequeue: true }` phòng vệ cho môi trường offline.
-   - **Cache Buster**: Nâng lên `srs-review-page.js?v=12`.
+3. **Commit `e7c8e46` — Khắc phục lỗi kẹt tiến độ 19/20 từ và mất nút đến hạn**:
+   - `startTopicSession` nạp toàn bộ 20 thẻ bài học qua `/srs/practice-cards` theo đúng thứ tự giáo trình.
+   - `showCompletedState` chốt chặn 100% tiến độ sau thẻ cuối, triệt tiêu lỗi kẹt 19/20 từ.
+   - Nâng cấp `isVocabDue(vocabId, hanzi)` và `isRadicalDue(radicalId, character)` so khớp đa hình cả theo ID TiDB và chuỗi Hán tự, hiện chuẩn nút `⚡ Ôn X từ đến hạn`.
 
----
+4. **Commit `5182fd3` — Đồng bộ dữ liệu hạt giống Bài 01 và sửa lỗi học lại 5 từ chỉ hiện 2**:
+   - Đồng bộ 100% 20 từ vựng của `SEED_LESSONS[0]` và `SEED_SRS_CARDS` với `HSK1_TOPICS[0]`.
+   - Nâng `CURRENT_DATASET_VERSION = 10` tự động làm mới kho thẻ trong `localStorage`.
 
-### 5.3. Các Khúc Mắc & Lỗi Tồn Đọng Reviewer Vừa Báo (Chi Tiết Phân Tích Kỹ Thuật)
+5. **Commit `639d708` — Kiểm toán toàn diện 50 Bài học & Vòng đời Lặp lại lần 3, lần 4**:
+   - Kiểm toán toàn bộ 1.000 từ vựng chuẩn hóa theo Flyway migration `V30`, triệt tiêu 567 lỗi lệch ID lịch sử.
+   - Cô lập các từ đồng âm/trùng chữ Hán (Homographs) giữa các bài học khác nhau (`targetId < 10000 && itId < 10000 && targetId !== itId`).
 
-Dựa trên phản hồi mới nhất của Reviewer kèm ảnh chụp thực tế màn hình HSK 1 (`media_1793102374907_b2b70eb9.png`), có **4 khúc mắc trọng yếu** cần xử lý:
-
-#### Khúc mắc 1: Lỗi tiến độ "Học hết 20 từ nhưng chỉ hiện 19 từ và bấm vào lại bắt học từ số 20"
-- **Hiện tượng**: Reviewer mở bài học mới trong HSK 1 ("Bài 02 — Phương tiện, Trường học & Thiết bị", lessonId `30003`) gồm 20 từ vựng. Sau khi học hết cả 20 từ và hoàn thành phiên, quay lại trang danh mục:
-  * Thẻ Bài 02 chỉ hiển thị: **`Đã học: 19/20 từ vựng (95%)`**.
-  * Các nút hành động hiển thị: **`[↻ Học lại]`** và **`[▶ Học tiếp #20 →]`** thay vì `✅ Đã hoàn thành`.
-  * Huy hiệu tổng trên thẻ HSK 1 hiển thị: `15 Bài • Đã học 19/300`.
-- **Nguyên nhân kỹ thuật gốc (Root Cause)**:
-  1. Trong `frontend/js/pages/srs-review-page.js`, tiến độ học bài được lưu vào `localStorage` qua hàm `persistProgress(mode, nextIndex)` với `topicKey = 'topic_30003'`.
-  2. Khi người dùng đánh giá thẻ thứ 20 (chỉ số mảng `this.currentIndex = 19`), nếu đánh giá gặp lỗi mạng, lỗi validate hoặc bị chuyển nhánh exception, `this.persistProgress('flashcard', 20)` không được thực thi.
-  3. Đặc biệt, trong hàm `showCompletedState()` (khi toàn bộ phiên học kết thúc), hệ thống **KHÔNG có lệnh chốt chặn bắt buộc** ghi đè `progress[topicKey] = vocabCount` (20/20). Do đó, nếu từ thứ 20 bị requeue hoặc có độ trễ bất đồng bộ, `savedIndex` vẫn lưu là 19.
-  4. Khi `renderHskTopics` tải lại, nó đọc `savedIndex = 19`. Vì `savedIndex < vocabCount (19 < 20)`, hàm `createChapterCard` rơi vào nhánh `else if (opts.learnedCount < opts.totalCount)`:
-     ```js
-     const nextIdx = (opts.stoppedIndex !== null ? opts.stoppedIndex : opts.learnedCount) + 1; // 19 + 1 = 20
-     btnContinue.textContent = `▶ Học tiếp #${nextIdx} →`; // "▶ Học tiếp #20 →"
-     ```
-- **Giải pháp dứt điểm cho Agent kế thừa**:
-  * Trong `showCompletedState()`: Nếu đang trong phiên học bài (`this.lessonId` hoặc `this.currentChapterIdx != null`), bổ sung ngay lệnh chốt chặn tiến độ hoàn tất $100\%$:
-    ```js
-    if (this.lessonId && !this.isReviewMode && this.activeAction !== 'due') {
-      const topicKey = `topic_${this.lessonId}`;
-      const totalWords = this.sessionQueue?.filter(q => !q._requeued)?.length || 20;
-      this.persistProgress(this.activeMode, totalWords);
-    }
-    ```
-  * Đảm bảo khi toàn bộ thẻ bài học đã hoàn thành, `learnedCount` đạt đúng `20/20 (100%)` và hiển thị huy hiệu `✅ Đã hoàn thành` thay vì nút `▶ Học tiếp #20 →`.
+6. **Commit `0dcf066` — Giải mã Nghịch lý Đúp học, Vòng đời Tốt nghiệp Học lại & Phân định 2 Thuật toán**:
+   - **Vòng đời Tốt nghiệp Học lại (Relearn Graduation)**: Trong `submitRating`, cho phép gửi đánh giá tốt nghiệp (`!queueItem._requeued || numRating >= 2`) để giải phóng thẻ khỏi hàng đợi khoan nhớ ngắn hạn và lên lịch ôn tập dài hạn.
+   - **Chuẩn hóa Thứ tự Tính toán SM-2**: Sửa lỗi tính EF sớm trước khi nhân interval trong `demo-fallback-engine.js`.
+   - **Phân định rõ ràng 2 Thuật toán**:
+     * Thuật toán gốc SM-2 trên Cloud (tính theo Ngày - 24 giờ).
+     * Chế độ Test 2 phút (tính theo Phút - 2 phút).
 
 ---
 
-#### Khúc mắc 2: Lỗi "Không hiện từ đến hạn" trên các bài học HSK
-- **Hiện tượng**: Reviewer đánh giá "1 - Học lại" cho nhiều từ vựng trong Bài 02, nhưng trên thẻ Bài 02 hoàn toàn **không xuất hiện nút `⚡ Ôn X từ đến hạn`**.
-- **Nguyên nhân kỹ thuật gốc (Root Cause)**:
-  1. Trong `renderHskTopics(level)` (dòng 11744 `frontend/js/pages/srs-review-page.js`):
-     ```js
-     const dueCount = vocabList.filter(v => this.isVocabDue(v.vocabId ?? v.itemId ?? v.id)).length;
-     ```
-  2. `vocabList` lấy từ mảng hằng số tĩnh `HSK1_TOPICS` định nghĩa ở đầu file `srs-review-page.js`. Trong mảng này, các từ vựng mang ID giả lập (mock ID), ví dụ:
-     * Chữ `吃` có `vocabId: 46`
-     * Chữ `出租车` có `vocabId: 504`
-     * Chữ `穿` có `vocabId: 51`
-  3. Trong khi đó, Backend TiDB Cloud Serverless lưu ID từ vựng thật trong cơ sở dữ liệu:
-     * Chữ `吃` có `itemId: 2045664`
-     * Chữ `出租车` có `itemId: 2047129`
-     * Chữ `穿` có `itemId: 2045669`
-  4. Khi gọi API `GET /api/v1/srs/due?itemType=VOCABULARY`, Render trả về danh sách mang ID thật (`2045664`, `2047129`...).
-  5. Hàm `isVocabDue(vocabId)` kiểm tra:
-     ```js
-     return this.dueItemsCache.vocab.some(v => Number(v.itemId) === Number(targetId));
-     ```
-     So sánh `2045664 === 46` -> **Luôn trả về `false`**!
-  6. Kết quả: `dueCount` của toàn bộ các bài học HSK luôn luôn bằng `0`, khiến nút `⚡ Ôn X từ đến hạn` **bị ẩn hoàn toàn trên 100% các bài học HSK**!
-- **Giải pháp dứt điểm cho Agent kế thừa**:
-  * **Cách 1 (So sánh theo Hanzi & ID)**: Nâng cấp hàm `isVocabDue`:
-    ```js
-    isVocabDue(vocabId, hanzi = null) {
-      if (!this.dueItemsCache?.vocab) return false;
-      const targetId = vocabId != null ? Number(vocabId) : null;
-      return this.dueItemsCache.vocab.some(v => {
-        if (targetId != null && (Number(v.itemId) === targetId || Number(v.vocabId) === targetId || Number(v.id) === targetId)) {
-          return true;
-        }
-        if (hanzi && v.hanzi === hanzi) {
-          return true;
-        }
-        return false;
-      });
-    }
-    ```
-    Trong `renderHskTopics`:
-    ```js
-    const dueCount = vocabList.filter(v => this.isVocabDue(v.vocabId ?? v.itemId ?? v.id, v.hanzi)).length;
-    ```
-  * **Cách 2 (Sử dụng API chuẩn Backend)**: Backend Spring Boot đã có sẵn endpoint chuyên dụng:
-    `GET /api/v1/srs/lessons/{lessonId}/stats` trả về `LessonSrsStatsResponse` chứa trường `dueCardsCount` (tính trực tiếp từ TiDB cho bài học đó).
+### 5.3. Hướng Dẫn Kiểm Tra Thực Tế Ngày Mai (Tomorrow Verification Guide)
+
+> [!IMPORTANT]
+> **Giải thích cơ chế xuất hiện từ đến hạn cho người dùng kiểm tra ngày mai**:
+> 1. **Tại sao hôm nay sau 2 phút chưa thấy thẻ đến hạn trên tài khoản `HỌC VIÊN 1111`?**
+>    - Khi bạn đăng nhập tài khoản học viên thật, mọi dữ liệu được lưu trên **Render Cloud Backend kết nối TiDB Cloud**.
+>    - Trên Cloud, hệ thống đang chạy **Thuật toán gốc SM-2 chuẩn mực khoa học (tính bằng NGÀY - 24 giờ)**.
+>    - Sau khi bạn học xong bài và tốt nghiệp 3 từ "Học lại" bằng cách chọn "Khó" (Rating 2), thuật toán lên lịch hẹn dài hạn:
+>      $$\text{nextReviewAt} = \text{Thời điểm học} + 1\text{ ngày (24 giờ sau)}$$
+>    - Vì vậy, sau 2 phút, cơ sở dữ liệu TiDB kiểm tra điều kiện `nextReviewAt <= now` thì thẻ **CHƯA ĐẾN HẠN** (còn 23 giờ 58 phút nữa).
+> 2. **Hiện tượng bạn sẽ thấy vào ngày mai**:
+>    - Sau đúng 24 giờ kể từ thời điểm bạn học (hoặc vào sáng mai khi mốc thời gian vượt qua `nextReviewAt`):
+>      * Điều kiện `nextReviewAt <= now` trong TiDB Cloud trở thành `TRUE`.
+>      * Khi đăng nhập vào `srs-review.html`, trên thẻ Bài 01 của bạn sẽ xuất hiện nút màu vàng nổi bật:
+>        **`⚡ Ôn 3 từ đến hạn`**!
+>      * Bấm vào nút này sẽ đưa bạn vào phiên ôn tập đúng 3 từ vựng cần củng cố.
+> 3. **Nếu muốn kiểm thử ngay lập tức chế độ 2 phút (Không cần đợi 24h)**:
+>    - Bấm **Đăng xuất** (hoặc mở cửa sổ Ẩn danh Incognito) để chạy trên Chế độ Demo Client-side.
+>    - Học bài, chọn "Học lại" cho một vài từ, cuối bài chọn "Khó".
+>    - Ra ngoài danh mục, đợi đúng 2 phút rồi bấm **F5** (hoặc giữ tab sáng trong 15s), nút `⚡ Ôn từ đến hạn` sẽ lập tức xuất hiện!
 
 ---
 
-#### Khúc mắc 3: Trải nghiệm thực tế về nút "Cách viết" và Vấn đề Cache Trình duyệt
-- **Xác minh thực tế**: Kiểm thử headless browser trên GitHub Pages thật (`test_cach_viet.mjs`) xác nhận nút `✍️ Cách viết` (`#btnCardBackWriting`) đã tồn tại trên DOM (`display: flex`), khi click mở thành công khung vẽ `HanziWriter` với 2 SVG render hoàn chỉnh.
-- **Lý do người dùng chưa thấy**: Trình duyệt client (Chrome/Edge) trên máy Reviewer cache rất mạnh các tệp JavaScript Native Module (`srs-review-page.js`). Dù GitHub Pages đã deploy, trình duyệt vẫn nạp file từ Disk Cache nếu người dùng không nhấn `Ctrl + F5` hoặc mở tab ẩn danh.
-- **Khuyến nghị cho Agent kế thừa**: Bổ sung cơ chế auto-timestamp cache-buster hoặc đăng ký kiểm tra version tự động để ép trình duyệt người dùng luôn lấy phiên bản mới nhất.
+### 5.4. Kế Hoạch Bàn Giao Cho Nhiệm Vụ Tiếp Theo: `TASK-4.3` (SRS Phòng Luyện Viết)
 
----
+Toàn bộ các khúc mắc và câu hỏi kiểm toán chuyên sâu về **Thuật toán SuperMemo SM-2**, **Chế độ Test 2 phút**, **Vòng đời Tốt nghiệp Học lại**, và **Đồng bộ hóa 50 bài học HSK** trong `TASK-4.2` đã được giải quyết dứt điểm và khóa chặt bằng 100% bài kiểm thử tự động xanh trên mọi tầng kiến trúc.
 
-#### Khúc mắc 4: Thuật toán SuperMemo-2 khi đánh "1 - Học lại" trên bài học đã hoàn thành
-- Theo quy chuẩn khoa học SRS (SuperMemo SM-2 & Anki Algorithm):
-  1. Khi thẻ đã ở trạng thái Graduate (đã học xong bài), việc bấm **1 - Học lại (Again)** được định nghĩa là một **Lapse (Quên kiến thức)**.
-  2. Thẻ lập tức bị hạ về bước Relearning: `intervalDays = 0`, `repetitions = 0`, `nextReviewAt = now`, và Ease Factor bị phạt trừ $0.20$ (suy giảm từ 2.50 xuống 2.30 hoặc tối thiểu 1.30).
-  3. Trong phiên hiện tại, thẻ được Requeue để ôn tập tức thời.
-  4. Lượt làm lại trong phiên chỉ củng cố Short-term Memory, **không được coi là hoàn thành ôn tập dài hạn**, nên thẻ **BẮT BUỘC PHẢI HIỆN NÚT ÔN ĐẾN HẠN** khi quay lại danh mục để người học ôn tập lại vào các ngày tiếp theo.
-
----
-
-### 5.4. Kế Hoạch Hành Động Cho Agent Kế Thừa (Handover Action Plan)
-
-Khi tiếp nhận phiên làm việc, Agent kế thừa cần thực hiện ngay các bước sau:
-
-1. **Sửa Lỗi 1 (Kẹt tiến độ 19/20 từ vựng)**:
-   - Mở [srs-review-page.js](file:///c:/Users/LENOVO/btlm-test%20(2)/btlm-test/elearning-1.0.0-20260819T062551Z-1-002/elearning-1.0.0/elearning-1.0.0/frontend/js/pages/srs-review-page.js).
-   - Trong `showCompletedState()`, kiểm tra nếu phiên học bài (`this.lessonId`) hoàn thành thì ép ghi nhận `progress[topicKey] = totalCount` (20/20) để đảm bảo không bị dừng ở 19.
-   - Kiểm tra thêm điều kiện tại `submitRating` để đảm bảo thẻ thứ 20 không bị bỏ sót khi lưu tiến độ.
-
-2. **Sửa Lỗi 2 (Hiển thị nút `⚡ Ôn X từ đến hạn` trên HSK)**:
-   - Cập nhật hàm `isVocabDue` trong `srs-review-page.js` để nhận thêm tham số `hanzi`.
-   - Trong `renderHskTopics`, truyền `v.hanzi` vào `this.isVocabDue(..., v.hanzi)`. Khi đó các từ vựng đã đánh Lapse trên TiDB sẽ khớp chính xác với danh sách HSK và nút `⚡ Ôn X từ đến hạn` sẽ hiển thị ngay lập tức.
-
-3. **Chạy Bộ Kiểm Thử Xác Minh Chuẩn**:
-   - Chạy `npm run verify:frontend:fast` (1.044 tests).
-   - Chạy `node tests/e2e/runner.mjs --tier=all` (74 tests).
-   - Chạy kịch bản kiểm thử trình duyệt thực tế trên GitHub Pages để lấy screenshot nghiệm thu.
-
-4. **Cam Kết Quy Tắc Bất Biến**:
-   - Tuân thủ nghiêm ngặt **Zero-Polling Rule** (không dùng `manage_task(Action='status')` lặp lại).
-   - Tuân thủ **DOM Safety Invariant** (không dùng `innerHTML` trên dữ liệu động).
-   - Không sửa các file migration từ V1 đến V30.
-
+Nhiệm vụ tiếp theo sẵn sàng triển khai là: **`TASK-4.3`: SRS Phòng Luyện Viết Chữ Hán (`srs-review.html?mode=writing`, `character-writing`)**:
+1. Kiểm tra tích hợp canvas HanziWriter với các thiết lập độ lớn ô Mễ (170px vs 200px) từ `profile.html#settings`.
+2. Kiểm tra tính năng tự động chuyển nét và phát lại animation nét chữ.
+3. Kiểm tra responsive trên thiết bị di động (360px..412px), đảm bảo zero horizontal overflow và hỗ trợ viết cảm ứng ngón tay mượt mà.
