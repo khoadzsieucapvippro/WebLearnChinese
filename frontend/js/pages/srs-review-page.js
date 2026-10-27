@@ -9827,10 +9827,15 @@ export function handleAgainRequeue(queue, queueItem, maxAgain = MAX_AGAIN_REVIEW
  */
 export function updateReviewUrl(params = {}, replace = false) {
   if (typeof window === 'undefined' || !window.location) return;
-  const url = new URL(window.location.href);
+  let url;
+  try {
+    url = new URL(window.location.href || 'http://localhost/srs-review.html');
+  } catch {
+    return;
+  }
 
   // Clear specific params first
-  ['mode', 'group', 'lessonId', 'radicalId', 'vocabId', 'action'].forEach(p => url.searchParams.delete(p));
+  ['mode', 'group', 'lessonId', 'radicalId', 'vocabId', 'chapter', 'action'].forEach(p => url.searchParams.delete(p));
 
   for (const [k, v] of Object.entries(params)) {
     if (v !== null && v !== undefined && v !== '') {
@@ -10639,9 +10644,18 @@ export class SrsReviewController {
       this.activeMode = 'flashcard';
     }
 
+    const rawLessonId = urlParams.get('lessonId');
+    if (rawLessonId && /^\d+$/.test(rawLessonId.trim()) && Number(rawLessonId.trim()) > 0) {
+      this.lessonId = Number(rawLessonId.trim());
+    } else {
+      this.lessonId = null;
+    }
+
     const rawGroup = (urlParams.get('group') || '').toLowerCase();
     if (['radicals50', 'radicals214', 'hsk1', 'hsk2', 'hsk3'].includes(rawGroup)) {
       this.activeGroup = rawGroup;
+    } else if (this.lessonId) {
+      this.activeGroup = 'hsk1';
     } else {
       this.activeGroup = 'radicals50';
     }
@@ -10650,13 +10664,6 @@ export class SrsReviewController {
     this.activeAction = (rawAction === 'continue' || rawAction === 'review' || rawAction === 'start' || rawAction === 'due')
       ? (rawAction === 'start' ? 'continue' : rawAction)
       : null;
-
-    const rawLessonId = urlParams.get('lessonId');
-    if (rawLessonId && /^\d+$/.test(rawLessonId.trim()) && Number(rawLessonId.trim()) > 0) {
-      this.lessonId = Number(rawLessonId.trim());
-    } else {
-      this.lessonId = null;
-    }
 
     const rawRadicalId = urlParams.get('radicalId');
     if (rawRadicalId && /^\d+$/.test(rawRadicalId.trim()) && Number(rawRadicalId.trim()) > 0) {
@@ -10670,6 +10677,13 @@ export class SrsReviewController {
       this.vocabId = Number(rawVocabId.trim());
     } else {
       this.vocabId = null;
+    }
+
+    const rawChapter = urlParams.get('chapter');
+    if (rawChapter && /^\d+$/.test(rawChapter.trim())) {
+      this.currentChapterIdx = Number(rawChapter.trim());
+    } else {
+      this.currentChapterIdx = null;
     }
 
     // Backward compatibility for legacy tests (?mode=practice, ?mode=new, ?cardType=WRITING)
@@ -10894,9 +10908,9 @@ export class SrsReviewController {
     const groupTitles = {
       radicals50: { title: '50 Bộ Thủ Thông Dụng', sub: 'Các bộ thủ xuất hiện với tần suất cao nhất trong chữ Hán hiện đại.' },
       radicals214: { title: '214 Bộ Thủ Khang Hy', sub: 'Hệ thống đầy đủ 214 bộ thủ Khang Hy tiêu chuẩn phân theo số nét.' },
-      hsk1: { title: 'Từ Vựng HSK 1 (10 Chủ Đề)', sub: '200 từ vựng cốt lõi chuẩn HSK 1 chia theo 10 bài học thực tế.' },
-      hsk2: { title: 'Từ Vựng HSK 2 (10 Chủ Đề)', sub: 'Hệ thống từ vựng sơ trung cấp HSK 2 chia theo 10 bài học.' },
-      hsk3: { title: 'Từ Vựng HSK 3 (10 Chủ Đề)', sub: 'Hệ thống từ vựng trung cấp HSK 3 mở rộng 10 chủ đề nâng cao.' }
+      hsk1: { title: 'Từ Vựng HSK 1 (15 Bài Học)', sub: '300 từ vựng cốt lõi chuẩn HSK 1 chia theo 15 bài học thực tế.' },
+      hsk2: { title: 'Từ Vựng HSK 2 (10 Bài Học)', sub: '200 từ vựng sơ trung cấp HSK 2 chia theo 10 bài học thực tế.' },
+      hsk3: { title: 'Từ Vựng HSK 3 (25 Bài Học)', sub: '500 từ vựng trung cấp HSK 3 chia theo 25 bài học thực tế.' }
     };
 
     const info = groupTitles[this.activeGroup] || groupTitles.radicals50;
@@ -10970,26 +10984,50 @@ export class SrsReviewController {
    * @param {number} radicalId
    * @returns {boolean}
    */
-  isRadicalDue(radicalId) {
-    if (!this.dueItemsCache?.radicals || radicalId == null) return false;
-    const targetId = Number(radicalId);
+  /**
+   * Checks if a radical ID is currently due.
+   * Supports matching by ID and character fallback.
+   * @param {number|string} radicalId
+   * @param {string|null} [character=null]
+   * @returns {boolean}
+   */
+  isRadicalDue(radicalId, character = null) {
+    if (!this.dueItemsCache?.radicals) return false;
+    if (radicalId == null && !character) return false;
+    const targetId = radicalId != null ? Number(radicalId) : null;
     return this.dueItemsCache.radicals.some(r => {
       const id = r.itemId ?? r.radicalId ?? r.id;
-      return id != null && Number(id) === targetId;
+      if (targetId != null && id != null && Number(id) === targetId) {
+        return true;
+      }
+      const char = r.character || r.hanzi;
+      if (character && char && String(char).trim() === String(character).trim()) {
+        return true;
+      }
+      return false;
     });
   }
 
   /**
    * Checks if a vocabulary ID is currently due.
-   * @param {number} vocabId
+   * Supports matching by ID and Hanzi fallback (remediates mock IDs vs TiDB Cloud DB IDs).
+   * @param {number|string} vocabId
+   * @param {string|null} [hanzi=null]
    * @returns {boolean}
    */
-  isVocabDue(vocabId) {
-    if (!this.dueItemsCache?.vocab || vocabId == null) return false;
-    const targetId = Number(vocabId);
+  isVocabDue(vocabId, hanzi = null) {
+    if (!this.dueItemsCache?.vocab) return false;
+    if (vocabId == null && !hanzi) return false;
+    const targetId = vocabId != null ? Number(vocabId) : null;
     return this.dueItemsCache.vocab.some(v => {
       const id = v.itemId ?? v.vocabId ?? v.id;
-      return id != null && Number(id) === targetId;
+      if (targetId != null && id != null && Number(id) === targetId) {
+        return true;
+      }
+      if (hanzi && v.hanzi && String(v.hanzi).trim() === String(hanzi).trim()) {
+        return true;
+      }
+      return false;
     });
   }
 
@@ -11002,8 +11040,10 @@ export class SrsReviewController {
     if (!item) return false;
     if (item.isDue) return true;
     if (item.nextReviewAt && new Date(item.nextReviewAt) <= new Date()) return true;
-    if ((item.itemType || '').toUpperCase() === 'RADICAL') return this.isRadicalDue(item.itemId ?? item.radicalId ?? item.id);
-    return this.isVocabDue(item.itemId ?? item.vocabId ?? item.id);
+    if ((item.itemType || '').toUpperCase() === 'RADICAL') {
+      return this.isRadicalDue(item.itemId ?? item.radicalId ?? item.id, item.character || item.hanzi);
+    }
+    return this.isVocabDue(item.itemId ?? item.vocabId ?? item.id, item.hanzi);
   }
 
   /**
@@ -11019,6 +11059,52 @@ export class SrsReviewController {
       total = p.completedCount;
     } else if (Array.isArray(p.learnedIds)) {
       total = p.learnedIds.length;
+    } else if (group.startsWith('hsk')) {
+      const level = group === 'hsk2' ? 2 : (group === 'hsk3' ? 3 : 1);
+      const topics = level === 2 ? HSK2_TOPICS : (level === 3 ? HSK3_TOPICS : HSK1_TOPICS);
+
+      const findBackendLesson = (t) => {
+        if (!this.backendLessons || !Array.isArray(this.backendLessons)) return null;
+        return this.backendLessons.find(x => {
+          if (!x || !x.title) return false;
+          if (t.title && x.title.includes(t.title)) return true;
+          const m1 = x.title.match(/Bài\s*(\d+)/i);
+          const m2 = t.title?.match(/Bài\s*(\d+)/i);
+          return m1 && m2 && parseInt(m1[1], 10) === parseInt(m2[1], 10);
+        }) || null;
+      };
+
+      // Collect legacy backendLessonId aliases that belong to earlier topics with verified progress
+      const claimedAliases = new Set();
+      topics.forEach((t) => {
+        if (t.backendLessonId) {
+          const hasOwnTopicProgress = typeof p[`topic_${t.topicId}`] === 'number' && p[`topic_${t.topicId}`] > 0;
+          const b = findBackendLesson(t);
+          const hasOwnDbProgress = b && typeof p[`topic_${b.lessonId}`] === 'number' && p[`topic_${b.lessonId}`] > 0;
+          if (hasOwnTopicProgress || hasOwnDbProgress) {
+            claimedAliases.add(`topic_${t.backendLessonId}`);
+          }
+        }
+      });
+
+      topics.forEach((t) => {
+        let topicLearned = 0;
+        const topicIdKey = `topic_${t.topicId}`;
+        // If this topicId key matches a legacy alias claimed by another topic, don't count it here
+        if (!claimedAliases.has(topicIdKey)) {
+          if (typeof p[topicIdKey] === 'number') {
+            topicLearned = Math.max(topicLearned, p[topicIdKey]);
+          }
+        }
+        if (t.backendLessonId && typeof p[`topic_${t.backendLessonId}`] === 'number') {
+          topicLearned = Math.max(topicLearned, p[`topic_${t.backendLessonId}`]);
+        }
+        const b = findBackendLesson(t);
+        if (b && typeof p[`topic_${b.lessonId}`] === 'number') {
+          topicLearned = Math.max(topicLearned, p[`topic_${b.lessonId}`]);
+        }
+        total += Math.min(topicLearned, t.vocabularies?.length || 20);
+      });
     } else {
       for (const [k, v] of Object.entries(p)) {
         if (k.startsWith('chapter_') || k.startsWith('topic_')) {
@@ -11036,7 +11122,7 @@ export class SrsReviewController {
   updateCurriculaShelfMetrics() {
     // 1. 50 Radicals
     const rad50List = this.commonRadicals.length > 0 ? this.commonRadicals : this.fullRadicalsCatalog.slice(0, 50);
-    const due50 = rad50List.filter(r => this.isRadicalDue(r.radicalId ?? r.id ?? r.itemId)).length;
+    const due50 = rad50List.filter(r => this.isRadicalDue(r.radicalId ?? r.id ?? r.itemId, r.character)).length;
     const learned50 = this.getGroupLearnedCount('radicals50', 50);
     const badge50 = document.getElementById('deckDueBadge_radicals50');
     if (badge50) {
@@ -11055,7 +11141,7 @@ export class SrsReviewController {
 
     // 2. 214 Radicals
     const total214 = this.fullRadicalsCatalog.length || 214;
-    const due214 = this.fullRadicalsCatalog.filter(r => this.isRadicalDue(r.radicalId ?? r.id ?? r.itemId)).length;
+    const due214 = this.fullRadicalsCatalog.filter(r => this.isRadicalDue(r.radicalId ?? r.id ?? r.itemId, r.character)).length;
     const learned214 = this.getGroupLearnedCount('radicals214', total214);
     const badge214 = document.getElementById('deckDueBadge_radicals214');
     if (badge214) {
@@ -11075,7 +11161,7 @@ export class SrsReviewController {
     // 3. HSK 1
     const hsk1Topics = [...HSK1_TOPICS, ...(this.extraHskTopics?.hsk1 || [])];
     const hsk1Words = hsk1Topics.flatMap(t => t.vocabularies || []);
-    const dueHsk1 = hsk1Words.filter(v => this.isVocabDue(v.vocabId || v.itemId || v.id)).length;
+    const dueHsk1 = hsk1Words.filter(v => this.isVocabDue(v.vocabId || v.itemId || v.id, v.hanzi)).length;
     const learnedHsk1 = this.getGroupLearnedCount('hsk1', hsk1Words.length || 300);
     const badgeHsk1 = document.getElementById('deckDueBadge_hsk1');
     if (badgeHsk1) {
@@ -11095,7 +11181,7 @@ export class SrsReviewController {
     // 4. HSK 2
     const hsk2Topics = [...HSK2_TOPICS, ...(this.extraHskTopics?.hsk2 || [])];
     const hsk2Words = hsk2Topics.flatMap(t => t.vocabularies || []);
-    const dueHsk2 = hsk2Words.filter(v => this.isVocabDue(v.vocabId || v.itemId || v.id)).length;
+    const dueHsk2 = hsk2Words.filter(v => this.isVocabDue(v.vocabId || v.itemId || v.id, v.hanzi)).length;
     const learnedHsk2 = this.getGroupLearnedCount('hsk2', hsk2Words.length || 200);
     const badgeHsk2 = document.getElementById('deckDueBadge_hsk2');
     if (badgeHsk2) {
@@ -11115,7 +11201,7 @@ export class SrsReviewController {
     // 5. HSK 3
     const hsk3Topics = [...HSK3_TOPICS, ...(this.extraHskTopics?.hsk3 || [])];
     const hsk3Words = hsk3Topics.flatMap(t => t.vocabularies || []);
-    const dueHsk3 = hsk3Words.filter(v => this.isVocabDue(v.vocabId || v.itemId || v.id)).length;
+    const dueHsk3 = hsk3Words.filter(v => this.isVocabDue(v.vocabId || v.itemId || v.id, v.hanzi)).length;
     const learnedHsk3 = this.getGroupLearnedCount('hsk3', hsk3Words.length || 500);
     const badgeHsk3 = document.getElementById('deckDueBadge_hsk3');
     if (badgeHsk3) {
@@ -11170,6 +11256,14 @@ export class SrsReviewController {
     }
 
     this.currentChapterTitle = chapterTitle;
+    this.currentChapterIdx = chapterIdx;
+
+    updateReviewUrl({
+      mode: this.activeMode,
+      group: deck,
+      chapter: chapterIdx,
+      action
+    });
 
     const progress = getProgress(this.activeMode)?.[deck] || {};
     const chapKey = `chapter_${chapterIdx}`;
@@ -11183,6 +11277,9 @@ export class SrsReviewController {
       queue = items;
       this.initSessionQueue(queue, true, 0);
     } else if (action === 'due') {
+      if (authManager.isAuthenticated() && (!this.dueItemsCache?.radicals || this.dueItemsCache.radicals.length === 0)) {
+        await this.fetchDueCounts();
+      }
       queue = items.filter(it => this.isItemDue(it));
       if (queue.length === 0) queue = items;
       this.initSessionQueue(queue, false, 0);
@@ -11431,7 +11528,7 @@ export class SrsReviewController {
 
       const chapKey = `chapter_${i}`;
       const savedIndex = progress[chapKey] || 0;
-      const dueCount = chapterRadicals.filter(r => this.isRadicalDue(r.radicalId ?? r.id ?? r.itemId)).length;
+      const dueCount = chapterRadicals.filter(r => this.isRadicalDue(r.radicalId ?? r.id ?? r.itemId, r.character)).length;
       const learnedCount = Math.min(10, savedIndex);
 
       let stoppedItemText = null;
@@ -11549,7 +11646,7 @@ export class SrsReviewController {
 
       const chapKey = `chapter_${i}`;
       const savedIndex = progress[chapKey] || 0;
-      const dueCount = chapterRadicals.filter(r => this.isRadicalDue(r.radicalId ?? r.id ?? r.itemId)).length;
+      const dueCount = chapterRadicals.filter(r => this.isRadicalDue(r.radicalId ?? r.id ?? r.itemId, r.character)).length;
       const learnedCount = Math.min(chapterRadicals.length, savedIndex);
 
       let stoppedItemText = null;
@@ -11723,6 +11820,25 @@ export class SrsReviewController {
     const grid = document.createElement('div');
     grid.className = 'stage-grid srs-chapters-grid';
 
+    // Collect legacy backendLessonId aliases that belong to earlier topics with verified progress
+    const claimedAliases = new Set();
+    topics.forEach((t) => {
+      if (t.backendLessonId) {
+        const hasOwnTopicProgress = typeof progress[`topic_${t.topicId}`] === 'number' && progress[`topic_${t.topicId}`] > 0;
+        const b = lessons.find(l => {
+          if (!l || !l.title) return false;
+          if (t.title && l.title.includes(t.title)) return true;
+          const m1 = l.title.match(/Bài\s*(\d+)/i);
+          const m2 = t.title?.match(/Bài\s*(\d+)/i);
+          return m1 && m2 && parseInt(m1[1], 10) === parseInt(m2[1], 10);
+        });
+        const hasOwnDbProgress = b && typeof progress[`topic_${b.lessonId}`] === 'number' && progress[`topic_${b.lessonId}`] > 0;
+        if (hasOwnTopicProgress || hasOwnDbProgress) {
+          claimedAliases.add(`topic_${t.backendLessonId}`);
+        }
+      }
+    });
+
     topics.forEach((topic, topicIndex) => {
       const chapterStr = String(topicIndex + 1).padStart(2, '0');
       const lessonNumberMatch = `Bài ${chapterStr}`;
@@ -11740,8 +11856,14 @@ export class SrsReviewController {
       const vocabCount = vocabList.length > 0 ? vocabList.length : (topic.backendVocabCount || 0);
 
       const topicKey = `topic_${effectiveLessonId}`;
-      const savedIndex = progress[topicKey] || 0;
-      const dueCount = vocabList.filter(v => this.isVocabDue(v.vocabId ?? v.itemId ?? v.id)).length;
+      const topicIdKey = `topic_${topic.topicId}`;
+      const topicIdProgress = claimedAliases.has(topicIdKey) ? 0 : (progress[topicIdKey] || 0);
+      const savedIndex = Math.max(
+        progress[topicKey] || 0,
+        topicIdProgress,
+        topic.backendLessonId ? (progress[`topic_${topic.backendLessonId}`] || 0) : 0
+      );
+      const dueCount = vocabList.filter(v => this.isVocabDue(v.vocabId ?? v.itemId ?? v.id, v.hanzi)).length;
       const learnedCount = Math.min(vocabCount, savedIndex);
 
       let stoppedItemText = null;
@@ -11875,29 +11997,67 @@ export class SrsReviewController {
    */
   async startTopicSession(topicId, action) {
     this.activeAction = action;
-    this.lessonId = topicId;
     this.radicalId = null;
     this.vocabId = null;
-    this.currentChapterIdx = null;
-
-
 
     let items = null;
     let backendFetched = false;
-    let resolvedLessonId = topicId;
+
+    // Load backend lessons to resolve polymorphic IDs
+    await this.loadBackendLessons();
+    const resolvedLessonId = this.resolveLessonId(topicId);
+    this.lessonId = resolvedLessonId;
+    const effectiveLessonId = resolvedLessonId;
+
+    const level = this.activeGroup === 'hsk2' ? 2 : (this.activeGroup === 'hsk3' ? 3 : 1);
+    const topics = level === 2 ? HSK2_TOPICS : (level === 3 ? HSK3_TOPICS : HSK1_TOPICS);
+
+    // Robust polymorphic topic resolution across mock topicId, backendLessonId, TiDB lessonId, or chapter query param
+    let matchedTopic = null;
+    let topicIndex = -1;
+
+    if (this.currentChapterIdx !== null && topics[this.currentChapterIdx]) {
+      topicIndex = this.currentChapterIdx;
+      matchedTopic = topics[topicIndex];
+    } else {
+      topicIndex = topics.findIndex(t => Number(t.topicId) === Number(topicId) || Number(t.backendLessonId) === Number(topicId) || Number(t.topicId) === Number(effectiveLessonId) || Number(t.backendLessonId) === Number(effectiveLessonId));
+      if (topicIndex >= 0) {
+        matchedTopic = topics[topicIndex];
+      } else if (this.backendLessons && Array.isArray(this.backendLessons)) {
+        const bLesson = this.backendLessons.find(b => Number(b.lessonId) === Number(effectiveLessonId) || Number(b.lessonId) === Number(topicId));
+        if (bLesson && bLesson.title) {
+          topicIndex = topics.findIndex(t => bLesson.title.includes(t.title));
+          if (topicIndex >= 0) {
+            matchedTopic = topics[topicIndex];
+          } else {
+            const m = bLesson.title.match(/Bài\s+(\d+)/i);
+            if (m) {
+              const idx = parseInt(m[1], 10) - 1;
+              if (topics[idx]) {
+                topicIndex = idx;
+                matchedTopic = topics[idx];
+              }
+            }
+          }
+        }
+      }
+    }
+
+    if (topicIndex >= 0) {
+      this.currentChapterIdx = topicIndex;
+    }
+    if (matchedTopic && matchedTopic.title) {
+      this.currentChapterTitle = matchedTopic.title;
+    }
+
+    if (action === 'due' && authManager.isAuthenticated() && (!this.dueItemsCache?.vocab || this.dueItemsCache.vocab.length === 0)) {
+      await this.fetchDueCounts();
+    }
 
     if (authManager.isAuthenticated()) {
       try {
         let remoteCards = [];
         const cardTypeParam = this.activeMode === 'writing' ? 'WRITING' : (this.activeMode === 'listening' ? 'LISTENING' : 'READING');
-        const level = this.activeGroup === 'hsk2' ? 2 : this.activeGroup === 'hsk3' ? 3 : 1;
-        const topics = level === 2 ? HSK2_TOPICS : level === 3 ? HSK3_TOPICS : HSK1_TOPICS;
-        // Map legacy demo IDs (5..14) onto the real approved lesson IDs so old
-        // bookmarks and cached links keep working after the data remediation.
-        await this.loadBackendLessons();
-        resolvedLessonId = this.resolveLessonId(topicId);
-        this.lessonId = resolvedLessonId;
-        const effectiveLessonId = resolvedLessonId;
         const requestParams = { lessonId: effectiveLessonId, cardType: cardTypeParam };
 
         if (this.mode === 'LESSON_PRACTICE') {
@@ -11913,21 +12073,32 @@ export class SrsReviewController {
         } else if (this.mode === 'DUE_CARDS' || action === 'due') {
           this.mode = 'DUE_CARDS';
           const dueParams = { itemType: 'VOCABULARY', lessonId: effectiveLessonId, cardType: cardTypeParam };
-          const dueResp = await apiClient('/srs/due', { params: dueParams });
-          if (Array.isArray(dueResp)) {
+          const dueResp = await apiClient('/srs/due', { params: dueParams }).catch(() => []);
+          if (Array.isArray(dueResp) && dueResp.length > 0) {
             remoteCards = dueResp;
-          }
-        } else {
-          if (action === 'continue') {
-            const resp = await apiClient('/srs/new-cards', { params: requestParams });
-            if (Array.isArray(resp) && resp.length > 0) {
-              remoteCards = resp;
+          } else if (Array.isArray(this.dueItemsCache?.vocab) && this.dueItemsCache.vocab.length > 0) {
+            const topic = matchedTopic || topics.find(t => t.topicId === topicId || t.backendLessonId === topicId);
+            if (topic && Array.isArray(topic.vocabularies)) {
+              const dueWords = topic.vocabularies.filter(v => this.isVocabDue(v.vocabId ?? v.itemId ?? v.id, v.hanzi));
+              if (dueWords.length > 0) {
+                remoteCards = dueWords;
+              }
             }
           }
-          if (remoteCards.length === 0) {
+        } else {
+          // Standard topic learning session: fetch all lesson cards via practice-cards to maintain curriculum order
+          try {
             const practiceResp = await apiClient('/srs/practice-cards', { params: requestParams });
             if (Array.isArray(practiceResp) && practiceResp.length > 0) {
               remoteCards = practiceResp;
+            }
+          } catch (e) {
+            console.warn('[SRS Review] Could not load practice-cards, checking new-cards fallback:', e);
+          }
+          if (remoteCards.length === 0 && action === 'continue') {
+            const resp = await apiClient('/srs/new-cards', { params: requestParams }).catch(() => null);
+            if (Array.isArray(resp) && resp.length > 0) {
+              remoteCards = resp;
             }
           }
         }
@@ -11951,11 +12122,14 @@ export class SrsReviewController {
     }
 
     if (!backendFetched) {
-      const level = this.activeGroup === 'hsk2' ? 2 : this.activeGroup === 'hsk3' ? 3 : 1;
-      const topics = level === 2 ? HSK2_TOPICS : level === 3 ? HSK3_TOPICS : HSK1_TOPICS;
-      const topic = topics.find(t => t.topicId === topicId);
+      const topic = matchedTopic || topics.find(t => t.topicId === topicId || t.backendLessonId === topicId);
       if (topic && Array.isArray(topic.vocabularies)) {
-        items = topic.vocabularies.map(v => this.normalizeVocabCard(v, topic.topicId));
+        if (action === 'due') {
+          const dueWords = topic.vocabularies.filter(v => this.isVocabDue(v.vocabId ?? v.itemId ?? v.id, v.hanzi));
+          items = (dueWords.length > 0 ? dueWords : topic.vocabularies).map(v => this.normalizeVocabCard(v, topic.topicId));
+        } else {
+          items = topic.vocabularies.map(v => this.normalizeVocabCard(v, topic.topicId));
+        }
       } else {
         items = [];
       }
@@ -11963,12 +12137,19 @@ export class SrsReviewController {
 
     const progress = getProgress(this.activeMode);
     const topicKey = `topic_${resolvedLessonId}`;
-    const savedIndex = action === 'continue' ? (progress[this.activeGroup]?.[topicKey] || 0) : 0;
+    const savedIndex = action === 'continue'
+      ? Math.max(
+          progress[this.activeGroup]?.[topicKey] || 0,
+          matchedTopic ? (progress[this.activeGroup]?.[`topic_${matchedTopic.topicId}`] || 0) : 0,
+          (matchedTopic && matchedTopic.backendLessonId) ? (progress[this.activeGroup]?.[`topic_${matchedTopic.backendLessonId}`] || 0) : 0
+        )
+      : 0;
 
     updateReviewUrl({
       mode: this.activeMode,
       group: this.activeGroup,
       lessonId: resolvedLessonId,
+      chapter: this.currentChapterIdx,
       action
     });
 
@@ -12093,6 +12274,22 @@ export class SrsReviewController {
     if (this.lessonId) {
       await this.startTopicSession(this.lessonId, this.activeAction || 'continue');
       return;
+    }
+
+    if (this.currentChapterIdx !== null) {
+      if (this.activeGroup === 'radicals50' || this.activeGroup === 'radicals214') {
+        await this.startChapterSession(this.activeGroup, this.currentChapterIdx, this.activeAction || 'continue');
+        return;
+      } else if (this.activeGroup.startsWith('hsk')) {
+        const level = this.activeGroup === 'hsk2' ? 2 : this.activeGroup === 'hsk3' ? 3 : 1;
+        const topics = level === 2 ? HSK2_TOPICS : level === 3 ? HSK3_TOPICS : HSK1_TOPICS;
+        const topic = topics[this.currentChapterIdx];
+        if (topic) {
+          const effectiveLessonId = topic.backendLessonId || topic.topicId;
+          await this.startTopicSession(effectiveLessonId, this.activeAction || 'continue');
+          return;
+        }
+      }
     }
 
     if (this.activeAction === 'due') {
@@ -12354,7 +12551,7 @@ export class SrsReviewController {
       if (this.currentChapterTitle) {
         this.dom.sessionTitleText.textContent = this.currentChapterTitle;
       } else if (this.activeGroup.startsWith('hsk') || this.lessonId) {
-        const num = this.lessonId || (this.currentChapterIdx != null ? this.currentChapterIdx + 1 : 1);
+        const num = this.currentChapterIdx != null ? this.currentChapterIdx + 1 : (this.lessonId != null && this.lessonId < 100 ? this.lessonId : 1);
         this.dom.sessionTitleText.textContent = `Bài ${String(num).padStart(2, '0')}`;
       } else {
         const num = this.currentChapterIdx != null ? this.currentChapterIdx + 1 : 1;
@@ -13570,7 +13767,7 @@ export class SrsReviewController {
               body: payload
             });
           } catch (apiErr) {
-            if (apiErr?.message && apiErr.message.includes('chưa đến hạn')) {
+            if ((apiErr?.message && apiErr.message.includes('chưa đến hạn')) || apiErr?.status === 409 || apiErr?.code === 'CONFLICT') {
               console.info('[SRS Writing Review] Thẻ chưa đến hạn ôn tập SRS, tiếp tục chuyển sang thẻ kế tiếp.');
             } else {
               console.error('[SRS Writing Review] API submission failed:', apiErr);
@@ -14079,7 +14276,7 @@ export class SrsReviewController {
               body: payload
             });
           } catch (apiErr) {
-            if (apiErr?.message && apiErr.message.includes('chưa đến hạn')) {
+            if ((apiErr?.message && apiErr.message.includes('chưa đến hạn')) || apiErr?.status === 409 || apiErr?.code === 'CONFLICT') {
               console.info('[SRS Listening Review] Thẻ chưa đến hạn ôn tập SRS, tiếp tục chuyển sang thẻ kế tiếp.');
             } else {
               console.error('[SRS Listening Review] API submission failed:', apiErr);
@@ -14734,7 +14931,7 @@ export class SrsReviewController {
               body: payload
             });
           } catch (apiErr) {
-            if (apiErr?.message && apiErr.message.includes('chưa đến hạn')) {
+            if ((apiErr?.message && apiErr.message.includes('chưa đến hạn')) || apiErr?.status === 409 || apiErr?.code === 'CONFLICT') {
               console.info('[SRS Reading Review] Thẻ chưa đến hạn ôn tập SRS, tiếp tục chuyển sang thẻ kế tiếp.');
             } else {
               console.error('[SRS Reading Review] API submission failed:', apiErr);
@@ -14895,9 +15092,43 @@ export class SrsReviewController {
         });
       }
 
+      // Optimistic update of local due items cache
+      if (card) {
+        const itemType = (card.itemType || 'VOCABULARY').toUpperCase();
+        const cacheKey = itemType === 'RADICAL' ? 'radicals' : 'vocab';
+        if (this.dueItemsCache && Array.isArray(this.dueItemsCache[cacheKey])) {
+          if (numRating === 1) {
+            const alreadyDue = itemType === 'RADICAL'
+              ? this.isRadicalDue(card.itemId ?? card.radicalId ?? card.id, card.character || card.hanzi)
+              : this.isVocabDue(card.itemId ?? card.vocabId ?? card.id, card.hanzi);
+            if (!alreadyDue) {
+              this.dueItemsCache[cacheKey].push({
+                itemId: card.itemId,
+                vocabId: card.vocabId || card.itemId,
+                radicalId: card.radicalId || card.itemId,
+                id: card.id || card.itemId,
+                hanzi: card.hanzi,
+                character: card.character || card.hanzi,
+                itemType: itemType
+              });
+            }
+          } else if (numRating >= 3 && !queueItem._requeued) {
+            const targetId = Number(card.itemId ?? card.vocabId ?? card.radicalId ?? card.id);
+            const targetChar = (card.hanzi || card.character || '').trim();
+            this.dueItemsCache[cacheKey] = this.dueItemsCache[cacheKey].filter(it => {
+              const itId = Number(it.itemId ?? it.vocabId ?? it.radicalId ?? it.id);
+              const itChar = (it.hanzi || it.character || '').trim();
+              if (targetId && itId === targetId) return false;
+              if (targetChar && itChar === targetChar) return false;
+              return true;
+            });
+          }
+        }
+      }
+
       // Only advance forward chapter progress when NOT in review mode
       if (!this.isReviewMode) {
-        this.persistProgress('flashcard', this.currentIndex + 1);
+        this.persistProgress(this.activeMode || 'flashcard', this.currentIndex + 1);
       }
 
       this.stats.totalReviewed++;
@@ -14935,9 +15166,11 @@ export class SrsReviewController {
       this.setRatingButtonsEnabled(true);
 
       // Gracefully advance local session if card is not yet due (practice/early review in catalog)
-      if (err?.message && err.message.includes('chưa đến hạn')) {
+      if ((err?.message && err.message.includes('chưa đến hạn')) || err?.status === 409 || err?.code === 'CONFLICT') {
         console.info('[SRS Review] Thẻ chưa đến hạn ôn tập SRS, tiếp tục chuyển sang thẻ kế tiếp trong phiên học.');
-        this.persistProgress('flashcard', this.currentIndex + 1);
+        if (!this.isReviewMode) {
+          this.persistProgress(this.activeMode || 'flashcard', this.currentIndex + 1);
+        }
         this.stats.totalReviewed++;
         this.stats.totalTimeSeconds += elapsedSeconds;
         if (numRating === 1) this.stats.againCount++;
@@ -14945,6 +15178,40 @@ export class SrsReviewController {
         else if (numRating === 3) this.stats.goodCount++;
         else if (numRating === 4) this.stats.easyCount++;
         if (numRating >= 3) this.stats.goodEasyCount++;
+
+        // Handle local session requeue for Again even on 409 conflict
+        if (numRating === 1) {
+          const requeueResult = handleAgainRequeue(this.sessionQueue, queueItem, MAX_AGAIN_REVIEWS_PER_CARD);
+          if (requeueResult.requeued) {
+            showToast({
+              type: 'info',
+              title: 'Học lại',
+              message: `Thẻ "${card.hanzi}" sẽ xuất hiện lại ở cuối phiên học.`
+            });
+          }
+        }
+
+        // Optimistic update of local due items cache on 409 conflict
+        if (card && numRating === 1) {
+          const itemType = (card.itemType || 'VOCABULARY').toUpperCase();
+          const cacheKey = itemType === 'RADICAL' ? 'radicals' : 'vocab';
+          if (this.dueItemsCache && Array.isArray(this.dueItemsCache[cacheKey])) {
+            const alreadyDue = itemType === 'RADICAL'
+              ? this.isRadicalDue(card.itemId ?? card.radicalId ?? card.id, card.character || card.hanzi)
+              : this.isVocabDue(card.itemId ?? card.vocabId ?? card.id, card.hanzi);
+            if (!alreadyDue) {
+              this.dueItemsCache[cacheKey].push({
+                itemId: card.itemId,
+                vocabId: card.vocabId || card.itemId,
+                radicalId: card.radicalId || card.itemId,
+                id: card.id || card.itemId,
+                hanzi: card.hanzi,
+                character: card.character || card.hanzi,
+                itemType: itemType
+              });
+            }
+          }
+        }
 
         this.currentIndex++;
         if (this.currentIndex >= this.sessionQueue.length) {
@@ -15235,6 +15502,58 @@ export class SrsReviewController {
     }
     if (this.dom.statTotalTime) {
       this.dom.statTotalTime.textContent = formatElapsedSeconds(this.stats.totalTimeSeconds);
+    }
+
+    // Invariant: Once all items in a learning session are completed, guarantee 100% progress
+    if (!this.isReviewMode && this.activeAction !== 'due') {
+      if (this.lessonId) {
+        const level = this.activeGroup === 'hsk2' ? 2 : (this.activeGroup === 'hsk3' ? 3 : 1);
+        const topics = level === 2 ? HSK2_TOPICS : (level === 3 ? HSK3_TOPICS : HSK1_TOPICS);
+        let currentTopic = null;
+        if (this.currentChapterIdx !== null && topics[this.currentChapterIdx]) {
+          currentTopic = topics[this.currentChapterIdx];
+        } else {
+          currentTopic = topics.find(t => Number(t.topicId) === Number(this.lessonId) || Number(t.backendLessonId) === Number(this.lessonId));
+          if (!currentTopic && this.backendLessons && Array.isArray(this.backendLessons)) {
+            const b = this.backendLessons.find(x => Number(x.lessonId) === Number(this.lessonId));
+            if (b && b.title) {
+              currentTopic = topics.find(t => b.title.includes(t.title));
+              if (!currentTopic) {
+                const m = b.title.match(/Bài\s*(\d+)/i);
+                if (m) {
+                  const idx = parseInt(m[1], 10) - 1;
+                  if (topics[idx]) {
+                    currentTopic = topics[idx];
+                  }
+                }
+              }
+            }
+          }
+        }
+        const totalWords = currentTopic?.vocabularies?.length || this.sessionQueue?.filter(q => !q._requeued)?.length || 20;
+        this.persistProgress(this.activeMode, totalWords);
+        // Also persist to topicId and backendLessonId keys for complete consistency
+        if (currentTopic) {
+          const currentProgress = getProgress(this.activeMode);
+          const updates = { ...currentProgress };
+          if (!updates[this.activeGroup]) updates[this.activeGroup] = {};
+          updates[this.activeGroup][`topic_${currentTopic.topicId}`] = totalWords;
+          if (currentTopic.backendLessonId) {
+            updates[this.activeGroup][`topic_${currentTopic.backendLessonId}`] = totalWords;
+          }
+          saveProgress(this.activeMode, updates);
+        }
+      } else if (this.currentChapterIdx !== null) {
+        let totalRadicalsInChap = 10;
+        if (this.activeGroup === 'radicals50') {
+          totalRadicalsInChap = 10;
+        } else if (this.activeGroup === 'radicals214') {
+          const start = this.currentChapterIdx * 20;
+          const end = Math.min((this.currentChapterIdx + 1) * 20, 214);
+          totalRadicalsInChap = end - start;
+        }
+        this.persistProgress(this.activeMode, totalRadicalsInChap);
+      }
     }
 
     if (authManager.isAuthenticated()) {

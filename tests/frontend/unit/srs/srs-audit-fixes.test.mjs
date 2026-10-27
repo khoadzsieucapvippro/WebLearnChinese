@@ -32,6 +32,20 @@ if (typeof globalThis.localStorage === 'undefined') {
   };
 }
 
+if (typeof globalThis.window === 'undefined') {
+  globalThis.window = {
+    location: {
+      search: '',
+      pathname: '/srs-review.html',
+      href: 'http://localhost/srs-review.html'
+    },
+    history: {
+      replaceState: () => {},
+      pushState: () => {}
+    }
+  };
+}
+
 import { authManager } from '../../../../frontend/js/auth/auth-state.js';
 import {
   SrsReviewController,
@@ -172,7 +186,18 @@ function createMockDom() {
     btnWritingOutline: global.document.createElement('button'),
     writingCanvasContainer: global.document.createElement('div'),
     writingCompletionNotice: global.document.createElement('div'),
-    writingMissingWarning: global.document.createElement('div')
+    writingMissingWarning: global.document.createElement('div'),
+    completedTitle: global.document.createElement('h2'),
+    completedDescription: global.document.createElement('p'),
+    statTotalReviewed: global.document.createElement('span'),
+    statAgainCount: global.document.createElement('span'),
+    statHardCount: global.document.createElement('span'),
+    statGoodCount: global.document.createElement('span'),
+    statEasyCount: global.document.createElement('span'),
+    statGoodEasyCount: global.document.createElement('span'),
+    statTotalTime: global.document.createElement('span'),
+    completedState: global.document.createElement('div'),
+    catalogContentContainer: global.document.createElement('div')
   };
 }
 
@@ -703,4 +728,312 @@ describe('Unit: SRS Flashcard & Writing Audit Fixes', () => {
       assert.strictEqual(controller.isVocabDue(undefined), false);
     });
   });
+
+  // ---------------------------------------------------------------------------
+  // AREA I: HSK Topic & Radical Chapter Progress & Due Bridging (TASK-4.2)
+  // ---------------------------------------------------------------------------
+  describe('Area I: HSK Topic & Radical Chapter Audit Fixes (TASK-4.2)', () => {
+    test('isVocabDue matches by Hanzi string even if IDs differ (mock ID vs TiDB Cloud 7-digit ID)', () => {
+      const controller = new SrsReviewController();
+      controller.dueItemsCache = {
+        vocab: [
+          { itemId: 2045664, hanzi: '吃' },
+          { itemId: 2047129, hanzi: '出租车' }
+        ]
+      };
+
+      // Mock catalog ID in HSK1_TOPICS for '吃' is 46, not 2045664
+      assert.strictEqual(controller.isVocabDue(46, '吃'), true, 'Must match by Hanzi string despite different mock ID');
+      assert.strictEqual(controller.isVocabDue(504, '出租车'), true, 'Must match by Hanzi string despite different mock ID');
+      assert.strictEqual(controller.isVocabDue(51, '穿'), false, 'Non-due vocab must return false');
+    });
+
+    test('isRadicalDue matches by Character glyph even if radical IDs differ', () => {
+      const controller = new SrsReviewController();
+      controller.dueItemsCache = {
+        radicals: [
+          { itemId: 9999, character: '水' },
+          { id: 8888, character: '木' }
+        ]
+      };
+
+      assert.strictEqual(controller.isRadicalDue(85, '水'), true, 'Must match by character glyph');
+      assert.strictEqual(controller.isRadicalDue(75, '木'), true, 'Must match by character glyph');
+      assert.strictEqual(controller.isRadicalDue(1, '一'), false, 'Non-due radical must return false');
+    });
+
+    test('parseQueryParams captures chapter query param into currentChapterIdx', () => {
+      const controller = new SrsReviewController();
+
+      globalThis.window.location.search = '?mode=flashcard&group=radicals50&chapter=3';
+      controller.parseQueryParams();
+      assert.strictEqual(controller.currentChapterIdx, 3, 'currentChapterIdx must be 3');
+      assert.strictEqual(controller.activeGroup, 'radicals50');
+
+      globalThis.window.location.search = '?mode=writing&group=hsk1&chapter=0';
+      controller.parseQueryParams();
+      assert.strictEqual(controller.currentChapterIdx, 0, 'currentChapterIdx must be 0 for chapter 0');
+
+      globalThis.window.location.search = '?mode=flashcard&group=radicals214';
+      controller.parseQueryParams();
+      assert.strictEqual(controller.currentChapterIdx, null, 'currentChapterIdx must be null when chapter param is absent');
+
+      globalThis.window.location.search = '?mode=flashcard&group=radicals50&chapter=invalid';
+      controller.parseQueryParams();
+      assert.strictEqual(controller.currentChapterIdx, null, 'currentChapterIdx must be null for non-numeric chapter');
+    });
+
+    test('showCompletedState guarantees 100% progress persistence (20/20) for lesson sessions', () => {
+      const controller = new SrsReviewController();
+      controller.activeMode = 'flashcard';
+      controller.activeGroup = 'hsk1';
+      controller.lessonId = 30003;
+      controller.isReviewMode = false;
+      controller.activeAction = 'continue';
+      controller.dom = createMockDom();
+      controller.sessionQueue = Array.from({ length: 20 }, (_, i) => ({ card: { itemId: i + 1 } }));
+
+      // Simulate partial progress previously stuck at 19/20
+      saveProgress('flashcard', {
+        hsk1: {
+          topic_30003: 19
+        }
+      });
+
+      controller.showCompletedState();
+
+      const saved = getProgress('flashcard');
+      assert.strictEqual(saved.hsk1?.topic_30003, 20, 'Progress must be guaranteed 20/20 upon completion');
+    });
+
+    test('showCompletedState guarantees 100% progress persistence for radical chapters', () => {
+      const controller = new SrsReviewController();
+      controller.activeMode = 'flashcard';
+      controller.activeGroup = 'radicals50';
+      controller.currentChapterIdx = 0;
+      controller.lessonId = null;
+      controller.isReviewMode = false;
+      controller.activeAction = 'continue';
+      controller.dom = createMockDom();
+      controller.sessionQueue = Array.from({ length: 10 }, (_, i) => ({ card: { itemId: i + 1 } }));
+
+      saveProgress('flashcard', {
+        radicals50: {
+          chapter_0: 9
+        }
+      });
+
+      controller.showCompletedState();
+
+      const saved = getProgress('flashcard');
+      assert.strictEqual(saved.radicals50?.chapter_0, 10, 'Radicals50 chapter 0 progress must be finalized to 10');
+    });
+
+    test('submitRating handles 409 conflict gracefully during learning and advances index', async () => {
+      authManager.setSession({ token: 'test-token', user: { accountId: 1 } });
+      const controller = new SrsReviewController();
+      controller.activeMode = 'flashcard';
+      controller.activeGroup = 'hsk1';
+      controller.lessonId = 30001;
+      controller.isReviewMode = false;
+      controller.dom = createMockDom();
+      controller.sessionQueue = [
+        { card: { itemId: 101, itemType: 'VOCABULARY', hanzi: '好', cardType: 'READING' } },
+        { card: { itemId: 102, itemType: 'VOCABULARY', hanzi: '你', cardType: 'READING' } }
+      ];
+      controller.currentIndex = 0;
+      controller.renderCurrentCard = () => {};
+
+      const originalFetch = globalThis.fetch;
+      globalThis.fetch = async (url) => {
+        if (String(url).includes('/srs/review')) {
+          return {
+            ok: false,
+            status: 409,
+            headers: new Headers({ 'content-type': 'application/json' }),
+            json: async () => ({ code: 'CONFLICT', message: 'Thẻ chưa đến hạn ôn tập' })
+          };
+        }
+        throw new Error('Not found');
+      };
+
+      try {
+        await controller.submitRating(3);
+        assert.strictEqual(controller.currentIndex, 1, 'Index should advance to next card on 409 conflict during learning');
+        assert.strictEqual(controller.stats.totalReviewed, 1);
+        assert.strictEqual(controller.stats.goodCount, 1);
+      } finally {
+        globalThis.fetch = originalFetch;
+      }
+    });
+
+    test('submitRating with 409 conflict requeues card when rating is 1 (Again) and updates dueItemsCache', async () => {
+      authManager.setSession({ token: 'test-token', user: { accountId: 1 } });
+      const controller = new SrsReviewController();
+      controller.activeMode = 'flashcard';
+      controller.activeGroup = 'hsk1';
+      controller.lessonId = 30001;
+      controller.isReviewMode = false;
+      controller.dom = createMockDom();
+      controller.dueItemsCache = { vocab: [], radicals: [] };
+      controller.sessionQueue = [
+        { card: { itemId: 101, itemType: 'VOCABULARY', hanzi: '好', cardType: 'READING' } },
+        { card: { itemId: 102, itemType: 'VOCABULARY', hanzi: '你', cardType: 'READING' } }
+      ];
+      controller.currentIndex = 0;
+      controller.renderCurrentCard = () => {};
+
+      const originalFetch = globalThis.fetch;
+      globalThis.fetch = async (url) => {
+        if (String(url).includes('/srs/review')) {
+          return {
+            ok: false,
+            status: 409,
+            headers: new Headers({ 'content-type': 'application/json' }),
+            json: async () => ({ code: 'CONFLICT', message: 'Thẻ chưa đến hạn ôn tập' })
+          };
+        }
+        throw new Error('Not found');
+      };
+
+      try {
+        await controller.submitRating(1);
+        assert.strictEqual(controller.currentIndex, 1);
+        assert.strictEqual(controller.sessionQueue.length, 3, 'Card must be requeued to end of session queue even on 409');
+        assert.strictEqual(controller.sessionQueue[2].card.hanzi, '好');
+        assert.strictEqual(controller.isVocabDue(101, '好'), true, 'Card must be optimistically marked due in dueItemsCache');
+      } finally {
+        globalThis.fetch = originalFetch;
+      }
+    });
+
+    test('dueItemsCache updates optimistically: adds on rating 1 and removes on rating >= 3', async () => {
+      authManager.setSession({ token: 'test-token', user: { accountId: 1 } });
+      const controller = new SrsReviewController();
+      controller.activeMode = 'flashcard';
+      controller.activeGroup = 'hsk1';
+      controller.lessonId = 30001;
+      controller.dom = createMockDom();
+      controller.dueItemsCache = { vocab: [], radicals: [] };
+      controller.sessionQueue = [
+        { card: { itemId: 201, itemType: 'VOCABULARY', hanzi: '水', cardType: 'READING' } }
+      ];
+      controller.currentIndex = 0;
+      controller.renderCurrentCard = () => {};
+
+      const originalFetch = globalThis.fetch;
+      globalThis.fetch = async (url) => {
+        if (String(url).includes('/srs/review')) {
+          return {
+            ok: true,
+            status: 200,
+            headers: new Headers({ 'content-type': 'application/json' }),
+            json: async () => ({ code: 'SUCCESS', message: 'OK', data: {} })
+          };
+        }
+        throw new Error('Not found');
+      };
+
+      try {
+        // Rating 1: marks as due
+        await controller.submitRating(1);
+        assert.strictEqual(controller.isVocabDue(201, '水'), true, 'Lapsed card must be in dueItemsCache');
+
+        // Reset and rate 3: removes from due
+        controller.currentIndex = 0;
+        await controller.submitRating(3);
+        assert.strictEqual(controller.isVocabDue(201, '水'), false, 'Mastered card must be removed from dueItemsCache');
+      } finally {
+        globalThis.fetch = originalFetch;
+      }
+    });
+
+    test('getGroupLearnedCount does not double-count polymorphic keys (topic_2 and topic_30003)', () => {
+      const controller = new SrsReviewController();
+      controller.activeMode = 'flashcard';
+
+      saveProgress('flashcard', {
+        hsk1: {
+          topic_2: 20,
+          topic_6: 20,
+          topic_30003: 20
+        }
+      });
+
+      controller.backendLessons = [
+        { lessonId: 30003, title: 'HSK 1 — Bài 02: Phương tiện, Trường học & Thiết bị' }
+      ];
+
+      const count = controller.getGroupLearnedCount('hsk1', 300);
+      assert.strictEqual(count, 20, 'Must only count 20 words for Bài 02, never double-count polymorphic keys (20 + 20 = 40)');
+    });
+
+    test('showCompletedState correctly identifies Topic 2 (Bài 02) and persists to all polymorphic keys', () => {
+      const controller = new SrsReviewController();
+      controller.activeMode = 'flashcard';
+      controller.activeGroup = 'hsk1';
+      controller.lessonId = 30003;
+      controller.isReviewMode = false;
+      controller.activeAction = 'continue';
+      controller.dom = createMockDom();
+      controller.backendLessons = [
+        { lessonId: 30001, title: 'HSK 1 — Bài 01: Chào hỏi & Giao tiếp cơ bản' },
+        { lessonId: 30003, title: 'HSK 1 — Bài 02: Phương tiện, Trường học & Thiết bị' }
+      ];
+      controller.sessionQueue = Array.from({ length: 20 }, (_, i) => ({ card: { itemId: i + 1 } }));
+
+      controller.showCompletedState();
+
+      const saved = getProgress('flashcard');
+      assert.strictEqual(saved.hsk1?.topic_30003, 20, 'Database key must be 20');
+      assert.strictEqual(saved.hsk1?.topic_2, 20, 'Mock catalog topicId 2 key must be 20');
+      assert.strictEqual(saved.hsk1?.topic_6, 20, 'BackendLessonId 6 key must be 20');
+    });
+
+    test('nextWritingItem handles 409 conflict gracefully without error toast', async () => {
+      authManager.setSession({ token: 'test-token', user: { accountId: 1 } });
+      const controller = new SrsReviewController();
+      controller.activeMode = 'writing';
+      controller.activeGroup = 'radicals50';
+      controller.dom = createMockDom();
+      controller.dom.btnWritingNext = global.document.createElement('button');
+      controller.hasCompletedWritingForCurrentCard = true;
+      controller.sessionQueue = [
+        { card: { itemId: 1, itemType: 'RADICAL', hanzi: '一', cardType: 'WRITING' } },
+        { card: { itemId: 2, itemType: 'RADICAL', hanzi: '丨', cardType: 'WRITING' } }
+      ];
+      controller.currentIndex = 0;
+      controller.renderCurrentCard = () => {};
+
+      const originalFetch = globalThis.fetch;
+      globalThis.fetch = async (url) => {
+        if (String(url).includes('/srs/review')) {
+          return {
+            ok: false,
+            status: 409,
+            headers: new Headers({ 'content-type': 'application/json' }),
+            json: async () => ({ code: 'CONFLICT', message: 'Thẻ chưa đến hạn ôn tập' })
+          };
+        }
+        throw new Error('Not found');
+      };
+
+      try {
+        await controller.nextWritingItem();
+        assert.strictEqual(controller.currentIndex, 1, 'Writing index must advance on 409 conflict');
+        assert.strictEqual(controller.isSubmittingWriting, false);
+      } finally {
+        globalThis.fetch = originalFetch;
+      }
+    });
+
+    test('parseQueryParams defaults activeGroup to hsk1 when lessonId is present without group param', () => {
+      const controller = new SrsReviewController();
+      globalThis.window.location.search = '?lessonId=30003';
+      controller.parseQueryParams();
+      assert.strictEqual(controller.lessonId, 30003);
+      assert.strictEqual(controller.activeGroup, 'hsk1', 'activeGroup must default to hsk1 for lesson review sessions');
+    });
+  });
 });
+
