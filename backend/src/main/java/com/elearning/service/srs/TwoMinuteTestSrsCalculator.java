@@ -47,7 +47,9 @@ public class TwoMinuteTestSrsCalculator {
 
         if (rating == ReviewRating.AGAIN) {
             // Học lại ngay lập tức (interval = 0, repetitions reset về 0)
-            BigDecimal newEf = currentEaseFactor.subtract(new BigDecimal("0.20")).max(SrsCalculator.MIN_EASE_FACTOR);
+            BigDecimal newEf = currentEaseFactor.subtract(new BigDecimal("0.20"))
+                    .max(SrsCalculator.MIN_EASE_FACTOR)
+                    .setScale(2, java.math.RoundingMode.HALF_UP);
             return new SrsCalculationResult(newEf, 0, 0);
         }
 
@@ -59,6 +61,7 @@ public class TwoMinuteTestSrsCalculator {
             case EASY -> currentEaseFactor.add(new BigDecimal("0.10"));
             default -> currentEaseFactor;
         };
+        newEf = newEf.setScale(2, java.math.RoundingMode.HALF_UP);
 
         // intervalDays = 1 để biểu thị thẻ đã vượt qua mốc ôn tập ban đầu,
         // kích hoạt bảo vệ chống ôn tập trước hạn (existing.getIntervalDays() > 0)

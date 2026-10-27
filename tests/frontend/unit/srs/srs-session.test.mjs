@@ -1048,5 +1048,417 @@ describe('Unit: SRS Flashcard Review Session Logic (9C.3)', () => {
       assert.strictEqual(controller.isVocabDue(560, '点'), false, '点 in Lesson 17 must NOT be due when Lesson 2 lapses');
     });
   });
+
+  describe('19. Double-Learning Paradox Resolution & Relearn Graduation Invariant', () => {
+    test('in-session requeued card that passes with rating >= 2 submits review and graduates from due list', async () => {
+      authManager.setSession({ token: 'test-token', user: { accountId: 1, emailOrPhone: 'user@test.com' } });
+      const controller = new SrsReviewController();
+      controller.dueItemsCache = { vocab: [], radicals: [] };
+
+      const card = {
+        itemId: 101,
+        vocabId: 101,
+        hanzi: '水',
+        itemType: 'VOCABULARY',
+        cardType: 'READING',
+        lessonId: 1
+      };
+
+      const submittedReviews = [];
+      const originalFetch = globalThis.fetch;
+      globalThis.fetch = async (url, opts) => {
+        const urlStr = String(url);
+        if (urlStr.includes('/srs/review') && opts?.method === 'POST') {
+          const body = JSON.parse(opts.body);
+          submittedReviews.push(body);
+          return {
+            ok: true,
+            status: 200,
+            headers: new Headers({ 'content-type': 'application/json' }),
+            json: async () => ({
+              code: 'SUCCESS',
+              message: 'OK',
+              data: {
+                itemId: body.itemId,
+                itemType: body.itemType,
+                cardType: body.cardType,
+                easeFactor: 2.30,
+                intervalDays: body.rating === 1 ? 0 : 1,
+                repetitions: body.rating === 1 ? 0 : 1,
+                nextReviewAt: body.rating === 1 ? new Date().toISOString() : new Date(Date.now() + 120000).toISOString()
+              }
+            })
+          };
+        }
+        if (urlStr.includes('/srs/due')) {
+          // After graduation, card is not due
+          return {
+            ok: true,
+            status: 200,
+            headers: new Headers({ 'content-type': 'application/json' }),
+            json: async () => ({ code: 'SUCCESS', message: 'OK', data: [] })
+          };
+        }
+        return {
+          ok: true,
+          status: 200,
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: async () => ({ code: 'SUCCESS', message: 'OK', data: [] })
+        };
+      };
+
+      try {
+        controller.renderCurrentCard = () => {};
+        controller.showCompletedState = () => {};
+
+        // --- Step 1: First encounter of card during session. Learner rates 1 (Again) ---
+        controller.sessionQueue = [
+          { card: { ...card }, againAttempts: 0 }
+        ];
+        controller.currentIndex = 0;
+
+        await controller.submitRating(1);
+
+        assert.strictEqual(submittedReviews.length, 1, 'Review must be submitted on first encounter (lapse)');
+        assert.strictEqual(submittedReviews[0].rating, 1);
+        assert.strictEqual(submittedReviews[0].itemId, 101);
+        assert.strictEqual(controller.dueItemsCache.vocab.length, 1, 'Card must be marked due in dueItemsCache');
+        assert.strictEqual(controller.sessionQueue.length, 2, 'Card must be requeued to end of session queue');
+        assert.strictEqual(controller.sessionQueue[1]._requeued, true, 'Requeued card must have _requeued flag');
+
+        // --- Step 2: User reaches requeued card at end of session. Learner passes with Rating 3 (Good) ---
+        controller.currentIndex = 1;
+        await controller.submitRating(3);
+
+        assert.strictEqual(submittedReviews.length, 2, 'Graduation review must be submitted to backend when rating >= 2');
+        assert.strictEqual(submittedReviews[1].rating, 3);
+        assert.strictEqual(submittedReviews[1].itemId, 101);
+
+        // Verify local dueItemsCache is immediately cleared of graduated card
+        assert.strictEqual(controller.dueItemsCache.vocab.length, 0, 'Graduated card must be removed from dueItemsCache');
+        assert.strictEqual(controller.isVocabDue(101, '水'), false, 'Graduated card must not be considered due');
+
+        // Verify fetchDueCounts synchronizes without re-adding the card
+        await controller.fetchDueCounts();
+        assert.strictEqual(controller.isVocabDue(101, '水'), false, 'Graduated card must NOT re-appear after fetchDueCounts()');
+      } finally {
+        globalThis.fetch = originalFetch;
+        authManager.clearSession();
+      }
+    });
+
+    test('requeued card rated Again (1) does NOT submit duplicate review to backend and remains due', async () => {
+      authManager.setSession({ token: 'test-token', user: { accountId: 1, emailOrPhone: 'user@test.com' } });
+      const controller = new SrsReviewController();
+      controller.dueItemsCache = { vocab: [{ itemId: 102, vocabId: 102, hanzi: '火', itemType: 'VOCABULARY' }], radicals: [] };
+
+      const card = {
+        itemId: 102,
+        vocabId: 102,
+        hanzi: '火',
+        itemType: 'VOCABULARY',
+        cardType: 'READING',
+        lessonId: 1
+      };
+
+      const submittedReviews = [];
+      const originalFetch = globalThis.fetch;
+      globalThis.fetch = async (url, opts) => {
+        if (String(url).includes('/srs/review') && opts?.method === 'POST') {
+          submittedReviews.push(JSON.parse(opts.body));
+        }
+        return {
+          ok: true,
+          status: 200,
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: async () => ({ code: 'SUCCESS', message: 'OK', data: {} })
+        };
+      };
+
+      try {
+        controller.renderCurrentCard = () => {};
+        controller.showCompletedState = () => {};
+
+        // Requeued card in-session drill
+        controller.sessionQueue = [
+          { card: { ...card }, againAttempts: 1, _requeued: true }
+        ];
+        controller.currentIndex = 0;
+
+        // Learner fails the drill again (rates 1 = Again)
+        await controller.submitRating(1);
+
+        assert.strictEqual(submittedReviews.length, 0, 'Must NOT submit duplicate lapse review during in-session drill');
+        assert.strictEqual(controller.dueItemsCache.vocab.length, 1, 'Card must remain due in cache');
+        assert.strictEqual(controller.isVocabDue(102, '火'), true, 'Card must still be due');
+        assert.strictEqual(controller.sessionQueue.length, 2, 'Card must be requeued again for another drill');
+      } finally {
+        globalThis.fetch = originalFetch;
+        authManager.clearSession();
+      }
+    });
+  });
+
+  describe('20. Audit of Canonical SM-2 (Days) vs 2-Minute Test Mode (Minutes) on DemoFallbackEngine', () => {
+    test('DemoFallbackEngine 2-Minute Test Mode: correct intervals and nextReviewAt in 2 minutes', async () => {
+      const { demoFallbackEngine } = await import('../../../../frontend/js/api/demo-fallback-engine.js');
+      demoFallbackEngine.setSrsTestMode(true);
+      demoFallbackEngine.resetInMemoryData();
+
+      // Review with rating 1 (Again) -> immediate lapse
+      const res1 = await demoFallbackEngine.handleRequest('/srs/review', {
+        method: 'POST',
+        body: { itemId: 1, itemType: 'VOCABULARY', cardType: 'READING', rating: 1 }
+      });
+      assert.strictEqual(res1.repetitions, 0, 'Rating 1 resets repetitions to 0');
+      assert.strictEqual(res1.intervalDays, 0, 'Rating 1 resets intervalDays to 0');
+      assert.strictEqual(res1.easeFactor, 2.30, 'Rating 1 in test mode decreases EF by 0.20 (2.50 -> 2.30)');
+      assert.ok(new Date(res1.nextReviewAt).getTime() <= Date.now(), 'Rating 1 is due immediately');
+
+      // Relearn graduation with rating 2 (Hard) -> graduates to 2 minutes
+      const res2 = await demoFallbackEngine.handleRequest('/srs/review', {
+        method: 'POST',
+        body: { itemId: 1, itemType: 'VOCABULARY', cardType: 'READING', rating: 2 }
+      });
+      assert.strictEqual(res2.repetitions, 1, 'Rating 2 graduates to repetition 1');
+      assert.strictEqual(res2.intervalDays, 1, 'Rating 2 sets intervalDays marker to 1');
+      assert.strictEqual(res2.easeFactor, 2.16, 'Rating 2 decreases EF by 0.14 (2.30 -> 2.16)');
+      const diffMinutes2 = (new Date(res2.nextReviewAt).getTime() - Date.now()) / 60000;
+      assert.ok(diffMinutes2 >= 1.9 && diffMinutes2 <= 2.1, 'Rating 2 schedules next review in ~2 minutes');
+
+      // Review with rating 3 (Good) -> maintains EF, 2 minutes
+      const res3 = await demoFallbackEngine.handleRequest('/srs/review', {
+        method: 'POST',
+        body: { itemId: 2, itemType: 'VOCABULARY', cardType: 'READING', rating: 3 }
+      });
+      assert.strictEqual(res3.repetitions, 1);
+      assert.strictEqual(res3.intervalDays, 1);
+      assert.strictEqual(res3.easeFactor, 2.50, 'Rating 3 maintains EF at 2.50');
+      const diffMinutes3 = (new Date(res3.nextReviewAt).getTime() - Date.now()) / 60000;
+      assert.ok(diffMinutes3 >= 1.9 && diffMinutes3 <= 2.1, 'Rating 3 schedules next review in ~2 minutes');
+
+      // Review with rating 4 (Easy) -> increases EF by 0.10, 2 minutes
+      const res4 = await demoFallbackEngine.handleRequest('/srs/review', {
+        method: 'POST',
+        body: { itemId: 3, itemType: 'VOCABULARY', cardType: 'READING', rating: 4 }
+      });
+      assert.strictEqual(res4.repetitions, 1);
+      assert.strictEqual(res4.intervalDays, 1);
+      assert.strictEqual(res4.easeFactor, 2.60, 'Rating 4 increases EF by 0.10');
+      const diffMinutes4 = (new Date(res4.nextReviewAt).getTime() - Date.now()) / 60000;
+      assert.ok(diffMinutes4 >= 1.9 && diffMinutes4 <= 2.1, 'Rating 4 schedules next review in ~2 minutes');
+    });
+
+    test('DemoFallbackEngine Canonical SM-2 Mode: correct intervals (1, 6, ceil(I*EF)) and nextReviewAt in days', async () => {
+      const { demoFallbackEngine } = await import('../../../../frontend/js/api/demo-fallback-engine.js');
+      demoFallbackEngine.setSrsTestMode(false);
+      demoFallbackEngine.resetInMemoryData();
+
+      try {
+        // --- Repetition 1: New card rated 3 (Good) -> interval = 1 day ---
+        const r1 = await demoFallbackEngine.handleRequest('/srs/review', {
+          method: 'POST',
+          body: { itemId: 10, itemType: 'VOCABULARY', cardType: 'READING', rating: 3 }
+        });
+        assert.strictEqual(r1.repetitions, 1, 'Rep 1: repetitions = 1');
+        assert.strictEqual(r1.intervalDays, 1, 'Rep 1: intervalDays = 1');
+        assert.strictEqual(r1.easeFactor, 2.50, 'Rep 1: EF = 2.50');
+        const diffDays1 = (new Date(r1.nextReviewAt).getTime() - Date.now()) / 86400000;
+        assert.ok(diffDays1 >= 0.9 && diffDays1 <= 1.1, 'Rep 1: scheduled ~1 day later');
+
+        // --- Repetition 2: Card reviewed with rating 3 (Good) -> interval = 6 days ---
+        const r2 = await demoFallbackEngine.handleRequest('/srs/review', {
+          method: 'POST',
+          body: { itemId: 10, itemType: 'VOCABULARY', cardType: 'READING', rating: 3 }
+        });
+        assert.strictEqual(r2.repetitions, 2, 'Rep 2: repetitions = 2');
+        assert.strictEqual(r2.intervalDays, 6, 'Rep 2: intervalDays = 6');
+        assert.strictEqual(r2.easeFactor, 2.50);
+        const diffDays2 = (new Date(r2.nextReviewAt).getTime() - Date.now()) / 86400000;
+        assert.ok(diffDays2 >= 5.9 && diffDays2 <= 6.1, 'Rep 2: scheduled ~6 days later');
+
+        // --- Repetition 3: Card reviewed with rating 3 (Good) -> interval = ceil(6 * 2.50) = 15 days ---
+        const r3 = await demoFallbackEngine.handleRequest('/srs/review', {
+          method: 'POST',
+          body: { itemId: 10, itemType: 'VOCABULARY', cardType: 'READING', rating: 3 }
+        });
+        assert.strictEqual(r3.repetitions, 3, 'Rep 3: repetitions = 3');
+        assert.strictEqual(r3.intervalDays, 15, 'Rep 3: intervalDays = ceil(6 * 2.50) = 15');
+        assert.strictEqual(r3.easeFactor, 2.50);
+        const diffDays3 = (new Date(r3.nextReviewAt).getTime() - Date.now()) / 86400000;
+        assert.ok(diffDays3 >= 14.9 && diffDays3 <= 15.1, 'Rep 3: scheduled ~15 days later');
+
+        // --- Rating 2 (Hard) in Canonical SM-2: Pass with difficulty, EF drops by 0.14 ---
+        const rHard = await demoFallbackEngine.handleRequest('/srs/review', {
+          method: 'POST',
+          body: { itemId: 20, itemType: 'VOCABULARY', cardType: 'READING', rating: 2 }
+        });
+        assert.strictEqual(rHard.repetitions, 1, 'Rating 2 (Hard) is a successful recall (reps = 1)');
+        assert.strictEqual(rHard.intervalDays, 1, 'Rating 2 (Hard) sets interval = 1 day on rep 1');
+        assert.strictEqual(rHard.easeFactor, 2.36, 'Rating 2 (Hard) reduces EF by 0.14 (2.50 -> 2.36)');
+
+        // --- Lapse from Rep 3: User rates 1 (Again) -> resets to 0, EF -0.80 ---
+        const rLapse = await demoFallbackEngine.handleRequest('/srs/review', {
+          method: 'POST',
+          body: { itemId: 10, itemType: 'VOCABULARY', cardType: 'READING', rating: 1 }
+        });
+        assert.strictEqual(rLapse.repetitions, 0, 'Lapse resets repetitions to 0');
+        assert.strictEqual(rLapse.intervalDays, 0, 'Lapse resets intervalDays to 0');
+        assert.strictEqual(rLapse.easeFactor, 1.70, 'Lapse reduces EF by 0.80 (2.50 -> 1.70)');
+        assert.ok(new Date(rLapse.nextReviewAt).getTime() <= Date.now(), 'Lapsed card is due immediately');
+
+        // --- Relearn graduation: User rates 3 (Good) on lapsed card -> interval = 1 day ---
+        const rGrad = await demoFallbackEngine.handleRequest('/srs/review', {
+          method: 'POST',
+          body: { itemId: 10, itemType: 'VOCABULARY', cardType: 'READING', rating: 3 }
+        });
+        assert.strictEqual(rGrad.repetitions, 1, 'Graduated card restarts at rep 1');
+        assert.strictEqual(rGrad.intervalDays, 1, 'Graduated card scheduled for 1 day');
+        assert.strictEqual(rGrad.easeFactor, 1.70, 'Maintains lapsed EF 1.70');
+        const diffDaysGrad = (new Date(rGrad.nextReviewAt).getTime() - Date.now()) / 86400000;
+        assert.ok(diffDaysGrad >= 0.9 && diffDaysGrad <= 1.1, 'Graduated card scheduled ~1 day later');
+        // --- Canonical SM-2 updated EF formula verification (I = ceil(I * EF')) ---
+        // Setup card with EF = 2.00, interval = 6, repetitions = 2
+        const cardSm2Adv = demoFallbackEngine.getData().srsCards.find(c => c.itemId === 10 && c.cardType === 'READING');
+        cardSm2Adv.easeFactor = 2.00;
+        cardSm2Adv.intervalDays = 6;
+        cardSm2Adv.repetitions = 2;
+
+        // Review with rating 4 (Easy) -> deltaEf = +0.10 -> new EF = 2.10
+        // Correct SM-2 formula uses new EF': ceil(6 * 2.10) = ceil(12.60) = 13 days
+        // (Flawed old formula using prior EF would produce ceil(6 * 2.00) = 12 days)
+        const rAdv = await demoFallbackEngine.handleRequest('/srs/review', {
+          method: 'POST',
+          body: { itemId: 10, itemType: 'VOCABULARY', cardType: 'READING', rating: 4 }
+        });
+        assert.strictEqual(rAdv.repetitions, 3, 'Rep 3: repetitions = 3');
+        assert.strictEqual(rAdv.easeFactor, 2.10, 'Rep 3: new EF = 2.00 + 0.10 = 2.10');
+        assert.strictEqual(rAdv.intervalDays, 13, 'Rep 3: canonical SM-2 interval = ceil(6 * 2.10) = 13 (NOT 12)');
+      } finally {
+        demoFallbackEngine.setSrsTestMode(true);
+      }
+    });
+
+    test('relearn graduation preserves homograph cards with distinct curriculum IDs in due cache', async () => {
+      authManager.setSession({ token: 'test-token', user: { accountId: 1, emailOrPhone: 'user@test.com' } });
+      const controller = new SrsReviewController();
+      // Two homograph cards with character '还': Lesson 4 (id 132) and Lesson 34 (id 153)
+      controller.dueItemsCache = {
+        vocab: [
+          { itemId: 132, vocabId: 132, hanzi: '还', itemType: 'VOCABULARY', lessonId: 4 },
+          { itemId: 153, vocabId: 153, hanzi: '还', itemType: 'VOCABULARY', lessonId: 34 }
+        ],
+        radicals: []
+      };
+
+      const card132 = {
+        itemId: 132,
+        vocabId: 132,
+        hanzi: '还',
+        itemType: 'VOCABULARY',
+        cardType: 'READING',
+        lessonId: 4
+      };
+
+      const originalFetch = globalThis.fetch;
+      globalThis.fetch = async () => ({
+        ok: true,
+        status: 200,
+        headers: new Headers({ 'content-type': 'application/json' }),
+        json: async () => ({ code: 'SUCCESS', message: 'OK', data: {} })
+      });
+
+      try {
+        controller.renderCurrentCard = () => {};
+        controller.showCompletedState = () => {};
+
+        // Requeued card 132 graduates with rating 3 (Good)
+        controller.sessionQueue = [
+          { card: card132, againAttempts: 1, _requeued: true }
+        ];
+        controller.currentIndex = 0;
+
+        await controller.submitRating(3);
+
+        // Word 132 graduated -> removed from dueItemsCache
+        assert.strictEqual(controller.isVocabDue(132, '还'), false, 'Graduated word 132 must NOT be due');
+        // Homograph word 153 must STILL be due in cache!
+        assert.strictEqual(controller.isVocabDue(153, '还'), true, 'Homograph word 153 must STILL be due');
+        assert.strictEqual(controller.dueItemsCache.vocab.length, 1, 'Only word 153 should remain in due cache');
+        assert.strictEqual(controller.dueItemsCache.vocab[0].itemId, 153);
+      } finally {
+        globalThis.fetch = originalFetch;
+        authManager.clearSession();
+      }
+    });
+
+    test('early review lapse during "Học lại" on non-due card authoritatively updates due cache', async () => {
+      authManager.setSession({ token: 'test-token', user: { accountId: 1, emailOrPhone: 'user@test.com' } });
+      const controller = new SrsReviewController();
+      controller.dueItemsCache = { vocab: [], radicals: [] };
+
+      // Card is currently not due in catalog
+      const nonDueCard = {
+        itemId: 205,
+        vocabId: 205,
+        hanzi: '飞',
+        itemType: 'VOCABULARY',
+        cardType: 'READING',
+        lessonId: 3
+      };
+
+      const submittedReviews = [];
+      const originalFetch = globalThis.fetch;
+      globalThis.fetch = async (url, opts) => {
+        if (String(url).includes('/srs/review') && opts?.method === 'POST') {
+          submittedReviews.push(JSON.parse(opts.body));
+        }
+        return {
+          ok: true,
+          status: 200,
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: async () => ({
+            code: 'SUCCESS',
+            message: 'OK',
+            data: {
+              itemId: 205,
+              itemType: 'VOCABULARY',
+              cardType: 'READING',
+              easeFactor: 2.30,
+              intervalDays: 0,
+              repetitions: 0,
+              nextReviewAt: new Date(Date.now() - 1000).toISOString()
+            }
+          })
+        };
+      };
+
+      try {
+        controller.renderCurrentCard = () => {};
+        controller.showCompletedState = () => {};
+        controller.isReviewMode = true; // "↻ Học lại" mode
+
+        controller.sessionQueue = [
+          { card: nonDueCard, againAttempts: 0 }
+        ];
+        controller.currentIndex = 0;
+
+        // Learner forgets during early review and rates 1 (Again)
+        await controller.submitRating(1);
+
+        assert.strictEqual(submittedReviews.length, 1, 'Authoritative review must be sent on early lapse');
+        assert.strictEqual(submittedReviews[0].rating, 1);
+        assert.strictEqual(submittedReviews[0].itemId, 205);
+
+        // Verify card is immediately added to dueItemsCache
+        assert.strictEqual(controller.dueItemsCache.vocab.length, 1, 'Lapsed card must be added to dueItemsCache');
+        assert.strictEqual(controller.isVocabDue(205, '飞'), true, 'Lapsed card must be due in catalog');
+      } finally {
+        globalThis.fetch = originalFetch;
+        authManager.clearSession();
+      }
+    });
+  });
 });
+
 

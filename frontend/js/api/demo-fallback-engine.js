@@ -1158,7 +1158,7 @@ class DemoFallbackEngine {
     }
 
     if ((cleanPath === '/srs/review' || cleanPath === '/srs/reviews') && method === 'POST') {
-      if (body?.isRequeue || body?.requeued) {
+      if ((body?.isRequeue || body?.requeued) && Number(body?.rating) === 1) {
         return { isRequeue: true };
       }
       const rating = parseInt(body?.rating || 3, 10);
@@ -1234,12 +1234,13 @@ class DemoFallbackEngine {
       }
 
       // =========================================================================
-      // [CHẾ ĐỘ TEST SRS 2 PHÚT] TẠM THỜI KHÓA THUẬT TOÁN GỐC SM-2
-      // Thẻ đến hạn sau khoảng 2 phút để người dùng có thể xem và ôn lại ngay khi test.
-      // Thuật toán gốc SM-2 bên dưới vẫn được lưu giữ nguyên vẹn 100%.
-      // Khi muốn mở khóa lại thuật toán gốc SM-2, chỉ cần đặt SRS_TEST_MODE_2MIN = false.
+      // [CHẾ ĐỘ TEST SRS 2 PHÚT VÀ THUẬT TOÁN GỐC SM-2]
       // =========================================================================
-      const SRS_TEST_MODE_2MIN = true;
+      const SRS_TEST_MODE_2MIN = (typeof window !== 'undefined' && window.__SRS_TEST_MODE_2MIN !== undefined)
+        ? Boolean(window.__SRS_TEST_MODE_2MIN)
+        : (typeof globalThis !== 'undefined' && globalThis.__SRS_TEST_MODE_2MIN !== undefined)
+          ? Boolean(globalThis.__SRS_TEST_MODE_2MIN)
+          : true;
 
       card.isNew = false;
       let easeFactor = card.easeFactor || 2.5;
@@ -1269,24 +1270,27 @@ class DemoFallbackEngine {
         card.easeFactor = parseFloat(easeFactor.toFixed(2));
         card.intervalDays = intervalDays;
       } else {
-        // [THUẬT TOÁN GỐC SM-2] ĐƯỢC LƯU GIỮ NGUYÊN VẸN 100%
-        if (rating >= 3) {
+        // [THUẬT TOÁN GỐC SM-2] ĐƯỢC LƯU GIỮ NGUYÊN VẸN 100% (Tính theo ngày)
+        // Rating 2 (Hard - q=3), 3 (Good - q=4), 4 (Easy - q=5) đều là đánh giá đạt chuẩn (rating >= 2)
+        const newEaseFactor = Math.max(1.3, easeFactor + deltaEf);
+        if (rating >= 2) {
           if (repetitions === 0) {
             intervalDays = 1;
           } else if (repetitions === 1) {
             intervalDays = 6;
           } else {
-            intervalDays = Math.ceil(intervalDays * easeFactor);
+            intervalDays = Math.ceil(intervalDays * newEaseFactor);
           }
           repetitions += 1;
           card.nextReviewAt = new Date(Date.now() + intervalDays * 86400000).toISOString();
         } else {
+          // Rating 1 (Again - q=0): Đến hạn ngay lập tức để học lại (due today)
           repetitions = 0;
-          intervalDays = 0; // immediate relearning (due today)
-          card.nextReviewAt = new Date().toISOString();
+          intervalDays = 0;
+          card.nextReviewAt = new Date(Date.now() - 1000).toISOString();
         }
 
-        easeFactor = Math.max(1.3, easeFactor + deltaEf);
+        easeFactor = newEaseFactor;
 
         card.repetitions = repetitions;
         card.easeFactor = parseFloat(easeFactor.toFixed(2));
@@ -1445,6 +1449,33 @@ class DemoFallbackEngine {
 
     // Default: Return empty object or null for unknown GET/mutations
     return null;
+  }
+
+  /**
+   * Configures whether demo SRS engine operates in 2-minute test mode or canonical SM-2 mode (by days).
+   * @param {boolean} enabled
+   */
+  setSrsTestMode(enabled) {
+    if (typeof globalThis !== 'undefined') {
+      globalThis.__SRS_TEST_MODE_2MIN = Boolean(enabled);
+    }
+    if (typeof window !== 'undefined') {
+      window.__SRS_TEST_MODE_2MIN = Boolean(enabled);
+    }
+  }
+
+  /**
+   * Checks whether demo SRS engine is in 2-minute test mode.
+   * @returns {boolean}
+   */
+  isSrsTestMode() {
+    if (typeof globalThis !== 'undefined' && globalThis.__SRS_TEST_MODE_2MIN !== undefined) {
+      return Boolean(globalThis.__SRS_TEST_MODE_2MIN);
+    }
+    if (typeof window !== 'undefined' && window.__SRS_TEST_MODE_2MIN !== undefined) {
+      return Boolean(window.__SRS_TEST_MODE_2MIN);
+    }
+    return true;
   }
 }
 

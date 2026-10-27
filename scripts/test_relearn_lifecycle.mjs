@@ -111,7 +111,54 @@ async function run() {
       process.exit(1);
     }
   }
-  console.log("ALL 50 LESSONS PASSED ROUNDS A, B, AND C SIMULATIONS!");
+  console.log("ALL 50 LESSONS PASSED ROUNDS A, B, AND C SIMULATIONS IN 2-MIN TEST MODE!\n");
+
+  console.log("=== TESTING CANONICAL SM-2 ALGORITHM (BY DAYS) ===");
+  engine.setSrsTestMode(false);
+  engine.resetInMemoryData();
+
+  // Test Lesson 2 under canonical SM-2 mode
+  // Pass 1: Rate 2 words as Again (1), 18 words as Good (3)
+  const planSm2_1 = [1, 1, ...Array(18).fill(3)];
+  let dueSm2 = await simulateLessonReview(2, planSm2_1);
+  console.log(`SM-2 Round 1 (2 Again): Due cards = ${dueSm2.length} (expected 2)`);
+  if (dueSm2.length !== 2) throw new Error(`SM-2 Round 1 failed: expected 2, got ${dueSm2.length}`);
+
+  // Pass 2: Re-learn (Round 2): 4 words Again (1), 16 words Good (3)
+  const planSm2_2 = [1, 1, 1, 1, ...Array(16).fill(3)];
+  dueSm2 = await simulateLessonReview(2, planSm2_2);
+  console.log(`SM-2 Round 2 (4 Again): Due cards = ${dueSm2.length} (expected 4)`);
+  if (dueSm2.length !== 4) throw new Error(`SM-2 Round 2 failed: expected 4, got ${dueSm2.length}`);
+
+  // Pass 3: Re-learn (Round 3): Words 0..1 Hard (2), words 2..19 Good (3)
+  // Both Hard (2) and Good (3) must clear due cards in Canonical SM-2!
+  const planSm2_3 = [2, 2, ...Array(18).fill(3)];
+  dueSm2 = await simulateLessonReview(2, planSm2_3);
+  console.log(`SM-2 Round 3 (Hard 2 & Good 3): Due cards = ${dueSm2.length} (expected 0)`);
+  if (dueSm2.length !== 0) throw new Error(`SM-2 Round 3 failed: expected 0, got ${dueSm2.length}`);
+
+  // Pass 4: Interval progression & relearn graduation check (days)
+  const practiceCards = await engine.handleRequest('/srs/practice-cards?lessonId=2&cardType=READING', { method: 'GET' });
+  
+  // Word 5 (index 4): Consistently passed rounds 1, 2, 3 with Good (3) -> should have reps=3, interval=15
+  const cardWord5 = practiceCards[4];
+  const srsCard5 = engine.getData().srsCards.find(c => c.itemId === (cardWord5.itemId || cardWord5.vocabId) && c.cardType === 'READING');
+  console.log(`SM-2 Unlapsed Word 5 State: repetitions=${srsCard5.repetitions}, intervalDays=${srsCard5.intervalDays}, EF=${srsCard5.easeFactor}`);
+  if (srsCard5.repetitions < 3 || srsCard5.intervalDays < 15) {
+    throw new Error(`SM-2 interval progression failed for unlapsed card: expected reps>=3, intervalDays>=15, got reps=${srsCard5.repetitions}, interval=${srsCard5.intervalDays}`);
+  }
+
+  // Word 3 (index 2): Lapsed in round 2 (reps=0, interval=0) and graduated in round 3 with Good (3) -> should restart at reps=1, interval=1
+  const cardWord3 = practiceCards[2];
+  const srsCard3 = engine.getData().srsCards.find(c => c.itemId === (cardWord3.itemId || cardWord3.vocabId) && c.cardType === 'READING');
+  console.log(`SM-2 Relearn Graduated Word 3 State: repetitions=${srsCard3.repetitions}, intervalDays=${srsCard3.intervalDays}, EF=${srsCard3.easeFactor}`);
+  if (srsCard3.repetitions !== 1 || srsCard3.intervalDays !== 1) {
+    throw new Error(`SM-2 relearn graduation failed: expected reps=1, intervalDays=1, got reps=${srsCard3.repetitions}, interval=${srsCard3.intervalDays}`);
+  }
+
+  // Restore test mode for interactive user testing
+  engine.setSrsTestMode(true);
+  console.log("\nALL CANONICAL SM-2 AUDIT ROUNDS PASSED SUCCESSFULLY!");
 }
 
 run().catch(err => {

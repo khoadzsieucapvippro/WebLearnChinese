@@ -256,5 +256,104 @@ class TwoMinuteTestSrsCalculatorTests {
             assertThat(response.getNextReviewAt()).isEqualTo(fixedNow.plusDays(1));
             assertThat(response.getIntervalDays()).isEqualTo(1);
         }
+
+        @Test
+        @DisplayName("Relearn Graduation in 2-Minute Mode: Lapsed card (interval=0, reps=0) passes drill with Rating 2/3/4 and schedules nextReviewAt 2 minutes later")
+        void testReviewCard_relearnGraduation_testMode2Min() {
+            srsService.setTestModeEnabled(true);
+            srsService.setTestIntervalMinutes(2);
+
+            Vocabulary vocab = new Vocabulary("水", "shuǐ", "shui", "Thủy", "Nước");
+            vocab.setVocabId(202L);
+            when(vocabularyRepository.findByIdWithLock(202L)).thenReturn(Optional.of(vocab));
+
+            // Existing lapsed card (intervalDays = 0, repetitions = 0, nextReviewAt <= now)
+            CardProgress lapsedCard = new CardProgress(testUserProfile, "VOCABULARY", 202L, new BigDecimal("2.30"), 0, 0, fixedNow.minusMinutes(1));
+            lapsedCard.setCardType("READING");
+            when(cardProgressRepository.findByUserAndItemTypeAndItemIdAndCardType(testUserProfile, "VOCABULARY", 202L, "READING"))
+                    .thenReturn(Optional.of(lapsedCard));
+            when(cardProgressRepository.save(any(CardProgress.class))).thenAnswer(inv -> inv.getArgument(0));
+
+            // User passes in-session drill with Rating 2 (Hard)
+            ReviewCardRequest request = new ReviewCardRequest("VOCABULARY", 202L, 2, 4);
+            request.setCardType("READING");
+
+            DueCardResponse response = srsService.reviewCard(request);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getNextReviewAt()).isEqualTo(fixedNow.plusMinutes(2));
+            assertThat(response.getIntervalDays()).isEqualTo(1);
+            assertThat(response.getRepetitions()).isEqualTo(1);
+
+            ArgumentCaptor<CardProgress> captor = ArgumentCaptor.forClass(CardProgress.class);
+            verify(cardProgressRepository).save(captor.capture());
+            CardProgress saved = captor.getValue();
+            assertThat(saved.getNextReviewAt()).isEqualTo(fixedNow.plusMinutes(2));
+            assertThat(saved.getIntervalDays()).isEqualTo(1);
+            assertThat(saved.getRepetitions()).isEqualTo(1);
+        }
+
+        @Test
+        @DisplayName("Relearn Graduation in Canonical SM-2 Mode: Lapsed card (interval=0, reps=0) passes drill with Rating 3 and schedules nextReviewAt 1 day later")
+        void testReviewCard_relearnGraduation_canonicalSm2() {
+            srsService.setTestModeEnabled(false);
+
+            Vocabulary vocab = new Vocabulary("火", "huǒ", "huo", "Hỏa", "Lửa");
+            vocab.setVocabId(203L);
+            when(vocabularyRepository.findByIdWithLock(203L)).thenReturn(Optional.of(vocab));
+
+            // Existing lapsed card (intervalDays = 0, repetitions = 0)
+            CardProgress lapsedCard = new CardProgress(testUserProfile, "VOCABULARY", 203L, new BigDecimal("1.70"), 0, 0, fixedNow);
+            lapsedCard.setCardType("READING");
+            when(cardProgressRepository.findByUserAndItemTypeAndItemIdAndCardType(testUserProfile, "VOCABULARY", 203L, "READING"))
+                    .thenReturn(Optional.of(lapsedCard));
+            when(cardProgressRepository.save(any(CardProgress.class))).thenAnswer(inv -> inv.getArgument(0));
+
+            // User passes in-session drill with Rating 3 (Good)
+            ReviewCardRequest request = new ReviewCardRequest("VOCABULARY", 203L, 3, 3);
+            request.setCardType("READING");
+
+            DueCardResponse response = srsService.reviewCard(request);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getNextReviewAt()).isEqualTo(fixedNow.plusDays(1));
+            assertThat(response.getIntervalDays()).isEqualTo(1);
+            assertThat(response.getRepetitions()).isEqualTo(1);
+        }
+
+        @Test
+        @DisplayName("Early Review Lapse during 'Học lại': Non-due card rated Again (1) authoritatively records lapse")
+        void testReviewCard_earlyReviewLapse_recordedAuthoritatively() {
+            srsService.setTestModeEnabled(true);
+
+            Vocabulary vocab = new Vocabulary("木", "mù", "mu", "Mộc", "Cây gỗ");
+            vocab.setVocabId(204L);
+            when(vocabularyRepository.findByIdWithLock(204L)).thenReturn(Optional.of(vocab));
+
+            // Non-due card: interval = 10 days, next review 5 days in future
+            CardProgress nonDueCard = new CardProgress(testUserProfile, "VOCABULARY", 204L, new BigDecimal("2.50"), 10, 3, fixedNow.plusDays(5));
+            nonDueCard.setCardType("READING");
+            when(cardProgressRepository.findByUserAndItemTypeAndItemIdAndCardType(testUserProfile, "VOCABULARY", 204L, "READING"))
+                    .thenReturn(Optional.of(nonDueCard));
+            when(cardProgressRepository.save(any(CardProgress.class))).thenAnswer(inv -> inv.getArgument(0));
+
+            // Learner re-learns early and forgets (Rating 1 = Again)
+            ReviewCardRequest request = new ReviewCardRequest("VOCABULARY", 204L, 1, 5);
+            request.setCardType("READING");
+
+            DueCardResponse response = srsService.reviewCard(request);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getNextReviewAt()).isEqualTo(fixedNow);
+            assertThat(response.getIntervalDays()).isEqualTo(0);
+            assertThat(response.getRepetitions()).isEqualTo(0);
+
+            ArgumentCaptor<CardProgress> captor = ArgumentCaptor.forClass(CardProgress.class);
+            verify(cardProgressRepository).save(captor.capture());
+            CardProgress saved = captor.getValue();
+            assertThat(saved.getNextReviewAt()).isEqualTo(fixedNow);
+            assertThat(saved.getIntervalDays()).isEqualTo(0);
+            assertThat(saved.getRepetitions()).isEqualTo(0);
+        }
     }
 }

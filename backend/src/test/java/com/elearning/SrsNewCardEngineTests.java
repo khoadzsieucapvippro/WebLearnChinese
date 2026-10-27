@@ -343,7 +343,7 @@ class SrsNewCardEngineTests {
         void testGetStudyStatsAccurate() {
             when(userProfileRepository.findByAccountEmailOrPhone("learner@test.com")).thenReturn(Optional.of(testUser));
             when(userSrsSettingRepository.findByUser(testUser)).thenReturn(Optional.of(userSetting));
-            when(cardProgressRepository.countByUserAndItemTypeAndNextReviewAtLessThanEqual(eq(testUser), eq("VOCABULARY"), any(LocalDateTime.class))).thenReturn(5L);
+            when(cardProgressRepository.countByUserAndNextReviewAtLessThanEqual(eq(testUser), any(LocalDateTime.class))).thenReturn(5L);
             when(reviewLogRepository.countByUserAndReviewedAtGreaterThanEqual(eq(testUser), any(LocalDateTime.class))).thenReturn(12L);
             when(reviewLogRepository.countNewItemsIntroducedToday(eq(testUser), eq("VOCABULARY"), any(LocalDateTime.class))).thenReturn(4L);
 

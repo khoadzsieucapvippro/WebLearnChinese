@@ -9933,6 +9933,7 @@ export class SrsReviewController {
 
 
     this.dueItemsCache = { vocab: [], radicals: [] };
+    this.dom = {};
 
     // Cached catalog data
     this.fullRadicalsCatalog = [];
@@ -11132,6 +11133,7 @@ export class SrsReviewController {
    * Updates progress bars and due badges for the 5 Curricula Master Deck cards.
    */
   updateCurriculaShelfMetrics() {
+    if (typeof document === 'undefined') return;
     // 1. 50 Radicals
     const rad50List = this.commonRadicals.length > 0 ? this.commonRadicals : this.fullRadicalsCatalog.slice(0, 50);
     const due50 = rad50List.filter(r => this.isRadicalDue(r.radicalId ?? r.id ?? r.itemId, r.character)).length;
@@ -15035,6 +15037,7 @@ export class SrsReviewController {
    * @param {boolean} enabled 
    */
   setRatingButtonsEnabled(enabled) {
+    if (!this.dom) return;
     const btns = [
       this.dom.btnRatingAgain,
       this.dom.btnRatingHard,
@@ -15068,7 +15071,7 @@ export class SrsReviewController {
 
     this.isSubmitting = true;
     this.setRatingButtonsEnabled(false);
-    if (this.dom.ratingFeedback) {
+    if (this.dom?.ratingFeedback) {
       this.dom.ratingFeedback.textContent = 'Đang ghi nhận kết quả đánh giá...';
     }
 
@@ -15106,10 +15109,13 @@ export class SrsReviewController {
       }
 
       // Normal learning & chapter review: send authoritative review to backend if authenticated.
-      // Scientific SRS Invariant: In-session requeued attempts (_requeued) are working-memory drills;
-      // they do NOT overwrite or cancel the authoritative Lapse recorded on the first pass so that
-      // the card properly remains DUE in the catalog for genuine spaced review.
-      if (authManager.isAuthenticated() && !queueItem._requeued) {
+      // Relearn Graduation Invariant:
+      // 1) First encounter (!queueItem._requeued): send review (records initial learning progress or lapse).
+      // 2) Relearn graduation (queueItem._requeued && numRating >= 2): card has successfully graduated the in-session
+      //    relearn drill, so send authoritative review to schedule nextReviewAt in the future (2 mins in test mode or 1 day in SM-2).
+      // 3) Repeat failure in drill (queueItem._requeued && numRating === 1): in-session working memory drill,
+      //    requeues locally without sending duplicate lapse records to backend.
+      if (authManager.isAuthenticated() && (!queueItem._requeued || numRating >= 2)) {
         const payload = buildReviewPayload({
           itemType: card.itemType || 'VOCABULARY',
           itemId: card.itemId,
@@ -15146,14 +15152,15 @@ export class SrsReviewController {
                 itemType: itemType
               });
             }
-          } else if (numRating >= 2 && !queueItem._requeued) {
+          } else if (numRating >= 2) {
             const targetId = Number(card.itemId ?? card.vocabId ?? card.radicalId ?? card.id);
             const targetChar = (card.hanzi || card.character || '').trim();
             this.dueItemsCache[cacheKey] = this.dueItemsCache[cacheKey].filter(it => {
               const itId = Number(it.itemId ?? it.vocabId ?? it.radicalId ?? it.id);
               const itChar = (it.hanzi || it.character || '').trim();
-              if (targetId && itId) return itId !== targetId;
-              if (targetChar && itChar) return itChar !== targetChar;
+              if (targetId && itId && targetId === itId) return false;
+              if (targetId && itId && targetId < 10000 && itId < 10000 && targetId !== itId) return true;
+              if (targetChar && itChar && targetChar === itChar) return false;
               return true;
             });
           }
