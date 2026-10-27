@@ -13592,7 +13592,7 @@ export class SrsReviewController {
    * @param {Object} [summary]
    */
   handleWritingCharComplete(charIndex, summary = null) {
-    if (!this.hasCompletedWritingForCurrentCard && summary && typeof summary.totalMistakes === 'number') {
+    if (summary && typeof summary.totalMistakes === 'number') {
       this.currentWritingMistakes = (this.currentWritingMistakes || 0) + Math.max(0, summary.totalMistakes);
     }
     this.completedCharIndices.add(charIndex);
@@ -13717,6 +13717,8 @@ export class SrsReviewController {
   clearWriting() {
     this.completedCharIndices.clear();
     this.isCurrentWritingCompleted = false;
+    this.currentWritingMistakes = 0;
+    this.hasUsedWritingHintForCurrentCard = false;
 
     this.writingEngines.forEach(eng => {
       try {
