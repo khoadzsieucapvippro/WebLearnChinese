@@ -741,4 +741,58 @@ describe('Browser E2E: SRS Listening Room & Pinyin IME', () => {
     }
   });
 
+  test('SL-08: Xem gợi ý button toggles hint details and caps SRS score to Rating 2 (Hard)', async () => {
+    const { page, context, getRuntimeErrors } = await createMonitoredPage(browser);
+    try {
+      const { reviewsSubmitted } = await setupListeningMockBackend(page);
+
+      await page.goto(`${baseUrl}/srs-review.html?mode=listening&group=radicals50&action=continue`, {
+        waitUntil: 'domcontentloaded'
+      });
+
+      await page.locator('#srsListeningRoom').waitFor({ state: 'visible', timeout: 5000 });
+
+      // Verify hint toggle button is visible with initial state
+      const hintBtn = page.locator('#btnListeningToggleHint');
+      assert.strictEqual(await hintBtn.isVisible(), true, 'Hint toggle button must be visible');
+      assert.ok((await hintBtn.textContent()).includes('Xem gợi ý'));
+
+      // Verify hint box is initially hidden
+      const hintBox = page.locator('#listeningHintBox');
+      assert.strictEqual(await hintBox.isVisible(), false, 'Hint box must be hidden initially');
+
+      // Click to reveal hint
+      await hintBtn.click();
+      await page.waitForTimeout(100);
+
+      assert.strictEqual(await hintBox.isVisible(), true, 'Hint box must be visible after click');
+      assert.ok((await hintBtn.textContent()).includes('Ẩn gợi ý'));
+
+      // Verify hint content contains Vietnamese meaning and Han-Viet
+      const meaningText = await page.locator('#listeningPromptMeaning').textContent();
+      assert.ok(meaningText.includes('Số một'), `Meaning must include Số một, got: ${meaningText}`);
+      const hanVietText = await page.locator('#listeningPromptHanViet').textContent();
+      assert.ok(hanVietText.includes('Nhất'), `Han-Viet must include Nhất, got: ${hanVietText}`);
+
+      // Answer correctly on first try
+      const answerInput = page.locator('#listeningAnswerInput');
+      await answerInput.fill('一');
+      await page.locator('#btnListeningCheck').click();
+      await page.waitForTimeout(200);
+
+      // Verify Next button unlocked
+      const nextBtn = page.locator('#btnListeningNext');
+      await nextBtn.click();
+      await page.waitForTimeout(400);
+
+      // Verify review submitted has rating: 2 because hint was used
+      assert.strictEqual(reviewsSubmitted.length, 1);
+      assert.strictEqual(reviewsSubmitted[0].rating, 2, 'Using hint must cap SRS rating to 2 (Hard)');
+
+      assert.strictEqual(getRuntimeErrors().length, 0, 'Zero runtime errors');
+    } finally {
+      await context.close();
+    }
+  });
+
 });

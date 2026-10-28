@@ -740,6 +740,12 @@ describe('Unit: SRS Listening Room & Pinyin IME Engine', () => {
       btnListeningNext: makeEl('button'),
       btnListeningPlayAudio: makeEl('button'),
       listeningSpeakerHint: makeEl('span'),
+      listeningAnswerRevealArea: makeEl('div'),
+      btnListeningToggleHint: makeEl('button'),
+      listeningHintBox: makeEl('div'),
+      listeningPromptMeaning: makeEl('div'),
+      listeningPromptHanViet: makeEl('span'),
+      listeningPromptPinyin: makeEl('span'),
       listeningImeContainer: makeEl('div')
     };
     return controller;
@@ -1221,6 +1227,71 @@ describe('Unit: SRS Listening Room & Pinyin IME Engine', () => {
       assert.strictEqual(controller.currentListeningMistakes, 1);
       controller.handleListeningIncorrect();
       assert.strictEqual(controller.currentListeningMistakes, 2);
+    });
+
+    test('using hint caps score to Rating 2 (Hard) even with 0 mistakes and 0 replays', async () => {
+      const controller = new SrsReviewController();
+      controller.dom = { btnListeningNext: makeEl('button') };
+      controller.hasCompletedListeningForCurrentCard = true;
+      controller.currentListeningMistakes = 0;
+      controller.currentListeningReplays = 0;
+      controller.hasUsedListeningHintForCurrentCard = true;
+      let submittedRating = null;
+      controller.submitRating = async (r) => { submittedRating = r; };
+
+      await controller.nextListeningItem();
+      assert.strictEqual(submittedRating, 2, 'Opening hint must cap rating to 2 (Hard)');
+    });
+
+    test('using hint with >= 3 mistakes still maps to Rating 1 (Again)', async () => {
+      const controller = new SrsReviewController();
+      controller.dom = { btnListeningNext: makeEl('button') };
+      controller.hasCompletedListeningForCurrentCard = true;
+      controller.currentListeningMistakes = 3;
+      controller.currentListeningReplays = 0;
+      controller.hasUsedListeningHintForCurrentCard = true;
+      let submittedRating = null;
+      controller.submitRating = async (r) => { submittedRating = r; };
+
+      await controller.nextListeningItem();
+      assert.strictEqual(submittedRating, 1, '>= 3 mistakes takes precedence and maps to 1 (Again)');
+    });
+
+    test('renderListeningRoomCard resets hint box and populates meaning, hanViet, pinyin', async () => {
+      const controller = setupControllerForListening();
+      controller.hasUsedListeningHintForCurrentCard = true;
+      controller.dom.listeningHintBox.classList.remove('d-none');
+      controller.dom.btnListeningToggleHint.textContent = '🙈 Ẩn gợi ý';
+
+      const mockCard = {
+        itemId: 10,
+        itemType: 'VOCABULARY',
+        hanzi: '你好',
+        pinyin: 'nǐ hǎo',
+        meaningVi: 'Xin chào',
+        meaningHanViet: 'NỄ HẢO'
+      };
+
+      await controller.renderListeningRoomCard(mockCard);
+
+      assert.strictEqual(controller.hasUsedListeningHintForCurrentCard, false, 'Hint used flag must be reset to false');
+      assert.strictEqual(controller.dom.listeningHintBox.classList.contains('d-none'), true, 'Hint box must be hidden on new card');
+      assert.strictEqual(controller.dom.btnListeningToggleHint.textContent, '👁️ Xem gợi ý');
+      assert.strictEqual(controller.dom.listeningPromptMeaning.textContent, 'Xin chào');
+      assert.strictEqual(controller.dom.listeningPromptHanViet.textContent, 'Hán-Việt: NỄ HẢO');
+      assert.strictEqual(controller.dom.listeningPromptPinyin.textContent, 'Phiên âm: nǐ hǎo');
+    });
+
+    test('handleListeningCorrect unhides hint box and sets toggle text to 🙈 Ẩn gợi ý', () => {
+      const controller = setupControllerForListening();
+      controller.dom.listeningHintBox.classList.add('d-none');
+      controller.dom.btnListeningToggleHint.textContent = '👁️ Xem gợi ý';
+
+      const mockCard = { itemId: 10, itemType: 'VOCABULARY', hanzi: '你好' };
+      controller.handleListeningCorrect(mockCard);
+
+      assert.strictEqual(controller.dom.listeningHintBox.classList.contains('d-none'), false, 'Hint box should be shown upon correct answer');
+      assert.strictEqual(controller.dom.btnListeningToggleHint.textContent, '🙈 Ẩn gợi ý');
     });
   });
 

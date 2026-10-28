@@ -10118,6 +10118,12 @@ export class SrsReviewController {
       listeningRoomBadge: document.getElementById('listeningRoomBadge'),
       btnListeningPlayAudio: document.getElementById('btnListeningPlayAudio'),
       listeningSpeakerHint: document.getElementById('listeningSpeakerHint'),
+      listeningAnswerRevealArea: document.getElementById('listeningAnswerRevealArea'),
+      btnListeningToggleHint: document.getElementById('btnListeningToggleHint'),
+      listeningHintBox: document.getElementById('listeningHintBox'),
+      listeningPromptMeaning: document.getElementById('listeningPromptMeaning'),
+      listeningPromptHanViet: document.getElementById('listeningPromptHanViet'),
+      listeningPromptPinyin: document.getElementById('listeningPromptPinyin'),
       listeningAnswerInput: document.getElementById('listeningAnswerInput'),
       listeningCompletionNotice: document.getElementById('listeningCompletionNotice'),
       listeningErrorNotice: document.getElementById('listeningErrorNotice'),
@@ -10493,6 +10499,20 @@ export class SrsReviewController {
         this.currentListeningReplays = (this.currentListeningReplays || 0) + 1;
         this.playPronunciation(this.dom.btnListeningPlayAudio);
         this.setListeningSpeakerHint(false);
+      });
+    }
+    if (this.dom.btnListeningToggleHint) {
+      this.dom.btnListeningToggleHint.addEventListener('click', () => {
+        if (this.dom.listeningHintBox) {
+          const isHidden = this.dom.listeningHintBox.classList.contains('d-none');
+          this.dom.listeningHintBox.classList.toggle('d-none', !isHidden);
+          this.dom.btnListeningToggleHint.textContent = isHidden
+            ? '🙈 Ẩn gợi ý'
+            : '👁️ Xem gợi ý';
+          if (isHidden) {
+            this.hasUsedListeningHintForCurrentCard = true;
+          }
+        }
       });
     }
     if (this.dom.btnListeningCheck) {
@@ -14048,6 +14068,7 @@ export class SrsReviewController {
   async renderListeningRoomCard(card) {
     this.destroyListeningIme();
     this.hasCompletedListeningForCurrentCard = false;
+    this.hasUsedListeningHintForCurrentCard = false;
     this.currentListeningMistakes = 0;
     this.currentListeningReplays = 0;
 
@@ -14063,6 +14084,27 @@ export class SrsReviewController {
     }
     if (this.dom.listeningErrorNotice) {
       this.dom.listeningErrorNotice.classList.add('d-none');
+    }
+
+    // Reset hint box and populate content
+    if (this.dom.listeningHintBox) {
+      this.dom.listeningHintBox.classList.add('d-none');
+    }
+    if (this.dom.btnListeningToggleHint) {
+      this.dom.btnListeningToggleHint.textContent = '👁️ Xem gợi ý';
+    }
+    if (this.dom.listeningPromptMeaning) {
+      this.dom.listeningPromptMeaning.textContent = card.meaningVi || card.meaning || '';
+    }
+    if (this.dom.listeningPromptHanViet) {
+      const hv = card.meaningHanViet || '';
+      this.dom.listeningPromptHanViet.textContent = hv ? `Hán-Việt: ${hv}` : '';
+      this.dom.listeningPromptHanViet.classList.toggle('d-none', !hv);
+    }
+    if (this.dom.listeningPromptPinyin) {
+      const py = card.pinyin || '';
+      this.dom.listeningPromptPinyin.textContent = py ? `Phiên âm: ${py}` : '';
+      this.dom.listeningPromptPinyin.classList.toggle('d-none', !py);
     }
 
     // Reset input field
@@ -14232,6 +14274,14 @@ export class SrsReviewController {
       this.dom.listeningCompletionNotice.classList.remove('d-none');
     }
 
+    // Reveal hint box so learner sees definition, Han-Viet and pinyin upon completion
+    if (this.dom.listeningHintBox) {
+      this.dom.listeningHintBox.classList.remove('d-none');
+    }
+    if (this.dom.btnListeningToggleHint) {
+      this.dom.btnListeningToggleHint.textContent = '🙈 Ẩn gợi ý';
+    }
+
     if (this.dom.btnListeningNext) {
       this.dom.btnListeningNext.classList.remove('writing-next-hidden');
       this.dom.btnListeningNext.removeAttribute('aria-hidden');
@@ -14309,18 +14359,19 @@ export class SrsReviewController {
 
     try {
       // 1. Quy chuẩn đánh giá 1-4 thống nhất SRS cho Luyện Nghe:
-      // Dựa trên số lần trả lời sai và số lần bấm nghe lại âm thanh:
+      // Dựa trên số lần trả lời sai, số lần bấm nghe lại và việc có mở gợi ý hay không:
       // - Sai >= 3 lần: 1 (Học lại - Requeue về cuối phiên học)
-      // - Sai 1..2 lần HOẶC bấm nghe lại >= 3 lần: 2 (Khó)
-      // - Đúng lần đầu (0 lỗi) nhưng có bấm nghe lại 1..2 lần: 3 (Tốt)
-      // - Hoàn hảo: Đúng ngay lần đầu không bấm nghe lại: 4 (Dễ)
+      // - Sai 1..2 lần HOẶC bấm nghe lại >= 3 lần HOẶC có xem gợi ý: 2 (Khó)
+      // - Đúng lần đầu (0 lỗi, không mở gợi ý) nhưng có bấm nghe lại 1..2 lần: 3 (Tốt)
+      // - Hoàn hảo: Đúng ngay lần đầu không bấm nghe lại và không mở gợi ý: 4 (Dễ)
       const mistakes = Number(this.currentListeningMistakes) || 0;
       const replays = Number(this.currentListeningReplays) || 0;
+      const usedHint = Boolean(this.hasUsedListeningHintForCurrentCard);
 
       let listeningRating = 4;
       if (mistakes >= 3) {
         listeningRating = 1;
-      } else if (mistakes >= 1 || replays >= 3) {
+      } else if (mistakes >= 1 || replays >= 3 || usedHint) {
         listeningRating = 2;
       } else if (replays >= 1) {
         listeningRating = 3;

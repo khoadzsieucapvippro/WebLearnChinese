@@ -574,6 +574,20 @@
               <span id="listeningSpeakerHint" class="small text-secondary mt-1">Bấm loa để nghe phát âm</span>
             </div>
 
+            <!-- Hint Section (Xem gợi ý) -->
+            <div id="listeningAnswerRevealArea" class="listening-reveal-area mb-3 text-center">
+              <button type="button" id="btnListeningToggleHint" class="btn btn-sm btn-link text-decoration-none text-muted py-0 small">
+                👁️ Xem gợi ý
+              </button>
+              <div id="listeningHintBox" class="d-none mt-2 p-2 bg-light rounded border mx-auto" style="max-width: 340px;">
+                <div id="listeningPromptMeaning" class="fw-medium text-secondary small"></div>
+                <div class="mt-1">
+                  <span id="listeningPromptHanViet" class="badge bg-secondary-subtle text-secondary me-2"></span>
+                  <span id="listeningPromptPinyin" class="text-secondary small font-monospace"></span>
+                </div>
+              </div>
+            </div>
+
             <!-- 2. Chinese Character Input Field with Explicit Label -->
             <div class="listening-input-wrapper w-100 mb-2">
               <label for="listeningAnswerInput" class="form-label small fw-semibold text-secondary mb-1">Đáp án chữ Hán</label>
