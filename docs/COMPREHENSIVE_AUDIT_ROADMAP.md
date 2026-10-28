@@ -819,4 +819,45 @@ Ngày 2026-10-28, Người Dùng và AI Coding Assistant đã thống nhất áp
 
 3. **Kế Hoạch Thực Hiện**:
    - Hoàn thiện và nghiệm thu triệt để **Task 6.1 (Creator Studio)** trước (rà soát nút Tạo bài học mới vs Nhập Excel, tối ưu hóa giao diện).
-   - Sau đó tiếp tục thực hiện Task 6.2 (Moderator Queue & Thẩm định bài học) theo đúng định hướng Phương án A đã chốt.
+   - Tiếp tục thực hiện **Task 6.2 (Moderator Queue & Thẩm định bài học)** theo đúng định hướng Phương án A đã chốt.
+
+---
+
+### 5.12. Kết Quả Điều Tra & Nghiệm Thu: `TASK-6.2` (Moderator Studio & Đồng Bộ Hóa Phân Trang, Khắc Phục Layout)
+
+Toàn bộ hiện trạng kỹ thuật và yêu cầu nghiệm thu của **`TASK-6.2`: Moderator Studio (`moderator-queue.html`, `moderator-review.html`, `moderator-history.html`)** đã được xử lý triệt để, đồng bộ hoàn toàn với phía Creator và Learner:
+
+1. **Loại Bỏ Dropdown Kích Thước Trang Dư Thừa ("Hiển thị: 20 / trang")**:
+   - Xóa bỏ dropdown `#queuePageSizeSelect` và nhãn bao bọc trên `moderator-queue.html`.
+   - Xóa bỏ dropdown `#historyPageSizeSelect` và nhãn bao bọc trên `moderator-history.html`.
+   - Tối ưu hóa không gian thanh công cụ lọc tìm kiếm, giữ giao diện gọn gàng, trực quan và tập trung vào nghiệp vụ duyệt bài.
+
+2. **Xóa Bỏ Nhãn Tóm Tắt Phân Trang ("Hiển thị 1 - ... bài học / mục nhật ký")**:
+   - Xóa bỏ phần tử và logic hiển thị `#queuePaginationSummary` trong `moderator-queue-page.js`.
+   - Xóa bỏ phần tử và logic hiển thị `#historyPaginationSummary` trong `moderator-history-page.js`.
+   - Loại bỏ văn bản tĩnh rườm rà, nhường chỗ cho khối điều hướng trang tinh giản.
+
+3. **Đồng Bộ Hóa Hệ Thống Phân Trang Chuẩn First/Last (`<< < 1 2 3 > >>`)**:
+   - Chuyển đổi toàn bộ `ul.pagination` cũ sang cấu trúc chuẩn: `.pagination-container.justify-content-end` chứa `.pagination-controls`.
+   - Xây dựng thuật toán cửa sổ trượt 5 trang (`startPage`, `endPage`) trong `calculatePagination()` trên cả `moderator-queue-page.js` và `moderator-history-page.js`.
+   - Cung cấp đầy đủ các nút điều hướng chuẩn:
+     * Nút về trang đầu `<<` (`#btnQueueFirstPage`, `#historyPaginationFirstBtn`).
+     * Nút về trang trước `<` (`#btnQueuePrevPage`, `#historyPaginationPrevBtn`).
+     * Các nút số trang trượt `1, 2, 3...` (`.pagination-btn`).
+     * Nút sang trang kế tiếp `>` (`#btnQueueNextPage`, `#historyPaginationNextBtn`, `aria-label="Trang kế tiếp"`).
+     * Nút đến trang cuối `>>` (`#btnQueueLastPage`, `#historyPaginationLastBtn`).
+   - Căn chỉnh sang góc dưới bên phải (`justify-content-end`), đồng nhất hoàn hảo với giao diện người học (`lessons.html`, `vocabulary.html`) và tác giả (`creator-lessons.html`, `creator-import.html`).
+
+4. **Khắc Phục Triệt Để Bố Cục Bảng & Khung Chứa (`.table-responsive-clean` & Wrapper Fix)**:
+   - Áp dụng class `.table-responsive-clean` với `max-width: 100%;` thay cho `.table-responsive` cũ trên `moderator-queue.html` và `moderator-history.html`, chống tràn ngang tuyệt đối, bảo vệ sidebar và header không bị xô lệch layout.
+   - Tại `moderator-review.html`: Khắc phục lỗi thẻ đóng `</div>` đóng sớm của `<div class="container-xl creator-studio-wrapper">`, bao bọc trọn vẹn cả nút `#backToQueueBtn` ("← Quay lại danh sách chờ") và `#moderatorReviewSection`, xóa thẻ `</div>` mồ côi ở cuối file.
+   - Bổ sung tham số xóa cache `?v=20261028_02` trên toàn bộ thẻ `<link>` CSS và `<script>` JS của 3 trang kiểm duyệt.
+
+5. **Bộ Kiểm Thử Đã Xác Minh & PASS 100%**:
+   - `tests/frontend/unit/moderator/moderator-queue.test.mjs`: **45/45 tests PASS** (bổ sung assertions cho `startPage`, `endPage`).
+   - `tests/frontend/unit/moderator/moderator-history.test.mjs`: **37/37 tests PASS** (bổ sung assertions cho `startPage`, `endPage`).
+   - `tests/frontend/e2e/moderator-queue.browser.mjs`: **5/5 tests PASS** (cập nhật test `MQ-02` kiểm tra điều hướng phân trang Next/Prev).
+   - `tests/frontend/e2e/moderator-history.browser.mjs`: **5/5 tests PASS**.
+   - `tests/frontend/e2e/moderator-review.browser.mjs`: **9/9 tests PASS**.
+   - `npm run verify:frontend:fast`: **1.115/1.115 tests PASS** (273 suites).
+   - `node tests/e2e/runner.mjs --tier=all`: **74/74 tests PASS** (Tiers 1–4).

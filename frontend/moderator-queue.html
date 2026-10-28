@@ -14,7 +14,7 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>审</text></svg>">
 
   <!-- Core Design Tokens & Custom Stylesheet -->
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=20261028_02">
 
   <!-- Runtime Environment Configuration -->
   <script src="js/config.js"></script>
@@ -117,20 +117,11 @@
             </p>
           </div>
 
-          <!-- Controls: Badge & Page Size -->
-          <div class="d-flex align-items-center gap-3">
+          <!-- Controls: Badge Aligned Right -->
+          <div class="d-flex align-items-center gap-2">
             <span id="queueResultCountBadge" class="badge-status badge-status-draft text-nowrap" aria-live="polite">
               Đang tải...
             </span>
-
-            <div class="d-flex align-items-center gap-2">
-              <label for="queuePageSizeSelect" class="small text-secondary text-nowrap mb-0">Hiển thị:</label>
-              <select id="queuePageSizeSelect" class="form-select form-select-sm" style="width: auto;">
-                <option value="12">12 / trang</option>
-                <option value="20" selected>20 / trang</option>
-                <option value="40">40 / trang</option>
-              </select>
-            </div>
           </div>
         </div>
 
@@ -139,7 +130,7 @@
 
         <!-- Pending Lessons Table Container -->
         <div id="queueTableContainer" class="creator-panel-card p-0 overflow-hidden d-none">
-          <div class="table-responsive">
+          <div class="table-responsive-clean">
             <table class="table table-hover align-middle mb-0 table-responsive-stacked" id="moderatorQueueTable">
               <caption class="visually-hidden">Danh sách bài học đang chờ kiểm duyệt</caption>
               <thead class="table-light border-bottom">
@@ -160,14 +151,11 @@
           </div>
         </div>
 
-        <!-- Accessible Server-Side Pagination Landmark -->
-        <nav id="queuePaginationNav" class="d-flex flex-wrap justify-content-between align-items-center gap-3 mt-4 d-none" aria-label="Phân trang hàng đợi kiểm duyệt">
-          <div class="small text-secondary" id="queuePaginationSummary">
-            <!-- Rendered e.g.: Hiển thị 1 - 10 trong 25 bài học -->
+        <!-- Accessible Pagination Navigation (Aligned Right like Learner side) -->
+        <nav id="queuePaginationNav" aria-label="Phân trang hàng đợi kiểm duyệt" class="pagination-container justify-content-end mt-4 d-none">
+          <div class="pagination-controls" id="queuePaginationList" role="group" aria-label="Điều khiển chuyển trang hàng đợi">
+            <!-- Buttons dynamically generated -->
           </div>
-          <ul class="pagination pagination-sm mb-0 gap-1" id="queuePaginationList">
-            <!-- Dynamically populated safely -->
-          </ul>
         </nav>
       </section>
 
@@ -185,9 +173,9 @@
   </footer>
 
   <!-- Management Workspace Layout & Sidebar Component -->
-  <script type="module" src="js/ui/management-layout.js"></script>
+  <script type="module" src="js/ui/management-layout.js?v=20261028_02"></script>
 
   <!-- Page Initialization Entrypoint -->
-  <script type="module" src="js/pages/moderator-queue-page.js"></script>
+  <script type="module" src="js/pages/moderator-queue-page.js?v=20261028_02"></script>
 </body>
 </html>

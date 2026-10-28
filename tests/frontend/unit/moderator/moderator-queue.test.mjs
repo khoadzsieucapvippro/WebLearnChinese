@@ -195,6 +195,8 @@ describe('Unit: Moderator Review Queue UI (Task 9E.1)', () => {
       assert.strictEqual(p.hasNext, true);
       assert.strictEqual(p.startRecord, 1);
       assert.strictEqual(p.endRecord, 20);
+      assert.strictEqual(p.startPage, 0);
+      assert.strictEqual(p.endPage, 4);
     });
 
     test('middle page calculations (page 2 of 5, size 10, totalElements 45)', () => {

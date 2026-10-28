@@ -149,7 +149,7 @@ describe('Browser E2E: Moderator Review Queue UI (Task 9E.1)', () => {
   });
 
   // MQ-02: Server-side pagination and page size selection
-  test('MQ-02: Server-side pagination and page size dropdown trigger appropriate requests', async () => {
+  test('MQ-02: Server-side pagination controls trigger appropriate requests', async () => {
     const { page, context } = await createMonitoredPage(browser, {
       viewportWidth: 1280,
       viewportHeight: 720
@@ -215,14 +215,14 @@ describe('Browser E2E: Moderator Review Queue UI (Task 9E.1)', () => {
       await assert.doesNotReject(updatedRow.waitFor({ state: 'visible', timeout: 3000 }));
       assert.match(await updatedRow.textContent(), /Bài học Trang 2/);
 
-      // Change page size to 12 concurrently with waitForResponse
-      const sizeSelect = page.locator('#queuePageSizeSelect');
+      // Click Prev page button to return to page 0
+      const prevBtn = page.locator('#btnQueuePrevPage');
+      await assert.doesNotReject(prevBtn.waitFor({ state: 'visible', timeout: 3000 }));
       await Promise.all([
         page.waitForResponse(res => res.url().includes('/moderator/lessons/pending') && res.status() === 200),
-        sizeSelect.selectOption('12')
+        prevBtn.click()
       ]);
 
-      assert.strictEqual(requestedSize, '12');
       assert.strictEqual(requestedPage, '0');
     } finally {
       await context.close();

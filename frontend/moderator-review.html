@@ -14,7 +14,7 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>审</text></svg>">
 
   <!-- Core Design Tokens & Custom Stylesheet -->
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=20261028_02">
 
   <!-- Runtime Environment Configuration -->
   <script src="js/config.js"></script>
@@ -82,16 +82,13 @@
     <main id="mainContent" class="management-main-content">
       <div class="container-xl creator-studio-wrapper">
 
-        
-      </div>
-
-      <!-- Return Navigation Action -->
-      <div class="mb-4">
-        <a href="moderator-queue.html" class="btn btn-sm btn-chinese-secondary d-inline-flex align-items-center gap-2" id="backToQueueBtn">
-          <span aria-hidden="true">&larr;</span>
-          <span>Quay lại hàng đợi kiểm duyệt</span>
-        </a>
-      </div>
+        <!-- Return Navigation Action -->
+        <div class="mb-4">
+          <a href="moderator-queue.html" class="btn btn-sm btn-chinese-secondary d-inline-flex align-items-center gap-2 text-decoration-none" id="backToQueueBtn">
+            <span aria-hidden="true">&larr;</span>
+            <span>Quay lại hàng đợi kiểm duyệt</span>
+          </a>
+        </div>
 
       <!-- Role Guard Message Container (Shown if unauthorized) -->
       <div id="moderatorAuthGuardContainer" class="d-none mb-4">
@@ -309,9 +306,9 @@
   </footer>
 
   <!-- Management Workspace Layout & Sidebar Component -->
-  <script type="module" src="js/ui/management-layout.js"></script>
+  <script type="module" src="js/ui/management-layout.js?v=20261028_02"></script>
 
   <!-- Page Initialization Entrypoint -->
-  <script type="module" src="js/pages/moderator-review-page.js"></script>
+  <script type="module" src="js/pages/moderator-review-page.js?v=20261028_02"></script>
 </body>
 </html>

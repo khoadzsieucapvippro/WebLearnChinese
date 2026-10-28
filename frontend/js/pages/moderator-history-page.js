@@ -272,7 +272,7 @@ export function formatHistoryDate(isoString) {
  *   endRecord: number
  * }}
  */
-export function calculatePagination(page, size, totalElements, totalPages) {
+export function calculatePagination(page, size, totalElements, totalPages, maxButtons = 5) {
   const safeTotalPages = Math.max(0, totalPages || 0);
   const safePage = Math.max(0, Math.min(page || 0, Math.max(0, safeTotalPages - 1)));
   const hasPrev = safePage > 0;
@@ -280,13 +280,25 @@ export function calculatePagination(page, size, totalElements, totalPages) {
   const startRecord = totalElements === 0 ? 0 : safePage * size + 1;
   const endRecord = Math.min((safePage + 1) * size, totalElements);
 
+  let startPage = 0;
+  let endPage = -1;
+  if (safeTotalPages > 0) {
+    startPage = Math.max(0, safePage - Math.floor(maxButtons / 2));
+    endPage = Math.min(safeTotalPages - 1, startPage + maxButtons - 1);
+    if (endPage - startPage < maxButtons - 1) {
+      startPage = Math.max(0, endPage - maxButtons + 1);
+    }
+  }
+
   return {
     currentPage: safePage,
     totalPages: safeTotalPages,
     hasPrev,
     hasNext,
     startRecord,
-    endRecord
+    endRecord,
+    startPage,
+    endPage
   };
 }
 
@@ -582,99 +594,119 @@ export class ModeratorHistoryController {
    * @param {object} parsed 
    */
   renderPagination(parsed) {
-    if (!this.paginationNav) return;
+    if (!this.paginationNav || !this.paginationList) return;
 
     if (parsed.totalPages <= 1 && parsed.totalElements <= parsed.size) {
       this.paginationNav.classList.add('d-none');
+      clearContainer(this.paginationList);
       return;
     }
 
     this.paginationNav.classList.remove('d-none');
+    clearContainer(this.paginationList);
 
-    const pagination = calculatePagination(parsed.page, parsed.size, parsed.totalElements, parsed.totalPages);
+    const calc = calculatePagination(parsed.page, parsed.size, parsed.totalElements, parsed.totalPages, 5);
 
-    // Update Summary
-    if (this.paginationSummary) {
-      this.paginationSummary.textContent = `Hiển thị ${pagination.startRecord} - ${pagination.endRecord} trong ${parsed.totalElements} mục nhật ký`;
+    // 1. First Page Button (<<)
+    const firstBtn = createSafeElement('button', {
+      className: 'pagination-btn',
+      attrs: {
+        type: 'button',
+        'aria-label': 'Trang đầu',
+        id: 'historyPaginationFirstBtn'
+      },
+      text: '<<'
+    });
+    if (calc.currentPage === 0) {
+      firstBtn.setAttribute('disabled', 'true');
+      firstBtn.disabled = true;
+    } else {
+      firstBtn.addEventListener('click', () => {
+        this.loadHistory(0);
+      });
+    }
+    this.paginationList.appendChild(firstBtn);
+
+    // 2. Previous Button (<)
+    const prevBtn = createSafeElement('button', {
+      className: 'pagination-btn',
+      attrs: {
+        type: 'button',
+        'aria-label': 'Trang trước',
+        id: 'historyPaginationPrevBtn'
+      },
+      text: '<'
+    });
+    if (!calc.hasPrev) {
+      prevBtn.setAttribute('disabled', 'true');
+      prevBtn.disabled = true;
+    } else {
+      prevBtn.addEventListener('click', () => {
+        this.loadHistory(calc.currentPage - 1);
+      });
+    }
+    this.paginationList.appendChild(prevBtn);
+
+    // 3. Numbered Buttons
+    for (let p = calc.startPage; p <= calc.endPage; p++) {
+      const isCurrent = p === calc.currentPage;
+      const pageBtn = createSafeElement('button', {
+        className: `pagination-btn ${isCurrent ? 'active' : ''}`,
+        attrs: {
+          type: 'button',
+          'aria-label': `Trang ${p + 1}`,
+          ...(isCurrent ? { 'aria-current': 'page' } : {})
+        },
+        text: String(p + 1)
+      });
+      if (!isCurrent) {
+        const pageNum = p;
+        pageBtn.addEventListener('click', () => {
+          this.loadHistory(pageNum);
+        });
+      }
+      this.paginationList.appendChild(pageBtn);
     }
 
-    // Render Navigation Buttons
-    if (this.paginationList) {
-      clearContainer(this.paginationList);
-
-      // Previous button
-      const prevLi = createSafeElement('li', {
-        className: `page-item ${!pagination.hasPrev ? 'disabled' : ''}`,
-        children: [
-          createSafeElement('button', {
-            className: 'page-link',
-            text: '« Trước',
-            attrs: {
-              type: 'button',
-              'aria-label': 'Trang trước',
-              ...(!pagination.hasPrev ? { disabled: 'true' } : {})
-            }
-          })
-        ]
+    // 4. Next Button (>)
+    const nextBtn = createSafeElement('button', {
+      className: 'pagination-btn',
+      attrs: {
+        type: 'button',
+        'aria-label': 'Trang kế tiếp',
+        id: 'historyPaginationNextBtn'
+      },
+      text: '>'
+    });
+    if (!calc.hasNext) {
+      nextBtn.setAttribute('disabled', 'true');
+      nextBtn.disabled = true;
+    } else {
+      nextBtn.addEventListener('click', () => {
+        this.loadHistory(calc.currentPage + 1);
       });
-      if (pagination.hasPrev) {
-        prevLi.querySelector('button').addEventListener('click', () => {
-          this.loadHistory(pagination.currentPage - 1);
-        });
-      }
-      this.paginationList.appendChild(prevLi);
-
-      // Page numbers (display max 5 nearby pages)
-      const startPage = Math.max(0, pagination.currentPage - 2);
-      const endPage = Math.min(pagination.totalPages - 1, startPage + 4);
-
-      for (let p = startPage; p <= endPage; p++) {
-        const isCurrent = p === pagination.currentPage;
-        const pageLi = createSafeElement('li', {
-          className: `page-item ${isCurrent ? 'active' : ''}`,
-          children: [
-            createSafeElement('button', {
-              className: 'page-link',
-              text: String(p + 1),
-              attrs: {
-                type: 'button',
-                'aria-label': `Trang ${p + 1}`,
-                ...(isCurrent ? { 'aria-current': 'page' } : {})
-              }
-            })
-          ]
-        });
-        if (!isCurrent) {
-          const pageNum = p;
-          pageLi.querySelector('button').addEventListener('click', () => {
-            this.loadHistory(pageNum);
-          });
-        }
-        this.paginationList.appendChild(pageLi);
-      }
-
-      // Next button
-      const nextLi = createSafeElement('li', {
-        className: `page-item ${!pagination.hasNext ? 'disabled' : ''}`,
-        children: [
-          createSafeElement('button', {
-            className: 'page-link',
-            text: 'Sau »',
-            attrs: {
-              type: 'button',
-              'aria-label': 'Trang kế tiếp',
-              ...(!pagination.hasNext ? { disabled: 'true' } : {})
-            }
-          })
-        ]
-      });
-      if (pagination.hasNext) {
-        nextLi.querySelector('button').addEventListener('click', () => {
-          this.loadHistory(pagination.currentPage + 1);
-        });
-      }
-      this.paginationList.appendChild(nextLi);
     }
+    this.paginationList.appendChild(nextBtn);
+
+    // 5. Last Page Button (>>)
+    const lastBtn = createSafeElement('button', {
+      className: 'pagination-btn',
+      attrs: {
+        type: 'button',
+        'aria-label': 'Trang cuối',
+        id: 'historyPaginationLastBtn'
+      },
+      text: '>>'
+    });
+    if (calc.currentPage >= calc.totalPages - 1) {
+      lastBtn.setAttribute('disabled', 'true');
+      lastBtn.disabled = true;
+    } else {
+      lastBtn.addEventListener('click', () => {
+        this.loadHistory(calc.totalPages - 1);
+      });
+    }
+    this.paginationList.appendChild(lastBtn);
   }
 
   /**

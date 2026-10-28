@@ -264,6 +264,8 @@ describe('Unit: Moderator Audit History UI Logic (Task 9E.4)', () => {
       assert.strictEqual(p.hasNext, true);
       assert.strictEqual(p.startRecord, 21);
       assert.strictEqual(p.endRecord, 40);
+      assert.strictEqual(p.startPage, 0);
+      assert.strictEqual(p.endPage, 2);
     });
 
     it('calculates boundary conditions for first and last page', () => {

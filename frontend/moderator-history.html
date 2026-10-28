@@ -14,7 +14,7 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>史</text></svg>">
 
   <!-- Core Design Tokens & Custom Stylesheet -->
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=20261028_02">
 
   <!-- Runtime Environment Configuration -->
   <script src="js/config.js"></script>
@@ -117,7 +117,7 @@
             </p>
           </div>
 
-          <!-- Controls: Badge & Page Size -->
+          <!-- Controls: Badges Aligned Right -->
           <div class="d-flex align-items-center flex-wrap gap-2">
             <span class="badge-status badge-status-approved" id="historyAuditBadge">
               Bất Biến (Audit Trail)
@@ -126,15 +126,6 @@
             <span id="historyResultCountBadge" class="badge-status badge-status-draft text-nowrap" aria-live="polite">
               Đang tải...
             </span>
-
-            <div class="d-flex align-items-center gap-2">
-              <label for="historyPageSizeSelect" class="small text-secondary text-nowrap mb-0">Hiển thị:</label>
-              <select id="historyPageSizeSelect" class="form-select form-select-sm" style="width: auto;">
-                <option value="12">12 / trang</option>
-                <option value="20" selected>20 / trang</option>
-                <option value="40">40 / trang</option>
-              </select>
-            </div>
           </div>
         </div>
 
@@ -143,7 +134,7 @@
 
         <!-- Moderation History Table Container -->
         <div id="historyTableContainer" class="creator-panel-card p-0 overflow-hidden d-none">
-          <div class="table-responsive">
+          <div class="table-responsive-clean">
             <table class="table table-hover align-middle mb-0" id="moderatorHistoryTable">
               <caption class="visually-hidden">Nhật ký các quyết định kiểm duyệt bài học</caption>
               <thead class="table-light border-bottom">
@@ -163,14 +154,11 @@
           </div>
         </div>
 
-        <!-- Accessible Server-Side Pagination Landmark -->
-        <nav id="historyPaginationNav" class="d-flex flex-wrap justify-content-between align-items-center gap-3 mt-4 d-none" aria-label="Phân trang nhật ký kiểm duyệt">
-          <div class="small text-secondary" id="historyPaginationSummary">
-            <!-- Rendered e.g.: Hiển thị 1 - 20 trong 45 mục nhật ký -->
+        <!-- Accessible Pagination Navigation (Aligned Right like Learner side) -->
+        <nav id="historyPaginationNav" aria-label="Phân trang nhật ký kiểm duyệt" class="pagination-container justify-content-end mt-4 d-none">
+          <div class="pagination-controls" id="historyPaginationList" role="group" aria-label="Điều khiển chuyển trang nhật ký">
+            <!-- Buttons dynamically generated -->
           </div>
-          <ul class="pagination pagination-sm mb-0 gap-1" id="historyPaginationList">
-            <!-- Dynamically populated safely -->
-          </ul>
         </nav>
       </section>
 
@@ -188,9 +176,9 @@
   </footer>
 
   <!-- Management Workspace Layout & Sidebar Component -->
-  <script type="module" src="js/ui/management-layout.js"></script>
+  <script type="module" src="js/ui/management-layout.js?v=20261028_02"></script>
 
   <!-- Page Initialization Entrypoint -->
-  <script type="module" src="js/pages/moderator-history-page.js"></script>
+  <script type="module" src="js/pages/moderator-history-page.js?v=20261028_02"></script>
 </body>
 </html>

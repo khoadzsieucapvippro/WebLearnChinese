@@ -121,7 +121,7 @@ export function parseModerationQueue(envelopeOrData) {
  *   endRecord: number
  * }}
  */
-export function calculatePagination(page, size, totalElements, totalPages) {
+export function calculatePagination(page, size, totalElements, totalPages, maxButtons = 5) {
   const safeTotalPages = Math.max(0, totalPages || 0);
   const safePage = Math.max(0, Math.min(page || 0, Math.max(0, safeTotalPages - 1)));
   const hasPrev = safePage > 0;
@@ -129,13 +129,25 @@ export function calculatePagination(page, size, totalElements, totalPages) {
   const startRecord = totalElements === 0 ? 0 : safePage * size + 1;
   const endRecord = Math.min((safePage + 1) * size, totalElements);
 
+  let startPage = 0;
+  let endPage = -1;
+  if (safeTotalPages > 0) {
+    startPage = Math.max(0, safePage - Math.floor(maxButtons / 2));
+    endPage = Math.min(safeTotalPages - 1, startPage + maxButtons - 1);
+    if (endPage - startPage < maxButtons - 1) {
+      startPage = Math.max(0, endPage - maxButtons + 1);
+    }
+  }
+
   return {
     currentPage: safePage,
     totalPages: safeTotalPages,
     hasPrev,
     hasNext,
     startRecord,
-    endRecord
+    endRecord,
+    startPage,
+    endPage
   };
 }
 
@@ -435,106 +447,119 @@ export class ModeratorQueueController {
   }
 
   renderPagination(page, size, totalElements, totalPages) {
-    if (!this.elements.paginationNav) return;
+    if (!this.elements.paginationNav || !this.elements.paginationList) return;
 
-    if (totalElements <= size && totalPages <= 1) {
+    if (totalPages <= 1 && totalElements <= size) {
       this.elements.paginationNav.classList.add('d-none');
+      clearContainer(this.elements.paginationList);
       return;
     }
 
-    const { currentPage, hasPrev, hasNext, startRecord, endRecord } = calculatePagination(
-      page,
-      size,
-      totalElements,
-      totalPages
-    );
-
-    // Summary text
-    if (this.elements.paginationSummary) {
-      this.elements.paginationSummary.textContent = `Hiển thị ${startRecord} - ${endRecord} trong ${totalElements} bài học chờ duyệt`;
-    }
-
-    // Buttons
-    if (this.elements.paginationList) {
-      clearContainer(this.elements.paginationList);
-
-      // Prev button
-      const prevLi = createSafeElement('li', {
-        className: `page-item ${!hasPrev ? 'disabled' : ''}`,
-        children: [
-          createSafeElement('button', {
-            className: 'page-link',
-            text: '« Trước',
-            attrs: {
-              type: 'button',
-              'aria-label': 'Trang trước',
-              id: 'btnQueuePrevPage',
-              ...(hasPrev ? {} : { disabled: 'true' })
-            }
-          })
-        ]
-      });
-      if (hasPrev) {
-        prevLi.querySelector('button').addEventListener('click', () => {
-          this.goToPage(currentPage - 1);
-        });
-      }
-      this.elements.paginationList.appendChild(prevLi);
-
-      // Numbered pages (max 5 around current)
-      const startP = Math.max(0, Math.min(currentPage - 2, totalPages - 5));
-      const endP = Math.min(totalPages, Math.max(currentPage + 3, 5));
-
-      for (let p = startP; p < endP; p++) {
-        const isCurrent = p === currentPage;
-        const pageLi = createSafeElement('li', {
-          className: `page-item ${isCurrent ? 'active' : ''}`,
-          children: [
-            createSafeElement('button', {
-              className: 'page-link',
-              text: String(p + 1),
-              attrs: {
-                type: 'button',
-                'aria-label': `Trang ${p + 1}`,
-                ...(isCurrent ? { 'aria-current': 'page' } : {}),
-                id: `btnQueuePage_${p + 1}`
-              }
-            })
-          ]
-        });
-        if (!isCurrent) {
-          pageLi.querySelector('button').addEventListener('click', () => {
-            this.goToPage(p);
-          });
-        }
-        this.elements.paginationList.appendChild(pageLi);
-      }
-
-      // Next button
-      const nextLi = createSafeElement('li', {
-        className: `page-item ${!hasNext ? 'disabled' : ''}`,
-        children: [
-          createSafeElement('button', {
-            className: 'page-link',
-            text: 'Sau »',
-            attrs: {
-              type: 'button',
-              'aria-label': 'Trang sau',
-              id: 'btnQueueNextPage',
-              ...(hasNext ? {} : { disabled: 'true' })
-            }
-          })
-        ]
-      });
-      if (hasNext) {
-        nextLi.querySelector('button').addEventListener('click', () => {
-          this.goToPage(currentPage + 1);
-        });
-      }
-      this.elements.paginationList.appendChild(nextLi);
-    }
-
     this.elements.paginationNav.classList.remove('d-none');
+    clearContainer(this.elements.paginationList);
+
+    const calc = calculatePagination(page, size, totalElements, totalPages, 5);
+
+    // 1. First Page Button (<<)
+    const firstBtn = createSafeElement('button', {
+      className: 'pagination-btn',
+      attrs: {
+        type: 'button',
+        'aria-label': 'Trang đầu',
+        id: 'btnQueueFirstPage'
+      },
+      text: '<<'
+    });
+    if (calc.currentPage === 0) {
+      firstBtn.setAttribute('disabled', 'true');
+      firstBtn.disabled = true;
+    } else {
+      firstBtn.addEventListener('click', () => {
+        this.goToPage(0);
+      });
+    }
+    this.elements.paginationList.appendChild(firstBtn);
+
+    // 2. Previous Button (<)
+    const prevBtn = createSafeElement('button', {
+      className: 'pagination-btn',
+      attrs: {
+        type: 'button',
+        'aria-label': 'Trang trước',
+        id: 'btnQueuePrevPage'
+      },
+      text: '<'
+    });
+    if (!calc.hasPrev) {
+      prevBtn.setAttribute('disabled', 'true');
+      prevBtn.disabled = true;
+    } else {
+      prevBtn.addEventListener('click', () => {
+        this.goToPage(calc.currentPage - 1);
+      });
+    }
+    this.elements.paginationList.appendChild(prevBtn);
+
+    // 3. Numbered Buttons
+    for (let p = calc.startPage; p <= calc.endPage; p++) {
+      const isCurrent = p === calc.currentPage;
+      const pageBtn = createSafeElement('button', {
+        className: `pagination-btn ${isCurrent ? 'active' : ''}`,
+        attrs: {
+          type: 'button',
+          'aria-label': `Trang ${p + 1}`,
+          ...(isCurrent ? { 'aria-current': 'page' } : {}),
+          id: `btnQueuePage_${p + 1}`
+        },
+        text: String(p + 1)
+      });
+      if (!isCurrent) {
+        pageBtn.addEventListener('click', () => {
+          this.goToPage(p);
+        });
+      }
+      this.elements.paginationList.appendChild(pageBtn);
+    }
+
+    // 4. Next Button (>)
+    const nextBtn = createSafeElement('button', {
+      className: 'pagination-btn',
+      attrs: {
+        type: 'button',
+        'aria-label': 'Trang kế tiếp',
+        id: 'btnQueueNextPage'
+      },
+      text: '>'
+    });
+    if (!calc.hasNext) {
+      nextBtn.setAttribute('disabled', 'true');
+      nextBtn.disabled = true;
+    } else {
+      nextBtn.addEventListener('click', () => {
+        this.goToPage(calc.currentPage + 1);
+      });
+    }
+    this.elements.paginationList.appendChild(nextBtn);
+
+    // 5. Last Page Button (>>)
+    const lastBtn = createSafeElement('button', {
+      className: 'pagination-btn',
+      attrs: {
+        type: 'button',
+        'aria-label': 'Trang cuối',
+        id: 'btnQueueLastPage'
+      },
+      text: '>>'
+    });
+    if (calc.currentPage >= calc.totalPages - 1) {
+      lastBtn.setAttribute('disabled', 'true');
+      lastBtn.disabled = true;
+    } else {
+      lastBtn.addEventListener('click', () => {
+        this.goToPage(calc.totalPages - 1);
+      });
+    }
+    this.elements.paginationList.appendChild(lastBtn);
   }
 
   goToPage(newPage) {
