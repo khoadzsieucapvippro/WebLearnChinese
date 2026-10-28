@@ -861,3 +861,8 @@ Toàn bộ hiện trạng kỹ thuật và yêu cầu nghiệm thu của **`TASK
    - `tests/frontend/e2e/moderator-review.browser.mjs`: **9/9 tests PASS**.
    - `npm run verify:frontend:fast`: **1.115/1.115 tests PASS** (273 suites).
    - `node tests/e2e/runner.mjs --tier=all`: **74/74 tests PASS** (Tiers 1–4).
+
+6. **Xóa Bỏ Thanh Điều Hướng Tab Bị Lặp & Huy Hiệu Rườm Rà (Moderator UI Polish)**:
+   - Xóa bỏ hoàn toàn thanh tab điều hướng lặp `<nav class="moderator-nav-tabs">` ("Hàng đợi chờ duyệt | Lịch sử kiểm duyệt") trên cả `moderator-queue.html` và `moderator-history.html`, tránh trùng lặp 100% với danh mục sidebar bên trái.
+   - Xóa bỏ huy hiệu thừa `Bất Biến (Audit Trail)` (`#historyAuditBadge`) trên `moderator-history.html`, chỉ giữ badge đếm số lượng mục (`#historyResultCountBadge`) gọn gàng và tinh tế.
+   - Nâng cấp tham số xóa cache `?v=20261028_03`. Cập nhật `tests/frontend/e2e/moderator-history.browser.mjs` xác nhận không còn tồn tại `#historyAuditBadge`.

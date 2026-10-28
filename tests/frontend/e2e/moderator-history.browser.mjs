@@ -138,10 +138,8 @@ describe('Browser E2E: Moderator Audit History UI (Task 9E.4)', () => {
       const headingText = await heading.textContent();
       assert.ok(headingText.includes('Nhật Ký Kiểm Duyệt Của Tôi'), `Expected personal heading, got "${headingText}"`);
 
-      // Verify Audit badge
-      const auditBadge = page.locator('#historyAuditBadge');
-      await auditBadge.waitFor({ state: 'visible' });
-      assert.ok((await auditBadge.textContent()).includes('Bất Biến'));
+      // Verify absence of removed audit badge
+      assert.strictEqual(await page.locator('#historyAuditBadge').count(), 0);
 
       // Verify Table rows rendered
       const rows = page.locator('#moderatorHistoryTableBody tr');

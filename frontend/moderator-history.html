@@ -14,7 +14,7 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>史</text></svg>">
 
   <!-- Core Design Tokens & Custom Stylesheet -->
-  <link rel="stylesheet" href="css/style.css?v=20261028_02">
+  <link rel="stylesheet" href="css/style.css?v=20261028_03">
 
   <!-- Runtime Environment Configuration -->
   <script src="js/config.js"></script>
@@ -82,18 +82,6 @@
     <main id="mainContent" class="management-main-content">
       <div class="container-xl creator-studio-wrapper">
 
-        
-
-      <!-- Moderator Section Sub-navigation Tabs -->
-      <nav class="moderator-nav-tabs" aria-label="Phân khu kiểm duyệt bài học">
-        <a href="moderator-queue.html" class="moderator-nav-tab" id="tabModeratorQueue">
-          Hàng đợi chờ duyệt
-        </a>
-        <a href="moderator-history.html" class="moderator-nav-tab active" id="tabModeratorHistory" aria-current="page">
-          Lịch sử kiểm duyệt
-        </a>
-      </nav>
-
       <!-- Role Guard Message Container (Shown if unauthorized) -->
       <div id="moderatorAuthGuardContainer" class="d-none mb-4">
         <div class="creator-panel-card text-center py-5">
@@ -119,10 +107,6 @@
 
           <!-- Controls: Badges Aligned Right -->
           <div class="d-flex align-items-center flex-wrap gap-2">
-            <span class="badge-status badge-status-approved" id="historyAuditBadge">
-              Bất Biến (Audit Trail)
-            </span>
-
             <span id="historyResultCountBadge" class="badge-status badge-status-draft text-nowrap" aria-live="polite">
               Đang tải...
             </span>
@@ -176,9 +160,9 @@
   </footer>
 
   <!-- Management Workspace Layout & Sidebar Component -->
-  <script type="module" src="js/ui/management-layout.js?v=20261028_02"></script>
+  <script type="module" src="js/ui/management-layout.js?v=20261028_03"></script>
 
   <!-- Page Initialization Entrypoint -->
-  <script type="module" src="js/pages/moderator-history-page.js?v=20261028_02"></script>
+  <script type="module" src="js/pages/moderator-history-page.js?v=20261028_03"></script>
 </body>
 </html>
