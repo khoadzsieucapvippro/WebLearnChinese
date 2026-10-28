@@ -410,13 +410,13 @@ flowchart TD
 > **Các Chặng tiếp theo (Chặng 6, 7, 8)**: Đang ở trạng thái **⏳ Chờ rà soát (Pending Audit)**. Tuyệt đối KHÔNG tự ý đánh dấu hoàn thành khi chưa cùng Người Dùng mở nhiệm vụ và rà soát chi tiết từng tiêu chí:
 > - **Chặng 6**: Cổng Điều phối, Creator Studio & Moderator Queue:
 >   * `TASK-6.1`: Cổng Điều phối & Creator Studio — ✅ Hoàn thành & Khóa chặt 100%
->   * `TASK-6.2`: Moderator Queue & Thẩm Định Bài Học — ⏳ Sẵn sàng tiến hành
-> - **Chặng 7**: Quản trị Hệ thống, Tài khoản, Phân quyền & Audit Logs (`TASK-7.1` – `TASK-7.3`) — ⏳ Chờ rà soát
+>   * `TASK-6.2`: Moderator Queue & Thẩm Định Bài Học — ✅ Hoàn thành & Khóa chặt 100%
+> - **Chặng 7**: Quản trị Hệ thống, Tài khoản, Phân quyền & Audit Logs (`TASK-7.1` – `TASK-7.3`) — ⏳ Sẵn sàng tiến hành
 > - **Chặng 8**: Môi trường Live Đám mây & Thiết bị di động thực tế (`TASK-8.1` – `TASK-8.3`) — ⏳ Chờ rà soát
 
 ### 5.1. Trạng Thái Mã Nguồn & Baseline Kiểm Thử Hiện Tại
-- **Nhánh Git**: `main` (Head commit: `4f59023`).
-- **Fast Frontend Verification**: `npm run verify:frontend:fast` (1.095 tests / 268 suites, 100% PASS trong ~21.6 giây).
+- **Nhánh Git**: `main` (Head commit: `74dc8c4`).
+- **Fast Frontend Verification**: `npm run verify:frontend:fast` (1.115 tests / 273 suites, 100% PASS trong ~22.8 giây).
 - **Multi-Skill Unified SRS Verification**:
   * `all-four-skills-srs-rating.test.mjs` (5/5 PASS).
   * `multi-skill-srs-isolation-and-due.test.mjs` (5/5 PASS).
@@ -504,6 +504,35 @@ flowchart TD
     - Sửa lỗi toán tử `??` trên Dashboard và sửa Dead Code thứ tự dải ID bài học trong `resolveLessonId`.
     - Triển khai `rehydrateCurriculumProgressIfEmpty()` trên Frontend: Tự động khôi phục tiến trình khi đăng nhập trên điện thoại hoặc trình duyệt mới, triệt tiêu hoàn toàn lỗi `HTTP 409 Conflict`.
     - Bảo tồn tài khoản người dùng, thiết lập SRS và ghi chú cá nhân khi nâng cấp Demo Fallback Engine.
+
+11. **Commit `967a113` — Cô Lập Vòng Đời Phiên Quản Lý (`sessionStorage`) & Strict Reverse Role Guard (Phương Án A)**:
+    - Lưu trữ token vai trò quản lý (`Admin`, `Creator`, `Moderator`) độc quyền vào `sessionStorage`, tự động tiêu hủy 100% khi đóng tab trình duyệt (X tab).
+    - Ngăn chặn hoàn toàn việc tài khoản quản lý rơi vào không gian học tập bằng cơ chế `enforceRoleWorkspaceGuard()`, tự động chuyển hướng cưỡng bức về đúng bàn làm việc tương ứng (`resolveStaffLandingPage`).
+
+12. **Commit `5366f0f` — Quyết Nghị Phân Lập Trách Nhiệm (SoD) & Thẩm Quyền Trọng Tài Admin (Phương Án A)**:
+    - Khóa cứng bất biến loại trừ lẫn nhau: Một tài khoản không thể đồng thời giữ hai quyền `Creator` và `Moderator`.
+    - Admin giữ vai trò Trọng tài Tối cao, không trực tiếp tự tạo và tự duyệt bài học nhằm tôn trọng tuyệt đối Bất biến Cấm tự phê duyệt (Self-Review Invariant).
+
+13. **Commit `2fb2c08` — Thẩm Định Bài Học & Khóa Chặt Bất Biến Cấm Tự Phê Duyệt (TASK-6.2)**:
+    - Bổ sung trường `creatorId` và `creatorEmail` vào API `LessonDetailResponse`.
+    - Tự động phát hiện và khóa cứng các nút hành động kiểm duyệt kèm thông báo cảnh báo trực quan khi Moderator truy cập bài học do chính mình tạo ra.
+
+14. **Commit `9c3f5a3` — Tinh Gọn Giao Diện Creator Studio & Đồng Bộ Phân Trang**:
+    - Xóa bỏ mục "Trung tâm quản lý" bị lặp dưới menu avatar tài khoản.
+    - Đồng bộ hóa thanh phân trang sang chuẩn First/Last (`<< < 1 2 3 > >>`) góc dưới bên phải, loại bỏ bộ chọn kích thước trang và dòng tóm tắt dư thừa.
+
+15. **Commit `5d1c84d` — Khắc Phục Tràn Ngang Layout & Tách Bạch Chế Độ "Xem Chi Tiết" vs "Biên Soạn"**:
+    - Sử dụng `.table-responsive-clean` với `max-width: 100%;` triệt tiêu lỗi đẩy văng sidebar và header trên màn hình hẹp.
+    - Phân tách rõ ràng luồng hành vi: Bài học đã duyệt hiển thị chế độ "Chi Tiết Bài Học" trang nhã, ẩn toàn bộ nút chỉnh sửa bị khóa; bài nháp mở trực tiếp trình biên soạn.
+
+16. **Commit `9319ad9` — Chuẩn Hóa Phân Trang & Khắc Phục Layout Phía Moderator**:
+    - Xóa bỏ bộ chọn "Hiển thị: 20 / trang" và dòng tóm tắt trên `moderator-queue.html` và `moderator-history.html`.
+    - Đồng bộ hóa hệ thống phân trang `<< < 1 2 3 > >>` góc dưới bên phải.
+    - Khắc phục thẻ đóng `</div>` bị đóng sớm trong `moderator-review.html`.
+
+17. **Commit `74dc8c4` — Xóa Thanh Tab Điều Hướng Lặp & Huy Hiệu Rườm Rà (Moderator UI Polish)**:
+    - Xóa bỏ hoàn toàn thanh tab điều hướng phụ `<nav class="moderator-nav-tabs">` ("Hàng đợi chờ duyệt | Lịch sử kiểm duyệt") trên cả 2 trang, loại bỏ sự lặp lại 100% với danh mục sidebar bên trái.
+    - Xóa bỏ huy hiệu thừa `Bất Biến (Audit Trail)` (`#historyAuditBadge`) trên `moderator-history.html`, giữ lại giao diện thanh thoát và tập trung vào dữ liệu kiểm duyệt.
 
 ---
 
