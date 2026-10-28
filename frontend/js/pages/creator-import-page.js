@@ -279,6 +279,8 @@ export class CreatorImportController {
     this.btnPrevPage = document.getElementById('btnPrevPage');
     this.btnNextPage = document.getElementById('btnNextPage');
     this.pageIndicator = document.getElementById('pageIndicator');
+    this.importPaginationNav = document.getElementById('importPaginationNav');
+    this.importPaginationControls = document.getElementById('importPaginationControls');
 
     // Step 2 Confirm Elements
     this.step2Section = document.getElementById('step2Section');
@@ -848,16 +850,8 @@ export class CreatorImportController {
       this.tableDisplayCount.textContent = `Hiển thị ${from}–${to} trong ${pagination.totalItems} dòng (${allRows.length} tổng tệp)`;
     }
 
-    // Update pagination controls
-    if (this.pageIndicator) {
-      this.pageIndicator.textContent = `Trang ${pagination.currentPage} / ${pagination.totalPages}`;
-    }
-    if (this.btnPrevPage) {
-      this.btnPrevPage.disabled = pagination.currentPage <= 1;
-    }
-    if (this.btnNextPage) {
-      this.btnNextPage.disabled = pagination.currentPage >= pagination.totalPages;
-    }
+    // Render standardized pagination controls
+    this.renderPagination(pagination);
 
     if (pagination.items.length === 0) {
       const tr = document.createElement('tr');
@@ -956,6 +950,141 @@ export class CreatorImportController {
 
       this.previewTableBody.appendChild(tr);
     });
+  }
+
+  /**
+   * Renders standardized pagination controls matching learner side.
+   * 
+   * @param {{ totalPages: number, currentPage: number, totalItems: number }} pagination 
+   */
+  renderPagination(pagination) {
+    if (!this.importPaginationNav || !this.importPaginationControls) return;
+
+    if (pagination.totalPages <= 1) {
+      this.importPaginationNav.classList.add('d-none');
+      clearContainer(this.importPaginationControls);
+      return;
+    }
+
+    this.importPaginationNav.classList.remove('d-none');
+    clearContainer(this.importPaginationControls);
+
+    const currentPage = pagination.currentPage;
+    const totalPages = pagination.totalPages;
+
+    // 1. First Page Button (<<)
+    const firstBtn = createSafeElement('button', {
+      className: 'pagination-btn',
+      attrs: {
+        type: 'button',
+        'aria-label': 'Trang đầu',
+        id: 'importPaginationFirstBtn'
+      },
+      text: '<<'
+    });
+    if (currentPage === 1) {
+      firstBtn.disabled = true;
+      firstBtn.setAttribute('disabled', 'true');
+    } else {
+      firstBtn.addEventListener('click', () => {
+        this.state.currentPage = 1;
+        this.renderTableContent();
+      });
+    }
+    this.importPaginationControls.appendChild(firstBtn);
+
+    // 2. Previous Button (<)
+    const prevBtn = createSafeElement('button', {
+      className: 'pagination-btn',
+      attrs: {
+        type: 'button',
+        'aria-label': 'Trang trước',
+        id: 'importPaginationPrevBtn'
+      },
+      text: '<'
+    });
+    if (currentPage <= 1) {
+      prevBtn.disabled = true;
+      prevBtn.setAttribute('disabled', 'true');
+    } else {
+      prevBtn.addEventListener('click', () => {
+        this.state.currentPage = currentPage - 1;
+        this.renderTableContent();
+      });
+    }
+    this.importPaginationControls.appendChild(prevBtn);
+
+    // 3. Numbered Buttons (Smart Window of 5)
+    const maxButtons = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
+    let endPage = Math.min(totalPages, startPage + maxButtons - 1);
+    if (endPage - startPage < maxButtons - 1) {
+      startPage = Math.max(1, endPage - maxButtons + 1);
+    }
+
+    for (let p = startPage; p <= endPage; p++) {
+      const isCurrent = p === currentPage;
+      const pageBtn = createSafeElement('button', {
+        className: `pagination-btn ${isCurrent ? 'active' : ''}`,
+        attrs: {
+          type: 'button',
+          'aria-label': `Trang ${p}`,
+          'aria-current': isCurrent ? 'page' : 'false'
+        },
+        text: String(p)
+      });
+
+      if (!isCurrent) {
+        pageBtn.addEventListener('click', () => {
+          this.state.currentPage = p;
+          this.renderTableContent();
+        });
+      }
+
+      this.importPaginationControls.appendChild(pageBtn);
+    }
+
+    // 4. Next Button (>)
+    const nextBtn = createSafeElement('button', {
+      className: 'pagination-btn',
+      attrs: {
+        type: 'button',
+        'aria-label': 'Trang sau',
+        id: 'importPaginationNextBtn'
+      },
+      text: '>'
+    });
+    if (currentPage >= totalPages) {
+      nextBtn.disabled = true;
+      nextBtn.setAttribute('disabled', 'true');
+    } else {
+      nextBtn.addEventListener('click', () => {
+        this.state.currentPage = currentPage + 1;
+        this.renderTableContent();
+      });
+    }
+    this.importPaginationControls.appendChild(nextBtn);
+
+    // 5. Last Page Button (>>)
+    const lastBtn = createSafeElement('button', {
+      className: 'pagination-btn',
+      attrs: {
+        type: 'button',
+        'aria-label': 'Trang cuối',
+        id: 'importPaginationLastBtn'
+      },
+      text: '>>'
+    });
+    if (currentPage >= totalPages) {
+      lastBtn.disabled = true;
+      lastBtn.setAttribute('disabled', 'true');
+    } else {
+      lastBtn.addEventListener('click', () => {
+        this.state.currentPage = totalPages;
+        this.renderTableContent();
+      });
+    }
+    this.importPaginationControls.appendChild(lastBtn);
   }
 
   /**

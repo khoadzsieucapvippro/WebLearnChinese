@@ -272,20 +272,6 @@ export function renderNavbarAuth(container) {
         })
       );
 
-      // 2. Hub return shortcut: ONLY show when on a sub-operational page (never duplicate on management.html)
-      if (currentPage !== 'management.html') {
-        dropdownLinks.push(
-          createSafeElement('a', {
-            className: 'nav-dropdown-item py-2 px-3 text-decoration-none d-flex align-items-center gap-2',
-            text: 'Trung tâm quản lý',
-            attrs: {
-              href: 'management.html',
-              id: 'navManagementBtn',
-              'aria-label': 'Quay về trang tổng quan trung tâm quản lý'
-            }
-          })
-        );
-      }
       // Strictly zero learning links ("Tiến độ học tập", "Không gian học tập") in Management Workspace
     } else {
       // In Learner Workspace: standard learner account menu

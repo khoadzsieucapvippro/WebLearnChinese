@@ -118,17 +118,8 @@
           </div>
         </section>
 
-        <!-- Listing Controls (Page size & Count) -->
-        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
-          <div class="d-flex align-items-center gap-2">
-            <label for="creatorPageSizeSelect" class="small text-secondary fw-semibold text-nowrap">Hiển thị:</label>
-            <select id="creatorPageSizeSelect" class="form-select form-select-sm" style="width: auto;">
-              <option value="12">12 / trang</option>
-              <option value="20" selected>20 / trang</option>
-              <option value="40">40 / trang</option>
-            </select>
-          </div>
-
+        <!-- Listing Controls (Count badge aligned right) -->
+        <div class="d-flex align-items-center justify-content-end mb-3">
           <div id="creatorResultCountBadge" class="badge-status badge-status-draft text-nowrap" role="status" aria-live="polite">
             Đang tải dữ liệu...
           </div>
@@ -159,14 +150,11 @@
           </div>
         </div>
 
-        <!-- Accessible Pagination Navigation -->
-        <nav id="creatorPaginationNav" aria-label="Phân trang danh sách bài học" class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-4 d-none">
-          <div class="small text-secondary" id="creatorPaginationSummary" role="status" aria-live="polite">
-            Hiển thị bài học
-          </div>
-          <ul class="pagination pagination-sm mb-0 gap-1" id="creatorPaginationList">
+        <!-- Accessible Pagination Navigation (Aligned Right like Learner side) -->
+        <nav id="creatorPaginationNav" aria-label="Phân trang danh sách bài học" class="pagination-container justify-content-end mt-4 d-none">
+          <div class="pagination-controls" id="creatorPaginationList" role="group" aria-label="Điều khiển chuyển trang bài học">
             <!-- Buttons dynamically generated -->
-          </ul>
+          </div>
         </nav>
 
       </div>

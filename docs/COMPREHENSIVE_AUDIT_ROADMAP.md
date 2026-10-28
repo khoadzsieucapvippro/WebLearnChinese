@@ -727,6 +727,22 @@ Toàn bộ hiện trạng kỹ thuật và yêu cầu nghiệm thu của **`TASK
    - **Kiểm Thử GitHub Pages Live**: Triển khai web tĩnh 25 trang hoạt động ổn định tại `https://khoadzsieucapvippro.github.io/WebLearnChinese/index.html`.
    - **Bộ Ảnh Minh Chứng Thực Tế**: Đã chụp và xuất bản 10 ảnh màn hình trực quan trong artifact `CLOUD_AND_DATABASE_VERIFICATION_REPORT.md` (bao gồm minh chứng màn hình khóa cứng các cột khi phát hiện lỗi chữ Hán CJK/Audio và chặn hoàn toàn Bước 2).
 
+8. **Tinh Gọn Giao Diện Tác Giả (Creator Studio UI Refinements) Theo Yêu Cầu Người Dùng**:
+   - **Xóa Mục Trùng Lặp**: Xóa hoàn toàn đường dẫn "Trung tâm quản lý" nằm dưới "Hồ sơ tài khoản" trong dropdown avatar khi ở khu vực quản lý (`frontend/js/ui/nav.js`), loại bỏ sự lặp lại thừa thãi với thanh điều hướng sidebar.
+   - **Đồng Bộ Phân Trang Bảng Bài Học (`creator-lessons.html`)**:
+     * Xóa bỏ bộ chọn kích thước trang "Hiển thị: 20/trang" (`creatorPageSizeSelect`).
+     * Xóa bỏ nhãn văn bản "Hiển thị 1–20 / 50 bài học" (`creatorPaginationSummary`).
+     * Đồng bộ hóa hệ thống phân trang chuẩn First/Last (`<< < 1 2 3 > >>`) sử dụng `.pagination-btn` và `.pagination-controls`, căn lề phải (`justify-content-end`) đồng nhất hoàn toàn với giao diện người học (`lessons.html`, `vocabulary.html`).
+   - **Dọn Dẹp & Đồng Bộ Trang Nhập Excel (`creator-import.html`)**:
+     * Xóa triệt để thanh breadcrumb thừa `Trung tâm quản lý / Creator Studio / Nhập bài học từ Excel`.
+     * Xóa bỏ khối cảnh báo đỏ file-level error dư thừa (`#fileLevelErrorsContainer`) "Lỗi cấu trúc tệp: File Excel thiếu các cột bắt buộc...".
+     * Xóa bộ chọn "Dòng mỗi trang: 25" (`#pageSizeSelect`).
+     * Triển khai bộ phân trang bảng xem trước từ vựng theo chuẩn First/Last (`<< < 1 2 3 > >>`), căn lề phải (`justify-content-end`).
+   - **Bộ Ảnh Minh Chứng Mới**:
+     * `19_creator_account_dropdown_clean.png`: Dropdown tài khoản tác giả đã xóa bỏ mục "Trung tâm quản lý" bị lặp.
+     * `20_creator_lessons_clean_pagination.png`: Bảng quản lý bài học không còn "Hiển thị: 20/trang", phân trang chuẩn `<< < 1 2 3 > >>` nằm góc dưới bên phải.
+     * `21_creator_import_clean_pagination.png`: Bảng xem trước import không còn breadcrumb, không còn lỗi đỏ tĩnh, không còn "Dòng mỗi trang: 25", phân trang `<< < 1 2 3 > >>` góc dưới bên phải.
+
 ---
 
 ### 5.10. Kết Quả Điều Tra & Nghiệm Thu: `TASK-6.1-SESSION` (Cô Lập Vòng Đời Phiên Quản Lý & Strict Reverse Role Guard - Phương Án A)

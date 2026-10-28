@@ -914,97 +914,121 @@ export class CreatorLessonsPageController {
 
     if (totalPages <= 1) {
       this.elements.paginationNav.classList.add('d-none');
+      clearContainer(this.elements.paginationList);
       return;
     }
 
     this.elements.paginationNav.classList.remove('d-none');
     clearContainer(this.elements.paginationList);
 
-    const calc = calculatePagination(page, size, totalElements, totalPages);
+    const calc = calculatePagination(page, size, totalElements, totalPages, 5);
 
-    if (this.elements.paginationSummary) {
-      this.elements.paginationSummary.textContent = `Hiển thị ${calc.startRecord}–${calc.endRecord} / ${totalElements} bài học`;
-    }
-
-    // Previous button
-    const prevLi = createSafeElement('li', {
-      className: `page-item ${!calc.hasPrev ? 'disabled' : ''}`,
-      children: [
-        createSafeElement('button', {
-          className: 'page-link',
-          text: '‹ Trước',
-          attrs: {
-            type: 'button',
-            'aria-label': 'Trang trước',
-            ...(calc.hasPrev ? {} : { disabled: 'true' })
-          }
-        })
-      ]
+    // 1. First Page Button (<<)
+    const firstBtn = createSafeElement('button', {
+      className: 'pagination-btn',
+      attrs: {
+        type: 'button',
+        'aria-label': 'Trang đầu',
+        id: 'creatorPaginationFirstBtn'
+      },
+      text: '<<'
     });
-    if (calc.hasPrev) {
-      prevLi.querySelector('button').addEventListener('click', () => {
+    if (calc.currentPage === 0) {
+      firstBtn.setAttribute('disabled', 'true');
+      firstBtn.disabled = true;
+    } else {
+      firstBtn.addEventListener('click', () => {
+        this.currentPage = 0;
+        this.loadLessons();
+      });
+    }
+    this.elements.paginationList.appendChild(firstBtn);
+
+    // 2. Previous Button (<)
+    const prevBtn = createSafeElement('button', {
+      className: 'pagination-btn',
+      attrs: {
+        type: 'button',
+        'aria-label': 'Trang trước',
+        id: 'creatorPaginationPrevBtn'
+      },
+      text: '<'
+    });
+    if (!calc.hasPrev) {
+      prevBtn.setAttribute('disabled', 'true');
+      prevBtn.disabled = true;
+    } else {
+      prevBtn.addEventListener('click', () => {
         this.currentPage = calc.currentPage - 1;
         this.loadLessons();
       });
     }
-    this.elements.paginationList.appendChild(prevLi);
+    this.elements.paginationList.appendChild(prevBtn);
 
-    // Page windowing
-    const maxButtons = 5;
-    let startPage = Math.max(0, calc.currentPage - Math.floor(maxButtons / 2));
-    let endPage = Math.min(totalPages - 1, startPage + maxButtons - 1);
-    if (endPage - startPage < maxButtons - 1) {
-      startPage = Math.max(0, endPage - maxButtons + 1);
-    }
-
-    for (let p = startPage; p <= endPage; p++) {
+    // 3. Numbered Buttons (Smart Window)
+    for (let p = calc.startPage; p <= calc.endPage; p++) {
       const isCurrent = p === calc.currentPage;
-      const pageLi = createSafeElement('li', {
-        className: `page-item ${isCurrent ? 'active' : ''}`,
-        children: [
-          createSafeElement('button', {
-            className: 'page-link',
-            text: String(p + 1),
-            attrs: {
-              type: 'button',
-              'aria-label': `Trang ${p + 1}`,
-              ...(isCurrent ? { 'aria-current': 'page' } : {})
-            }
-          })
-        ]
+      const pageBtn = createSafeElement('button', {
+        className: `pagination-btn ${isCurrent ? 'active' : ''}`,
+        attrs: {
+          type: 'button',
+          'aria-label': `Trang ${p + 1}`,
+          'aria-current': isCurrent ? 'page' : 'false'
+        },
+        text: String(p + 1)
       });
 
       if (!isCurrent) {
-        pageLi.querySelector('button').addEventListener('click', () => {
+        pageBtn.addEventListener('click', () => {
           this.currentPage = p;
           this.loadLessons();
         });
       }
-      this.elements.paginationList.appendChild(pageLi);
+
+      this.elements.paginationList.appendChild(pageBtn);
     }
 
-    // Next button
-    const nextLi = createSafeElement('li', {
-      className: `page-item ${!calc.hasNext ? 'disabled' : ''}`,
-      children: [
-        createSafeElement('button', {
-          className: 'page-link',
-          text: 'Sau ›',
-          attrs: {
-            type: 'button',
-            'aria-label': 'Trang sau',
-            ...(calc.hasNext ? {} : { disabled: 'true' })
-          }
-        })
-      ]
+    // 4. Next Button (>)
+    const nextBtn = createSafeElement('button', {
+      className: 'pagination-btn',
+      attrs: {
+        type: 'button',
+        'aria-label': 'Trang sau',
+        id: 'creatorPaginationNextBtn'
+      },
+      text: '>'
     });
-    if (calc.hasNext) {
-      nextLi.querySelector('button').addEventListener('click', () => {
+    if (!calc.hasNext) {
+      nextBtn.setAttribute('disabled', 'true');
+      nextBtn.disabled = true;
+    } else {
+      nextBtn.addEventListener('click', () => {
         this.currentPage = calc.currentPage + 1;
         this.loadLessons();
       });
     }
-    this.elements.paginationList.appendChild(nextLi);
+    this.elements.paginationList.appendChild(nextBtn);
+
+    // 5. Last Page Button (>>)
+    const lastBtn = createSafeElement('button', {
+      className: 'pagination-btn',
+      attrs: {
+        type: 'button',
+        'aria-label': 'Trang cuối',
+        id: 'creatorPaginationLastBtn'
+      },
+      text: '>>'
+    });
+    if (calc.currentPage >= calc.totalPages - 1) {
+      lastBtn.setAttribute('disabled', 'true');
+      lastBtn.disabled = true;
+    } else {
+      lastBtn.addEventListener('click', () => {
+        this.currentPage = calc.totalPages - 1;
+        this.loadLessons();
+      });
+    }
+    this.elements.paginationList.appendChild(lastBtn);
   }
 }
 
