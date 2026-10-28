@@ -241,6 +241,8 @@ flowchart TD
 | `TASK-4.2` (Kiểm toán Đúp Học, Vòng đời Tốt nghiệp Học lại & 2 Thuật toán SRS) | 2026-10-28 | Kiểm toán chuyên sâu thuật toán SRS & vòng đời học lại: (1) Phân định rõ 2 tầng ghi nhớ: Trí nhớ làm việc (Working Memory Drill trong buổi) vs Trí nhớ dài hạn (Long-term Spaced Review qua ngày); (2) Thẻ chọn "Học lại" (1 - Again) ghi nhận Lapse (`interval = 0, repetitions = 0, nextReviewAt = now`), requeue về cuối buổi; khi ôn lại ở cuối buổi và bấm "Khó" (2 - Hard), thẻ được Tốt Nghiệp (Graduation) đợt khoan nhớ ngắn hạn; (3) Phân biệt 2 thuật toán: Thuật toán gốc SM-2 (Render Backend + TiDB Cloud) tính theo NGÀY (24 giờ, tức ngày mai mới đến hạn) vs Thuật toán Test 2 phút (`TwoMinuteTestSrsCalculator` / `SRS_TEST_MODE_2MIN`) tính theo PHÚT (2 phút sau đến hạn); (4) Sau 2 phút trên tài khoản `HỌC VIÊN 1111` không thấy từ đến hạn vì server Render đang chạy Thuật toán gốc SM-2 chuẩn (hẹn 24h sau); (5) Trình duyệt đóng băng background timer (`document.hidden = true`) khi chuyển tab. | (1) Bấm "học lại" với 3 từ đầu thành "khó", 3 từ tiếp thành "học lại" thì bài học hiện không có từ cần ôn; (2) Có hiện tượng trùng lặp từ học lại ở cuối bài và ở nút đến hạn? (3) Chọn "Khó" rồi sau đó chọn "Học lại" thì thuật toán tính thế nào? (4) Sao 2 phút rồi chưa thấy từ đến hạn hay có xung đột với thuật toán gốc? | **ĐÃ HOÀN TẤT, ĐỒNG BỘ & KHÓA CHẶT 100%**: (1) **Vòng đời Tốt nghiệp Học lại (Relearn Graduation)**: Sửa `srs-review-page.js` cho phép gửi đánh giá tốt nghiệp (`!queueItem._requeued || numRating >= 2`) để giải phóng thẻ khỏi hàng đợi và lên lịch ôn tập dài hạn; (2) **Triệt tiêu lỗi Homograph Eviction**: Cô lập các từ trùng chữ Hán giữa các bài khác nhau bằng kiểm tra dải ID chuẩn (`targetId < 10000 && itId < 10000 && targetId !== itId`); (3) **Đồng bộ Thứ tự Tính toán SM-2**: Sửa thứ tự tính `newEaseFactor` trước khi nhân `interval * newEaseFactor` trong `demo-fallback-engine.js`; (4) **Tách bạch 2 Thuật toán Không Xung Đột**: Thuật toán gốc SM-2 trên Cloud (24h) và Chế độ Test 2 phút (2m) chạy độc lập qua cấu hình `app.srs.test-mode.enabled` và `SRS_TEST_MODE_2MIN`; (5) **Kịch bản Ngày mai**: Thẻ tốt nghiệp trên tài khoản học viên sẽ xuất hiện chuẩn xác tại `⚡ Ôn 3 từ đến hạn` sau đúng 24 giờ kể từ thời điểm học; (6) **Kiểm thử Toàn diện Đa Nền tảng**: PASS 1.068/1.068 fast tests, 126/126 backend tests, 74/74 E2E blackbox tests (Tiers 1–4), 6/6 mobile browser tests (Pixel 7 & iPhone 14), 50/50 bài học pass kịch bản 4 chu kỳ. Commit `0dcf066`. |
 | `TASK-4.3` (SRS Phòng Luyện Viết HanziWriter & Phân Tách Độc Lập 4 Phân Hệ) | 2026-10-28 | Kiểm toán chuyên sâu phòng Luyện viết và phân tách 4 phân hệ SRS: (1) Phân tách độc lập 4 phân hệ FLASHCARD, WRITING, LISTENING, READING cả local, TiDB Cloud V33, backend Java và client engine; (2) Chuyển đổi quy chuẩn đánh giá sang thang điểm 1..4 SM-2 tự động theo số nét sai: >= 5 nét -> Rating 1 (Học lại, Requeue), 2-4 nét hoặc xem gợi ý -> Rating 2 (Khó), 1 nét -> Rating 3 (Tốt), 0 nét -> Rating 4 (Dễ); (3) Tái cấu trúc nextWritingItem gọi trực tiếp submitRating kế thừa toàn bộ cỗ máy SRS (Requeue, Relearn Graduation, 409 Conflict, Optimistic Cache); (4) Khắc phục lỗi Due session ghi đè lùi tiến độ học tiếp; (5) Nút Viết lại tại chỗ (clearWriting) reset mistakes về 0; (6) Khắc phục lỗi fallback cardType nhầm sang READING. | (1) Phân tách 4 phân hệ SRS độc lập; (2) Kiểm tra xem Task 4.3 có mắc lỗi giống 4.2 không; (3) Quy đổi thống nhất thuật toán đánh giá 1-4 trên 4 phân hệ nhưng cách thức khác nhau (viết dùng số nét sai); (4) Đảm bảo chu trình Học lại và Viết lại chuẩn xác; (5) Kiểm chứng hệ thống không bị treo và sửa lỗi có căn cứ kiểm thử. | **ĐÃ HOÀN TẤT & KHÓA CHẶT 100%**: (1) **Phân Tách 4 Phân Hệ Độc Lập**: Hoàn tất 100% Flyway V33, Backend Java, Client demo engine và UI; (2) **Quy Đổi 1-4 SM-2 Chuẩn Mực**: Tự động đánh giá theo số nét sai, tự động Requeue khi >= 5 lỗi, cho phép Relearn Graduation khi viết lại đạt <= 4 lỗi; (3) **Kế Thừa submitRating Toàn Diện**: Bảo toàn tiến độ học tiếp khi ôn từ đến hạn (chặn lùi index); (4) **Chuẩn Hóa Viết Lại Tại Chỗ**: Reset mistakes và hint flag để rèn lại không bị gán oan điểm thấp; (5) **Kiểm Thử Toàn Diện**: PASS 1.073/1.073 fast tests (263 suites), 37/37 srs-skill-writing tests, 4/4 writing-relearn-lifecycle-deep tests, 5/5 multi-skill-srs-isolation-and-due tests, 74/74 E2E blackbox tests (Tiers 1–4). Commits `8227254`, `806317f`, `d14061b`, `6ab1db5`. |
 | `TASK-4.4` & `TASK-4.5` (SRS Phòng Luyện Đọc & Luyện Nghe, Chuẩn Hóa Toàn Diện 4 Phân Hệ) | 2026-10-28 | Kiểm toán chuyên sâu phòng Luyện đọc (`TASK-4.4`) và Luyện nghe (`TASK-4.5`): (1) **Luyện Đọc**: Quy chuẩn đánh giá 1-4 SM-2 từ cao độ F0 thang Chao: Score < 45 -> 1 (Học lại, Requeue), 45..59 -> 2 (Khó), 60..84 -> 3 (Tốt), >= 85 -> 4 (Dễ); (2) **Luyện Nghe**: Xóa bỏ gán cứng Rating 3, triển khai quy chuẩn 1-4 từ số lần gõ sai và số lần nghe lại: >= 3 lỗi gõ sai -> 1 (Học lại, Requeue), 1..2 lỗi hoặc >= 3 lần nghe lại -> 2 (Khó), 0 lỗi + 1..2 lần nghe lại -> 3 (Tốt), 0 lỗi + 0 lần nghe lại -> 4 (Dễ); (3) Tái cấu trúc cả `nextReadingItem()` và `nextListeningItem()` gọi trực tiếp `submitRating()`, giải quyết triệt để lỗi bỏ sót Requeue, bỏ sót Relearn Graduation, bỏ sót optimistic cache, và bỏ sót lưu review offline trong demo mode; (4) Nút nghe lại và đọc lại cập nhật chính xác điểm mới nhất; (5) Tạo bộ kiểm thử tích hợp 4 phân hệ thống nhất `all-four-skills-srs-rating.test.mjs`. | Quy chuẩn đánh giá 1–4 thống nhất trên cả 4 phân hệ nhưng cách thức triển khai khác nhau: flashcard dùng 1,2,3,4; luyện viết dùng số nét sai; luyện nghe và luyện đọc cách thức cũng khác nhau; hoàn thiện Sprint 4. | **ĐÃ HOÀN TẤT & KHÓA CHẶT 100%**: (1) **Thống Nhất Thuật Toán Đánh Giá 1..4 Trên Toàn Bộ 4 Phân Hệ**: Cả 4 phân hệ đều vận hành trên cỗ máy SuperMemo SM-2 chuẩn mực, tự động kích hoạt Requeue khi Rating = 1, Tốt nghiệp học lại (Relearn Graduation) khi làm lại đạt Rating >= 2; (2) **Đa Dạng Hóa Cách Thức Thu Nhận Điểm Theo Kỹ Năng**: Flashcard (4 nút bấm), Viết (số nét sai), Nghe (số lần gõ sai + số lần nghe lại), Đọc (điểm cao độ F0 thang Chao); (3) **Bảo Toàn Tiến Độ Tuyệt Đối**: Cả 4 phân hệ đều độc lập về bộ từ đến hạn và không bị tụt lùi tiến độ học tiếp; (4) **Kiểm Thử Toàn Diện**: PASS 1.082/1.082 fast tests (264 suites), 5/5 all-four-skills-srs-rating tests, 8/8 srs-listening browser tests, 8/8 srs-reading browser tests, 74/74 E2E blackbox tests (Tiers 1–4). Commit `3f1cb48`. |
+| `TASK-4.5-HINT` (Nút Xem Gợi Ý Phòng Luyện Nghe) | 2026-10-28 | Rà soát giao diện và thuật toán phòng Luyện Nghe (`srs-review.html?mode=listening`): (1) Phòng Luyện Nghe thiếu nút xem gợi ý, trong khi Luyện Viết có "Xem nét gợi ý" và Luyện Đọc có "Xem trước phiên âm & nghĩa"; (2) Cần hộp gợi ý hiển thị nghĩa tiếng Việt (`meaningVi`), âm Hán-Việt (`meaningHanViet`) và Pinyin (`pinyin`); (3) Tự động mở gợi ý khi người học gõ đúng và hoàn thành để đối chiếu thông tin; (4) Tích hợp vào quy chuẩn đánh giá 1–4 SM-2: Người học mở xem gợi ý bị chặn trần điểm tối đa ở mức Khó (Rating 2). | "à ở phần 'luyện nghe' bạn cho thêm nút xem gợi ý đi hay bạn cho rồi sao tôi không thấy" | **ĐÃ HOÀN TẤT & KHÓA CHẶT 100%**: (1) **Giao diện Nút & Hộp Gợi Ý**: Thêm `#btnListeningToggleHint` và `#listeningHintBox` nằm giữa khu vực loa và ô gõ chữ Hán, chuyển đổi linh hoạt giữa `👁️ Xem gợi ý` và `🙈 Ẩn gợi ý`; (2) **Tự Động Mở Khi Hoàn Thành**: Trong `handleListeningCorrect()`, tự động mở hộp gợi ý giúp người học đối chiếu đầy đủ nghĩa, Hán-Việt, Pinyin; (3) **Chuẩn Hóa Điểm Đánh Giá SRS**: Trong `nextListeningItem()`, cờ `hasUsedListeningHintForCurrentCard` tự động chặn trần Rating 2 (Hard) nếu đúng lần đầu có xem gợi ý; (4) **Kiểm thử**: Bổ sung unit tests trong `srs-skill-listening.test.mjs`, thêm E2E browser test `SL-08` trong `srs-listening.browser.mjs` (10/10 PASS). Fast tests PASS 1.094/1.094. Commit `048f578`. |
+| `HOTFIX-PROGRESS-SYNC` (Mất Tiến Trình Nick Cũ & Đồng Bộ Đa Thiết Bị Desktop ➔ Mobile) | 2026-10-28 | Rà soát kiến trúc lưu trữ tiến trình học tập chuyên sâu (`/boost`): (1) Phát hiện đứt gãy kiến trúc: Tiến trình bài học/chặng nằm 100% trong `localStorage` máy khách, trong khi dữ liệu thẻ SRS `CARD_PROGRESS` nằm trên TiDB Cloud; (2) Khi chuyển sang điện thoại (hoặc tab ẩn danh/trình duyệt mới), `localStorage` rỗng làm 50 bài học về 0%; bấm "Học tiếp" nạp từ #1 (đã học trên máy tính), khi đánh giá thẻ Backend ném ngoại lệ `HTTP 409 Conflict: Thẻ chưa đến hạn ôn tập`; (3) 6 nguyên nhân cộng dồn khiến nick cũ mất tiến trình: xung đột `_ownerAccountId` trong `localStorage`, lệch `card_type` Flyway V19 (`READING`) vs V33 (`FLASHCARD`), lỗi toán tử `??` trong `srs-dashboard-page.js` nuốt fallback `cardsDueReading`, lỗi Dead Code trong `resolveLessonId` (dải `1..15` đứng trước `5..14` làm Bài 01 thành Bài 05), Flyway V30 xóa bài học cũ tạo ID tự tăng mới, Demo Fallback Engine reset mảng `accounts` khi nâng version. | "hình như lưu tiến trình học tập đang không được ổn đúng không sao nick cũ của tôi mất hết tiến trình học tập hoặc chuyển thiết bị từ máy tính sang điện thoại thì tiến trình nó có mất không làm rà soát kỹ phần này /boost" | **ĐÃ HOÀN TẤT & KHÓA CHẶT 100% (4 TẦNG GIẢI PHÁP)**: (1) **Tầng 1 (Flyway V34 Migration)**: Tạo `V34__reconcile_legacy_reading_cards_to_flashcard.sql`, sao chép bản ghi từ `READING` sang `FLASHCARD` trong `CARD_PROGRESS` và `REVIEW_LOG` cho người dùng cũ trên TiDB Cloud; (2) **Tầng 2 (Sửa Lỗi Frontend)**: Sửa toán tử `??` thành `cardsDueFlashcard > 0 ? stats.cardsDueFlashcard : (stats.cardsDueReading \|\| 0)` trên `srs-dashboard-page.js`; đảo dải `5..14` lên trước `1..15` trong `resolveLessonId` tại `srs-review-page.js`; (3) **Tầng 3 (Backend API)**: Tạo endpoint `GET /api/v1/srs/curriculum-progress` (`SrsController`, `SrsService`, `SrsServiceImpl`) trả về `lessonProgress` 50 bài HSK, `learnedRadicalIds` (50 bộ thủ theo `commonRank` và 214 bộ thủ Khang Hy) và `learnedVocabIds`, bảo vệ an toàn IDOR qua JWT `SecurityContextHolder`; (4) **Tầng 4 (Frontend Auto-Rehydration)**: Trong `srs-review-page.js`, hàm `rehydrateCurriculumProgressIfEmpty()` tự động gọi API `/srs/curriculum-progress` khi phát hiện `localStorage` trên thiết bị mới trống; nạp chuẩn xác tiến độ 50 bài và 16 chặng bộ thủ, loại bỏ hoàn toàn lỗi HTTP 409; trong `demo-fallback-engine.js`, bảo tồn tài khoản người dùng `accounts`, `srsSettings` và `notes` khi nâng cấp version; (5) **Kiểm thử Toàn diện**: PASS 28/28 tests (`curriculum-progress-rehydration.test.mjs`), 1.095/1.095 fast tests (`npm run verify:frontend:fast`), 74/74 E2E blackbox tests (Tiers 1–4), 33/33 SRS backend tests, 514/514 broad backend unit tests, 6/6 mobile browser tests. Commit `9407e99`. |
 | `TASK-5.1` (Sổ Tay Ghi Chú Cá Nhân Contextual Notes) | 2026-10-28 | Kiểm toán hệ thống ghi chú cá nhân: (1) Ghi chú gắn liền từng từ vựng trong Bài học (`lesson-detail.html`) và Ôn tập (`srs-review.html`); (2) Đồng bộ 2 chiều qua `localStorage` và API backend `/api/v1/notes`; (3) CRUD đầy đủ, bộ đếm 500 ký tự, chống XSS an toàn DOM tuyệt đối; (4) Giữ nguyên cơ chế modal ngữ cảnh đắc lực để bảo tồn Single Navbar 5 mục chuẩn mực. | Đồng bộ và hoàn tất Chặng 5 Không gian Cá nhân. | **ĐÃ HOÀN TẤT & KHÓA CHẶT 100%**: PASS 28/28 tests (`personal-notes.browser.mjs` và `notes-modal.test.mjs`). |
 | `TASK-6.1` & `TASK-6.2` (Khu Vực Quản Lý Nội Dung: Creator & Moderator Studio) | 2026-10-28 | Kiểm toán toàn diện khu vực quản lý: (1) Cổng điều phối RBAC (`management.html`) hiển thị thẻ theo vai trò; (2) Creator Studio (`creator-lessons.html`, `creator-import.html`): tạo bài học, import Excel/CSV 2 bước có preview; (3) Moderator Queue (`moderator-queue.html`, `moderator-review.html`): thẩm định nội dung, lưu lịch sử kiểm duyệt; (4) Khóa chặt Self-Review Invariant (Cấm Creator tự phê duyệt bài của chính mình). | Rà soát toàn diện Chặng 6. | **ĐÃ HOÀN TẤT & KHÓA CHẶT 100%**: PASS 104/104 unit tests, 23/23 browser tests (`creator-import`, `creator-lessons`, `creator-submission`, `moderator-history`, `moderator-queue`, `moderator-review`), E2E Tiers 1–4. |
 | `TASK-7.1` – `TASK-7.3` (Quản Trị Hệ Thống & Bảo Mật Admin) | 2026-10-28 | Kiểm toán toàn diện quản trị Admin: (1) Quản trị tài khoản & phân quyền (`admin-accounts.html`, `admin-roles.html`); (2) Khóa chặt Last Admin Invariant (chặn hạ quyền/khóa tài khoản Admin cuối cùng); (3) Quản trị học liệu toàn diện (`admin-lessons.html`, `admin-vocabulary.html`, `admin-radicals.html`); (4) Nhật ký kiểm toán an ninh (`admin-audit-logs.html`) tự động làm mờ credential nhạy cảm (`AuditDataSanitizer`). | Rà soát toàn diện Chặng 7. | **ĐÃ HOÀN TẤT & KHÓA CHẶT 100%**: PASS 187/187 unit tests, 74/74 E2E blackbox tests (Tiers 1–4). |
@@ -264,15 +266,21 @@ flowchart TD
 > Toàn bộ hệ sinh thái đã sẵn sàng đưa vào vận hành sản phẩm chính thức (Production-Ready).
 
 ### 5.1. Trạng Thái Mã Nguồn & Baseline Kiểm Thử Hiện Tại
-- **Nhánh Git**: `main` (Head commit: `4c80c76`).
-- **Fast Frontend Verification**: `npm run verify:frontend:fast` (1.082 tests / 264 suites, 100% PASS trong ~15.5 giây).
+- **Nhánh Git**: `main` (Head commit: `9407e99`).
+- **Fast Frontend Verification**: `npm run verify:frontend:fast` (1.095 tests / 268 suites, 100% PASS trong ~21.6 giây).
 - **Multi-Skill Unified SRS Verification**:
   * `all-four-skills-srs-rating.test.mjs` (5/5 PASS).
   * `multi-skill-srs-isolation-and-due.test.mjs` (5/5 PASS).
   * `writing-relearn-lifecycle-deep.test.mjs` (4/4 PASS).
   * `srs-skill-writing.test.mjs` (37/37 PASS).
   * `srs-skill-reading.test.mjs` (18 suites / 76 tests PASS).
-  * `srs-skill-listening.test.mjs` (10 suites / 46 tests PASS).
+  * `srs-skill-listening.test.mjs` (12 suites / 60 tests PASS).
+  * `curriculum-progress-rehydration.test.mjs` (10 suites / 28 tests PASS).
+  * `srs-dashboard.test.mjs` (13/13 PASS).
+- **Browser E2E Multi-Skill Suites**:
+  * `srs-listening.browser.mjs` (10/10 PASS).
+  * `srs-reading.browser.mjs` (8/8 PASS).
+  * `srs-review.browser.mjs` (16/16 PASS).
 - **Personal Notes & Contextual Subsystem**:
   * `personal-notes.browser.mjs` (7/7 PASS).
   * `notes-modal.test.mjs` (21/21 PASS).
@@ -283,13 +291,13 @@ flowchart TD
   * 187/187 unit tests PASS (`tests/frontend/unit/admin`).
 - **Mobile Hardware Emulation Suite**:
   * `mobile-keyboard.browser.mjs` (6/6 tests PASS trên Google Pixel 7 Android 14 Gboard và Apple iPhone 14 iOS 16 Mobile Safari).
-- **Backend Java Verification**: `mvn test` (126/126 tests PASS).
-- **E2E Blackbox Runner**: `node tests/e2e/runner.mjs --tier=all` (74/74 tests Tiers 1–4, 100% PASS trong ~0.79 giây).
+- **Backend Java Verification**: `mvn test` (33/33 SRS tests PASS, 514/514 broad unit tests PASS).
+- **E2E Blackbox Runner**: `node tests/e2e/runner.mjs --tier=all` (74/74 tests Tiers 1–4, 100% PASS trong ~0.76 giây).
 - **Responsive Layout**: Zero document-level horizontal overflow trên toàn bộ 24 trang HTML hiện hữu từ 360px đến 1920px.
 - **Môi trường Cloud Live**:
   * GitHub Pages: `https://khoadzsieucapvippro.github.io/WebLearnChinese/srs-review.html` (HTTP 200, Module cache buster `?v=18`).
   * Render Cloud Backend: `https://elearning-backend-pwyi.onrender.com` (Health status: UP, Single-Container unified).
-  * TiDB Cloud Serverless: MySQL 8.0, Collation `utf8mb4_unicode_ci`, Nonclustered Primary Keys.
+  * TiDB Cloud Serverless: MySQL 8.0, Collation `utf8mb4_unicode_ci`, Nonclustered Primary Keys (Flyway V1..V34).
 
 ---
 
@@ -328,6 +336,25 @@ flowchart TD
    - Database: Tạo Flyway Migration `V33__support_independent_flashcard_skill_srs.sql` mở rộng ràng buộc `CHECK (card_type IN ('FLASHCARD', 'READING', 'LISTENING', 'WRITING'))`.
    - Backend: Cập nhật `ReviewCardRequest.java`, `StudyStatsResponse.java` (thêm `cardsDueFlashcard`), `LessonSrsStatsResponse.java` (thêm `dueCardsFlashcard`), `SrsServiceImpl.java`.
    - Frontend UI & Fallback Engine: `srs-review.html` gắn `data-skill="FLASHCARD"`, `srs-review-page.js` làm mới kho thẻ đến hạn ngay lập tức khi chuyển tab bằng `await this.fetchDueCounts()`, `demo-fallback-engine.js` nâng dataset version lên 13 và thống kê tách biệt `cardsDueFlashcard`.
+
+8. **Commit `8da216b` — Tinh Giản Màn Hình Hoàn Thành 5 Chỉ Số, VAD Âm Thanh Khoảng Lặng & Điều Hướng Bộ Thủ**:
+   - Tinh giản màn hình hoàn thành theo yêu cầu: Bỏ mục 2 (tỷ lệ thành công) và mục 3 (thời gian trung bình), chỉ giữ 5 ô phân rã chỉ số cốt lõi và 3 nút hành động chuẩn.
+   - Chống chấm điểm giả khi im lặng (Silence VAD): Triển khai VAD 2 tầng (Client-side RMS & speech frames + Backend `MIN_PEAK_AMPLITUDE = 0.04`, `MIN_RMS_THRESHOLD = 0.012`, `voiced_frames >= 8`).
+   - Xóa bỏ khối chữ giải thích kỹ thuật rườm rà tại phòng Đọc ("🎯 Đánh giá thanh điệu...").
+   - Sửa lỗi điều hướng chặng bộ thủ và reset `savedIndex = 0` khi chọn "Ôn lại bài này".
+
+9. **Commit `048f578` — Bổ Sung Nút "Xem Gợi Ý" Phòng Luyện Nghe & Tích Hợp Đánh Giá SRS**:
+   - Thêm nút `#btnListeningToggleHint` và hộp gợi ý `#listeningHintBox` hiển thị nghĩa tiếng Việt, Hán-Việt, Pinyin trong phòng Luyện Nghe.
+   - Tự động mở gợi ý khi trả lời đúng để học viên đối chiếu thông tin đầy đủ.
+   - Chuẩn hóa quy chuẩn 1–4 SRS: Người học mở xem gợi ý bị chặn trần điểm ở mức Khó (Rating 2).
+   - E2E Browser Test `SL-08` trong `srs-listening.browser.mjs` (10/10 PASS).
+
+10. **Commit `9407e99` — Cơ Chế Tự Động Khôi Phục Tiến Trình (Auto-Rehydration), Backend API & Migration V34**:
+    - Xây dựng Backend API `GET /api/v1/srs/curriculum-progress` tính toán tiến độ 50 bài học HSK và 16 chặng bộ thủ trực tiếp từ `CARD_PROGRESS`.
+    - Tạo Flyway Migration `V34__reconcile_legacy_reading_cards_to_flashcard.sql` sao chép an toàn dữ liệu lịch sử từ `READING` sang `FLASHCARD` cho các tài khoản cũ.
+    - Sửa lỗi toán tử `??` trên Dashboard và sửa Dead Code thứ tự dải ID bài học trong `resolveLessonId`.
+    - Triển khai `rehydrateCurriculumProgressIfEmpty()` trên Frontend: Tự động khôi phục tiến trình khi đăng nhập trên điện thoại hoặc trình duyệt mới, triệt tiêu hoàn toàn lỗi `HTTP 409 Conflict`.
+    - Bảo tồn tài khoản người dùng, thiết lập SRS và ghi chú cá nhân khi nâng cấp Demo Fallback Engine.
 
 ---
 
@@ -421,6 +448,59 @@ Cả hai kỹ năng Luyện Đọc và Luyện Nghe đã được kiểm toán t
 
 3. **Tổng Kết Sprint 4 (Đấu Trường Ôn Tập SRS)**:
    - 4 phân hệ (`FLASHCARD`, `WRITING`, `LISTENING`, `READING`) vận hành phân tách độc lập $100\%$ cả ở tầng CSDL TiDB Cloud, Backend Spring Boot và Frontend Single-Page Controller.
-   - Toàn bộ ma trận kiểm thử Fast Tier: **1.082/1.082 tests PASS** (265 suites).
+   - Toàn bộ ma trận kiểm thử Fast Tier: **1.095/1.095 tests PASS** (268 suites).
    - Blackbox dual-track E2E runner: **74/74 tests PASS**.
+
+---
+
+### 5.6. Nghiệm Thu Toàn Diện: Cơ Chế Tự Động Đồng Bộ Tiến Trình Đa Thiết Bị (Auto-Rehydration) & Migration V34
+
+Hệ thống đã giải quyết dứt điểm tình trạng mất tiến trình của tài khoản cũ và loại bỏ hoàn toàn hiện tượng mất tiến trình khi chuyển đổi thiết bị (Desktop ➔ Mobile):
+
+1. **Bản chất Kiến Trúc Cũ & Các Điểm Nghẽn**:
+   - Trước đây, tiến trình bài học và chặng học được lưu $100\%$ trong `localStorage` máy khách, trong khi dữ liệu thẻ nhớ `CARD_PROGRESS` nằm trên TiDB Cloud.
+   - Khi chuyển sang điện thoại (hoặc tab ẩn danh/trình duyệt mới), `localStorage` trên máy mới rỗng khiến 50 bài học hiển thị $0\%$.
+   - Nút "Học tiếp" bị văng về từ vựng #1. Khi học viên đánh giá từ đã học trên máy tính, Backend ném ngoại lệ `HTTP 409 Conflict: Thẻ chưa đến hạn ôn tập`.
+   - 6 nguyên nhân cộng dồn khiến nick cũ mất tiến trình: xung đột `_ownerAccountId` khóa dữ liệu, lệch `card_type` Flyway V19 (`READING`) vs V33 (`FLASHCARD`), lỗi toán tử `??` trong `srs-dashboard-page.js` nuốt fallback `cardsDueReading`, Dead Code thứ tự dải ID bài học trong `resolveLessonId` (dải `1..15` đứng trước `5..14` làm Bài 01 thành Bài 05), Flyway V30 xóa bài học cũ tạo ID tự tăng mới, Demo Fallback Engine reset mảng `accounts` khi nâng version.
+
+2. **Giải Pháp 4 Tầng Toàn Diện Đã Triển Khai**:
+   - **Tầng 1 (Cứu dữ liệu thẻ cũ - Flyway V34)**: Tạo migration `V34__reconcile_legacy_reading_cards_to_flashcard.sql`, tự động sao chép các bản ghi `CARD_PROGRESS` và `REVIEW_LOG` từ `READING` sang `FLASHCARD` cho các tài khoản cũ, tương thích khóa phi phân cụm TiDB Cloud.
+   - **Tầng 2 (Sửa lỗi Frontend Dashboard & Mapping)**: Sửa toán tử `??` thành kiểm tra `cardsDueFlashcard > 0 ? stats.cardsDueFlashcard : (stats.cardsDueReading || 0)` trên `srs-dashboard-page.js`; đảo dải `5..14` lên trước `1..15` trong `resolveLessonId` tại `srs-review-page.js`.
+   - **Tầng 3 (Backend Server-Side Curriculum Progress API)**: Tạo endpoint `GET /api/v1/srs/curriculum-progress` (`SrsController`, `SrsService`, `SrsServiceImpl`) tính toán tiến độ 50 bài HSK, 50 bộ thủ thông dụng theo `commonRank` (`findByCommonRankIsNotNullOrderByCommonRankAsc`), và 214 bộ thủ Khang Hy trực tiếp từ `CARD_PROGRESS`. Bảo vệ IDOR tuyệt đối qua JWT `SecurityContextHolder`.
+   - **Tầng 4 (Frontend Auto-Rehydration & Sync Đa Thiết Bị)**:
+     * Trong `srs-review-page.js`: Hàm `rehydrateCurriculumProgressIfEmpty()` tự động phát hiện khi `localStorage` trên thiết bị mới (mobile, trình duyệt mới, xóa cache) chưa có tiến trình và tự động gọi API `/srs/curriculum-progress` để nạp ngay tiến độ 50 bài và các chặng bộ thủ về máy mới.
+     * Nút **"Học tiếp"** trên điện thoại tự động trỏ đến đúng từ vựng tiếp theo chưa học, **loại bỏ triệt để lỗi `HTTP 409 Conflict`**.
+     * Không ghi đè tiến trình phân hệ khác nếu đã có dữ liệu.
+     * Trong `demo-fallback-engine.js`: Bảo tồn danh sách tài khoản người dùng `accounts`, cài đặt `srsSettings` và ghi chú cá nhân `notes` khi nâng cấp version.
+
+3. **Bộ Kiểm Thử Xác Minh & PASS 100%**:
+   - `curriculum-progress-rehydration.test.mjs`: **28/28 tests PASS** (10 suites).
+   - `srs-dashboard.test.mjs`: **13/13 tests PASS**.
+   - `npm run verify:frontend:fast`: **1.095/1.095 tests PASS** (268 suites).
+   - `node tests/e2e/runner.mjs --tier=all`: **74/74 tests PASS** (Tiers 1–4).
+   - `mvn test`: **33/33 SRS tests PASS**, **514/514 broad backend unit tests PASS**.
+   - `mobile-keyboard.browser.mjs`: **6/6 tests PASS** (Google Pixel 7 Android 14 & Apple iPhone 14 iOS 16).
+
+---
+
+### 5.7. Bổ Sung Nút "Xem Gợi Ý" Phòng Luyện Nghe & Tích Hợp Đánh Giá SRS
+
+1. **Giao Diện Tương Tác**:
+   - Bổ sung nút `#btnListeningToggleHint` và hộp thông tin gợi ý `#listeningHintBox` nằm giữa nút loa phát âm và ô nhập chữ Hán trong phòng Luyện Nghe (`srs-review.html?mode=listening`).
+   - Hộp gợi ý hiển thị đầy đủ:
+     * Nghĩa tiếng Việt (`listeningPromptMeaning` - `card.meaningVi`).
+     * Âm Hán-Việt (`listeningPromptHanViet` - `card.meaningHanViet`).
+     * Phiên âm Pinyin (`listeningPromptPinyin` - `card.pinyin`).
+   - Nút chuyển trạng thái trực quan: `👁️ Xem gợi ý` $\leftrightarrow$ `🙈 Ẩn gợi ý`.
+   - Khi người học gõ đúng và hoàn thành (`✓ Hoàn thành!`), hộp gợi ý tự động hiển thị để người học đối chiếu lại toàn bộ thông tin chi tiết trước khi sang từ tiếp theo.
+
+2. **Quy Chuẩn Đánh Giá 1–4 SM-2 Cho Luyện Nghe**:
+   - **Rating 1 (Học lại - Requeue)**: Sai $\ge 3$ lần gõ.
+   - **Rating 2 (Khó)**: Sai 1–2 lần HOẶC bấm nghe lại $\ge 3$ lần **HOẶC có mở xem gợi ý**.
+   - **Rating 3 (Tốt)**: Đúng ngay lần đầu (0 lỗi, không mở gợi ý) nhưng có bấm nghe lại 1–2 lần.
+   - **Rating 4 (Dễ)**: Hoàn hảo (đúng ngay lần đầu, không nghe lại, không mở gợi ý).
+
+3. **Bộ Kiểm Thử Xác Minh**:
+   - `srs-skill-listening.test.mjs`: **60/60 tests PASS** (12 suites).
+   - `srs-listening.browser.mjs`: **10/10 tests PASS** (bao gồm test E2E `SL-08` kiểm tra toggle gợi ý và chặn trần điểm Rating 2).
 
