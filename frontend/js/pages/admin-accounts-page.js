@@ -108,7 +108,7 @@ export function parseAccountResponse(item) {
 
   return {
     accountId: Math.max(0, Number(item.accountId) || 0),
-    emailOrPhone: typeof item.emailOrPhone === 'string' ? item.emailOrPhone.trim() : '',
+    emailOrPhone: (typeof item.emailOrPhone === 'string' && item.emailOrPhone.trim().length > 0) ? item.emailOrPhone.trim() : (typeof item.email === 'string' ? item.email.trim() : ''),
     fullName: typeof item.fullName === 'string' && item.fullName.trim().length > 0 ? item.fullName.trim() : null,
     status: normalizedStatus,
     roles: Array.isArray(item.roles) ? [...item.roles] : [],

@@ -1483,7 +1483,10 @@ const currentAccount = this.getCurrentAccount();
       const size = parseInt(query.size || 20, 10);
 
       return {
-        items: data.accounts,
+        items: data.accounts.map(a => ({
+          ...a,
+          emailOrPhone: a.emailOrPhone || a.email || ''
+        })),
         page,
         size,
         totalElements: data.accounts.length,
