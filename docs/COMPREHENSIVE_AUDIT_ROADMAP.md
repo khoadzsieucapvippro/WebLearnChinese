@@ -35,9 +35,9 @@ flowchart TD
 | **Chặng 5: Không gian Cá nhân** | `TASK-5.1` | Sổ tay Ghi chú Cá nhân (Personal Notes) | `notes-modal.js`, contextual notes integration | ✅ Hoàn thành |
 | **Chặng 6: Quản lý Nội dung** | `TASK-6.1` | Cổng Điều phối & Creator Studio (Tạo bài, Import) | `management.html`, `creator-lessons.html`, `creator-import.html` | ✅ Hoàn thành |
 | | `TASK-6.2` | Moderator Queue & Thẩm định bài học | `moderator-queue.html`, `moderator-review.html`, `moderator-history.html` | ✅ Hoàn thành |
-| **Chặng 7: Quản trị Hệ thống** | `TASK-7.1` | Quản trị Tài khoản & Phân quyền Admin | `admin-accounts.html`, `admin-roles.html` | ⏳ Chờ rà soát |
-| | `TASK-7.2` | Quản trị Bài học, Từ vựng & Bộ thủ (Admin) | `admin-lessons.html`, `admin-vocabulary.html`, `admin-radicals.html` | ⏳ Chờ rà soát |
-| | `TASK-7.3` | Nhật ký Kiểm toán & Trung tâm Xác minh UI | `admin-audit-logs.html`, `verification-center.html` | ⏳ Chờ rà soát |
+| **Chặng 7: Quản trị Hệ thống** | `TASK-7.1` | Quản trị Tài khoản & Phân quyền Admin | `admin-accounts.html`, `admin-roles.html` | ⏳ Sẵn sàng tiến hành (Đã chốt thiết kế) |
+| | `TASK-7.2` | Quản trị Bài học, Từ vựng & Bộ thủ (Admin) | `admin-lessons.html`, `admin-vocabulary.html`, `admin-radicals.html` | ⏳ Sẵn sàng tiến hành (Đã chốt thiết kế) |
+| | `TASK-7.3` | Nhật ký Kiểm toán & Trung tâm Xác minh UI | `admin-audit-logs.html`, `ui-verification.html` | ⏳ Sẵn sàng tiến hành (Đã chốt thiết kế) |
 | **Chặng 8: Đám mây & Thực tế** | `TASK-8.1` | Triển khai GitHub Pages & Đường dẫn tĩnh Subpath | `deploy-pages.yml`, subpath URL resolver | ⏳ Chờ rà soát |
 | | `TASK-8.2` | Kiến trúc Render Container & TiDB Cloud | `Dockerfile.unified`, `render.yaml`, TiDB schema | ⏳ Chờ rà soát |
 | | `TASK-8.3` | Trải nghiệm Thực tế trên Điện thoại Di động Thật | LAN Wi-Fi `serve:mobile` / Mobile Keyboard Emulation | ⏳ Chờ rà soát |
@@ -351,22 +351,44 @@ flowchart TD
 
 ---
 
-### CHẶNG 7: QUẢN TRỊ HỆ THỐNG & BẢO MẬT (ADMIN)
+### CHẶNG 7: QUẢN TRỊ HỆ THỐNG & BẢO MẬT (ADMIN) — ⏳ SẴN SÀNG TIẾN HÀNH (ĐÃ CHỐT THIẾT KẾ TOÀN DIỆN)
+> [!IMPORTANT]
+> **Tài liệu đặc tả kiến trúc chi tiết**: Xem [docs/STAGE_7_ADMIN_DESIGN_SPEC.md](file:///c:/Users/LENOVO/btlm-test%20(2)/btlm-test/elearning-1.0.0-20260819T062551Z-1-002/elearning-1.0.0/elearning-1.0.0/docs/STAGE_7_ADMIN_DESIGN_SPEC.md) để nắm toàn bộ sơ đồ, hợp đồng API và checklist kỹ thuật.
+
 #### `TASK-7.1`: Quản Trị Tài Khoản & Phân Quyền (`admin-accounts.html`, `admin-roles.html`)
-- **Mục tiêu**: Quản trị tài khoản an toàn, bảo vệ tài khoản quản trị tối cao.
-- **Tiêu chí kiểm tra**:
-  1. *Danh sách Tài khoản*: Xem, tìm kiếm, kích hoạt/khóa tài khoản, gán vai trò.
-  2. *Bảo Vệ Admin Cuối Cùng (Last Admin Invariant)*: Chặn cứng hạ quyền hoặc khóa tài khoản Admin hoạt động duy nhất.
+- **Mục tiêu**: Quản trị tài khoản an toàn, phân quyền nghiêm ngặt theo Phương án A, bảo vệ tài khoản quản trị tối cao, và bổ sung quyền đặt lại mật khẩu cho người dùng.
+- **Tiêu chí & Hạng mục thiết kế chi tiết**:
+  1. *Bảo Vệ Mật Khẩu & Băm BCrypt*: Mật khẩu được băm 100% bằng `BCryptPasswordEncoder` (10 salt rounds), lưu trữ tại `password_hash VARCHAR(255)`, không bao giờ lộ mật khẩu thô trong response DTO, tự động thu hồi JWT phiên cũ qua `authorization_version`.
+  2. *Bổ Sung Quyền Đặt Lại Mật Khẩu (Admin Password Reset)*:
+     - Endpoint: `POST /api/v1/admin/accounts/{id}/reset-password`.
+     - Giải quyết triệt để điểm nghẽn học viên quên mật khẩu liên hệ Admin (tại modal `login.html`), Admin cấp mật khẩu tạm thời an toàn, tăng `authorization_version` và ghi nhật ký kiểm toán `PASSWORD_RESET`.
+  3. *Khóa Cứng Bất Biến Phân Lập Trách Nhiệm (SoD Invariant - Phương Án A)*:
+     - Trên modal `admin-roles.html`: Tick `Creator` tự động bỏ tick và disable `Moderator`; tick `Moderator` tự động bỏ tick và disable `Creator`.
+     - Backend `AdminRoleServiceImpl.java` & `demo-fallback-engine.js`: Ném lỗi `HTTP 400 Bad Request` nếu payload chứa đồng thời cả hai vai trò `Creator` và `Moderator`.
+  4. *Bảo Vệ Admin Cuối Cùng (Last Admin Invariant)*: Chặn cứng hạ quyền hoặc khóa tài khoản Admin hoạt động duy nhất; tự bảo vệ không cho tự tước quyền (`POL-8D-02`).
+  5. *Làm Sạch Giao Diện Đồng Bộ*: Xóa breadcrumb thừa, xóa thanh tab lặp `<nav class="moderator-nav-tabs">`, xóa dropdown `#pageSizeSelect`, xóa dòng tóm tắt, chuẩn hóa phân trang First/Last `<< < 1 2 3 > >>` góc dưới bên phải, áp dụng `.table-responsive-clean`.
 
-#### `TASK-7.2`: Quản Trị Bài Học, Từ Vựng & Bộ Thủ (`admin-lessons.html`, `admin-vocabulary.html`, `admin-radicals.html`)
-- **Mục tiêu**: Quản trị kho dữ liệu học liệu tổng thể của toàn hệ thống.
-- **Tiêu chí kiểm tra**: CRUD dữ liệu, kiểm tra ràng buộc toàn vẹn khóa ngoại và liên kết tệp media.
+#### `TASK-7.2`: Quản Trị Nội Dung Học Liệu & Giám Sát Cấp Cao (`admin-lessons.html`, `admin-vocabulary.html`, `admin-radicals.html`)
+- **Mục tiêu**: Giám sát và quản trị kho dữ liệu học liệu tổng thể của toàn hệ thống theo mô hình Trọng tài Tối cao (Phương án A).
+- **Tiêu chí & Hạng mục thiết kế chi tiết**:
+  1. *Giám Sát Toàn Diện Bài Học (`admin-lessons.html`)*: Bảng tổng quan bài học ở mọi trạng thái (`Draft`, `Pending`, `Approved`, `Rejected`), bộ lọc trạng thái và thống kê số lượng.
+  2. *Bổ Sung Quyền Thu Hồi Bài Học Vi Phạm Khẩn Cấp (Emergency Take-Down)*:
+     - Endpoint: `POST /api/v1/admin/lessons/{id}/revoke`.
+     - Cho phép Admin gỡ ngay bài học đã duyệt (`Approved`) nếu phát hiện nội dung độc hại/bản quyền, chuyển về `Rejected` kèm lý do vi phạm, bài học biến mất ngay khỏi trang học sinh `lessons.html`.
+  3. *Bổ Sung Quyền Phê Duyệt Trọng Tài Khi Tranh Chấp (Supervisory Arbiter Approval)*:
+     - Endpoint: `POST /api/v1/admin/lessons/{id}/approve` (chỉ áp dụng cho bài `Pending`/`Rejected` khi có khiếu nại).
+     - Kiểm tra bắt buộc **Bất biến Cấm tự phê duyệt (Self-Review Invariant)**: Admin không được phép tự duyệt bài học do chính mình tạo ra!
+  4. *Quản Trị Kho Từ Vựng Master (`admin-vocabulary.html`)*: CRUD toàn diện kho 1.068 từ vựng HSK 1–3, quản lý phát âm, âm thanh MP3 và cấu phần bộ thủ.
+  5. *Quản Trị 214 Bộ Thủ Khang Hy (`admin-radicals.html`)*: CRUD 214 bộ thủ Khang Hy, số nét, chiết tự, âm đọc MP3.
+  6. *Làm Sạch Giao Diện*: Xóa breadcrumb, xóa dropdown 20/trang, xóa dòng tóm tắt, đồng bộ phân trang First/Last `<< < 1 2 3 > >>` góc dưới bên phải, chuyển sang `.table-responsive-clean`.
 
-#### `TASK-7.3`: Nhật Ký Kiểm Toán & Trung Tâm Xác Minh UI (`admin-audit-logs.html`, `verification-center.html`)
-- **Mục tiêu**: Giám sát an ninh và kiểm thử trực quan trên giao diện web.
-- **Tiêu chí kiểm tra**:
-  1. *Audit Logs*: Tra cứu nhật ký hành động quản trị, làm mờ mật khẩu và token nhạy cảm (`AuditDataSanitizer`).
-  2. *Verification Center*: Chạy kiểm thử trực quan DOM Sinks, CSP, Unit tests ngay trên trình duyệt.
+#### `TASK-7.3`: Nhật Ký Kiểm Toán & Trung Tâm Xác Minh UI (`admin-audit-logs.html`, `ui-verification.html`)
+- **Mục tiêu**: Giám sát an ninh, truy vết hành động quản trị bất biến và kiểm thử trực quan trên trình duyệt.
+- **Tiêu chí & Hạng mục thiết kế chi tiết**:
+  1. *Nhật Ký Kiểm Toán Bất Biến (`admin-audit-logs.html`)*: Tra cứu lịch sử thao tác toàn hệ thống, tự động làm mờ token và mật khẩu qua `AuditDataSanitizer`.
+  2. *Bổ Sung Tính Năng Xuất Báo Cáo CSV (Audit Export)*: Nút "Xuất CSV" hỗ trợ trích xuất dữ liệu nhật ký đạt chuẩn RFC 4180 UTF-8 phục vụ compliance.
+  3. *Trung Tâm Xác Minh Giao Diện (`ui-verification.html`)*: Chạy kiểm thử trực quan DOM Sinks, CSP, Unit tests trực tiếp trên trình duyệt.
+  4. *Làm Sạch Giao Diện*: Xóa breadcrumb, xóa dòng tóm tắt, đồng bộ phân trang First/Last `<< < 1 2 3 > >>` góc dưới bên phải, chuyển sang `.table-responsive-clean`.
 
 ---
 
@@ -946,3 +968,48 @@ Theo phản hồi trực quan từ Người Dùng qua ảnh chụp màn hình th
    - `21_creator_import_clean_pagination.png`: Bảng import không còn breadcrumb, không còn lỗi đỏ tĩnh, phân trang `<< < 1 2 3 > >>` góc dưới bên phải.
    - `creator-detail-verified.png`: Chế độ Xem chi tiết bài học duyệt hiển thị hoàn hảo, không bị tràn layout, không nút disabled thừa.
    - `creator-edit-draft-verified.png`: Chế độ Biên soạn bài nháp đầy đủ công cụ.
+
+---
+
+### 5.14. Bản Thiết Kế Kiến Trúc & Đặc Tả Toàn Diện Chặng 7 (Quản Trị Hệ Thống - Admin) — Đã Chốt Cùng Người Dùng
+
+> [!IMPORTANT]
+> **Dành riêng cho Agent kế thừa**: Toàn bộ kiến trúc, ranh giới an ninh, giải đáp cơ chế bảo vệ mật khẩu và đặc tả 5 quyền hạn bổ sung cho Admin đã được thảo luận, thống nhất chặt chẽ cùng Người Dùng. Tài liệu đặc tả kỹ thuật chi tiết độc lập đã được lưu trữ vĩnh viễn tại:
+> 👉 **[`docs/STAGE_7_ADMIN_DESIGN_SPEC.md`](file:///c:/Users/LENOVO/btlm-test%20(2)/btlm-test/elearning-1.0.0-20260819T062551Z-1-002/elearning-1.0.0/elearning-1.0.0/docs/STAGE_7_ADMIN_DESIGN_SPEC.md)**.
+> Agent tiếp theo chỉ cần đọc tài liệu này và bảng tóm tắt dưới đây để thực thi trọn vẹn toàn bộ Chặng 7.
+
+#### 1. Cơ Chế Bảo Vệ Mật Khẩu & Thuật Toán Băm BCrypt (Đã Xác Minh Bằng Chứng)
+- **Hàm băm một chiều BCrypt**: Cấu hình tại `SecurityConfig.java` sử dụng `BCryptPasswordEncoder()` với **10 salt rounds** (1.024 chu kỳ băm biến thiên), kháng triệt để Brute-force và Rainbow table.
+- **CSDL TiDB Cloud**: Cột lưu trữ là `password_hash VARCHAR(255) NOT NULL` (`V1__init_schema.sql`). Cơ sở dữ liệu không bao giờ lưu mật khẩu rõ.
+- **DTO Khử Trừ Tuyệt Đối**: `AccountResponse.java` dành cho Admin được khử trừ (sanitized), hoàn toàn không chứa trường `password` hay `passwordHash`.
+- **Làm mờ Nhật Ký Kiểm Toán**: `AuditDataSanitizer.java` tự động nhận diện regex `(password|token|secret|hash)` và thay thế bằng `[REDACTED]`.
+- **Hủy Phiên Đa Thiết Bị**: Mọi thao tác đổi mật khẩu hoặc reset mật khẩu đều tăng `account.incrementAuthorizationVersion()` làm mất hiệu lực toàn bộ token JWT cũ trên mọi máy tính và điện thoại.
+
+#### 2. Các Quyền Hạn Cốt Lõi Admin Bổ Sung (Đã Chốt Thiết Kế)
+1. **Admin Reset Password (`POST /api/v1/admin/accounts/{id}/reset-password`)**:
+   - Tháo gỡ nút thắt: Modal `login.html` yêu cầu học viên quên mật khẩu liên hệ Admin, Admin có nút đặt lại mật khẩu tạm thời an toàn trên `admin-accounts.html`.
+2. **Thu Hồi / Gỡ Bài Học Vi Phạm Khẩn Cấp (`POST /api/v1/admin/lessons/{id}/revoke`)**:
+   - Đúng thẩm quyền Giám sát Cấp cao (Phương án A): Cho phép Admin chuyển bài học từ `Approved` về `Rejected` (kèm lý do thu hồi vi phạm), bài học biến mất ngay khỏi `lessons.html`.
+3. **Phê Duyệt Trọng Tài Khi Có Khiếu Nại (`POST /api/v1/admin/lessons/{id}/approve`)**:
+   - Dành cho bài `Pending`/`Rejected` có khiếu nại. Bắt buộc kiểm tra **Bất biến Cấm tự phê duyệt (Self-Review Invariant)**: Admin không được duyệt bài do chính mình tạo ra!
+4. **Khóa Cứng Bất Biến Phân Lập Trách Nhiệm (SoD Invariant)**:
+   - Checkbox trên modal `admin-roles.html`: Tick `Creator` tự động bỏ tick và disable `Moderator`; tick `Moderator` tự động bỏ tick và disable `Creator`.
+   - Backend `AdminRoleServiceImpl.java` & `demo-fallback-engine.js`: Ném lỗi `HTTP 400 Bad Request` nếu payload chứa cả 2 vai trò.
+5. **Xuất Báo Cáo Nhật Ký Kiểm Toán CSV (Export Audit Logs)**:
+   - Nút "Xuất CSV" trên `admin-audit-logs.html` tải về dữ liệu nhật ký kiểm toán phục vụ thanh tra compliance.
+
+#### 3. Chuẩn Hóa Giao Diện Đồng Loạt Cả 6 Trang Admin (Đồng Bộ Chặng 6)
+- **Xóa Breadcrumb thừa**: Xóa toàn bộ dòng `Trung tâm quản lý / ...` trên cả 6 trang Admin.
+- **Xóa Tab ngang lặp lại**: Xóa bỏ `<nav class="moderator-nav-tabs">` trên `admin-accounts.html` và `admin-roles.html`.
+- **Xóa Dropdown 20/trang**: Xóa bỏ `#pageSizeSelect` trên cả 5 trang.
+- **Xóa Text tóm tắt**: Xóa các dòng text "Hiển thị 1–20 trong..." rườm rà.
+- **Đồng bộ Phân trang First/Last**: Đưa `.pagination-container.justify-content-end` chứa chuỗi nút `<< < 1 2 3 > >>` về góc dưới bên phải, đồng nhất 100% với Learner, Creator, Moderator.
+- **Chống Tràn Ngang**: Áp dụng `.table-responsive-clean` với `max-width: 100%;` và `overflow-x: hidden`.
+- **Cache-Buster**: Bổ sung `?v=20261028_04` trên toàn bộ thẻ link CSS và script JS.
+
+#### 4. Kế Hoạch Bắt Tay Thực Thi Chặng 7 Cho Agent Tiếp Theo
+- **Bước 1**: Đọc kĩ [`docs/STAGE_7_ADMIN_DESIGN_SPEC.md`](file:///c:/Users/LENOVO/btlm-test%20(2)/btlm-test/elearning-1.0.0-20260819T062551Z-1-002/elearning-1.0.0/elearning-1.0.0/docs/STAGE_7_ADMIN_DESIGN_SPEC.md).
+- **Bước 2**: Thực hiện `TASK-7.1` (Tài khoản & Phân quyền, Reset password, SoD Invariant).
+- **Bước 3**: Thực hiện `TASK-7.2` (Giám sát bài học, Revoke khẩn cấp, Duyệt trọng tài, CRUD Từ vựng & Bộ thủ).
+- **Bước 4**: Thực hiện `TASK-7.3` (Audit logs, Xuất CSV, UI verification).
+- **Bước 5**: Chạy xác minh `npm run verify:frontend:fast`, `runner.mjs --tier=all`, browser tests và chụp ảnh gửi Người Dùng.
