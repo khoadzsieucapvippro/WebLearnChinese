@@ -147,6 +147,19 @@ class AdminRoleServiceTests {
         }
 
         @Test
+        @DisplayName("GIVEN both Creator and Moderator in requested roles WHEN updating THEN throws BAD_REQUEST for SoD violation")
+        void testUpdateAccountRoles_creatorAndModeratorMutuallyExclusive_throwsBadRequest() {
+            when(roleRepository.findAll()).thenReturn(List.of(roleLearner, roleCreator, roleModerator, roleAdmin));
+
+            UpdateAccountRolesRequest request = new UpdateAccountRolesRequest(List.of("Creator", "Moderator"));
+
+            assertThatThrownBy(() -> adminRoleService.updateAccountRoles(5L, request, "admin@example.com"))
+                    .isInstanceOf(BusinessException.class)
+                    .hasFieldOrPropertyWithValue("errorCode", ErrorCode.BAD_REQUEST)
+                    .hasMessage("Vai trò Người sáng tạo (Creator) và Kiểm duyệt viên (Moderator) loại trừ lẫn nhau tuyệt đối. Một tài khoản không thể đồng thời giữ cả hai vai trò.");
+        }
+
+        @Test
         @DisplayName("GIVEN empty role list WHEN updating THEN throws VALIDATION_ERROR (BUS-8D-01)")
         void testUpdateAccountRoles_emptyRolesThrowsValidationError() {
             UpdateAccountRolesRequest request = new UpdateAccountRolesRequest(List.of());

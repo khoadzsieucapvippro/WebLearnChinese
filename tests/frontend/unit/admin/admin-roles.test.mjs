@@ -212,6 +212,18 @@ describe('Task 9F.2 — Admin Roles Pure Logic Unit Tests', () => {
       assert.strictEqual(res.valid, true);
       assert.strictEqual(res.error, null);
     });
+
+    test('fails validation when both Creator and Moderator are simultaneously selected (SoD invariant)', () => {
+      const res = validateRoleSelection(['Creator', 'Moderator'], catalog, false);
+      assert.strictEqual(res.valid, false);
+      assert.ok(res.error.includes('loại trừ lẫn nhau'));
+    });
+
+    test('fails validation when roles have ROLE_ prefix or case variations (SoD invariant)', () => {
+      const res = validateRoleSelection(['ROLE_CREATOR', 'ROLE_MODERATOR'], ['ROLE_CREATOR', 'ROLE_MODERATOR'], false);
+      assert.strictEqual(res.valid, false);
+      assert.ok(res.error.includes('loại trừ lẫn nhau'));
+    });
   });
 
   /* ---------------------------------------------------------------------------
@@ -308,6 +320,16 @@ describe('Task 9F.2 — Admin Roles Pure Logic Unit Tests', () => {
       assert.ok(pages.includes('...'));
       assert.strictEqual(pages[0], 0);
       assert.strictEqual(pages[pages.length - 1], 9);
+    });
+
+    test('supports 5-arg form returning pagination calculation object', () => {
+      const calc = calculatePagination(2, 20, 65, 4, 5);
+      assert.strictEqual(calc.currentPage, 2);
+      assert.strictEqual(calc.totalPages, 4);
+      assert.strictEqual(calc.hasPrev, true);
+      assert.strictEqual(calc.hasNext, true);
+      assert.strictEqual(calc.startPage, 0);
+      assert.strictEqual(calc.endPage, 3);
     });
   });
 

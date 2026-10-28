@@ -247,13 +247,55 @@ export function formatAccountDateTime(isoString) {
 
 /**
  * Computes accessible pagination pages list for rendering.
- * 
- * @param {number} currentPage - 0-indexed current page
- * @param {number} totalPages - total number of pages
- * @param {number} [maxVisible=5] - max visible numbered buttons
- * @returns {Array<number|string>} e.g. [0, 1, 2, '...', 9]
+/**
+ * Computes accessible pagination pages list for rendering.
+ * Supports both:
+ * 1. 5-argument form: (page, size, totalElements, totalPages, maxButtons = 5) returning pagination calculation object.
+ * 2. Legacy 2/3-argument form: (currentPage, totalPages, maxVisible = 5) returning array of page numbers and ellipsis.
  */
-export function calculatePagination(currentPage, totalPages, maxVisible = 5) {
+export function calculatePagination(currentPageOrPage, totalPagesOrSize, maxVisibleOrTotalElements, maybeTotalPages, maybeMaxButtons = 5) {
+  // If called with 4 or 5 arguments: (page, size, totalElements, totalPages, maxButtons = 5)
+  if (arguments.length >= 4) {
+    const page = currentPageOrPage;
+    const size = totalPagesOrSize;
+    const totalElements = maxVisibleOrTotalElements;
+    const totalPages = maybeTotalPages;
+    const maxButtons = maybeMaxButtons;
+
+    const safeTotalPages = Math.max(0, totalPages || 0);
+    const safePage = Math.max(0, Math.min(page || 0, Math.max(0, safeTotalPages - 1)));
+    const hasPrev = safePage > 0;
+    const hasNext = safePage < safeTotalPages - 1;
+    const startRecord = totalElements === 0 ? 0 : safePage * size + 1;
+    const endRecord = Math.min((safePage + 1) * size, totalElements);
+
+    let startPage = 0;
+    let endPage = -1;
+    if (safeTotalPages > 0) {
+      startPage = Math.max(0, safePage - Math.floor(maxButtons / 2));
+      endPage = Math.min(safeTotalPages - 1, startPage + maxButtons - 1);
+      if (endPage - startPage < maxButtons - 1) {
+        startPage = Math.max(0, endPage - maxButtons + 1);
+      }
+    }
+
+    return {
+      currentPage: safePage,
+      totalPages: safeTotalPages,
+      hasPrev,
+      hasNext,
+      startRecord,
+      endRecord,
+      startPage,
+      endPage
+    };
+  }
+
+  // Legacy 2 or 3 arguments: (currentPage, totalPages, maxVisible = 5)
+  const currentPage = currentPageOrPage;
+  const totalPages = totalPagesOrSize;
+  const maxVisible = maxVisibleOrTotalElements !== undefined ? maxVisibleOrTotalElements : 5;
+
   if (totalPages <= 0) return [];
   if (totalPages <= maxVisible) {
     return Array.from({ length: totalPages }, (_, i) => i);
@@ -379,7 +421,20 @@ export class AdminAccountsController {
       modalStatusSelectGroup: document.getElementById('modalStatusSelectGroup'),
       modalWarningNotice: document.getElementById('statusModalWarningNotice'),
       modalSelfProtectionNotice: document.getElementById('statusModalSelfProtectionNotice'),
-      modalError: document.getElementById('statusModalError')
+      modalError: document.getElementById('statusModalError'),
+
+      // Reset Password Modal
+      resetPasswordModal: document.getElementById('resetPasswordModal'),
+      btnCloseResetPasswordModal: document.getElementById('btnCloseResetPasswordModal'),
+      btnCancelResetPasswordModal: document.getElementById('btnCancelResetPasswordModal'),
+      btnConfirmResetPassword: document.getElementById('btnConfirmResetPassword'),
+      resetModalTargetEmail: document.getElementById('resetModalTargetEmail'),
+      resetModalTargetInfo: document.getElementById('resetModalTargetInfo'),
+      resetPasswordConfirmSection: document.getElementById('resetPasswordConfirmSection'),
+      resetPasswordResultSection: document.getElementById('resetPasswordResultSection'),
+      temporaryPasswordDisplay: document.getElementById('temporaryPasswordDisplay'),
+      btnCopyTemporaryPassword: document.getElementById('btnCopyTemporaryPassword'),
+      resetModalError: document.getElementById('resetModalError')
     };
   }
 
@@ -472,6 +527,21 @@ export class AdminAccountsController {
 
     // Modal confirmation submission
     this.dom.btnConfirmUpdate?.addEventListener('click', () => this.submitStatusUpdate());
+
+    // Reset Password Modal listeners
+    this.dom.btnCloseResetPasswordModal?.addEventListener('click', () => this.closeResetPasswordModal());
+    this.dom.btnCancelResetPasswordModal?.addEventListener('click', () => this.closeResetPasswordModal());
+    this.dom.resetPasswordModal?.addEventListener('cancel', (e) => {
+      e.preventDefault();
+      this.closeResetPasswordModal();
+    });
+    this.dom.resetPasswordModal?.addEventListener('click', (e) => {
+      if (e.target === this.dom.resetPasswordModal) {
+        this.closeResetPasswordModal();
+      }
+    });
+    this.dom.btnConfirmResetPassword?.addEventListener('click', () => this.submitResetPassword());
+    this.dom.btnCopyTemporaryPassword?.addEventListener('click', () => this.copyTemporaryPassword());
   }
 
   /**
@@ -707,12 +777,17 @@ export class AdminAccountsController {
       attrs: { 'data-label': 'Hành động' }
     });
 
+    const actionContainer = createSafeElement('div', {
+      className: 'd-flex align-items-center justify-content-center gap-1'
+    });
+
     if (isCurrentAdmin) {
       // Self-Protection Policy (POL-8D-01): Admin cannot deactivate or ban self
       const selfDisabledBtn = createSafeElement('button', {
-        className: 'btn btn-chinese-secondary btn-sm opacity-50',
+        className: 'btn btn-chinese-secondary btn-sm opacity-50 btn-change-status',
         attrs: {
           'type': 'button',
+          'id': `btnChangeStatus_${account.accountId}`,
           'disabled': 'true',
           'aria-disabled': 'true',
           'aria-label': 'Không thể tự đổi trạng thái tài khoản đang đăng nhập (POL-8D-01)',
@@ -720,7 +795,21 @@ export class AdminAccountsController {
         },
         text: 'Đổi trạng thái'
       });
-      tdAction.appendChild(selfDisabledBtn);
+      actionContainer.appendChild(selfDisabledBtn);
+
+      const selfResetDisabledBtn = createSafeElement('button', {
+        className: 'btn btn-chinese-secondary btn-sm opacity-50',
+        attrs: {
+          'type': 'button',
+          'id': `btnResetPassword_${account.accountId}`,
+          'disabled': 'true',
+          'aria-disabled': 'true',
+          'aria-label': 'Không thể tự đặt lại mật khẩu của chính mình qua tính năng quản trị',
+          'title': 'Không thể tự đặt lại mật khẩu của chính mình qua tính năng quản trị'
+        },
+        text: '🔑'
+      });
+      actionContainer.appendChild(selfResetDisabledBtn);
     } else {
       const changeStatusBtn = createSafeElement('button', {
         className: 'btn btn-chinese-secondary btn-sm btn-change-status',
@@ -737,8 +826,28 @@ export class AdminAccountsController {
         this.openStatusModal(account);
       });
 
-      tdAction.appendChild(changeStatusBtn);
+      actionContainer.appendChild(changeStatusBtn);
+
+      const resetPasswordBtn = createSafeElement('button', {
+        className: 'btn btn-chinese-secondary btn-sm btn-reset-password',
+        attrs: {
+          'type': 'button',
+          'id': `btnResetPassword_${account.accountId}`,
+          'aria-label': `Đặt lại mật khẩu cho tài khoản ${account.emailOrPhone}`,
+          'title': `Đặt lại mật khẩu cho tài khoản ${account.emailOrPhone}`,
+          'data-account-id': String(account.accountId)
+        },
+        text: '🔑'
+      });
+
+      resetPasswordBtn.addEventListener('click', () => {
+        this.openResetPasswordModal(account);
+      });
+
+      actionContainer.appendChild(resetPasswordBtn);
     }
+
+    tdAction.appendChild(actionContainer);
 
     tr.appendChild(tdId);
     tr.appendChild(tdEmail);
@@ -752,99 +861,130 @@ export class AdminAccountsController {
   }
 
   /**
-   * Renders server-side pagination bar and summary text.
+   * Renders server-side pagination bar.
    */
   renderPagination() {
-    if (!this.dom.paginationNav || !this.dom.paginationList || !this.dom.paginationSummary) {
+    if (!this.dom.paginationNav || !this.dom.paginationList) {
       return;
     }
 
     if (this.totalPages <= 1) {
       this.dom.paginationNav.classList.add('d-none');
+      clearContainer(this.dom.paginationList);
       return;
     }
 
     this.dom.paginationNav.classList.remove('d-none');
-
-    // Summary calculation
-    const from = this.currentPage * this.pageSize + 1;
-    const to = Math.min((this.currentPage + 1) * this.pageSize, this.totalElements);
-    this.dom.paginationSummary.textContent = `Hiển thị ${from} - ${to} trong ${this.totalElements} tài khoản`;
-
     clearContainer(this.dom.paginationList);
 
-    // Previous Button
-    const prevLi = document.createElement('li');
-    prevLi.className = `page-item ${this.currentPage === 0 ? 'disabled' : ''}`;
+    const calc = calculatePagination(this.currentPage, this.pageSize, this.totalElements, this.totalPages, 5);
+
+    // 1. First Page Button (<<)
+    const firstBtn = createSafeElement('button', {
+      className: 'pagination-btn',
+      attrs: {
+        type: 'button',
+        'aria-label': 'Trang đầu',
+        id: 'accountsPaginationFirstBtn'
+      },
+      text: '<<'
+    });
+    if (calc.currentPage === 0) {
+      firstBtn.setAttribute('disabled', 'true');
+      firstBtn.disabled = true;
+    } else {
+      firstBtn.addEventListener('click', () => {
+        this.currentPage = 0;
+        this.loadAccounts();
+      });
+    }
+    this.dom.paginationList.appendChild(firstBtn);
+
+    // 2. Previous Button (<)
     const prevBtn = createSafeElement('button', {
-      className: 'page-link',
+      className: 'pagination-btn',
       attrs: {
-        'type': 'button',
+        type: 'button',
         'aria-label': 'Trang trước',
-        ...(this.currentPage === 0 ? { 'disabled': 'true', 'tabindex': '-1' } : {})
+        id: 'accountsPaginationPrevBtn'
       },
-      text: '‹'
+      text: '<'
     });
-    if (this.currentPage > 0) {
+    if (!calc.hasPrev) {
+      prevBtn.setAttribute('disabled', 'true');
+      prevBtn.disabled = true;
+    } else {
       prevBtn.addEventListener('click', () => {
-        this.currentPage--;
+        this.currentPage = calc.currentPage - 1;
         this.loadAccounts();
       });
     }
-    prevLi.appendChild(prevBtn);
-    this.dom.paginationList.appendChild(prevLi);
+    this.dom.paginationList.appendChild(prevBtn);
 
-    // Numbered Pages
-    const pages = calculatePagination(this.currentPage, this.totalPages);
-    pages.forEach(p => {
-      const li = document.createElement('li');
-      if (p === '...') {
-        li.className = 'page-item disabled';
-        const span = createSafeElement('span', { className: 'page-link', text: '…' });
-        li.appendChild(span);
-      } else {
-        const isCurrent = p === this.currentPage;
-        li.className = `page-item ${isCurrent ? 'active' : ''}`;
-        const pageBtn = createSafeElement('button', {
-          className: 'page-link',
-          attrs: {
-            'type': 'button',
-            'aria-label': `Trang ${p + 1}`,
-            ...(isCurrent ? { 'aria-current': 'page' } : {})
-          },
-          text: String(p + 1)
+    // 3. Numbered Buttons (Smart Window)
+    for (let p = calc.startPage; p <= calc.endPage; p++) {
+      const isCurrent = p === calc.currentPage;
+      const pageBtn = createSafeElement('button', {
+        className: `pagination-btn ${isCurrent ? 'active' : ''}`,
+        attrs: {
+          type: 'button',
+          'aria-label': `Trang ${p + 1}`,
+          'aria-current': isCurrent ? 'page' : 'false'
+        },
+        text: String(p + 1)
+      });
+
+      if (!isCurrent) {
+        pageBtn.addEventListener('click', () => {
+          this.currentPage = p;
+          this.loadAccounts();
         });
-        if (!isCurrent) {
-          pageBtn.addEventListener('click', () => {
-            this.currentPage = p;
-            this.loadAccounts();
-          });
-        }
-        li.appendChild(pageBtn);
       }
-      this.dom.paginationList.appendChild(li);
-    });
 
-    // Next Button
-    const nextLi = document.createElement('li');
-    nextLi.className = `page-item ${this.currentPage >= this.totalPages - 1 ? 'disabled' : ''}`;
+      this.dom.paginationList.appendChild(pageBtn);
+    }
+
+    // 4. Next Button (>)
     const nextBtn = createSafeElement('button', {
-      className: 'page-link',
+      className: 'pagination-btn',
       attrs: {
-        'type': 'button',
-        'aria-label': 'Trang tiếp',
-        ...(this.currentPage >= this.totalPages - 1 ? { 'disabled': 'true', 'tabindex': '-1' } : {})
+        type: 'button',
+        'aria-label': 'Trang sau',
+        id: 'accountsPaginationNextBtn'
       },
-      text: '›'
+      text: '>'
     });
-    if (this.currentPage < this.totalPages - 1) {
+    if (!calc.hasNext) {
+      nextBtn.setAttribute('disabled', 'true');
+      nextBtn.disabled = true;
+    } else {
       nextBtn.addEventListener('click', () => {
-        this.currentPage++;
+        this.currentPage = calc.currentPage + 1;
         this.loadAccounts();
       });
     }
-    nextLi.appendChild(nextBtn);
-    this.dom.paginationList.appendChild(nextLi);
+    this.dom.paginationList.appendChild(nextBtn);
+
+    // 5. Last Page Button (>>)
+    const lastBtn = createSafeElement('button', {
+      className: 'pagination-btn',
+      attrs: {
+        type: 'button',
+        'aria-label': 'Trang cuối',
+        id: 'accountsPaginationLastBtn'
+      },
+      text: '>>'
+    });
+    if (calc.currentPage >= calc.totalPages - 1) {
+      lastBtn.setAttribute('disabled', 'true');
+      lastBtn.disabled = true;
+    } else {
+      lastBtn.addEventListener('click', () => {
+        this.currentPage = calc.totalPages - 1;
+        this.loadAccounts();
+      });
+    }
+    this.dom.paginationList.appendChild(lastBtn);
   }
 
   /**
@@ -1048,6 +1188,207 @@ export class AdminAccountsController {
       const meta = getStatusBadgeMeta(updatedAccount.status);
       badgeEl.textContent = meta.label;
       badgeEl.className = meta.badgeClass;
+    }
+  }
+
+  /**
+   * Opens the Reset Password confirmation modal for target account.
+   * 
+   * @param {ReturnType<typeof parseAccountResponse>} account 
+   */
+  openResetPasswordModal(account) {
+    if (!this.dom.resetPasswordModal || this.isSubmitting) return;
+
+    const currentUser = authManager.getUser();
+    if (isSelfAccount(account, currentUser)) {
+      showToast({
+        type: 'warning',
+        title: 'Bảo vệ tự thân (POL-8D-01)',
+        message: 'Bạn không thể tự đặt lại mật khẩu của chính mình qua tính năng quản trị.'
+      });
+      return;
+    }
+
+    this.selectedResetAccount = account;
+    this.lastActiveElement = document.activeElement;
+
+    // Populate target preview
+    if (this.dom.resetModalTargetEmail) {
+      this.dom.resetModalTargetEmail.textContent = account.emailOrPhone || '--';
+    }
+    if (this.dom.resetModalTargetInfo) {
+      const name = account.fullName ? ` • ${account.fullName}` : '';
+      this.dom.resetModalTargetInfo.textContent = `ID: #${account.accountId}${name}`;
+    }
+
+    // Reset modal sections to initial prompt state
+    if (this.dom.resetPasswordConfirmSection) {
+      this.dom.resetPasswordConfirmSection.classList.remove('d-none');
+    }
+    if (this.dom.resetPasswordResultSection) {
+      this.dom.resetPasswordResultSection.classList.add('d-none');
+    }
+    if (this.dom.temporaryPasswordDisplay) {
+      this.dom.temporaryPasswordDisplay.value = '';
+    }
+    if (this.dom.btnConfirmResetPassword) {
+      this.dom.btnConfirmResetPassword.classList.remove('d-none');
+      this.dom.btnConfirmResetPassword.disabled = false;
+      this.dom.btnConfirmResetPassword.textContent = 'Tạo mật khẩu tạm';
+    }
+    if (this.dom.btnCancelResetPasswordModal) {
+      this.dom.btnCancelResetPasswordModal.textContent = 'Hủy bỏ';
+    }
+    if (this.dom.resetModalError) {
+      this.dom.resetModalError.textContent = '';
+      this.dom.resetModalError.classList.add('d-none');
+    }
+
+    this.dom.resetPasswordModal.showModal();
+
+    if (this.dom.btnConfirmResetPassword) {
+      this.dom.btnConfirmResetPassword.focus();
+    }
+  }
+
+  /**
+   * Closes the Reset Password modal dialog.
+   */
+  closeResetPasswordModal() {
+    if (!this.dom.resetPasswordModal) return;
+    this.dom.resetPasswordModal.close();
+    this.selectedResetAccount = null;
+
+    if (this.lastActiveElement && typeof this.lastActiveElement.focus === 'function') {
+      this.lastActiveElement.focus();
+      this.lastActiveElement = null;
+    }
+  }
+
+  /**
+   * Submits temporary password generation to POST /api/v1/admin/accounts/{id}/reset-password.
+   */
+  async submitResetPassword() {
+    if (this.isSubmitting || !this.selectedResetAccount) return;
+
+    const account = this.selectedResetAccount;
+    this.isSubmitting = true;
+
+    if (this.dom.btnConfirmResetPassword) {
+      this.dom.btnConfirmResetPassword.disabled = true;
+      this.dom.btnConfirmResetPassword.textContent = 'Đang xử lý...';
+    }
+    if (this.dom.resetModalError) {
+      this.dom.resetModalError.classList.add('d-none');
+    }
+
+    try {
+      const response = await apiClient(`/admin/accounts/${account.accountId}/reset-password`, {
+        method: 'POST'
+      });
+
+      const resData = (response && response.data) ? response.data : response;
+      const temporaryPassword = resData?.temporaryPassword || '';
+
+      // Switch to result view
+      if (this.dom.resetPasswordConfirmSection) {
+        this.dom.resetPasswordConfirmSection.classList.add('d-none');
+      }
+      if (this.dom.resetPasswordResultSection) {
+        this.dom.resetPasswordResultSection.classList.remove('d-none');
+      }
+      if (this.dom.temporaryPasswordDisplay) {
+        this.dom.temporaryPasswordDisplay.value = temporaryPassword;
+      }
+      if (this.dom.btnConfirmResetPassword) {
+        this.dom.btnConfirmResetPassword.classList.add('d-none');
+      }
+      if (this.dom.btnCancelResetPasswordModal) {
+        this.dom.btnCancelResetPasswordModal.textContent = 'Đóng';
+        this.dom.btnCancelResetPasswordModal.focus();
+      }
+
+      showToast({
+        type: 'success',
+        title: 'Đặt lại mật khẩu thành công',
+        message: `Đã tạo mật khẩu tạm thời cho tài khoản ${account.emailOrPhone}. Mọi phiên làm việc cũ đã bị thu hồi.`
+      });
+
+    } catch (err) {
+      console.error('[AdminAccounts] Reset password failed:', err);
+      let errorMsg = 'Không thể đặt lại mật khẩu. Vui lòng thử lại.';
+      if (err instanceof ApiError) {
+        if (err.status === 400) {
+          errorMsg = err.message || 'Yêu cầu không hợp lệ.';
+        } else if (err.status === 403) {
+          errorMsg = 'Bạn không có quyền thực hiện thao tác này.';
+        } else if (err.status === 404) {
+          errorMsg = 'Không tìm thấy tài khoản người dùng tương ứng.';
+        } else if (err.message) {
+          errorMsg = err.message;
+        }
+      }
+
+      if (this.dom.resetModalError) {
+        this.dom.resetModalError.textContent = errorMsg;
+        this.dom.resetModalError.classList.remove('d-none');
+      }
+      if (this.dom.btnConfirmResetPassword) {
+        this.dom.btnConfirmResetPassword.disabled = false;
+        this.dom.btnConfirmResetPassword.textContent = 'Tạo mật khẩu tạm';
+      }
+    } finally {
+      this.isSubmitting = false;
+    }
+  }
+
+  /**
+   * Copies generated temporary password to system clipboard.
+   */
+  copyTemporaryPassword() {
+    const input = this.dom.temporaryPasswordDisplay;
+    const tempPassword = input?.value;
+    if (!tempPassword) return;
+
+    if (input) {
+      input.focus();
+      input.select();
+    }
+
+    const setCopiedFeedback = () => {
+      if (this.dom.btnCopyTemporaryPassword) {
+        const originalText = this.dom.btnCopyTemporaryPassword.textContent;
+        this.dom.btnCopyTemporaryPassword.textContent = 'Đã chép!';
+        setTimeout(() => {
+          if (this.dom.btnCopyTemporaryPassword) {
+            this.dom.btnCopyTemporaryPassword.textContent = originalText;
+          }
+        }, 2000);
+      }
+      showToast({
+        type: 'info',
+        title: 'Đã sao chép',
+        message: 'Mật khẩu tạm thời đã được sao chép vào bộ nhớ tạm.'
+      });
+    };
+
+    if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+      navigator.clipboard.writeText(tempPassword).then(() => {
+        setCopiedFeedback();
+      }).catch(err => {
+        console.warn('Clipboard writeText failed, trying execCommand fallback:', err);
+        try {
+          if (document.execCommand('copy')) {
+            setCopiedFeedback();
+          }
+        } catch (_) {}
+      });
+    } else {
+      try {
+        if (document.execCommand('copy')) {
+          setCopiedFeedback();
+        }
+      } catch (_) {}
     }
   }
 }

@@ -29,6 +29,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -90,5 +91,22 @@ class AdminAccountControllerTests {
                 .andExpect(jsonPath("$.code").value("SUCCESS"))
                 .andExpect(jsonPath("$.message").value("Cập nhật trạng thái tài khoản thành công"))
                 .andExpect(jsonPath("$.data.status").value("Inactive"));
+    }
+
+    @Test
+    @DisplayName("GIVEN target account WHEN calling POST /api/v1/admin/accounts/{id}/reset-password THEN returns 200 with temporary password")
+    void testResetPassword_success() throws Exception {
+        com.elearning.dto.response.AdminResetPasswordResponse response =
+                new com.elearning.dto.response.AdminResetPasswordResponse(1L, "user@example.com", "Tmp@12345678");
+        when(adminAccountService.resetPassword(eq(1L), any())).thenReturn(response);
+
+        mockMvc.perform(post("/api/v1/admin/accounts/1/reset-password")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value("SUCCESS"))
+                .andExpect(jsonPath("$.message").value("Đặt lại mật khẩu tài khoản thành công"))
+                .andExpect(jsonPath("$.data.accountId").value(1))
+                .andExpect(jsonPath("$.data.emailOrPhone").value("user@example.com"))
+                .andExpect(jsonPath("$.data.temporaryPassword").value("Tmp@12345678"));
     }
 }

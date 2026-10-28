@@ -204,6 +204,15 @@ export function validateRoleSelection(selectedRoles, availableCatalogRoleNames, 
     };
   }
 
+  // Separation of Duties (SoD): Creator and Moderator are mutually exclusive
+  const normalizedRoles = selectedRoles.map(r => String(r).replace(/^ROLE_/i, '').trim().toLowerCase());
+  if (normalizedRoles.includes('creator') && normalizedRoles.includes('moderator')) {
+    return {
+      valid: false,
+      error: 'Vai trò Người sáng tạo (Creator) và Kiểm duyệt viên (Moderator) loại trừ lẫn nhau tuyệt đối. Một tài khoản không thể đồng thời giữ cả hai vai trò.'
+    };
+  }
+
   return {
     valid: true,
     error: null
@@ -369,13 +378,53 @@ export function getStatusBadgeMeta(status) {
 
 /**
  * Computes accessible pagination pages list for rendering.
- * 
- * @param {number} currentPage - 0-indexed current page
- * @param {number} totalPages - total number of pages
- * @param {number} [maxVisible=5] - max visible numbered buttons
- * @returns {Array<number|string>} e.g. [0, 1, 2, '...', 9]
+ * Supports both:
+ * 1. 5-argument form: (page, size, totalElements, totalPages, maxButtons = 5) returning pagination calculation object.
+ * 2. Legacy 2/3-argument form: (currentPage, totalPages, maxVisible = 5) returning array of page numbers and ellipsis.
  */
-export function calculatePagination(currentPage, totalPages, maxVisible = 5) {
+export function calculatePagination(currentPageOrPage, totalPagesOrSize, maxVisibleOrTotalElements, maybeTotalPages, maybeMaxButtons = 5) {
+  // If called with 4 or 5 arguments: (page, size, totalElements, totalPages, maxButtons = 5)
+  if (arguments.length >= 4) {
+    const page = currentPageOrPage;
+    const size = totalPagesOrSize;
+    const totalElements = maxVisibleOrTotalElements;
+    const totalPages = maybeTotalPages;
+    const maxButtons = maybeMaxButtons;
+
+    const safeTotalPages = Math.max(0, totalPages || 0);
+    const safePage = Math.max(0, Math.min(page || 0, Math.max(0, safeTotalPages - 1)));
+    const hasPrev = safePage > 0;
+    const hasNext = safePage < safeTotalPages - 1;
+    const startRecord = totalElements === 0 ? 0 : safePage * size + 1;
+    const endRecord = Math.min((safePage + 1) * size, totalElements);
+
+    let startPage = 0;
+    let endPage = -1;
+    if (safeTotalPages > 0) {
+      startPage = Math.max(0, safePage - Math.floor(maxButtons / 2));
+      endPage = Math.min(safeTotalPages - 1, startPage + maxButtons - 1);
+      if (endPage - startPage < maxButtons - 1) {
+        startPage = Math.max(0, endPage - maxButtons + 1);
+      }
+    }
+
+    return {
+      currentPage: safePage,
+      totalPages: safeTotalPages,
+      hasPrev,
+      hasNext,
+      startRecord,
+      endRecord,
+      startPage,
+      endPage
+    };
+  }
+
+  // Legacy 2 or 3 arguments: (currentPage, totalPages, maxVisible = 5)
+  const currentPage = currentPageOrPage;
+  const totalPages = totalPagesOrSize;
+  const maxVisible = maxVisibleOrTotalElements !== undefined ? maxVisibleOrTotalElements : 5;
+
   if (totalPages <= 0) return [];
   if (totalPages <= maxVisible) {
     return Array.from({ length: totalPages }, (_, i) => i);
@@ -894,99 +943,125 @@ export class AdminRolesController {
    * Renders pagination controls.
    */
   renderPagination() {
-    if (!this.dom.accountsPaginationNav || !this.dom.accountsPaginationList || !this.dom.accountsPaginationSummary) return;
+    if (!this.dom.accountsPaginationNav || !this.dom.accountsPaginationList) return;
 
     if (this.totalPages <= 1) {
       this.dom.accountsPaginationNav.classList.add('d-none');
+      clearContainer(this.dom.accountsPaginationList);
       return;
     }
 
-    const startItem = this.page * this.size + 1;
-    const endItem = Math.min((this.page + 1) * this.size, this.totalElements);
-    this.dom.accountsPaginationSummary.textContent = `Hiển thị ${startItem} – ${endItem} trên ${this.totalElements} tài khoản`;
-
+    this.dom.accountsPaginationNav.classList.remove('d-none');
     clearContainer(this.dom.accountsPaginationList);
 
-    // Prev Button
-    const btnPrev = createSafeElement('button', {
-      className: 'page-link',
+    const calc = calculatePagination(this.page, this.size, this.totalElements, this.totalPages, 5);
+
+    // 1. First Page Button (<<)
+    const firstBtn = createSafeElement('button', {
+      className: 'pagination-btn',
+      attrs: {
+        type: 'button',
+        'aria-label': 'Trang đầu',
+        id: 'accountsPaginationFirstBtn'
+      },
+      text: '<<'
+    });
+    if (calc.currentPage === 0) {
+      firstBtn.setAttribute('disabled', 'true');
+      firstBtn.disabled = true;
+    } else {
+      firstBtn.addEventListener('click', () => {
+        this.page = 0;
+        this.loadAccounts();
+      });
+    }
+    this.dom.accountsPaginationList.appendChild(firstBtn);
+
+    // 2. Previous Button (<)
+    const prevBtn = createSafeElement('button', {
+      className: 'pagination-btn',
       attrs: {
         type: 'button',
         'aria-label': 'Trang trước',
-        ...(this.page === 0 ? { disabled: 'true' } : {})
+        id: 'accountsPaginationPrevBtn'
       },
-      text: '«'
+      text: '<'
     });
-    if (this.page > 0) {
-      btnPrev.addEventListener('click', () => {
-        this.page--;
+    if (!calc.hasPrev) {
+      prevBtn.setAttribute('disabled', 'true');
+      prevBtn.disabled = true;
+    } else {
+      prevBtn.addEventListener('click', () => {
+        this.page = calc.currentPage - 1;
         this.loadAccounts();
       });
     }
-    const liPrev = createSafeElement('li', {
-      className: `page-item ${this.page === 0 ? 'disabled' : ''}`,
-      children: [btnPrev]
-    });
-    this.dom.accountsPaginationList.appendChild(liPrev);
+    this.dom.accountsPaginationList.appendChild(prevBtn);
 
-    // Page Numbers
-    const pages = calculatePagination(this.page, this.totalPages);
-    for (const p of pages) {
-      if (p === '...') {
-        this.dom.accountsPaginationList.appendChild(
-          createSafeElement('li', {
-            className: 'page-item disabled',
-            children: [createSafeElement('span', { className: 'page-link', text: '…' })]
-          })
-        );
-      } else {
-        const isCurrent = p === this.page;
-        const btnPage = createSafeElement('button', {
-          className: 'page-link',
-          attrs: {
-            type: 'button',
-            ...(isCurrent ? { 'aria-current': 'page' } : {})
-          },
-          text: String(p + 1)
+    // 3. Numbered Buttons (Smart Window)
+    for (let p = calc.startPage; p <= calc.endPage; p++) {
+      const isCurrent = p === calc.currentPage;
+      const pageBtn = createSafeElement('button', {
+        className: `pagination-btn ${isCurrent ? 'active' : ''}`,
+        attrs: {
+          type: 'button',
+          'aria-label': `Trang ${p + 1}`,
+          'aria-current': isCurrent ? 'page' : 'false'
+        },
+        text: String(p + 1)
+      });
+
+      if (!isCurrent) {
+        pageBtn.addEventListener('click', () => {
+          this.page = p;
+          this.loadAccounts();
         });
-        if (!isCurrent) {
-          btnPage.addEventListener('click', () => {
-            this.page = p;
-            this.loadAccounts();
-          });
-        }
-        this.dom.accountsPaginationList.appendChild(
-          createSafeElement('li', {
-            className: `page-item ${isCurrent ? 'active' : ''}`,
-            children: [btnPage]
-          })
-        );
       }
+
+      this.dom.accountsPaginationList.appendChild(pageBtn);
     }
 
-    // Next Button
-    const btnNext = createSafeElement('button', {
-      className: 'page-link',
+    // 4. Next Button (>)
+    const nextBtn = createSafeElement('button', {
+      className: 'pagination-btn',
       attrs: {
         type: 'button',
         'aria-label': 'Trang sau',
-        ...(this.page >= this.totalPages - 1 ? { disabled: 'true' } : {})
+        id: 'accountsPaginationNextBtn'
       },
-      text: '»'
+      text: '>'
     });
-    if (this.page < this.totalPages - 1) {
-      btnNext.addEventListener('click', () => {
-        this.page++;
+    if (!calc.hasNext) {
+      nextBtn.setAttribute('disabled', 'true');
+      nextBtn.disabled = true;
+    } else {
+      nextBtn.addEventListener('click', () => {
+        this.page = calc.currentPage + 1;
         this.loadAccounts();
       });
     }
-    const liNext = createSafeElement('li', {
-      className: `page-item ${this.page >= this.totalPages - 1 ? 'disabled' : ''}`,
-      children: [btnNext]
-    });
-    this.dom.accountsPaginationList.appendChild(liNext);
+    this.dom.accountsPaginationList.appendChild(nextBtn);
 
-    this.dom.accountsPaginationNav.classList.remove('d-none');
+    // 5. Last Page Button (>>)
+    const lastBtn = createSafeElement('button', {
+      className: 'pagination-btn',
+      attrs: {
+        type: 'button',
+        'aria-label': 'Trang cuối',
+        id: 'accountsPaginationLastBtn'
+      },
+      text: '>>'
+    });
+    if (calc.currentPage >= calc.totalPages - 1) {
+      lastBtn.setAttribute('disabled', 'true');
+      lastBtn.disabled = true;
+    } else {
+      lastBtn.addEventListener('click', () => {
+        this.page = calc.totalPages - 1;
+        this.loadAccounts();
+      });
+    }
+    this.dom.accountsPaginationList.appendChild(lastBtn);
   }
 
   /* ---------------------------------------------------------------------------
@@ -1107,6 +1182,7 @@ export class AdminRolesController {
           this.pendingRoles.delete(role.roleName);
         }
 
+        this.syncRoleExclusivityUi(role.roleName);
         this.onRoleSelectionChanged();
       });
 
@@ -1143,6 +1219,79 @@ export class AdminRolesController {
       });
 
       this.dom.roleCheckboxesContainer.appendChild(itemWrapper);
+    }
+
+    this.syncRoleExclusivityUi();
+  }
+
+  /**
+   * Enforces Separation of Duties (SoD) between Creator and Moderator in the UI.
+   * If Creator is selected, Moderator is unchecked and disabled.
+   * If Moderator is selected, Creator is unchecked and disabled.
+   * 
+   * @param {string} [lastToggledRole]
+   */
+  syncRoleExclusivityUi(lastToggledRole) {
+    const creatorBox = document.getElementById('roleCheckbox_Creator');
+    const moderatorBox = document.getElementById('roleCheckbox_Moderator');
+    if (!creatorBox || !moderatorBox) return;
+
+    if (lastToggledRole === 'Creator') {
+      if (this.pendingRoles.has('Creator')) {
+        this.pendingRoles.delete('Moderator');
+        moderatorBox.checked = false;
+        moderatorBox.disabled = true;
+        moderatorBox.title = 'Không thể chọn Kiểm duyệt viên khi đang chọn Người sáng tạo (Nguyên tắc SoD).';
+        creatorBox.disabled = false;
+        creatorBox.title = '';
+      } else {
+        moderatorBox.disabled = false;
+        moderatorBox.title = '';
+      }
+      return;
+    }
+
+    if (lastToggledRole === 'Moderator') {
+      if (this.pendingRoles.has('Moderator')) {
+        this.pendingRoles.delete('Creator');
+        creatorBox.checked = false;
+        creatorBox.disabled = true;
+        creatorBox.title = 'Không thể chọn Người sáng tạo khi đang chọn Kiểm duyệt viên (Nguyên tắc SoD).';
+        moderatorBox.disabled = false;
+        moderatorBox.title = '';
+      } else {
+        creatorBox.disabled = false;
+        creatorBox.title = '';
+      }
+      return;
+    }
+
+    const hasCreator = this.pendingRoles.has('Creator');
+    const hasModerator = this.pendingRoles.has('Moderator');
+
+    if (hasCreator && !hasModerator) {
+      moderatorBox.checked = false;
+      moderatorBox.disabled = true;
+      moderatorBox.title = 'Không thể chọn Kiểm duyệt viên khi đang chọn Người sáng tạo (Nguyên tắc SoD).';
+      creatorBox.disabled = false;
+      creatorBox.title = '';
+    } else if (hasModerator && !hasCreator) {
+      creatorBox.checked = false;
+      creatorBox.disabled = true;
+      creatorBox.title = 'Không thể chọn Người sáng tạo khi đang chọn Kiểm duyệt viên (Nguyên tắc SoD).';
+      moderatorBox.disabled = false;
+      moderatorBox.title = '';
+    } else if (hasCreator && hasModerator) {
+      // Legacy edge-case: account has both in DB. Keep both enabled so admin can uncheck one to resolve SoD
+      creatorBox.disabled = false;
+      moderatorBox.disabled = false;
+      creatorBox.title = 'Tài khoản đang có cả 2 vai trò loại trừ lẫn nhau. Vui lòng bỏ chọn 1 trong 2.';
+      moderatorBox.title = 'Tài khoản đang có cả 2 vai trò loại trừ lẫn nhau. Vui lòng bỏ chọn 1 trong 2.';
+    } else {
+      creatorBox.disabled = false;
+      moderatorBox.disabled = false;
+      creatorBox.title = '';
+      moderatorBox.title = '';
     }
   }
 

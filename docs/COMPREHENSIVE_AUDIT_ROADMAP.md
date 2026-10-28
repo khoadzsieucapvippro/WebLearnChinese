@@ -351,22 +351,62 @@ flowchart TD
 
 ---
 
-### CHẶNG 7: QUẢN TRỊ HỆ THỐNG & BẢO MẬT (ADMIN) — ⏳ SẴN SÀNG TIẾN HÀNH (ĐÃ CHỐT THIẾT KẾ TOÀN DIỆN)
+### CHẶNG 7: QUẢN TRỊ HỆ THỐNG & BẢO MẬT (ADMIN) — ⏳ TIẾN HÀNH RÀ SOÁT TỪNG NHIỆM VỤ (ĐÃ CHỐT THIẾT KẾ TOÀN DIỆN)
 > [!IMPORTANT]
 > **Tài liệu đặc tả kiến trúc chi tiết**: Xem [docs/STAGE_7_ADMIN_DESIGN_SPEC.md](file:///c:/Users/LENOVO/btlm-test%20(2)/btlm-test/elearning-1.0.0-20260819T062551Z-1-002/elearning-1.0.0/elearning-1.0.0/docs/STAGE_7_ADMIN_DESIGN_SPEC.md) để nắm toàn bộ sơ đồ, hợp đồng API và checklist kỹ thuật.
 
-#### `TASK-7.1`: Quản Trị Tài Khoản & Phân Quyền (`admin-accounts.html`, `admin-roles.html`)
-- **Mục tiêu**: Quản trị tài khoản an toàn, phân quyền nghiêm ngặt theo Phương án A, bảo vệ tài khoản quản trị tối cao, và bổ sung quyền đặt lại mật khẩu cho người dùng.
-- **Tiêu chí & Hạng mục thiết kế chi tiết**:
+#### `TASK-7.1`: Quản Trị Tài Khoản & Phân Quyền (`admin-accounts.html`, `admin-roles.html`) — ✅ ĐÃ HOÀN THÀNH & KHÓA CHẶT 100%
+- **Mục tiêu**: Quản trị tài khoản an toàn, phân quyền nghiêm ngặt theo Phương án A, bảo vệ tài khoản quản trị tối cao, thực thi Bất biến Phân lập Trách nhiệm (Separation of Duties - SoD), bổ sung quyền đặt lại mật khẩu an toàn cho quản trị viên, và đồng bộ hóa trải nghiệm giao diện người dùng.
+- **Tệp mã nguồn & kiểm thử đã sửa đổi**:
+  * `backend/src/main/java/com/elearning/common/AuditActionType.java`: Thêm hằng số kiểm toán `PASSWORD_RESET`.
+  * `backend/src/main/java/com/elearning/dto/response/AdminResetPasswordResponse.java`: DTO phản hồi chứa `accountId`, `emailOrPhone`, `temporaryPassword`.
+  * `backend/src/main/java/com/elearning/service/AdminAccountService.java` & `AdminAccountServiceImpl.java`:
+    - Tạo `generateTemporaryPassword()` sinh mật khẩu tạm ngẫu nhiên an toàn 12 ký tự (chữ hoa, chữ thường, số, ký tự đặc biệt `@#$%&*!?`, Fisher-Yates shuffle bằng `SecureRandom`).
+    - Triển khai `resetPassword(Long accountId, String currentAdminEmail)`: Băm BCrypt 10 rounds, lưu vào `password_hash`, tăng `authorization_version` thu hồi toàn bộ token phiên cũ, ghi nhật ký kiểm toán `PASSWORD_RESET` qua `managementAuditService`.
+    - Chốt chặn tự bảo vệ tài khoản Admin: Chặn đứng Admin tự đặt lại mật khẩu của chính mình qua API quản trị (`ErrorCode.BAD_REQUEST`).
+  * `backend/src/main/java/com/elearning/controller/AdminAccountController.java`: Endpoint `POST /api/v1/admin/accounts/{id}/reset-password`.
+  * `backend/src/main/java/com/elearning/service/impl/AdminRoleServiceImpl.java`: Khóa cứng Bất biến SoD: Ném ngoại lệ `BusinessException(ErrorCode.BAD_REQUEST, ...)` nếu payload chứa đồng thời cả hai vai trò `Creator` và `Moderator`.
+  * `frontend/js/api/demo-fallback-engine.js`:
+    - Endpoint `PUT /admin/accounts/:id/roles`: Kiểm tra SoD invariant ném lỗi HTTP 400 Bad Request nếu có cả `Creator` và `Moderator`.
+    - Endpoint `POST /admin/accounts/:id/reset-password`: Hỗ trợ đặt lại mật khẩu trên môi trường Demo/Client, sinh mật khẩu tạm 12 ký tự, cập nhật mật khẩu, tăng `authorization_version`, ghi audit log `PASSWORD_RESET`.
+  * `frontend/admin-accounts.html`:
+    - Xóa bỏ breadcrumb thừa, xóa thanh tab lặp `<nav class="moderator-nav-tabs">`, xóa huy hiệu `#adminOversightBadge`, xóa dropdown `#pageSizeSelect`, xóa nhãn `#accountsPaginationSummary`.
+    - Chuyển sang `.table-responsive.table-responsive-clean` với `style="max-width: 100%;"`.
+    - Đồng bộ phân trang First/Last `<< < 1 2 3 > >>` căn lề phải (`.pagination-container.justify-content-end`).
+    - Bổ sung native dialog `<dialog id="resetPasswordModal">` gồm hộp hiển thị mật khẩu tạm thời, nút sao chép `copyResetPasswordBtn`, cảnh báo an toàn và nút đóng.
+    - Cập nhật cache buster `?v=20261028_04`.
+  * `frontend/js/pages/admin-accounts-page.js`:
+    - Thêm nút đặt lại mật khẩu `🔑` (`#btnResetPassword_${account.id}`) trên từng hàng tài khoản (vô hiệu hóa với tooltip `POL-8D-01` đối với tài khoản admin hiện tại).
+    - Triển khai các hàm điều khiển modal: `openResetPasswordModal(account)`, `closeResetPasswordModal()`, `submitResetPassword()`, `copyTemporaryPassword()`.
+    - Nâng cấp `calculatePagination` hỗ trợ đa hình (tương thích cả 5 tham số mới và 2/3 tham số cũ), kích hoạt `renderPagination` chuỗi nút `<< < 1 2 3 > >>`.
+  * `frontend/admin-roles.html`:
+    - Xóa breadcrumb thừa, xóa tab phụ `<nav class="moderator-nav-tabs">`, xóa `#pageSizeSelect`, xóa `#accountsPaginationSummary`.
+    - Chuyển sang `.table-responsive.table-responsive-clean` với `style="max-width: 100%;"`.
+    - Đồng bộ phân trang First/Last `<< < 1 2 3 > >>` căn phải (`.pagination-container.justify-content-end`).
+    - Cập nhật cache buster `?v=20261028_04`.
+  * `frontend/js/pages/admin-roles-page.js`:
+    - Nâng cấp `validateRoleSelection()` từ chối nếu đồng thời chọn cả `Creator` và `Moderator`.
+    - Triển khai `syncRoleExclusivityUi()`: Tự động bỏ chọn và vô hiệu hóa role đối lập khi tick chọn một trong hai vai trò `Creator` hoặc `Moderator`.
+    - Nâng cấp `calculatePagination` và `renderPagination` chuỗi nút `<< < 1 2 3 > >>`.
+  * `backend/src/test/java/com/elearning/AdminAccountServiceTests.java`: Bổ sung 3 unit tests (`ResetPasswordTests`): thành công, chặn tự reset admin, tài khoản không tồn tại.
+  * `backend/src/test/java/com/elearning/AdminAccountControllerTests.java`: Bổ sung test hợp đồng API `testResetPassword_success`.
+  * `backend/src/test/java/com/elearning/AdminRoleServiceTests.java`: Bổ sung test `testUpdateAccountRoles_creatorAndModeratorMutuallyExclusive_throwsBadRequest`.
+  * `tests/frontend/unit/admin/admin-roles.test.mjs`: Thêm test SoD mutual exclusivity rejection và 5-param pagination calculation (33/33 PASS).
+  * `tests/frontend/unit/admin/admin-accounts.test.mjs`: Thêm test 5-param pagination calculation (32/32 PASS).
+  * `tests/frontend/e2e/admin-roles.browser.mjs`: Đồng bộ tài khoản #3 sang `['Creator']`, bổ sung test `AR-09` kiểm thử tương tác SoD UI và dọn sạch layout (9/9 PASS).
+  * `tests/frontend/e2e/admin-accounts.browser.mjs`: Cập nhật `AA-05` kiểm thử các nút tự bảo vệ, bổ sung test `AA-08` kiểm thử luồng đặt lại mật khẩu và dọn sạch layout (8/8 PASS).
+- **Tiêu chí & Hạng mục đã hoàn thiện**:
   1. *Bảo Vệ Mật Khẩu & Băm BCrypt*: Mật khẩu được băm 100% bằng `BCryptPasswordEncoder` (10 salt rounds), lưu trữ tại `password_hash VARCHAR(255)`, không bao giờ lộ mật khẩu thô trong response DTO, tự động thu hồi JWT phiên cũ qua `authorization_version`.
   2. *Bổ Sung Quyền Đặt Lại Mật Khẩu (Admin Password Reset)*:
      - Endpoint: `POST /api/v1/admin/accounts/{id}/reset-password`.
-     - Giải quyết triệt để điểm nghẽn học viên quên mật khẩu liên hệ Admin (tại modal `login.html`), Admin cấp mật khẩu tạm thời an toàn, tăng `authorization_version` và ghi nhật ký kiểm toán `PASSWORD_RESET`.
+     - Admin cấp mật khẩu tạm thời an toàn 12 ký tự, tăng `authorization_version` và ghi nhật ký kiểm toán `PASSWORD_RESET`.
+     - Modal dialog hiển thị mật khẩu kèm nút sao chép tiện lợi trên giao diện quản trị.
   3. *Khóa Cứng Bất Biến Phân Lập Trách Nhiệm (SoD Invariant - Phương Án A)*:
      - Trên modal `admin-roles.html`: Tick `Creator` tự động bỏ tick và disable `Moderator`; tick `Moderator` tự động bỏ tick và disable `Creator`.
      - Backend `AdminRoleServiceImpl.java` & `demo-fallback-engine.js`: Ném lỗi `HTTP 400 Bad Request` nếu payload chứa đồng thời cả hai vai trò `Creator` và `Moderator`.
-  4. *Bảo Vệ Admin Cuối Cùng (Last Admin Invariant)*: Chặn cứng hạ quyền hoặc khóa tài khoản Admin hoạt động duy nhất; tự bảo vệ không cho tự tước quyền (`POL-8D-02`).
-  5. *Làm Sạch Giao Diện Đồng Bộ*: Xóa breadcrumb thừa, xóa thanh tab lặp `<nav class="moderator-nav-tabs">`, xóa dropdown `#pageSizeSelect`, xóa dòng tóm tắt, chuẩn hóa phân trang First/Last `<< < 1 2 3 > >>` góc dưới bên phải, áp dụng `.table-responsive-clean`.
+  4. *Bảo Vệ Admin Cuối Cùng & Tự Bảo Vệ (Last Admin & Self Protection)*: Chặn cứng hạ quyền hoặc khóa tài khoản Admin hoạt động duy nhất; tự bảo vệ không cho tự tước quyền (`POL-8D-02`) hoặc tự reset mật khẩu (`POL-8D-01`).
+  5. *Làm Sạch Giao Diện & Đồng Bộ Phân Trang*: Xóa breadcrumb thừa, xóa thanh tab lặp `<nav class="moderator-nav-tabs">`, xóa `#adminOversightBadge`, xóa dropdown `#pageSizeSelect`, xóa dòng tóm tắt, chuẩn hóa phân trang First/Last `<< < 1 2 3 > >>` góc dưới bên phải, áp dụng `.table-responsive-clean`.
+  6. *Kiểm thử Toàn diện*: PASS 24/24 backend admin tests, 65/65 unit tests, 17/17 browser E2E tests, 1.115/1.115 fast tests, 74/74 E2E blackbox runner.
 
 #### `TASK-7.2`: Quản Trị Nội Dung Học Liệu & Giám Sát Cấp Cao (`admin-lessons.html`, `admin-vocabulary.html`, `admin-radicals.html`)
 - **Mục tiêu**: Giám sát và quản trị kho dữ liệu học liệu tổng thể của toàn hệ thống theo mô hình Trọng tài Tối cao (Phương án A).
@@ -432,27 +472,30 @@ flowchart TD
 | `TASK-6.1-REFINEMENTS` (Tinh Gọn Creator Studio & Tách Bạch Chi Tiết vs Biên Soạn) | 2026-10-28 | Rà soát và tinh gọn giao diện Creator Studio theo phản hồi thực tế: (1) Mục "Trung tâm quản lý" nằm dưới "Hồ sơ tài khoản" trong dropdown avatar bị lặp lại với thanh sidebar bên trái; (2) Dropdown "Hiển thị: 20/trang" và nhãn "Hiển thị 1–20 / 50 bài học" trên `creator-lessons.html` gây rườm rà; (3) Phân trang bài học chưa đồng bộ với giao diện người học (thiếu First/Last, chưa căn lề phải); (4) Trang nhập Excel `creator-import.html` còn sót breadcrumb "Trung tâm quản lý / Creator Studio / Nhập bài học từ Excel", khối lỗi đỏ tĩnh "Lỗi cấu trúc tệp...", và bộ chọn "Dòng mỗi trang: 25"; (5) Lỗi tràn ngang layout (bị lệch góc trên bên trái và góc dưới bên phải) khi bấm "Xem chi tiết" bài học đã duyệt do table-responsive và giao diện hiển thị các nút thao tác biên soạn bị vô hiệu hóa gây rối mắt. | (1) Xóa phần "trung tâm quản lý" ở dưới "hồ sơ tài khoản" đi bị lặp; (2) Xóa "Hiển thị: 20/trang", "Hiển thị 1–20 / 50 bài học", phân trang đồng bộ giống bên người học (căn góc dưới bên phải); (3) Xóa breadcrumb thừa trên `creator-import.html`, xóa "Lỗi cấu trúc tệp...", xóa "Dòng mỗi trang: 25" và làm lại phân trang; (4) Khắc phục lỗi góc trên bên trái và góc dưới bên phải, kiểm chứng thao tác bấm từng luồng khi bấm vào "Xem chi tiết". | **ĐÃ HOÀN TẤT & KHÓA CHẶT 100%**: (1) **Tệp đã sửa**: `frontend/js/ui/nav.js`, `frontend/creator-lessons.html`, `frontend/js/pages/creator-lessons-page.js`, `frontend/creator-import.html`, `frontend/js/pages/creator-import-page.js`, `frontend/creator-lesson-editor.html`, `frontend/js/pages/creator-lesson-editor-page.js`, `frontend/css/style.css`, `tests/frontend/e2e/creator-lessons.browser.mjs`; (2) **Dọn Sạch Dropdown Avatar**: Sửa `nav.js` xóa bỏ mục "Trung tâm quản lý" dưới avatar khi ở không gian quản trị; (3) **Đồng Bộ Phân Trang Bảng Bài Học**: Xóa `#creatorPageSizeSelect` và `#creatorPaginationSummary`, nâng cấp `calculatePagination` trả về `startPage`, `endPage`, render chuỗi nút First/Last `<< < 1 2 3 > >>` căn lề góc dưới bên phải (`.pagination-container.justify-content-end`); (4) **Dọn Dẹp Trang Nhập Excel**: Xóa breadcrumb, xóa khối cảnh báo đỏ `#fileLevelErrorsContainer`, xóa `#pageSizeSelect` ("Dòng mỗi trang: 25"), đồng bộ phân trang bảng xem trước từ vựng `<< < 1 2 3 > >>` căn phải; (5) **Triệt Tiêu Tràn Ngang Màn Hình**: Thêm `max-width: 100%` cho `.table-responsive-clean` và `.management-main-content`, `overflow-x: hidden` cho body và layout; (6) **Tách Bạch 2 Luồng "Biên Soạn" vs "Xem Chi Tiết"**: Bài học đã duyệt mở chế độ "Chi Tiết Bài Học" trang nhã, ẩn toàn bộ các nút sửa bị khóa và nút nhập Excel; bài nháp mở trình biên soạn đầy đủ; (7) **Kiểm thử**: PASS 1.109/1.109 fast tests, 6/6 browser tests `creator-lessons`, 4/4 `creator-import`. Commits `9c3f5a3`, `5d1c84d`. |
 | `TASK-6.2` (Moderator Queue & Thẩm Định Bài Học) | 2026-10-28 | Kiểm toán chuyên sâu quy trình thẩm định bài học: (1) Thực thi Bất biến cấm tự phê duyệt (Self-Review Invariant): Kiểm duyệt viên không được duyệt/từ chối bài do chính mình tạo; (2) API `LessonDetailResponse` thiếu thông tin tác giả (`creatorId`, `creatorEmail`); (3) Breadcrumb thừa trên cả 3 trang Moderator; (4) Dropdown "Hiển thị: 20/trang" và dòng tóm tắt phân trang rườm rà trên `moderator-queue.html` và `moderator-history.html`; (5) Bảng lịch sử và hàng đợi chưa có phân trang First/Last `<< < 1 2 3 > >>` căn phải; (6) Thẻ đóng container wrapper `</div>` trong `moderator-review.html` bị đóng sớm làm vỡ layout nút quay lại. | (1) Chốt áp dụng Phương án A (Phân lập trách nhiệm tuyệt đối giữa Creator và Moderator, Admin là trọng tài giám sát); (2) Moderator sửa tương tự như Creator: xóa "Hiển thị: 20/trang", xóa dòng tóm tắt, đồng bộ phân trang chuẩn giống bên người học ở góc dưới bên phải, sửa lỗi layout. | **ĐÃ HOÀN TẤT & KHÓA CHẶT 100%**: (1) **Tệp đã sửa**: `backend/src/main/java/com/elearning/dto/response/LessonDetailResponse.java`, `frontend/js/api/demo-fallback-engine.js`, `frontend/moderator-queue.html`, `frontend/js/pages/moderator-queue-page.js`, `frontend/moderator-history.html`, `frontend/js/pages/moderator-history-page.js`, `frontend/moderator-review.html`, `frontend/js/pages/moderator-review-page.js`, `tests/frontend/unit/moderator/moderator-review.test.mjs`, `tests/frontend/unit/moderator/moderator-queue.test.mjs`, `tests/frontend/unit/moderator/moderator-history.test.mjs`, `tests/frontend/e2e/moderator-queue.browser.mjs`, `tests/frontend/e2e/moderator-history.browser.mjs`, `tests/frontend/e2e/moderator-review.browser.mjs`; (2) **Khóa Cứng Bất Biến Cấm Tự Phê Duyệt**: Backend và Fallback engine trả về `creatorId`, `creatorEmail`; `moderator-review-page.js` tự động phát hiện `isSelfReview`, kích hoạt cảnh báo vàng và vô hiệu hóa/ẩn cả 2 nút Phê duyệt & Từ chối; (3) **Xóa Dropdown 20/Trang & Summary**: Xóa `#queuePageSizeSelect`, `#historyPageSizeSelect`, `#queuePaginationSummary`, `#historyPaginationSummary`; (4) **Đồng Bộ Phân Trang First/Last**: Chuyển sang `.pagination-container.justify-content-end` chứa chuỗi nút `<< < 1 2 3 > >>`; (5) **Sửa Layout Wrapper**: Bao bọc trọn vẹn nút `#backToQueueBtn` trong `.creator-studio-wrapper`, loại bỏ thẻ đóng thừa; (6) **Kiểm thử**: PASS 82/82 moderator unit tests, 19/19 moderator browser tests, 1.115/1.115 fast tests, 74/74 E2E runner. Commits `2fb2c08`, `9319ad9`. |
 | `TASK-6.2-POLISH` (Xóa Tab Điều Hướng Lặp & Huy Hiệu Rườm Rà) | 2026-10-28 | Rà soát trực quan giao diện Moderator sau triển khai: (1) Thanh tab điều hướng phụ `<nav class="moderator-nav-tabs">` ("Hàng đợi chờ duyệt \| Lịch sử kiểm duyệt") trên `moderator-queue.html` và `moderator-history.html` bị trùng lặp hoàn toàn với 2 mục trên thanh sidebar bên trái; (2) Huy hiệu "Bất Biến (Audit Trail)" cạnh tiêu đề "Nhật Ký Kiểm Duyệt Của Tôi" gây rườm rà không cần thiết. | "xóa cái thanh bên trên bị lặp 'hàng chờ duyệt,lịch sử kiếm duyệt', xóa 'Bất Biến (Audit Trail)'" | **ĐÃ HOÀN TẤT & KHÓA CHẶT 100%**: (1) **Tệp đã sửa**: `frontend/moderator-queue.html`, `frontend/moderator-history.html`, `tests/frontend/e2e/moderator-history.browser.mjs`; (2) **Xóa Thanh Tab Lặp**: Loại bỏ hoàn toàn khối `<nav class="moderator-nav-tabs">` trên cả 2 trang, giải phóng không gian thoáng đãng cho tiêu đề chính; (3) **Xóa Huy Hiệu Bất Biến**: Loại bỏ `#historyAuditBadge`, chỉ giữ lại huy hiệu đếm số lượng mục `#historyResultCountBadge` ("2 MỤC"); (4) **Nâng Cấp Cache-Buster**: Bổ sung `?v=20261028_03` trên toàn bộ thẻ link CSS và script JS; (5) **Kiểm thử**: Cập nhật test E2E `MH-01` trong `moderator-history.browser.mjs`; PASS 5/5 queue browser tests, 5/5 history browser tests, 9/9 review browser tests, 1.115/1.115 fast tests, 74/74 E2E runner. Commit `74dc8c4`. |
+| `TASK-7.1` (Quản Trị Tài Khoản, Đặt Lại Mật Khẩu & Phân Quyền SoD) | 2026-10-28 | Kiểm toán chuyên sâu phân hệ quản trị tài khoản: (1) Thiếu tính năng đặt lại mật khẩu an toàn khi học viên quên mật khẩu liên hệ Admin; (2) Phân lập trách nhiệm (Separation of Duties - SoD) theo Phương án A: Creator và Moderator phải loại trừ lẫn nhau tuyệt đối cả trên backend lẫn frontend; (3) Giao diện còn sót breadcrumb thừa, tab phụ `<nav class="moderator-nav-tabs">`, `#pageSizeSelect`, dòng tóm tắt `#accountsPaginationSummary`, và `#adminOversightBadge`; (4) Phân trang chưa đồng bộ First/Last `<< < 1 2 3 > >>` căn phải. | Triển khai theo Phương án A; bổ sung đặt lại mật khẩu tạm thời; cấm đồng thời Creator và Moderator; làm sạch giao diện đồng bộ góc dưới bên phải. | **ĐÃ HOÀN TẤT & KHÓA CHẶT 100%**: (1) **Tệp đã tạo / sửa đổi**: `backend/src/main/java/com/elearning/common/AuditActionType.java`, `backend/src/main/java/com/elearning/dto/response/AdminResetPasswordResponse.java`, `backend/src/main/java/com/elearning/service/AdminAccountService.java`, `backend/src/main/java/com/elearning/service/impl/AdminAccountServiceImpl.java`, `backend/src/main/java/com/elearning/controller/AdminAccountController.java`, `backend/src/main/java/com/elearning/service/impl/AdminRoleServiceImpl.java`, `frontend/js/api/demo-fallback-engine.js`, `frontend/admin-accounts.html`, `frontend/js/pages/admin-accounts-page.js`, `frontend/admin-roles.html`, `frontend/js/pages/admin-roles-page.js`, `backend/src/test/java/com/elearning/AdminAccountServiceTests.java`, `backend/src/test/java/com/elearning/AdminAccountControllerTests.java`, `backend/src/test/java/com/elearning/AdminRoleServiceTests.java`, `tests/frontend/unit/admin/admin-accounts.test.mjs`, `tests/frontend/unit/admin/admin-roles.test.mjs`, `tests/frontend/e2e/admin-accounts.browser.mjs`, `tests/frontend/e2e/admin-roles.browser.mjs`; (2) **Admin Password Reset**: Backend `POST /api/v1/admin/accounts/{id}/reset-password`, Spring Boot sinh mật khẩu tạm 12 ký tự ngẫu nhiên an toàn (`SecureRandom`, Fisher-Yates), băm BCrypt, tăng `authorization_version` thu hồi token cũ, ghi nhật ký kiểm toán `PASSWORD_RESET`, cấm tự reset tài khoản admin (`BAD_REQUEST`), trả về `AdminResetPasswordResponse`; Demo fallback engine hỗ trợ tương ứng; Frontend modal `<dialog id="resetPasswordModal">` kèm nút sao chép; (3) **Bất Biến SoD (Phương Án A)**: Backend `AdminRoleServiceImpl.java` & Demo Fallback Engine ném `HTTP 400 Bad Request` khi gán đồng thời Creator và Moderator; Frontend `admin-roles-page.js` auto-uncheck và vô hiệu hóa role đối lập khi tick chọn một trong hai; (4) **Bảo Vệ Admin Cuối Cùng & Self Protection**: Chặn hạ quyền hoặc khóa tài khoản Admin duy nhất còn lại; bảo vệ self-account không cho tự tước quyền (`POL-8D-02`) hoặc tự reset mật khẩu (`POL-8D-01`); (5) **Làm Sạch Giao Diện & Đồng Bộ Phân Trang**: Dọn sạch breadcrumb thừa, tab phụ, `#adminOversightBadge`, `#pageSizeSelect`, `#accountsPaginationSummary`; chuẩn hóa phân trang First/Last `<< < 1 2 3 > >>` căn lề phải (`.pagination-container.justify-content-end`); chuyển sang `.table-responsive.table-responsive-clean` `max-width: 100%`; (6) **Kiểm thử Toàn diện**: PASS 24/24 backend admin tests, 65/65 unit tests, 17/17 browser E2E tests, 1.115/1.115 fast frontend tests, 74/74 E2E blackbox runner. |
 
 ---
 
 ## 5. HƯỚNG DẪN KẾ THỪA CHO AGENT TIẾP THEO (AGENT HANDOFF & CONTEXT INVARIANTS)
 
 > [!IMPORTANT]
-> **Dành cho Agent kế thừa**: Tiến trình kiểm toán thực tế giữa Người Dùng và Agent đã hoàn thành và được nghiệm thu rà soát chặt chẽ từ **Chặng 1 đến hết Chặng 6 (Nhiệm vụ TASK-1.1 đến TASK-6.2)**:
+> **Dành cho Agent kế thừa**: Tiến trình kiểm toán thực tế giữa Người Dùng và Agent đã hoàn thành và được nghiệm thu rà soát chặt chẽ từ **Chặng 1 đến hết Nhiệm vụ TASK-7.1**:
 > - **Chặng 1**: Trang chủ & Xác thực, Hồ sơ cá nhân (`TASK-1.1`, `TASK-1.2`) — ✅ Hoàn thành & Khóa chặt 100%
 > - **Chặng 2**: Thư viện 1.068 từ HSK 1–3 & 214 Bộ thủ Khang Hy (`TASK-2.1`, `TASK-2.2`) — ✅ Hoàn thành & Khóa chặt 100%
 > - **Chặng 3**: Chương trình 50 bài học HSK & chi tiết bài học (`TASK-3.1`) — ✅ Hoàn thành & Khóa chặt 100%
 > - **Chặng 4**: Đấu trường Ôn tập SRS & 4 phân hệ độc lập Flashcard, Writing, Listening, Reading (`TASK-4.1` – `TASK-4.5` + Nút gợi ý nghe + Đồng bộ tiến trình đa thiết bị) — ✅ Hoàn thành & Khóa chặt 100%
 > - **Chặng 5**: Sổ tay Ghi chú Cá nhân Theo Ngữ Cảnh (`TASK-5.1`) — ✅ Hoàn thành & Khóa chặt 100%
 > - **Chặng 6**: Cổng Điều phối, Creator Studio & Moderator Queue (`TASK-6.1`, `TASK-6.2`) — ✅ Hoàn thành & Khóa chặt 100%
+> - **Chặng 7**: Quản trị Hệ thống, Tài khoản, Phân quyền & Audit Logs:
+>   * `TASK-7.1`: Quản trị Tài khoản, Đặt lại Mật khẩu & Phân quyền SoD (`admin-accounts.html`, `admin-roles.html`) — ✅ Hoàn thành & Khóa chặt 100%
+>   * `TASK-7.2` – `TASK-7.3`: Quản trị Nội dung Học liệu & Audit Logs — ⏳ Sẵn sàng tiến hành
 >
-> **Các Chặng tiếp theo (Chặng 7, 8)**: Đang ở trạng thái **⏳ Chờ rà soát (Pending Audit)**. Tuyệt đối KHÔNG tự ý đánh dấu hoàn thành khi chưa cùng Người Dùng mở nhiệm vụ và rà soát chi tiết từng tiêu chí:
-> - **Chặng 7**: Quản trị Hệ thống, Tài khoản, Phân quyền & Audit Logs (`TASK-7.1` – `TASK-7.3`) — ⏳ Sẵn sàng tiến hành
+> **Chặng tiếp theo (Chặng 8)**: Đang ở trạng thái **⏳ Chờ rà soát (Pending Audit)**. Tuyệt đối KHÔNG tự ý đánh dấu hoàn thành khi chưa cùng Người Dùng mở nhiệm vụ và rà soát chi tiết từng tiêu chí:
 > - **Chặng 8**: Môi trường Live Đám mây & Thiết bị di động thực tế (`TASK-8.1` – `TASK-8.3`) — ⏳ Chờ rà soát
 
 ### 5.1. Trạng Thái Mã Nguồn & Baseline Kiểm Thử Hiện Tại
 - **Nhánh Git**: `main` (Head commit: `74dc8c4`).
-- **Fast Frontend Verification**: `npm run verify:frontend:fast` (1.115 tests / 273 suites, 100% PASS trong ~22.8 giây).
+- **Fast Frontend Verification**: `npm run verify:frontend:fast` (1.186 tests / 294 suites, 100% PASS trong ~23 giây).
 - **Multi-Skill Unified SRS Verification**:
   * `all-four-skills-srs-rating.test.mjs` (5/5 PASS).
   * `multi-skill-srs-isolation-and-due.test.mjs` (5/5 PASS).
@@ -473,11 +516,12 @@ flowchart TD
   * 136/136 unit tests PASS (`tests/frontend/unit/management` [13], `creator` [54], `moderator` [82]).
   * 33/33 browser tests PASS (`creator-import` [4], `creator-lessons` [6], `creator-submission` [4], `management-session-isolation` [3], `moderator-history` [5], `moderator-queue` [5], `moderator-review` [9]).
 - **Admin System Management & Audit**:
-  * 187/187 unit tests PASS (`tests/frontend/unit/admin`).
+  * 196/196 unit tests PASS (`tests/frontend/unit/admin`).
+  * 17/17 browser E2E tests PASS (`admin-accounts.browser.mjs` [8], `admin-roles.browser.mjs` [9]).
 - **Mobile Hardware Emulation Suite**:
   * `mobile-keyboard.browser.mjs` (6/6 tests PASS trên Google Pixel 7 Android 14 Gboard và Apple iPhone 14 iOS 16 Mobile Safari).
-- **Backend Java Verification**: `mvn test` (33/33 SRS tests PASS, 514/514 broad unit tests PASS).
-- **E2E Blackbox Runner**: `node tests/e2e/runner.mjs --tier=all` (74/74 tests Tiers 1–4, 100% PASS trong ~0.76 giây).
+- **Backend Java Verification**: `mvn test` (24/24 admin tests PASS, 33/33 SRS tests PASS, 514/514 broad unit tests PASS).
+- **E2E Blackbox Runner**: `node tests/e2e/runner.mjs --tier=all` (74/74 tests Tiers 1–4, 100% PASS trong ~0.70 giây).
 - **Responsive Layout**: Zero document-level horizontal overflow trên toàn bộ 24 trang HTML hiện hữu từ 360px đến 1920px.
 - **Môi trường Cloud Live**:
   * GitHub Pages: `https://khoadzsieucapvippro.github.io/WebLearnChinese/srs-review.html` (HTTP 200, Module cache buster `?v=18`).

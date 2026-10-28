@@ -14,7 +14,7 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>字</text></svg>">
 
   <!-- Core Design Tokens & Styles -->
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=20261028_04">
 
   <!-- Runtime Environment Configuration -->
   <script src="js/config.js"></script>
@@ -78,34 +78,6 @@
     <main id="mainContent" class="management-main-content">
     <div class="container-xl creator-studio-wrapper">
 
-              <!-- Management Sub-navigation Breadcrumb -->
-        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
-          <nav aria-label="Đường dẫn điều hướng">
-            <ol class="breadcrumb mb-0 small">
-              <li class="breadcrumb-item"><a href="management.html" class="text-decoration-none">Trung tâm quản lý</a></li>
-              <li class="breadcrumb-item active" aria-current="page">Phân quyền vai trò</li>
-            </ol>
-          </nav>
-        </div>
-
-      <!-- Admin Section Sub-navigation Tabs -->
-      <nav class="moderator-nav-tabs" aria-label="Phân khu quản trị hệ thống">
-        <a href="admin-accounts.html" class="moderator-nav-tab" id="tabAdminAccounts">
-          Quản trị tài khoản
-        </a>
-        <a href="admin-roles.html" class="moderator-nav-tab active" id="tabAdminRoles" aria-current="page">
-          Phân quyền vai trò
-        </a>
-        <a href="admin-radicals.html" class="moderator-nav-tab" id="tabAdminRadicals">
-          Quản trị bộ thủ
-        </a>
-        <a href="admin-vocabulary.html" class="moderator-nav-tab" id="tabAdminVocabulary">
-          Quản trị từ vựng
-        </a>
-        <a href="admin-lessons.html" class="moderator-nav-tab" id="tabAdminLessons">
-          Giám sát bài học
-        </a>
-      </nav>
 
       <!-- Role Guard Message Container (Shown if unauthorized) -->
       <div id="adminAuthGuardContainer" class="d-none mb-4">
@@ -175,18 +147,6 @@
                 </button>
               </div>
             </div>
-
-            <!-- Page Size Dropdown -->
-            <div class="col-6 col-md-4 col-lg-3 ms-auto">
-              <label for="pageSizeSelect" class="form-label small fw-semibold text-secondary mb-1">
-                Số bản ghi / trang
-              </label>
-              <select id="pageSizeSelect" class="form-select" aria-label="Số bản ghi hiển thị trên mỗi trang">
-                <option value="10">10 tài khoản</option>
-                <option value="20" selected>20 tài khoản</option>
-                <option value="50">50 tài khoản</option>
-              </select>
-            </div>
           </div>
         </div>
 
@@ -195,7 +155,7 @@
 
         <!-- 3. Accounts Table Container -->
         <div id="accountsTableContainer" class="creator-panel-card p-0 overflow-hidden mb-4 d-none">
-          <div class="table-responsive">
+          <div class="table-responsive table-responsive-clean" style="max-width: 100%;">
             <table class="table align-middle mb-0" id="accountsTable" aria-describedby="rolesHeading">
               <caption class="visually-hidden">Danh sách tài khoản người dùng và vai trò hệ thống</caption>
               <thead class="table-light text-secondary small text-uppercase">
@@ -216,13 +176,10 @@
         </div>
 
         <!-- 4. Server Pagination Container -->
-        <nav id="accountsPaginationNav" class="d-flex flex-wrap align-items-center justify-content-between gap-3 d-none mb-5" aria-label="Phân trang danh sách tài khoản">
-          <div class="text-secondary small" id="accountsPaginationSummary">
-            <!-- e.g. "Hiển thị 1 - 20 trên 65 tài khoản" -->
-          </div>
-          <ul class="pagination pagination-sm mb-0 gap-1" id="accountsPaginationList">
+        <nav id="accountsPaginationNav" class="pagination-container justify-content-end mt-4 d-none mb-5" aria-label="Phân trang danh sách tài khoản">
+          <div class="pagination-controls" id="accountsPaginationList" role="group" aria-label="Điều khiển chuyển trang tài khoản">
             <!-- Rendered dynamically -->
-          </ul>
+          </div>
         </nav>
 
       </section>
@@ -349,9 +306,9 @@
   </footer>
 
   <!-- Management Workspace Layout & Sidebar Component -->
-  <script type="module" src="js/ui/management-layout.js"></script>
+  <script type="module" src="js/ui/management-layout.js?v=20261028_04"></script>
 
   <!-- Page Initialization Entrypoint -->
-  <script type="module" src="js/pages/admin-roles-page.js"></script>
+  <script type="module" src="js/pages/admin-roles-page.js?v=20261028_04"></script>
 </body>
 </html>

@@ -95,7 +95,9 @@ function resolveTestFiles(tier) {
     'tests/frontend/unit/moderator/moderator-review.test.mjs',
     'tests/frontend/unit/auth/authenticated-links-regression.test.mjs',
     'tests/frontend/unit/management/management.test.mjs',
-    'tests/frontend/unit/management/management-layout.test.mjs'
+    'tests/frontend/unit/management/management-layout.test.mjs',
+    'tests/frontend/unit/admin/admin-accounts.test.mjs',
+    'tests/frontend/unit/admin/admin-roles.test.mjs'
   ];
 
   const browserFiles = [
@@ -118,6 +120,8 @@ function resolveTestFiles(tier) {
     'tests/frontend/e2e/creator-submission.browser.mjs',
     'tests/frontend/e2e/moderator-queue.browser.mjs',
     'tests/frontend/e2e/moderator-review.browser.mjs',
+    'tests/frontend/e2e/admin-accounts.browser.mjs',
+    'tests/frontend/e2e/admin-roles.browser.mjs',
     'tests/frontend/e2e/dom-xss-adversarial.browser.mjs',
     'tests/frontend/e2e/csp-enforcement.browser.mjs',
     'tests/frontend/e2e/responsive-layout.browser.mjs',

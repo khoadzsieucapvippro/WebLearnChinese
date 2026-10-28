@@ -43,6 +43,12 @@ class AdminAccountServiceTests {
     @Mock
     private com.elearning.repository.RoleRepository roleRepository;
 
+    @Mock
+    private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+
+    @Mock
+    private com.elearning.service.ManagementAuditService managementAuditService;
+
     @InjectMocks
     private AdminAccountServiceImpl adminAccountService;
 
@@ -190,6 +196,51 @@ class AdminAccountServiceTests {
             assertThat(response).isNotNull();
             assertThat(response.getStatus()).isEqualTo("Inactive");
             assertThat(testAccount.getAuthorizationVersion()).isEqualTo(2L);
+        }
+    }
+
+    @Nested
+    @DisplayName("resetPassword Tests")
+    class ResetPasswordTests {
+
+        @Test
+        @DisplayName("GIVEN target account exists WHEN admin resets password THEN generates temporary password, hashes it and increments version")
+        void testResetPassword_success() {
+            when(accountRepository.findByIdForUpdate(10L)).thenReturn(Optional.of(testAccount));
+            when(passwordEncoder.encode(any(String.class))).thenReturn("$2a$10$hashedFakePasswordReset123");
+            when(accountRepository.save(any(Account.class))).thenAnswer(i -> i.getArgument(0));
+
+            com.elearning.dto.response.AdminResetPasswordResponse response =
+                    adminAccountService.resetPassword(10L, "other_admin@example.com");
+
+            assertThat(response).isNotNull();
+            assertThat(response.getAccountId()).isEqualTo(10L);
+            assertThat(response.getEmailOrPhone()).isEqualTo("user10@example.com");
+            assertThat(response.getTemporaryPassword()).isNotBlank().hasSize(12);
+            assertThat(testAccount.getPasswordHash()).isEqualTo("$2a$10$hashedFakePasswordReset123");
+            assertThat(testAccount.getAuthorizationVersion()).isEqualTo(2L);
+            verify(accountRepository).save(testAccount);
+        }
+
+        @Test
+        @DisplayName("GIVEN self-reset attempt by current admin WHEN resetting password THEN throws BAD_REQUEST")
+        void testResetPassword_selfResetDefense_throwsBadRequest() {
+            when(accountRepository.findByIdForUpdate(10L)).thenReturn(Optional.of(testAccount));
+
+            assertThatThrownBy(() -> adminAccountService.resetPassword(10L, "user10@example.com"))
+                    .isInstanceOf(BusinessException.class)
+                    .hasFieldOrPropertyWithValue("errorCode", ErrorCode.BAD_REQUEST)
+                    .hasMessage("Không thể tự đặt lại mật khẩu của chính mình qua tính năng quản trị. Vui lòng đổi mật khẩu tại trang Hồ sơ cá nhân.");
+        }
+
+        @Test
+        @DisplayName("GIVEN non-existent account ID WHEN resetting password THEN throws NOT_FOUND")
+        void testResetPassword_accountNotFound_throwsNotFound() {
+            when(accountRepository.findByIdForUpdate(999L)).thenReturn(Optional.empty());
+
+            assertThatThrownBy(() -> adminAccountService.resetPassword(999L, "admin@example.com"))
+                    .isInstanceOf(BusinessException.class)
+                    .hasFieldOrPropertyWithValue("errorCode", ErrorCode.NOT_FOUND);
         }
     }
 }

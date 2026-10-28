@@ -52,9 +52,9 @@ function createMockAccounts() {
     {
       accountId: 3,
       emailOrPhone: 'creator1@example.com',
-      fullName: 'Tác Giả & Kiểm Duyệt',
+      fullName: 'Tác Giả Khóa Học',
       status: 'Active',
-      roles: ['Creator', 'Moderator'],
+      roles: ['Creator'],
       createdAt: '2026-09-10T14:15:00Z',
       updatedAt: '2026-09-10T14:15:00Z'
     }
@@ -563,6 +563,102 @@ describe('Browser E2E: Admin Role Management & Assignment UI (Task 9F.2)', () =>
 
       // STRICT CHECK: Zero PUT mutations
       assert.strictEqual(putCalled, false, 'Verification Center must NOT trigger any PUT role mutations');
+
+      assert.deepStrictEqual(getRuntimeErrors(), []);
+    } finally {
+      await context.close();
+    }
+  });
+
+  // ---------------------------------------------------------------------------
+  // AR-09: Separation of Duties (SoD) UI Mutual Exclusivity & Layout Cleanup
+  // ---------------------------------------------------------------------------
+  test('AR-09: Creator and Moderator are mutually exclusive in UI and layout is clean', async () => {
+    const { page, context, getRuntimeErrors } = await createMonitoredPage(browser, {
+      viewportWidth: 1280,
+      viewportHeight: 720
+    });
+
+    try {
+      await setupAdminSession(page);
+
+      await page.route(/\/api\/v1\/admin\/roles(\?.*)?$/, async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            code: 'SUCCESS',
+            message: 'Thành công',
+            data: createMockRoles()
+          })
+        });
+      });
+
+      await page.route(/\/api\/v1\/admin\/accounts(\?.*)?$/, async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            code: 'SUCCESS',
+            message: 'Thành công',
+            data: {
+              items: createMockAccounts(),
+              page: 0,
+              size: 20,
+              totalElements: 3,
+              totalPages: 1
+            }
+          })
+        });
+      });
+
+      await page.goto(`${baseUrl}/admin-roles.html`);
+      await page.waitForSelector('#accountsTableBody tr', { timeout: 5000 });
+
+      // Verify layout cleanliness: breadcrumb, moderator tabs, and pageSizeSelect must be absent
+      const breadcrumbCount = await page.locator('.breadcrumb').count();
+      assert.strictEqual(breadcrumbCount, 0, 'Breadcrumb must be removed');
+
+      const tabsCount = await page.locator('.moderator-nav-tabs').count();
+      assert.strictEqual(tabsCount, 0, 'Moderator nav tabs must be removed');
+
+      const pageSizeCount = await page.locator('#pageSizeSelect').count();
+      assert.strictEqual(pageSizeCount, 0, '#pageSizeSelect must be removed');
+
+      // Open modal for account 2 (Learner)
+      const btnEditRole = page.locator('#btnEditRoles_2');
+      await btnEditRole.click();
+
+      const modal = page.locator('#roleAssignmentModal');
+      await modal.waitFor({ state: 'visible' });
+
+      const creatorBox = page.locator('#roleCheckbox_Creator');
+      const moderatorBox = page.locator('#roleCheckbox_Moderator');
+
+      // Both should initially be unchecked and enabled
+      assert.strictEqual(await creatorBox.isChecked(), false);
+      assert.strictEqual(await creatorBox.isEnabled(), true);
+      assert.strictEqual(await moderatorBox.isChecked(), false);
+      assert.strictEqual(await moderatorBox.isEnabled(), true);
+
+      // Check Creator -> Moderator must become disabled
+      await creatorBox.check();
+      assert.strictEqual(await creatorBox.isChecked(), true);
+      assert.strictEqual(await moderatorBox.isDisabled(), true, 'Moderator must be disabled when Creator is checked');
+
+      // Uncheck Creator -> Moderator must become enabled
+      await creatorBox.uncheck();
+      assert.strictEqual(await creatorBox.isChecked(), false);
+      assert.strictEqual(await moderatorBox.isEnabled(), true, 'Moderator must be enabled when Creator is unchecked');
+
+      // Check Moderator -> Creator must become disabled
+      await moderatorBox.check();
+      assert.strictEqual(await moderatorBox.isChecked(), true);
+      assert.strictEqual(await creatorBox.isDisabled(), true, 'Creator must be disabled when Moderator is checked');
+
+      // Close modal
+      await page.locator('#btnCloseRoleModal').click();
+      await modal.waitFor({ state: 'hidden' });
 
       assert.deepStrictEqual(getRuntimeErrors(), []);
     } finally {

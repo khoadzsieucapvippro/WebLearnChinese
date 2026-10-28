@@ -7,6 +7,7 @@ public enum AuditActionType {
     // Quản trị người dùng & vai trò
     USER_ROLE_UPDATE,
     ACCOUNT_STATUS_UPDATE,
+    PASSWORD_RESET,
 
     // Kiểm duyệt bài học
     LESSON_APPROVE,

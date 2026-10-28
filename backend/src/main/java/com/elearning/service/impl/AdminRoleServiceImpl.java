@@ -95,6 +95,16 @@ public class AdminRoleServiceImpl implements AdminRoleService {
             throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Danh sách vai trò không được để trống");
         }
 
+        // Separation of Duties (SoD) Invariant: Creator and Moderator are mutually exclusive
+        boolean hasCreator = resolvedRoles.stream().anyMatch(r -> "Creator".equalsIgnoreCase(r.getRoleName()) || "ROLE_CREATOR".equalsIgnoreCase(r.getRoleName()));
+        boolean hasModerator = resolvedRoles.stream().anyMatch(r -> "Moderator".equalsIgnoreCase(r.getRoleName()) || "ROLE_MODERATOR".equalsIgnoreCase(r.getRoleName()));
+        if (hasCreator && hasModerator) {
+            throw new BusinessException(
+                    ErrorCode.BAD_REQUEST,
+                    "Vai trò Người sáng tạo (Creator) và Kiểm duyệt viên (Moderator) loại trừ lẫn nhau tuyệt đối. Một tài khoản không thể đồng thời giữ cả hai vai trò."
+            );
+        }
+
         // 3. Concurrency-safe lookup with row-level lock on target account
         Account account = accountRepository.findByIdForUpdate(accountId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "Không tìm thấy tài khoản với ID: " + accountId));

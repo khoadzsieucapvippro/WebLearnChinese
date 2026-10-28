@@ -437,7 +437,7 @@ describe('Browser E2E: Admin Accounts Lifecycle UI (Task 9F.1)', () => {
       await row1.waitFor({ state: 'visible' });
 
       // Verify the status action button in Row 1 is disabled
-      const actionBtn = row1.locator('button');
+      const actionBtn = row1.locator('#btnChangeStatus_1');
       await actionBtn.waitFor({ state: 'visible' });
 
       const isDisabled = await actionBtn.isDisabled();
@@ -445,6 +445,11 @@ describe('Browser E2E: Admin Accounts Lifecycle UI (Task 9F.1)', () => {
 
       const titleAttr = await actionBtn.getAttribute('title');
       assert.match(titleAttr, /POL-8D-01/, 'Button title must mention POL-8D-01');
+
+      // Verify reset password button on self account is also disabled
+      const resetBtn = row1.locator('#btnResetPassword_1');
+      await resetBtn.waitFor({ state: 'visible' });
+      assert.strictEqual(await resetBtn.isDisabled(), true, 'Reset password button on self account must be disabled');
 
       // Other non-self account buttons MUST be enabled
       const otherBtn = page.locator('#btnChangeStatus_2');
@@ -546,6 +551,110 @@ describe('Browser E2E: Admin Accounts Lifecycle UI (Task 9F.1)', () => {
         !err.includes('ERR_CONNECTION_REFUSED')
       );
       assert.deepStrictEqual(actualErrors, []);
+
+    } finally {
+      await context.close();
+    }
+  });
+
+  // ---------------------------------------------------------------------------
+  // AA-08: Admin Password Reset Workflow & Clean Layout Verification
+  // ---------------------------------------------------------------------------
+  test('AA-08: Admin can open reset password modal, generate temporary password, and see clean layout', async () => {
+    const { page, context, getRuntimeErrors } = await createMonitoredPage(browser, {
+      viewportWidth: 1280,
+      viewportHeight: 720
+    });
+
+    try {
+      await setupAdminSession(page);
+
+      await page.route(/\/api\/v1\/admin\/accounts(\?.*)?$/, async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            code: 'SUCCESS',
+            message: 'Thành công',
+            data: {
+              items: createMockAccounts(),
+              page: 0,
+              size: 20,
+              totalElements: 4,
+              totalPages: 1
+            }
+          })
+        });
+      });
+
+      let resetPostCalled = false;
+      await page.route(/\/api\/v1\/admin\/accounts\/2\/reset-password$/, async (route) => {
+        resetPostCalled = true;
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            code: 'SUCCESS',
+            message: 'Đặt lại mật khẩu thành công. Mật khẩu tạm thời đã được tạo.',
+            data: {
+              accountId: 2,
+              emailOrPhone: 'learner1@example.com',
+              temporaryPassword: 'Temp@Secret123'
+            }
+          })
+        });
+      });
+
+      await page.goto(`${baseUrl}/admin-accounts.html`);
+      await page.waitForSelector('#accountsTableBody tr', { timeout: 5000 });
+
+      // 1. Verify clean layout (no breadcrumbs, no tabs, no oversight badge, no pageSizeSelect)
+      const breadcrumbCount = await page.locator('.breadcrumb').count();
+      assert.strictEqual(breadcrumbCount, 0, 'Breadcrumbs must be absent');
+
+      const tabsCount = await page.locator('.moderator-nav-tabs').count();
+      assert.strictEqual(tabsCount, 0, 'Moderator nav tabs must be absent');
+
+      const badgeCount = await page.locator('#adminOversightBadge').count();
+      assert.strictEqual(badgeCount, 0, '#adminOversightBadge must be absent');
+
+      const pageSizeCount = await page.locator('#pageSizeSelect').count();
+      assert.strictEqual(pageSizeCount, 0, '#pageSizeSelect must be absent');
+
+      // 2. Open reset password modal for account 2 (learner1@example.com)
+      const resetBtn2 = page.locator('#btnResetPassword_2');
+      await resetBtn2.waitFor({ state: 'visible' });
+      await resetBtn2.click();
+
+      const modal = page.locator('#resetPasswordModal');
+      await modal.waitFor({ state: 'visible' });
+
+      // Target identity displayed
+      const targetEmail = await page.locator('#resetModalTargetEmail').textContent();
+      assert.match(targetEmail, /learner1@example\.com/);
+
+      // Confirm button is visible initially
+      const confirmBtn = page.locator('#btnConfirmResetPassword');
+      await confirmBtn.waitFor({ state: 'visible' });
+      await confirmBtn.click();
+
+      // Verify POST call was executed
+      assert.strictEqual(resetPostCalled, true, 'POST /reset-password endpoint must be called');
+
+      // Verify result section is displayed with temporary password
+      const resultSection = page.locator('#resetPasswordResultSection');
+      await resultSection.waitFor({ state: 'visible' });
+
+      const tempPassInput = page.locator('#temporaryPasswordDisplay');
+      const passVal = await tempPassInput.inputValue();
+      assert.strictEqual(passVal, 'Temp@Secret123');
+
+      // Close modal
+      const cancelBtn = page.locator('#btnCancelResetPasswordModal');
+      await cancelBtn.click();
+      await modal.waitFor({ state: 'hidden' });
+
+      assert.deepStrictEqual(getRuntimeErrors(), []);
 
     } finally {
       await context.close();

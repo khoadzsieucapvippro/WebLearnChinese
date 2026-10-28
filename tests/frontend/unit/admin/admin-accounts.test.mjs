@@ -359,5 +359,119 @@ describe('Unit: Admin Accounts Lifecycle UI Logic (Task 9F.1)', () => {
       const pagesEnd = calculatePagination(9, 10, 5);
       assert.deepStrictEqual(pagesEnd, [0, '...', 5, 6, 7, 8, 9]);
     });
+
+    it('supports 5-arg form returning pagination calculation object', () => {
+      const calc = calculatePagination(1, 20, 45, 3, 5);
+      assert.strictEqual(calc.currentPage, 1);
+      assert.strictEqual(calc.totalPages, 3);
+      assert.strictEqual(calc.hasPrev, true);
+      assert.strictEqual(calc.hasNext, true);
+      assert.strictEqual(calc.startPage, 0);
+      assert.strictEqual(calc.endPage, 2);
+    });
+
+    it('handles 0 total elements cleanly in 5-arg form', () => {
+      const calc = calculatePagination(0, 20, 0, 0, 5);
+      assert.strictEqual(calc.currentPage, 0);
+      assert.strictEqual(calc.totalPages, 0);
+      assert.strictEqual(calc.hasPrev, false);
+      assert.strictEqual(calc.hasNext, false);
+      assert.strictEqual(calc.startRecord, 0);
+      assert.strictEqual(calc.endRecord, 0);
+    });
+
+    it('clamps currentPage safely within bounds if currentPage exceeds totalPages', () => {
+      const calc = calculatePagination(10, 20, 40, 2, 5);
+      assert.strictEqual(calc.currentPage, 1);
+      assert.strictEqual(calc.totalPages, 2);
+      assert.strictEqual(calc.hasPrev, true);
+      assert.strictEqual(calc.hasNext, false);
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // 9. Demo Fallback Engine Admin Endpoints Contract
+  // ---------------------------------------------------------------------------
+  describe('9. Demo Fallback Engine Admin Operations', () => {
+    it('generates temporary password for target user via POST /admin/accounts/:id/reset-password', async () => {
+      const { demoFallbackEngine } = await import('../../../../frontend/js/api/demo-fallback-engine.js');
+      const { authManager } = await import('../../../../frontend/js/auth/auth-state.js');
+
+      globalThis.sessionStorage = {
+        _store: {},
+        getItem(k) { return this._store[k] || null; },
+        setItem(k, v) { this._store[k] = String(v); },
+        removeItem(k) { delete this._store[k]; }
+      };
+      globalThis.localStorage = {
+        _store: {},
+        getItem(k) { return this._store[k] || null; },
+        setItem(k, v) { this._store[k] = String(v); },
+        removeItem(k) { delete this._store[k]; }
+      };
+
+      demoFallbackEngine.resetInMemoryData();
+      authManager.setSession({ token: 'mock_token', accountId: 4, emailOrPhone: 'admin@gmail.com', roles: ['Admin'] });
+
+      const res = await demoFallbackEngine.handleRequest('/admin/accounts/1/reset-password', { method: 'POST' });
+      assert.ok(res);
+      assert.strictEqual(res.accountId, 1);
+      assert.strictEqual(typeof res.temporaryPassword, 'string');
+      assert.strictEqual(res.temporaryPassword.length, 12);
+    });
+
+    it('strictly prohibits Admin from resetting own password via demo fallback (Self-Reset Defense)', async () => {
+      const { demoFallbackEngine } = await import('../../../../frontend/js/api/demo-fallback-engine.js');
+      const { authManager } = await import('../../../../frontend/js/auth/auth-state.js');
+
+      globalThis.sessionStorage = {
+        _store: {},
+        getItem(k) { return this._store[k] || null; },
+        setItem(k, v) { this._store[k] = String(v); },
+        removeItem(k) { delete this._store[k]; }
+      };
+      globalThis.localStorage = {
+        _store: {},
+        getItem(k) { return this._store[k] || null; },
+        setItem(k, v) { this._store[k] = String(v); },
+        removeItem(k) { delete this._store[k]; }
+      };
+
+      demoFallbackEngine.resetInMemoryData();
+      authManager.setSession({ token: 'mock_token', accountId: 4, emailOrPhone: 'admin@gmail.com', roles: ['Admin'] });
+
+      await assert.rejects(
+        async () => {
+          await demoFallbackEngine.handleRequest('/admin/accounts/4/reset-password', { method: 'POST' });
+        },
+        (err) => {
+          assert.strictEqual(err.status, 400);
+          assert.ok(err.message.includes('Không thể tự đặt lại mật khẩu của chính mình'));
+          return true;
+        }
+      );
+    });
+
+    it('enforces SoD invariant rejecting simultaneously assigning Creator and Moderator in demo fallback', async () => {
+      const { demoFallbackEngine } = await import('../../../../frontend/js/api/demo-fallback-engine.js');
+      const { authManager } = await import('../../../../frontend/js/auth/auth-state.js');
+
+      demoFallbackEngine.resetInMemoryData();
+      authManager.setSession({ token: 'mock_token', accountId: 4, emailOrPhone: 'admin@gmail.com', roles: ['Admin'] });
+
+      await assert.rejects(
+        async () => {
+          await demoFallbackEngine.handleRequest('/admin/accounts/1/roles', {
+            method: 'PUT',
+            body: { roles: ['Creator', 'Moderator'] }
+          });
+        },
+        (err) => {
+          assert.strictEqual(err.status, 400);
+          assert.ok(err.message.includes('loại trừ lẫn nhau'));
+          return true;
+        }
+      );
+    });
   });
 });

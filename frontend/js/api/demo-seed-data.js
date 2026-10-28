@@ -45597,8 +45597,6 @@ export const SEED_ACCOUNTS = [
     "fullName": "Quản Trị Viên Hệ Thống",
     "roles": [
       "Admin",
-      "Moderator",
-      "Creator",
       "Learner"
     ],
     "password": "Password@123",

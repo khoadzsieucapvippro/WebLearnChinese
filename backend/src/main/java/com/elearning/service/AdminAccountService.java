@@ -29,4 +29,14 @@ public interface AdminAccountService {
      * @return updated AccountResponse
      */
     AccountResponse updateAccountStatus(Long accountId, UpdateAccountStatusRequest request, String currentAdminEmail);
+
+    /**
+     * Resets target account password with server-generated secure temporary password.
+     * Enforces self-reset defense, token invalidation via authorization_version, and audit logging.
+     *
+     * @param accountId         target account ID
+     * @param currentAdminEmail identifier of currently authenticated admin
+     * @return AdminResetPasswordResponse containing target identity and temporary password
+     */
+    com.elearning.dto.response.AdminResetPasswordResponse resetPassword(Long accountId, String currentAdminEmail);
 }

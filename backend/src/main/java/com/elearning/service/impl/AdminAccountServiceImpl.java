@@ -15,8 +15,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.elearning.common.AuditActionType;
 import com.elearning.common.AuditResourceType;
+import com.elearning.dto.response.AdminResetPasswordResponse;
 import com.elearning.service.ManagementAuditService;
 
+import java.security.SecureRandom;
 import java.util.Map;
 import java.util.Set;
 
@@ -31,22 +33,31 @@ public class AdminAccountServiceImpl implements AdminAccountService {
     private final AccountRepository accountRepository;
     private final com.elearning.repository.RoleRepository roleRepository;
     private final ManagementAuditService managementAuditService;
+    private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
     @org.springframework.beans.factory.annotation.Autowired
     public AdminAccountServiceImpl(AccountRepository accountRepository,
                                   com.elearning.repository.RoleRepository roleRepository,
-                                  ManagementAuditService managementAuditService) {
+                                  ManagementAuditService managementAuditService,
+                                  org.springframework.security.crypto.password.PasswordEncoder passwordEncoder) {
         this.accountRepository = accountRepository;
         this.roleRepository = roleRepository;
         this.managementAuditService = managementAuditService;
+        this.passwordEncoder = passwordEncoder;
+    }
+
+    public AdminAccountServiceImpl(AccountRepository accountRepository,
+                                  com.elearning.repository.RoleRepository roleRepository,
+                                  ManagementAuditService managementAuditService) {
+        this(accountRepository, roleRepository, managementAuditService, null);
     }
 
     public AdminAccountServiceImpl(AccountRepository accountRepository, com.elearning.repository.RoleRepository roleRepository) {
-        this(accountRepository, roleRepository, null);
+        this(accountRepository, roleRepository, null, null);
     }
 
     public AdminAccountServiceImpl(AccountRepository accountRepository) {
-        this(accountRepository, null, null);
+        this(accountRepository, null, null, null);
     }
 
     @Override
@@ -125,6 +136,71 @@ public class AdminAccountServiceImpl implements AdminAccountService {
         }
 
         return AccountResponse.fromEntity(account);
+    }
+
+    private static final String PWD_UPPER = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+    private static final String PWD_LOWER = "abcdefghijkmnpqrstuvwxyz";
+    private static final String PWD_DIGITS = "23456789";
+    private static final String PWD_SPECIAL = "@#$%&*!?";
+    private static final String PWD_ALL = PWD_UPPER + PWD_LOWER + PWD_DIGITS + PWD_SPECIAL;
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+
+    @Override
+    @Transactional
+    public AdminResetPasswordResponse resetPassword(Long accountId, String currentAdminEmail) {
+        Account account = accountRepository.findByIdForUpdate(accountId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "Không tìm thấy tài khoản với ID: " + accountId));
+
+        // Self-Reset Defense: Admin cannot reset own password via admin endpoint
+        if (currentAdminEmail != null && currentAdminEmail.equalsIgnoreCase(account.getEmailOrPhone())) {
+            throw new BusinessException(
+                    ErrorCode.BAD_REQUEST,
+                    "Không thể tự đặt lại mật khẩu của chính mình qua tính năng quản trị. Vui lòng đổi mật khẩu tại trang Hồ sơ cá nhân."
+            );
+        }
+
+        String temporaryPassword = generateTemporaryPassword();
+
+        if (passwordEncoder != null) {
+            account.setPasswordHash(passwordEncoder.encode(temporaryPassword));
+        } else {
+            account.setPasswordHash(temporaryPassword);
+        }
+
+        account.incrementAuthorizationVersion();
+        account = accountRepository.save(account);
+
+        if (managementAuditService != null) {
+            String details = String.format("Đặt lại mật khẩu cho tài khoản %s (#%d)", account.getEmailOrPhone(), accountId);
+            managementAuditService.logSuccess(
+                    AuditActionType.PASSWORD_RESET,
+                    AuditResourceType.USER,
+                    String.valueOf(accountId),
+                    details,
+                    null,
+                    Map.of("targetAccountId", accountId, "emailOrPhone", account.getEmailOrPhone())
+            );
+        }
+
+        return new AdminResetPasswordResponse(account.getAccountId(), account.getEmailOrPhone(), temporaryPassword);
+    }
+
+    public static String generateTemporaryPassword() {
+        char[] password = new char[12];
+        password[0] = PWD_UPPER.charAt(SECURE_RANDOM.nextInt(PWD_UPPER.length()));
+        password[1] = PWD_LOWER.charAt(SECURE_RANDOM.nextInt(PWD_LOWER.length()));
+        password[2] = PWD_DIGITS.charAt(SECURE_RANDOM.nextInt(PWD_DIGITS.length()));
+        password[3] = PWD_SPECIAL.charAt(SECURE_RANDOM.nextInt(PWD_SPECIAL.length()));
+        for (int i = 4; i < 12; i++) {
+            password[i] = PWD_ALL.charAt(SECURE_RANDOM.nextInt(PWD_ALL.length()));
+        }
+        for (int i = password.length - 1; i > 0; i--) {
+            int j = SECURE_RANDOM.nextInt(i + 1);
+            char temp = password[i];
+            password[i] = password[j];
+            password[j] = temp;
+        }
+        return new String(password);
     }
 
     private String normalizeStatus(String rawStatus) {

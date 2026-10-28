@@ -1509,11 +1509,42 @@ const currentAccount = this.getCurrentAccount();
       const id = parseInt(accountRolesMatch[1], 10);
       const acc = data.accounts.find(a => a.accountId === id);
       if (acc && Array.isArray(body?.roles)) {
+        const roles = body.roles.map(r => String(r).replace(/^ROLE_/i, ''));
+        const hasCreator = roles.some(r => r.toLowerCase() === 'creator');
+        const hasModerator = roles.some(r => r.toLowerCase() === 'moderator');
+        if (hasCreator && hasModerator) {
+          throw new ApiError('Vai trò Người sáng tạo (Creator) và Kiểm duyệt viên (Moderator) loại trừ lẫn nhau tuyệt đối. Một tài khoản không thể đồng thời giữ cả hai vai trò.', 400, 'BAD_REQUEST');
+        }
         acc.roles = [...body.roles];
         this.saveData();
         return acc;
       }
       throw new ApiError(`Không tìm thấy tài khoản ${id}`, 404, 'NOT_FOUND');
+    }
+
+    const accountResetPasswordMatch = cleanPath.match(/^\/admin\/accounts\/(\d+)\/reset-password$/);
+    if (accountResetPasswordMatch && method === 'POST') {
+      const id = parseInt(accountResetPasswordMatch[1], 10);
+      const acc = data.accounts.find(a => a.accountId === id);
+      if (!acc) {
+        throw new ApiError(`Không tìm thấy tài khoản ${id}`, 404, 'NOT_FOUND');
+      }
+      const currentAccount = this.getCurrentAccount();
+      if (currentAccount && (currentAccount.accountId === id || (currentAccount.email && currentAccount.email.toLowerCase() === (acc.email || acc.emailOrPhone || '').toLowerCase()))) {
+        throw new ApiError('Không thể tự đặt lại mật khẩu của chính mình qua tính năng quản trị. Vui lòng đổi mật khẩu tại trang Hồ sơ cá nhân.', 400, 'BAD_REQUEST');
+      }
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789@#$%&*!?';
+      let temporaryPassword = 'Tmp@';
+      for (let i = 0; i < 8; i++) {
+        temporaryPassword += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      acc.updatedAt = new Date().toISOString();
+      this.saveData();
+      return {
+        accountId: id,
+        emailOrPhone: acc.email || acc.emailOrPhone,
+        temporaryPassword
+      };
     }
 
     if (cleanPath === '/admin/roles' && method === 'GET') {
