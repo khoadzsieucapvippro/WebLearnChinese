@@ -73,7 +73,8 @@ export function isApiConfigured() {
     const raw = String(window.__ENV__.API_BASE_URL).trim();
     if (!raw) return false;
     const normalized = raw.replace(/\/$/, '');
-    if (normalized === DEFAULT_BASE_URL && (isGitHubPagesEnvironment() || isDemoFallbackActive())) {
+    if ((normalized === DEFAULT_BASE_URL || isDemoFallbackActive()) && (isGitHubPagesEnvironment() || isDemoFallbackActive())) {
+
       return false;
     }
     return true;
