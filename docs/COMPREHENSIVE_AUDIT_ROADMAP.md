@@ -755,3 +755,12 @@ Hiện trạng lỗi bảo mật và ranh giới nghiệp vụ:
      * `MS-03`: Learner lưu `localStorage`, truy cập tự do trang học, đóng tab mở lại vẫn duy trì phiên học.
    - `npm run verify:frontend:fast`: **1.109/1.109 tests PASS** (272 suites).
    - `node tests/e2e/runner.mjs --tier=all`: **74/74 tests PASS** (Tiers 1–4, 0.74s).
+
+4. **Kiểm Nghiệm Trực Tiếp Trên GitHub Pages Live (`https://khoadzsieucapvippro.github.io/WebLearnChinese/`)**:
+   - **Đẩy mã nguồn lên GitHub**: Commit `967a113` đã push lên nhánh `main`.
+   - **GitHub Actions CI/CD**: Workflow `Deploy GitHub Pages` (Run ID: `40675163882`) chạy hoàn tất thành công 100% (**SUCCESS**).
+   - **Kiểm thử tự động trên Live GitHub Pages qua Playwright**:
+     * `11_github_pages_login_live.png`: Mở trang đăng nhập `login.html` trực tiếp từ GitHub Pages.
+     * `12_github_pages_creator_lessons_live.png`: Xác nhận phòng tác nghiệp `creator-lessons.html` hoạt động với `sessionStorage` (không có rò rỉ token vào `localStorage`), đã xóa bỏ hoàn toàn nút "Quay lại học" và breadcrumb thừa.
+     * `13_github_pages_reverse_role_guard_live.png`: Cố tình truy cập trang học viên `lessons.html` khi đang giữ vai trò Creator $\rightarrow$ Cơ chế Strict Reverse Role Guard chặn đứng ngay lập tức và cưỡng bức chuyển hướng quay lại `creator-lessons.html`.
+     * `14_github_pages_after_x_tab_logged_out.png`: Mô phỏng đóng tab Chrome (X tab) và mở tab mới vào GitHub Pages $\rightarrow$ Phiên quản lý bị tiêu hủy tự động 100%, navbar trở về trạng thái Khách (`Guest`) với nút "Đăng nhập" / "Đăng ký". Không còn hiện tượng tài khoản quản lý rơi vào giao diện người học!
