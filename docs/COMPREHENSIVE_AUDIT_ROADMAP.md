@@ -764,3 +764,25 @@ Hiện trạng lỗi bảo mật và ranh giới nghiệp vụ:
      * `12_github_pages_creator_lessons_live.png`: Xác nhận phòng tác nghiệp `creator-lessons.html` hoạt động với `sessionStorage` (không có rò rỉ token vào `localStorage`), đã xóa bỏ hoàn toàn nút "Quay lại học" và breadcrumb thừa.
      * `13_github_pages_reverse_role_guard_live.png`: Cố tình truy cập trang học viên `lessons.html` khi đang giữ vai trò Creator $\rightarrow$ Cơ chế Strict Reverse Role Guard chặn đứng ngay lập tức và cưỡng bức chuyển hướng quay lại `creator-lessons.html`.
      * `14_github_pages_after_x_tab_logged_out.png`: Mô phỏng đóng tab Chrome (X tab) và mở tab mới vào GitHub Pages $\rightarrow$ Phiên quản lý bị tiêu hủy tự động 100%, navbar trở về trạng thái Khách (`Guest`) với nút "Đăng nhập" / "Đăng ký". Không còn hiện tượng tài khoản quản lý rơi vào giao diện người học!
+
+---
+
+### 5.11. Quyết Nghị Kiến Trúc Phân Quyền & Bất Biến Kiểm Duyệt (Phương Án A — Đã Chốt Cùng Người Dùng)
+
+Ngày 2026-10-28, Người Dùng và AI Coding Assistant đã thống nhất áp dụng **Phương án A (Chuẩn Phân Lập Trách Nhiệm & Trọng Tài Tối Cao)** cho toàn bộ hệ thống quản lý nội dung:
+
+1. **Bất Biến Phân Lập Trách Nhiệm Tuyệt Đối (Separation of Duties - SoD Invariant)**:
+   - **Creator (Tác giả)** và **Moderator (Kiểm duyệt viên)** là hai vai trò loại trừ lẫn nhau tuyệt đối (*Mutually Exclusive*).
+   - Không một tài khoản nào trong hệ thống được phép đồng thời giữ cả hai quyền `Creator` và `Moderator` (nghiêm cấm hành vi "vừa đá bóng vừa thổi còi").
+   - Giao diện phân quyền `admin-roles.html` và Backend `AdminRoleServiceImpl.java` sẽ khóa cứng logic: nếu tài khoản được gán `Creator` thì tự động vô hiệu hóa `Moderator`, và ngược lại.
+
+2. **Quy Tắc Vai Trò Quản Trị Viên (Admin Supervisory Authority)**:
+   - `Admin` là người có quyền hạn hệ thống cao nhất, đóng vai trò **Trọng tài Tối cao & Giám sát Cấp cao**.
+   - Admin chỉ can thiệp vào quy trình kiểm duyệt bài học khi:
+     * Có sự cố, khiếu nại từ tác giả (bài bị treo duyệt quá hạn, từ chối không thỏa đáng).
+     * Có sự cố khẩn cấp về an ninh nội dung (bài vi phạm bản quyền, nội dung độc hại cần thu hồi lập tức qua `admin-lessons.html`).
+   - Bản thân Admin **tuyệt đối không "vừa tự tạo bài học vừa tự bấm duyệt"**. Bất biến Cấm tự phê duyệt (Self-Review Invariant) áp dụng bình đẳng cho mọi tài khoản trong hệ thống. Nếu Admin nạp dữ liệu giáo trình chuẩn, Admin sử dụng chức năng nạp trực tiếp cấp quản trị (`admin-lessons.html`).
+
+3. **Kế Hoạch Thực Hiện**:
+   - Hoàn thiện và nghiệm thu triệt để **Task 6.1 (Creator Studio)** trước (rà soát nút Tạo bài học mới vs Nhập Excel, tối ưu hóa giao diện).
+   - Sau đó tiếp tục thực hiện Task 6.2 (Moderator Queue & Thẩm định bài học) theo đúng định hướng Phương án A đã chốt.
