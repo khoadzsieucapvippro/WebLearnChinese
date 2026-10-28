@@ -14,7 +14,7 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>管</text></svg>">
 
   <!-- Core Design Tokens & Custom Stylesheet -->
-  <link rel="stylesheet" href="css/style.css?v=20261028_04">
+  <link rel="stylesheet" href="css/style.css?v=20261029_01">
 
   <!-- Runtime Environment Configuration -->
   <script src="js/config.js"></script>
@@ -266,7 +266,7 @@
   <!-- Admin Reset Password Modal Dialog -->
   <dialog id="resetPasswordModal" class="notes-dialog" aria-labelledby="resetPasswordModalTitle" aria-describedby="resetPasswordModalDesc">
     <div class="notes-modal-card">
-      <div class="notes-modal-header p-3 border-bottom d-flex align-items-center justify-content-between">
+      <div class="notes-modal-header p-3 border-bottom d-flex align-items-center justify-content-between bg-white">
         <h2 id="resetPasswordModalTitle" class="h6 fw-bold mb-0 d-flex align-items-center gap-2">
           <span aria-hidden="true">🔑</span> Đặt Lại Mật Khẩu Tài Khoản
         </h2>
@@ -277,42 +277,58 @@
 
       <div class="p-3">
         <!-- Target Account Preview -->
-        <p id="resetPasswordModalDesc" class="text-secondary small mb-3">
-          Tạo mật khẩu tạm thời ngẫu nhiên an toàn gồm 12 ký tự cho tài khoản người dùng dưới đây:
+        <p id="resetPasswordModalDesc" class="text-secondary small mb-2">
+          Đặt lại mật khẩu cho tài khoản người dùng dưới đây:
         </p>
 
-        <div class="p-3 bg-light rounded border mb-3">
-          <div class="small text-secondary mb-1">Tài khoản mục tiêu:</div>
-          <div class="fw-bold text-dark" id="resetModalTargetEmail">--</div>
-          <div class="small text-muted mt-1" id="resetModalTargetInfo">ID: #0 • --</div>
+        <div class="p-2 px-3 bg-light rounded border mb-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+          <div class="small">
+            <span class="text-secondary">Tài khoản:</span>
+            <strong class="text-dark ms-1" id="resetModalTargetEmail">--</strong>
+          </div>
+          <div class="small text-muted" id="resetModalTargetInfo">ID: #0 • --</div>
         </div>
 
-        <!-- Before Submit: Confirmation info & Security warning -->
+        <!-- Before Submit: Input custom password or auto-generate -->
         <div id="resetPasswordConfirmSection">
+          <div class="mb-3">
+            <label for="adminNewPasswordInput" class="form-label small fw-semibold text-secondary mb-1">
+              Mật khẩu mới (tự nhập hoặc bấm tạo ngẫu nhiên):
+            </label>
+            <div class="input-group">
+              <input type="password" id="adminNewPasswordInput" class="form-control form-control-sm" placeholder="Nhập mật khẩu mới (tối thiểu 6 ký tự)" autocomplete="new-password">
+              <button type="button" id="btnToggleNewPassword" class="btn btn-outline-secondary btn-sm" title="Ẩn/Hiện mật khẩu" aria-label="Ẩn/Hiện mật khẩu">👁️</button>
+              <button type="button" id="btnGeneratePassword" class="btn btn-chinese-secondary btn-sm d-inline-flex align-items-center gap-1" title="Tự sinh mật khẩu ngẫu nhiên">🎲 Tạo ngẫu nhiên</button>
+            </div>
+            <div class="small text-muted mt-1" style="font-size: 0.8rem;">
+              * Để trống hoặc bấm "🎲 Tạo ngẫu nhiên" để hệ thống tự động sinh mật khẩu an toàn.
+            </div>
+          </div>
+
           <div class="alert alert-warning py-2 px-3 small mb-2 d-flex align-items-start gap-2">
             <span aria-hidden="true">&#9888;</span>
-            <div>
-              <strong>Lưu ý quan trọng:</strong> Hành động này sẽ tạo mật khẩu ngẫu nhiên mới, đồng thời thu hồi toàn bộ phiên đăng nhập hiện tại của người dùng. Mật khẩu tạm thời sẽ chỉ hiển thị <strong>MỘT LẦN DUY NHẤT</strong> trên màn hình này.
+            <div style="font-size: 0.825rem;">
+              <strong>Lưu ý bảo mật:</strong> Đổi mật khẩu sẽ thu hồi toàn bộ phiên đăng nhập hiện tại của tài khoản theo cơ chế <code>authorization_version</code> phía máy chủ.
             </div>
           </div>
         </div>
 
-        <!-- After Submit: Success Result with Temporary Password and Copy button -->
+        <!-- After Submit: Success Result with Password and Copy button -->
         <div id="resetPasswordResultSection" class="d-none">
           <div class="alert alert-success py-2 px-3 small mb-3">
             <span aria-hidden="true">✓</span> Đặt lại mật khẩu thành công! Hãy sao chép và gửi mật khẩu này cho người dùng qua kênh an toàn.
           </div>
           <label for="temporaryPasswordDisplay" class="form-label small fw-semibold text-secondary mb-1">
-            Mật khẩu tạm thời mới
+            Mật khẩu mới đã được lưu:
           </label>
           <div class="input-group mb-2">
-            <input type="text" id="temporaryPasswordDisplay" class="form-control font-monospace fw-bold fs-6 text-primary bg-light" readonly aria-label="Mật khẩu tạm thời mới">
-            <button type="button" id="btnCopyTemporaryPassword" class="btn btn-chinese-primary" title="Sao chép mật khẩu">
+            <input type="text" id="temporaryPasswordDisplay" class="form-control font-monospace fw-bold fs-6 text-primary bg-light" readonly aria-label="Mật khẩu mới">
+            <button type="button" id="btnCopyTemporaryPassword" class="btn btn-chinese-primary btn-sm" title="Sao chép mật khẩu">
               Sao chép
             </button>
           </div>
-          <p class="small text-muted mb-0">
-            * Mật khẩu này sẽ bị ẩn khi bạn đóng hộp thoại.
+          <p class="small text-muted mb-0" style="font-size: 0.8rem;">
+            * Mật khẩu này đã được lưu vào hệ thống và có thể dùng đăng nhập ngay lập tức.
           </p>
         </div>
 
@@ -321,11 +337,11 @@
       </div>
 
       <div class="p-3 border-top bg-light d-flex align-items-center justify-content-end gap-2">
-        <button type="button" id="btnCancelResetPasswordModal" class="btn-chinese-secondary btn-sm">
-          Đóng
+        <button type="button" id="btnCancelResetPasswordModal" class="btn btn-chinese-secondary btn-sm">
+          Hủy bỏ
         </button>
-        <button type="button" id="btnConfirmResetPassword" class="btn-chinese-primary btn-sm">
-          Tạo mật khẩu tạm
+        <button type="button" id="btnConfirmResetPassword" class="btn btn-chinese-primary btn-sm">
+          🔑 Xác nhận đổi MK
         </button>
       </div>
     </div>
@@ -344,9 +360,9 @@
   </footer>
 
   <!-- Management Workspace Layout & Sidebar Component -->
-  <script type="module" src="js/ui/management-layout.js?v=20261028_04"></script>
+  <script type="module" src="js/ui/management-layout.js?v=20261029_01"></script>
 
   <!-- Page Initialization Entrypoint -->
-  <script type="module" src="js/pages/admin-accounts-page.js?v=20261028_04"></script>
+  <script type="module" src="js/pages/admin-accounts-page.js?v=20261029_01"></script>
 </body>
 </html>

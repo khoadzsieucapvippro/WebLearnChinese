@@ -14,7 +14,7 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>字</text></svg>">
 
   <!-- Core Design Tokens & Styles -->
-  <link rel="stylesheet" href="css/style.css?v=20261028_04">
+  <link rel="stylesheet" href="css/style.css?v=20261029_01">
 
   <!-- Runtime Environment Configuration -->
   <script src="js/config.js"></script>
@@ -191,105 +191,86 @@
        ROLE ASSIGNMENT MODAL DIALOG (Native HTML5 <dialog> with WAI-ARIA)
        ========================================================================= -->
   <dialog id="roleAssignmentModal" class="notes-dialog" aria-labelledby="roleModalTitle" aria-describedby="roleModalDesc">
-    <div class="notes-dialog-content">
+    <div class="notes-modal-card">
       <!-- Modal Header -->
-      <div class="d-flex align-items-center justify-content-between pb-3 border-bottom mb-3">
-        <h2 id="roleModalTitle" class="h5 fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+      <div class="notes-modal-header p-3 border-bottom d-flex align-items-center justify-content-between bg-white">
+        <h2 id="roleModalTitle" class="h6 fw-bold text-dark mb-0 d-flex align-items-center gap-2">
           <span aria-hidden="true">🛡️</span> Phân Quyền Vai Trò Tài Khoản
         </h2>
-        <button type="button" id="btnCloseRoleModal" class="btn-close" aria-label="Đóng hộp thoại phân quyền"></button>
+        <button type="button" id="btnCloseRoleModal" class="toast-close-btn" aria-label="Đóng hộp thoại phân quyền">
+          <span aria-hidden="true">&times;</span>
+        </button>
       </div>
 
-      <!-- Modal Description & Target Identity Preview -->
-      <p id="roleModalDesc" class="text-secondary small mb-3">
-        Cập nhật toàn bộ tập hợp vai trò được gán cho tài khoản người dùng dưới đây.
-      </p>
-
-      <div class="p-3 bg-light rounded-2 border mb-3">
-        <div class="row g-2 small">
-          <div class="col-sm-6">
-            <span class="text-muted d-block">Tài khoản:</span>
-            <strong id="modalTargetEmail" class="text-dark text-break">—</strong>
+      <!-- Modal Body (Scrollable, max-height 60vh) -->
+      <div class="p-3" style="max-height: 60vh; overflow-y: auto;">
+        <!-- Compact Target Account Header -->
+        <div class="p-2 px-3 bg-light rounded border mb-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+          <div class="small">
+            <span class="text-secondary">Tài khoản:</span>
+            <strong id="modalTargetEmail" class="text-dark ms-1">—</strong>
+            <span class="text-muted ms-2">(<span id="modalTargetFullName">—</span>)</span>
           </div>
-          <div class="col-sm-6">
-            <span class="text-muted d-block">Họ và tên:</span>
-            <span id="modalTargetFullName" class="text-dark">—</span>
-          </div>
-          <div class="col-12 mt-2 pt-2 border-top d-flex align-items-center justify-content-between flex-wrap gap-2">
-            <div>
-              <span class="text-muted me-1">Mã định danh:</span>
-              <code id="modalTargetAccountId" class="fw-bold">#—</code>
-            </div>
-            <div id="modalTargetSelfBadge" class="d-none">
-              <span class="badge bg-secondary small">Tài khoản Admin của bạn</span>
-            </div>
+          <div class="d-flex align-items-center gap-2">
+            <code id="modalTargetAccountId" class="small text-muted">#—</code>
+            <span id="modalTargetSelfBadge" class="badge bg-secondary small d-none">Bạn</span>
           </div>
         </div>
-      </div>
 
-      <!-- Current Server Roles Preview -->
-      <div class="mb-3">
-        <span class="form-label small fw-semibold text-secondary d-block mb-1">
-          Vai trò hiện tại phía máy chủ:
-        </span>
-        <div id="modalCurrentRolesContainer" class="d-flex flex-wrap gap-1 align-items-center">
-          <!-- Populated dynamically with badges -->
+        <p id="roleModalDesc" class="visually-hidden">
+          Cập nhật toàn bộ tập hợp vai trò được gán cho tài khoản người dùng
+        </p>
+
+        <!-- Current Server Roles Preview (Compact) -->
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <span class="small fw-semibold text-secondary">Vai trò hiện tại:</span>
+          <div id="modalCurrentRolesContainer" class="d-flex flex-wrap gap-1 align-items-center">
+            <!-- Populated dynamically with badges -->
+          </div>
         </div>
-      </div>
 
-      <!-- Role Selection Form -->
-      <form id="roleAssignmentForm" novalidate>
-        <fieldset class="mb-3 border rounded-2 p-3 bg-white">
-          <legend class="float-none w-auto px-2 fs-6 fw-bold text-dark mb-2">
-            Chọn tập hợp vai trò mới:
-          </legend>
-
-          <!-- Checkboxes Container -->
-          <div id="roleCheckboxesContainer" class="d-flex flex-column gap-2" role="group" aria-label="Danh sách vai trò lựa chọn">
-            <!-- Dynamically populated checkboxes -->
+        <!-- Role Selection Form -->
+        <form id="roleAssignmentForm" novalidate>
+          <div class="mb-2">
+            <label class="form-label small fw-semibold text-secondary mb-1">
+              Chọn tập hợp vai trò mới:
+            </label>
+            <!-- Checkboxes Container -->
+            <div id="roleCheckboxesContainer" class="d-flex flex-column gap-1" role="group" aria-label="Danh sách vai trò lựa chọn">
+              <!-- Dynamically populated checkboxes -->
+            </div>
           </div>
 
           <!-- Self-Demotion Defense Note (POL-8D-02) -->
-          <div id="modalSelfDemotionNotice" class="alert alert-warning py-2 px-3 small mt-3 mb-0 d-none" role="note">
-            <div class="d-flex align-items-start gap-2">
-              <span aria-hidden="true" class="fs-6">&#9888;</span>
-              <div>
-                <strong>Chính sách bảo vệ tự thân (POL-8D-02):</strong>
-                <span>Bạn không thể tự tước quyền Quản trị viên (Admin) của chính mình. Vai trò Admin được cố định, nhưng bạn vẫn có thể gán hoặc thu hồi các vai trò khác.</span>
-              </div>
-            </div>
+          <div id="modalSelfDemotionNotice" class="alert alert-warning py-1 px-2 small mb-2 d-none" role="note">
+            <span aria-hidden="true">&#9888;</span> <strong>Bảo vệ tự thân (POL-8D-02):</strong> Không thể tự tước quyền Admin của chính mình.
           </div>
-        </fieldset>
 
-        <!-- Consequence Notice (DEC-42: Server-Side Token Invalidation) -->
-        <div class="alert alert-info py-2 px-3 small mb-3" id="roleModalWarningNotice" role="note">
-          <div class="d-flex align-items-start gap-2">
-            <span aria-hidden="true" class="fs-6">&#8505;</span>
-            <div>
-              <strong>Hệ quả bảo mật máy chủ (DEC-42):</strong>
-              <span>Khi tập hợp vai trò có sự thay đổi thực tế, máy chủ sẽ tự động tăng <code>authorization_version</code> để làm mất hiệu lực toàn bộ phiên làm việc và token JWT hiện có của tài khoản mục tiêu.</span>
-            </div>
+          <!-- Subtle Security Notice -->
+          <div class="text-muted small mb-2 d-flex align-items-center gap-1" id="roleModalWarningNotice">
+            <span aria-hidden="true">&#8505;</span>
+            <span style="font-size: 0.8rem;">Thay đổi vai trò sẽ thu hồi toàn bộ token hiện tại của tài khoản (DEC-42).</span>
           </div>
-        </div>
 
-        <!-- No-Change / Unchanged Roles Indicator -->
-        <div id="roleModalNoChangeNotice" class="alert alert-secondary py-2 px-3 small mb-3 d-none" role="status">
-          <span>Tập hợp vai trò được chọn trùng khớp với trạng thái hiện tại trên máy chủ (Không có thay đổi cần lưu).</span>
-        </div>
+          <!-- No-Change / Unchanged Roles Indicator -->
+          <div id="roleModalNoChangeNotice" class="text-muted small fst-italic mb-2 d-none" role="status">
+            * Vai trò đã chọn trùng khớp với hiện tại (Không có thay đổi).
+          </div>
 
-        <!-- Error Feedback Area -->
-        <div id="roleModalError" class="alert alert-danger py-2 px-3 small mb-3 d-none" role="alert" aria-live="assertive"></div>
+          <!-- Error Feedback Area -->
+          <div id="roleModalError" class="alert alert-danger py-2 px-3 small mb-2 d-none" role="alert" aria-live="assertive"></div>
+        </form>
+      </div>
 
-        <!-- Modal Actions Footer -->
-        <div class="d-flex align-items-center justify-content-end gap-2 pt-2 border-top">
-          <button type="button" id="btnCancelRoleModal" class="btn btn-chinese-secondary">
-            Hủy bỏ
-          </button>
-          <button type="button" id="btnSaveRoles" class="btn btn-chinese-primary">
-            Lưu phân quyền
-          </button>
-        </div>
-      </form>
+      <!-- Sticky Modal Actions Footer (Fixed at bottom) -->
+      <div class="p-3 border-top bg-light d-flex align-items-center justify-content-end gap-2">
+        <button type="button" id="btnCancelRoleModal" class="btn btn-chinese-secondary btn-sm">
+          Hủy bỏ
+        </button>
+        <button type="button" id="btnSaveRoles" class="btn btn-chinese-primary btn-sm">
+          Lưu phân quyền
+        </button>
+      </div>
     </div>
   </dialog>
 
@@ -306,9 +287,9 @@
   </footer>
 
   <!-- Management Workspace Layout & Sidebar Component -->
-  <script type="module" src="js/ui/management-layout.js?v=20261028_04"></script>
+  <script type="module" src="js/ui/management-layout.js?v=20261029_01"></script>
 
   <!-- Page Initialization Entrypoint -->
-  <script type="module" src="js/pages/admin-roles-page.js?v=20261028_04"></script>
+  <script type="module" src="js/pages/admin-roles-page.js?v=20261029_01"></script>
 </body>
 </html>

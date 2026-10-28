@@ -38,5 +38,7 @@ public interface AdminAccountService {
      * @param currentAdminEmail identifier of currently authenticated admin
      * @return AdminResetPasswordResponse containing target identity and temporary password
      */
+    com.elearning.dto.response.AdminResetPasswordResponse resetPassword(Long accountId, com.elearning.dto.request.AdminResetPasswordRequest request, String currentAdminEmail);
+
     com.elearning.dto.response.AdminResetPasswordResponse resetPassword(Long accountId, String currentAdminEmail);
 }

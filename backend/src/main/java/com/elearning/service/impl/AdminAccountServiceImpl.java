@@ -1,6 +1,7 @@
 package com.elearning.service.impl;
 
 import com.elearning.common.ErrorCode;
+import com.elearning.dto.request.AdminResetPasswordRequest;
 import com.elearning.dto.request.UpdateAccountStatusRequest;
 import com.elearning.dto.response.AccountResponse;
 import com.elearning.dto.response.PageResponse;
@@ -147,7 +148,7 @@ public class AdminAccountServiceImpl implements AdminAccountService {
 
     @Override
     @Transactional
-    public AdminResetPasswordResponse resetPassword(Long accountId, String currentAdminEmail) {
+    public AdminResetPasswordResponse resetPassword(Long accountId, AdminResetPasswordRequest request, String currentAdminEmail) {
         Account account = accountRepository.findByIdForUpdate(accountId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "Không tìm thấy tài khoản với ID: " + accountId));
 
@@ -159,12 +160,20 @@ public class AdminAccountServiceImpl implements AdminAccountService {
             );
         }
 
-        String temporaryPassword = generateTemporaryPassword();
+        String finalPassword;
+        if (request != null && request.getNewPassword() != null && !request.getNewPassword().trim().isEmpty()) {
+            finalPassword = request.getNewPassword().trim();
+            if (finalPassword.length() < 6 || finalPassword.length() > 128) {
+                throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Mật khẩu mới phải có độ dài từ 6 đến 128 ký tự");
+            }
+        } else {
+            finalPassword = generateTemporaryPassword();
+        }
 
         if (passwordEncoder != null) {
-            account.setPasswordHash(passwordEncoder.encode(temporaryPassword));
+            account.setPasswordHash(passwordEncoder.encode(finalPassword));
         } else {
-            account.setPasswordHash(temporaryPassword);
+            account.setPasswordHash(finalPassword);
         }
 
         account.incrementAuthorizationVersion();
@@ -182,7 +191,13 @@ public class AdminAccountServiceImpl implements AdminAccountService {
             );
         }
 
-        return new AdminResetPasswordResponse(account.getAccountId(), account.getEmailOrPhone(), temporaryPassword);
+        return new AdminResetPasswordResponse(account.getAccountId(), account.getEmailOrPhone(), finalPassword);
+    }
+
+    @Override
+    @Transactional
+    public AdminResetPasswordResponse resetPassword(Long accountId, String currentAdminEmail) {
+        return resetPassword(accountId, null, currentAdminEmail);
     }
 
     public static String generateTemporaryPassword() {

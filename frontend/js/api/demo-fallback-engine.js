@@ -1533,17 +1533,26 @@ const currentAccount = this.getCurrentAccount();
       if (currentAccount && (currentAccount.accountId === id || (currentAccount.email && currentAccount.email.toLowerCase() === (acc.email || acc.emailOrPhone || '').toLowerCase()))) {
         throw new ApiError('Không thể tự đặt lại mật khẩu của chính mình qua tính năng quản trị. Vui lòng đổi mật khẩu tại trang Hồ sơ cá nhân.', 400, 'BAD_REQUEST');
       }
-      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789@#$%&*!?';
-      let temporaryPassword = 'Tmp@';
-      for (let i = 0; i < 8; i++) {
-        temporaryPassword += chars.charAt(Math.floor(Math.random() * chars.length));
+      let finalPassword = '';
+      if (body && typeof body.newPassword === 'string' && body.newPassword.trim().length >= 6) {
+        finalPassword = body.newPassword.trim();
+      } else {
+        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789@#$%&*!?';
+        let temporaryPassword = 'Tmp@';
+        for (let i = 0; i < 8; i++) {
+          temporaryPassword += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        finalPassword = temporaryPassword;
       }
+      acc.password = finalPassword;
+      acc.passwordHash = finalPassword;
       acc.updatedAt = new Date().toISOString();
       this.saveData();
       return {
         accountId: id,
         emailOrPhone: acc.email || acc.emailOrPhone,
-        temporaryPassword
+        temporaryPassword: finalPassword,
+        newPassword: finalPassword
       };
     }
 

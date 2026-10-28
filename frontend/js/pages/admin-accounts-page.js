@@ -428,6 +428,9 @@ export class AdminAccountsController {
       btnCloseResetPasswordModal: document.getElementById('btnCloseResetPasswordModal'),
       btnCancelResetPasswordModal: document.getElementById('btnCancelResetPasswordModal'),
       btnConfirmResetPassword: document.getElementById('btnConfirmResetPassword'),
+      adminNewPasswordInput: document.getElementById('adminNewPasswordInput'),
+      btnToggleNewPassword: document.getElementById('btnToggleNewPassword'),
+      btnGeneratePassword: document.getElementById('btnGeneratePassword'),
       resetModalTargetEmail: document.getElementById('resetModalTargetEmail'),
       resetModalTargetInfo: document.getElementById('resetModalTargetInfo'),
       resetPasswordConfirmSection: document.getElementById('resetPasswordConfirmSection'),
@@ -541,6 +544,31 @@ export class AdminAccountsController {
       }
     });
     this.dom.btnConfirmResetPassword?.addEventListener('click', () => this.submitResetPassword());
+
+    this.dom.btnToggleNewPassword?.addEventListener('click', () => {
+      const input = this.dom.adminNewPasswordInput;
+      if (!input) return;
+      if (input.type === 'password') {
+        input.type = 'text';
+        if (this.dom.btnToggleNewPassword) this.dom.btnToggleNewPassword.textContent = '🔒';
+      } else {
+        input.type = 'password';
+        if (this.dom.btnToggleNewPassword) this.dom.btnToggleNewPassword.textContent = '👁️';
+      }
+    });
+
+    this.dom.btnGeneratePassword?.addEventListener('click', () => {
+      const input = this.dom.adminNewPasswordInput;
+      if (!input) return;
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789@#$%&*!?';
+      let rand = 'Tmp@';
+      for (let i = 0; i < 8; i++) {
+        rand += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      input.value = rand;
+      input.type = 'text';
+      if (this.dom.btnToggleNewPassword) this.dom.btnToggleNewPassword.textContent = '🔒';
+    });
     this.dom.btnCopyTemporaryPassword?.addEventListener('click', () => this.copyTemporaryPassword());
   }
 
@@ -807,7 +835,7 @@ export class AdminAccountsController {
           'aria-label': 'Không thể tự đặt lại mật khẩu của chính mình qua tính năng quản trị',
           'title': 'Không thể tự đặt lại mật khẩu của chính mình qua tính năng quản trị'
         },
-        text: '🔑'
+        text: '🔑 Đổi MK'
       });
       actionContainer.appendChild(selfResetDisabledBtn);
     } else {
@@ -837,7 +865,7 @@ export class AdminAccountsController {
           'title': `Đặt lại mật khẩu cho tài khoản ${account.emailOrPhone}`,
           'data-account-id': String(account.accountId)
         },
-        text: '🔑'
+        text: '🔑 Đổi MK'
       });
 
       resetPasswordBtn.addEventListener('click', () => {
@@ -1231,10 +1259,17 @@ export class AdminAccountsController {
     if (this.dom.temporaryPasswordDisplay) {
       this.dom.temporaryPasswordDisplay.value = '';
     }
+    if (this.dom.adminNewPasswordInput) {
+      this.dom.adminNewPasswordInput.value = '';
+      this.dom.adminNewPasswordInput.type = 'password';
+    }
+    if (this.dom.btnToggleNewPassword) {
+      this.dom.btnToggleNewPassword.textContent = '👁️';
+    }
     if (this.dom.btnConfirmResetPassword) {
       this.dom.btnConfirmResetPassword.classList.remove('d-none');
       this.dom.btnConfirmResetPassword.disabled = false;
-      this.dom.btnConfirmResetPassword.textContent = 'Tạo mật khẩu tạm';
+      this.dom.btnConfirmResetPassword.textContent = '🔑 Xác nhận đổi MK';
     }
     if (this.dom.btnCancelResetPasswordModal) {
       this.dom.btnCancelResetPasswordModal.textContent = 'Hủy bỏ';
@@ -1272,6 +1307,16 @@ export class AdminAccountsController {
     if (this.isSubmitting || !this.selectedResetAccount) return;
 
     const account = this.selectedResetAccount;
+    const customPassword = this.dom.adminNewPasswordInput?.value?.trim() || '';
+
+    if (customPassword && customPassword.length < 6) {
+      if (this.dom.resetModalError) {
+        this.dom.resetModalError.textContent = 'Mật khẩu mới phải có tối thiểu 6 ký tự.';
+        this.dom.resetModalError.classList.remove('d-none');
+      }
+      return;
+    }
+
     this.isSubmitting = true;
 
     if (this.dom.btnConfirmResetPassword) {
@@ -1283,12 +1328,14 @@ export class AdminAccountsController {
     }
 
     try {
+      const payload = customPassword ? { newPassword: customPassword } : {};
       const response = await apiClient(`/admin/accounts/${account.accountId}/reset-password`, {
-        method: 'POST'
+        method: 'POST',
+        body: payload
       });
 
       const resData = (response && response.data) ? response.data : response;
-      const temporaryPassword = resData?.temporaryPassword || '';
+      const temporaryPassword = resData?.temporaryPassword || resData?.newPassword || customPassword;
 
       // Switch to result view
       if (this.dom.resetPasswordConfirmSection) {
@@ -1311,7 +1358,7 @@ export class AdminAccountsController {
       showToast({
         type: 'success',
         title: 'Đặt lại mật khẩu thành công',
-        message: `Đã tạo mật khẩu tạm thời cho tài khoản ${account.emailOrPhone}. Mọi phiên làm việc cũ đã bị thu hồi.`
+        message: `Đã cập nhật mật khẩu cho tài khoản ${account.emailOrPhone}. Mọi phiên làm việc cũ đã bị thu hồi.`
       });
 
     } catch (err) {
@@ -1335,7 +1382,7 @@ export class AdminAccountsController {
       }
       if (this.dom.btnConfirmResetPassword) {
         this.dom.btnConfirmResetPassword.disabled = false;
-        this.dom.btnConfirmResetPassword.textContent = 'Tạo mật khẩu tạm';
+        this.dom.btnConfirmResetPassword.textContent = '🔑 Xác nhận đổi MK';
       }
     } finally {
       this.isSubmitting = false;

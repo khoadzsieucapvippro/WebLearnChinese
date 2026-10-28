@@ -204,7 +204,7 @@ class AdminAccountServiceTests {
     class ResetPasswordTests {
 
         @Test
-        @DisplayName("GIVEN target account exists WHEN admin resets password THEN generates temporary password, hashes it and increments version")
+        @DisplayName("GIVEN target account exists WHEN admin resets password without custom input THEN generates temporary password, hashes it and increments version")
         void testResetPassword_success() {
             when(accountRepository.findByIdForUpdate(10L)).thenReturn(Optional.of(testAccount));
             when(passwordEncoder.encode(any(String.class))).thenReturn("$2a$10$hashedFakePasswordReset123");
@@ -220,6 +220,24 @@ class AdminAccountServiceTests {
             assertThat(testAccount.getPasswordHash()).isEqualTo("$2a$10$hashedFakePasswordReset123");
             assertThat(testAccount.getAuthorizationVersion()).isEqualTo(2L);
             verify(accountRepository).save(testAccount);
+        }
+
+        @Test
+        @DisplayName("GIVEN target account exists WHEN admin resets password with custom input THEN hashes custom password and increments version")
+        void testResetPassword_withCustomPassword_success() {
+            when(accountRepository.findByIdForUpdate(10L)).thenReturn(Optional.of(testAccount));
+            when(passwordEncoder.encode("SecretCustom123")).thenReturn("$2a$10$hashedCustom123");
+            when(accountRepository.save(any(Account.class))).thenAnswer(i -> i.getArgument(0));
+
+            com.elearning.dto.request.AdminResetPasswordRequest req =
+                    new com.elearning.dto.request.AdminResetPasswordRequest("SecretCustom123");
+            com.elearning.dto.response.AdminResetPasswordResponse response =
+                    adminAccountService.resetPassword(10L, req, "other_admin@example.com");
+
+            assertThat(response).isNotNull();
+            assertThat(response.getTemporaryPassword()).isEqualTo("SecretCustom123");
+            assertThat(testAccount.getPasswordHash()).isEqualTo("$2a$10$hashedCustom123");
+            assertThat(testAccount.getAuthorizationVersion()).isEqualTo(2L);
         }
 
         @Test

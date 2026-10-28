@@ -94,11 +94,11 @@ class AdminAccountControllerTests {
     }
 
     @Test
-    @DisplayName("GIVEN target account WHEN calling POST /api/v1/admin/accounts/{id}/reset-password THEN returns 200 with temporary password")
+    @DisplayName("GIVEN target account WHEN calling POST /api/v1/admin/accounts/{id}/reset-password without body THEN returns 200 with temporary password")
     void testResetPassword_success() throws Exception {
         com.elearning.dto.response.AdminResetPasswordResponse response =
                 new com.elearning.dto.response.AdminResetPasswordResponse(1L, "user@example.com", "Tmp@12345678");
-        when(adminAccountService.resetPassword(eq(1L), any())).thenReturn(response);
+        when(adminAccountService.resetPassword(eq(1L), any(), any())).thenReturn(response);
 
         mockMvc.perform(post("/api/v1/admin/accounts/1/reset-password")
                         .accept(MediaType.APPLICATION_JSON))
@@ -108,5 +108,20 @@ class AdminAccountControllerTests {
                 .andExpect(jsonPath("$.data.accountId").value(1))
                 .andExpect(jsonPath("$.data.emailOrPhone").value("user@example.com"))
                 .andExpect(jsonPath("$.data.temporaryPassword").value("Tmp@12345678"));
+    }
+
+    @Test
+    @DisplayName("GIVEN target account and custom password WHEN calling POST /api/v1/admin/accounts/{id}/reset-password THEN returns 200 with new password")
+    void testResetPassword_withCustomPassword_success() throws Exception {
+        com.elearning.dto.response.AdminResetPasswordResponse response =
+                new com.elearning.dto.response.AdminResetPasswordResponse(1L, "user@example.com", "CustomPass123");
+        when(adminAccountService.resetPassword(eq(1L), any(com.elearning.dto.request.AdminResetPasswordRequest.class), any())).thenReturn(response);
+
+        mockMvc.perform(post("/api/v1/admin/accounts/1/reset-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"newPassword\": \"CustomPass123\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value("SUCCESS"))
+                .andExpect(jsonPath("$.data.temporaryPassword").value("CustomPass123"));
     }
 }

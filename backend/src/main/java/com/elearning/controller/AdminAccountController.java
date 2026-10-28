@@ -1,6 +1,7 @@
 package com.elearning.controller;
 
 import com.elearning.dto.request.UpdateAccountStatusRequest;
+import com.elearning.dto.request.AdminResetPasswordRequest;
 import com.elearning.dto.response.AccountResponse;
 import com.elearning.dto.response.AdminResetPasswordResponse;
 import com.elearning.dto.response.ApiResponse;
@@ -82,9 +83,10 @@ public class AdminAccountController {
     @PostMapping("/{id}/reset-password")
     public ResponseEntity<ApiResponse<AdminResetPasswordResponse>> resetPassword(
             @PathVariable("id") Long id,
+            @Valid @RequestBody(required = false) AdminResetPasswordRequest request,
             Principal principal) {
         String currentAdminEmail = (principal != null) ? principal.getName() : null;
-        AdminResetPasswordResponse response = adminAccountService.resetPassword(id, currentAdminEmail);
+        AdminResetPasswordResponse response = adminAccountService.resetPassword(id, request, currentAdminEmail);
         return ResponseEntity.ok(ApiResponse.success("Đặt lại mật khẩu tài khoản thành công", response));
     }
 }
