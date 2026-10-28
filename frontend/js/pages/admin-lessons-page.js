@@ -1,24 +1,21 @@
 /**
  * =============================================================================
- * ADMIN SYSTEM-WIDE LESSON OVERSIGHT CONTROLLER (TASK 9F.5)
+ * ADMIN SYSTEM-WIDE LESSON OVERSIGHT & SUPERVISORY ARBITER CONTROLLER (TASK 7.2)
  * Module: frontend/js/pages/admin-lessons-page.js
  *
  * Responsibilities:
  * - Integration with authoritative backend endpoints:
  *   * GET /api/v1/admin/lessons (Paginated system-wide lessons with status filter)
- *   * GET /api/v1/lessons/{id} (Public lesson detail for 'Approved' lessons)
- *   * GET /api/v1/moderator/lessons/{id} (Moderator detail for 'Pending' lessons)
- * - Strict Invariant: This page is 100% READ-ONLY. ZERO lesson mutations
- *   (No create, edit, delete, approve, reject, reorder, submit).
- * - Contract Limitations Respected:
- *   * Creator filter: BLOCKED BY CURRENT SEALED BACKEND CONTRACT (Omitted from UI).
- *   * Search parameter: Not supported by /admin/lessons (Omitted from UI).
- *   * Draft/Rejected detail: No universal admin detail endpoint exists;
- *     UI displays available summary data and a truthful contract limitation notice.
- * - Global Status Counts: Computed via server totalElements using lightweight
- *   size=1 probes executed in parallel; never calculated from single page slice.
- * - Role-guarded access: strictly accessible to 'Admin' (authManager.hasRole('Admin')).
- * - Safe DOM construction (zero unsafe innerHTML) & native HTML5 <dialog> modal.
+ *   * GET /api/v1/admin/lessons/{id} or fallback detail
+ *   * POST /api/v1/admin/lessons/{id}/revoke (Emergency Take-Down of harmful lessons)
+ *   * POST /api/v1/admin/lessons/{id}/approve (Supervisory Arbiter Approval for disputes)
+ * - Self-Review Prohibition (Invariant 6):
+ *   Admin CANNOT approve or revoke lessons they personally created.
+ * - Clean UI Layout:
+ *   * Zero breadcrumbs, zero tab repetition, zero page size dropdowns, zero summary labels.
+ *   * Standardized First/Last pagination (<< < 1 2 3 > >>) aligned to the right.
+ *   * Responsive table container (.table-responsive-clean).
+ * - Safe DOM construction (zero unsafe innerHTML) & native HTML5 <dialog> modals.
  * =============================================================================
  */
 
@@ -116,10 +113,9 @@ export function mapStatusBadge(status) {
  * Builds query parameters for GET /api/v1/admin/lessons.
  * Omits 'status' if empty or 'All'.
  *
- * @param {object} options
- * @param {string} [options.status]
- * @param {number} [options.page=0]
- * @param {number} [options.size=20]
+ * @param {object|string} [statusOrOptions='']
+ * @param {number} [pageArg=0]
+ * @param {number} [sizeArg=20]
  * @returns {Record<string, string|number>}
  */
 export function buildAdminLessonsParams(statusOrOptions = '', pageArg = 0, sizeArg = 20) {
@@ -127,35 +123,25 @@ export function buildAdminLessonsParams(statusOrOptions = '', pageArg = 0, sizeA
   let page = 0;
   let size = 20;
 
-  if (statusOrOptions && typeof statusOrOptions === 'object') {
-    status = statusOrOptions.status ?? '';
-    page = statusOrOptions.page ?? 0;
-    size = statusOrOptions.size ?? 20;
+  if (typeof statusOrOptions === 'object' && statusOrOptions !== null) {
+    status = normalizeStatusFilter(statusOrOptions.status);
+    page = typeof statusOrOptions.page === 'number' && statusOrOptions.page >= 0 ? statusOrOptions.page : 0;
+    size = typeof statusOrOptions.size === 'number' && statusOrOptions.size > 0 ? statusOrOptions.size : 20;
   } else {
-    status = statusOrOptions ?? '';
-    page = pageArg;
-    size = sizeArg;
+    status = normalizeStatusFilter(statusOrOptions);
+    page = typeof pageArg === 'number' && pageArg >= 0 ? pageArg : 0;
+    size = typeof sizeArg === 'number' && sizeArg > 0 ? sizeArg : 20;
   }
 
-  const normStatus = normalizeStatusFilter(status);
-  const numSize = Number(size);
-  const safeSize = (!Number.isFinite(numSize) || numSize <= 0) ? 20 : Math.floor(numSize);
-  const params = {
-    page: Math.max(0, Number(page) || 0),
-    size: safeSize
-  };
-  if (normStatus) {
-    params.status = normStatus;
+  const params = { page, size };
+  if (status) {
+    params.status = status;
   }
   return params;
 }
 
 /**
- * Determines the detail retrieval strategy based on lesson status.
- * Reflects current verified backend endpoint availability:
- * - 'Approved': Public endpoint GET /api/v1/lessons/{id}
- * - 'Pending': Moderator endpoint GET /api/v1/moderator/lessons/{id} (Admin is authorized)
- * - 'Draft' / 'Rejected': No universal admin detail endpoint in backend
+ * Determines strategy for fetching lesson detail based on status.
  *
  * @param {string|null|undefined} status
  * @param {string|number|null} [lessonId=null]
@@ -211,18 +197,18 @@ export function formatLessonDate(isoString) {
 }
 
 /**
- * Calculates pagination boundaries and metadata.
+ * Calculates human-readable pagination summary info for unit testing.
  *
- * @param {number} page 0-indexed current page
- * @param {number} size page size
- * @param {number} totalElements total records in dataset
+ * @param {number} page
+ * @param {number} size
+ * @param {number} totalElements
  * @returns {{ start: number, end: number, total: number, totalPages: number, currentPage: number, hasPrevious: boolean, hasNext: boolean }}
  */
 export function calculatePaginationSummary(page, size, totalElements) {
-  const safeTotal = Math.max(0, Number(totalElements) || 0);
-  const safeSize = Math.max(1, Number(size) || 20);
-  const totalPages = Math.max(1, Math.ceil(safeTotal / safeSize));
-  const currentPage = Math.max(0, Math.min(Number(page) || 0, totalPages - 1));
+  const safeTotal = Math.max(0, typeof totalElements === 'number' ? totalElements : 0);
+  const safeSize = Math.max(1, typeof size === 'number' ? size : 20);
+  const totalPages = safeTotal === 0 ? 1 : Math.ceil(safeTotal / safeSize);
+  const safePage = Math.max(0, Math.min(typeof page === 'number' ? page : 0, totalPages - 1));
 
   if (safeTotal === 0) {
     return {
@@ -236,417 +222,438 @@ export function calculatePaginationSummary(page, size, totalElements) {
     };
   }
 
-  const start = currentPage * safeSize + 1;
-  const end = Math.min(start + safeSize - 1, safeTotal);
+  const start = safePage * safeSize + 1;
+  const end = Math.min((safePage + 1) * safeSize, safeTotal);
 
   return {
     start,
     end,
     total: safeTotal,
     totalPages,
-    currentPage,
-    hasPrevious: currentPage > 0,
-    hasNext: currentPage < totalPages - 1
+    currentPage: safePage,
+    hasPrevious: safePage > 0,
+    hasNext: safePage < totalPages - 1
   };
 }
 
 /**
- * Extracts status counts from a settled array of probe responses or response object.
+ * Polymorphic pagination helper for First/Last pagination (<< < 1 2 3 > >>).
+ */
+export function calculatePagination(currentPageOrPage, totalPagesOrSize, maxVisibleOrTotalElements, maybeTotalPages, maybeMaxButtons = 5) {
+  if (arguments.length >= 4) {
+    const page = currentPageOrPage;
+    const size = totalPagesOrSize;
+    const totalElements = maxVisibleOrTotalElements;
+    const totalPages = maybeTotalPages;
+    const maxButtons = maybeMaxButtons;
+
+    const safeTotalPages = Math.max(0, totalPages || 0);
+    const safePage = Math.max(0, Math.min(page || 0, Math.max(0, safeTotalPages - 1)));
+    const hasPrev = safePage > 0;
+    const hasNext = safePage < safeTotalPages - 1;
+    const startRecord = totalElements === 0 ? 0 : safePage * size + 1;
+    const endRecord = Math.min((safePage + 1) * size, totalElements);
+
+    let startPage = 0;
+    let endPage = -1;
+    if (safeTotalPages > 0) {
+      startPage = Math.max(0, safePage - Math.floor(maxButtons / 2));
+      endPage = Math.min(safeTotalPages - 1, startPage + maxButtons - 1);
+      if (endPage - startPage < maxButtons - 1) {
+        startPage = Math.max(0, endPage - maxButtons + 1);
+      }
+    }
+
+    return {
+      currentPage: safePage,
+      totalPages: safeTotalPages,
+      hasPrev,
+      hasNext,
+      startRecord,
+      endRecord,
+      startPage,
+      endPage
+    };
+  }
+
+  const currentPage = currentPageOrPage;
+  const totalPages = totalPagesOrSize;
+  const maxVisible = maxVisibleOrTotalElements !== undefined ? maxVisibleOrTotalElements : 5;
+
+  if (totalPages <= 0) return [];
+  if (totalPages <= maxVisible) {
+    const pages = [];
+    for (let i = 0; i < totalPages; i++) pages.push(i);
+    return pages;
+  }
+  let start = Math.max(0, currentPage - Math.floor(maxVisible / 2));
+  let end = Math.min(totalPages - 1, start + maxVisible - 1);
+  if (end - start + 1 < maxVisible) {
+    start = Math.max(0, end - maxVisible + 1);
+  }
+  const pages = [];
+  for (let i = start; i <= end; i++) pages.push(i);
+  return pages;
+}
+
+/**
+ * Extracts totalElements safely from multi-status API probe responses.
  *
- * @param {Array<{ status: 'fulfilled'|'rejected', value?: any }> | Record<string, any>} results
+ * @param {object|null|undefined} responses
  * @returns {{ total: number|null, draft: number|null, pending: number|null, approved: number|null, rejected: number|null }}
  */
-export function extractStatusCounts(results) {
-  const extractTotal = (res) => {
-    if (!res) return null;
-    if (res.status === 'fulfilled' && res.value) {
-      const data = res.value.data || res.value;
-      return typeof data?.totalElements === 'number' ? data.totalElements : null;
-    }
-    const data = res.data || res;
-    if (typeof data?.totalElements === 'number') {
-      return data.totalElements;
+export function extractStatusCounts(responses) {
+  if (!responses || typeof responses !== 'object') {
+    return { total: null, draft: null, pending: null, approved: null, rejected: null };
+  }
+
+  const extract = (res) => {
+    if (res && typeof res === 'object') {
+      if (typeof res.totalElements === 'number') return res.totalElements;
+      if (res.data && typeof res.data.totalElements === 'number') return res.data.totalElements;
     }
     return null;
   };
 
-  if (Array.isArray(results)) {
-    return {
-      total: extractTotal(results[0]),
-      draft: extractTotal(results[1]),
-      pending: extractTotal(results[2]),
-      approved: extractTotal(results[3]),
-      rejected: extractTotal(results[4])
-    };
-  }
-
-  if (results && typeof results === 'object') {
-    return {
-      total: extractTotal(results.total),
-      draft: extractTotal(results.draft),
-      pending: extractTotal(results.pending),
-      approved: extractTotal(results.approved),
-      rejected: extractTotal(results.rejected)
-    };
-  }
-
-  return { total: null, draft: null, pending: null, approved: null, rejected: null };
+  return {
+    total: extract(responses.total),
+    draft: extract(responses.draft),
+    pending: extract(responses.pending),
+    approved: extract(responses.approved),
+    rejected: extract(responses.rejected)
+  };
 }
 
 /**
- * Parses and normalizes a PageResponse structure from the backend API.
+ * Parses PageResponse payload safely.
  *
- * @param {any} data
- * @returns {{ items: any[], page: number, size: number, totalElements: number, totalPages: number, first: boolean, last: boolean }}
+ * @param {object|null|undefined} data
+ * @returns {{ items: Array<object>, page: number, size: number, totalElements: number, totalPages: number, first: boolean, last: boolean }}
  */
 export function parsePageResponse(data) {
-  if (!data) {
-    return { items: [], page: 0, size: 20, totalElements: 0, totalPages: 0, first: true, last: true };
+  if (!data || typeof data !== 'object') {
+    return {
+      items: [],
+      page: 0,
+      size: 20,
+      totalElements: 0,
+      totalPages: 0,
+      first: true,
+      last: true
+    };
   }
-  const payload = data.data || data;
-  const items = Array.isArray(payload.items)
-    ? payload.items
-    : (Array.isArray(payload.content) ? payload.content : []);
-  const page = Number(payload.page ?? payload.number ?? 0);
-  const size = Number(payload.size ?? 20);
-  const totalElements = Number(payload.totalElements ?? items.length);
-  const totalPages = Number(payload.totalPages ?? (totalElements > 0 ? Math.ceil(totalElements / size) : 0));
-  const first = payload.first !== undefined ? Boolean(payload.first) : page === 0;
-  const last = payload.last !== undefined ? Boolean(payload.last) : page >= totalPages - 1;
 
-  return { items, page, size, totalElements, totalPages, first, last };
+  const items = Array.isArray(data.items)
+    ? data.items
+    : (Array.isArray(data.content) ? data.content : []);
+
+  const totalElements = typeof data.totalElements === 'number'
+    ? data.totalElements
+    : items.length;
+
+  const size = typeof data.size === 'number' && data.size > 0 ? data.size : 20;
+  const totalPages = typeof data.totalPages === 'number'
+    ? data.totalPages
+    : (totalElements === 0 ? 0 : Math.ceil(totalElements / size));
+
+  const page = typeof data.page === 'number'
+    ? data.page
+    : (typeof data.number === 'number' ? data.number : 0);
+
+  const first = typeof data.first === 'boolean' ? data.first : page === 0;
+  const last = typeof data.last === 'boolean' ? data.last : page >= Math.max(0, totalPages - 1);
+
+  return {
+    items,
+    page,
+    size,
+    totalElements,
+    totalPages,
+    first,
+    last
+  };
 }
 
 /* -----------------------------------------------------------------------------
- * 2. MAIN PAGE CONTROLLER CLASS
+ * 2. ADMIN LESSONS PAGE CONTROLLER CLASS
  * ----------------------------------------------------------------------------- */
 
 export class AdminLessonsPageController {
   constructor() {
-    this.elements = {};
-    this.currentStatus = '';
+    this.currentStatusFilter = ''; // '' represents 'All'
     this.currentPage = 0;
     this.pageSize = 20;
     this.totalElements = 0;
     this.totalPages = 0;
     this.currentLessons = [];
-    this.kpiCounts = { total: null, draft: null, pending: null, approved: null, rejected: null };
-    this.isKpiLoading = false;
+    this.targetLesson = null; // Target lesson for modal operations
     this.lastFocusedElement = null;
+
+    this.elements = {};
   }
 
   /**
-   * Initializes the controller lifecycle.
+   * Initializes the controller, caches DOM nodes, verifies role, and loads data.
    */
   async init() {
     initNavbarAuth();
+
+    // Cache elements
     this.cacheElements();
 
-    if (!hasAdminAccess(authManager)) {
-      this.renderAccessDenied();
+    // Verify Admin authorization
+    if (!hasAdminAccess()) {
+      if (this.elements.authGuard) this.elements.authGuard.classList.remove('d-none');
+      if (this.elements.mainContent) this.elements.mainContent.classList.add('d-none');
       return;
     }
 
-    this.bindEvents();
-    // Load initial data in parallel
-    await Promise.allSettled([
-      this.loadStatusCounts(),
-      this.loadLessons()
+    if (this.elements.authGuard) this.elements.authGuard.classList.add('d-none');
+    if (this.elements.mainContent) this.elements.mainContent.classList.remove('d-none');
+
+    // Attach event listeners
+    this.attachEventListeners();
+
+    // Initial load
+    await Promise.all([
+      this.loadLessons(),
+      this.refreshStatusCounts()
     ]);
   }
 
   /**
-   * Caches DOM element references.
+   * Caches all required interactive DOM elements.
    */
   cacheElements() {
     this.elements = {
-      // Guard & Content containers
-      authGuardContainer: document.getElementById('adminAuthGuardContainer'),
-      authGuardMessage: document.getElementById('adminAuthGuardMessage'),
+      authGuard: document.getElementById('adminAuthGuardContainer'),
       mainContent: document.getElementById('adminLessonsMainContent'),
 
-      // KPI Count cards & badges
+      // KPI Elements
       btnRefreshKpi: document.getElementById('btnRefreshKpi'),
       refreshKpiSpinner: document.getElementById('refreshKpiSpinner'),
-      kpiCardTotal: document.getElementById('kpiCardTotal'),
       kpiCountTotal: document.getElementById('kpiCountTotal'),
-      kpiCardDraft: document.getElementById('kpiCardDraft'),
       kpiCountDraft: document.getElementById('kpiCountDraft'),
-      kpiCardPending: document.getElementById('kpiCardPending'),
       kpiCountPending: document.getElementById('kpiCountPending'),
-      kpiCardApproved: document.getElementById('kpiCardApproved'),
       kpiCountApproved: document.getElementById('kpiCountApproved'),
-      kpiCardRejected: document.getElementById('kpiCardRejected'),
       kpiCountRejected: document.getElementById('kpiCountRejected'),
 
-      // Status filter buttons
-      filterStatusAll: document.getElementById('filterStatusAll'),
-      filterStatusDraft: document.getElementById('filterStatusDraft'),
-      filterStatusPending: document.getElementById('filterStatusPending'),
-      filterStatusApproved: document.getElementById('filterStatusApproved'),
-      filterStatusRejected: document.getElementById('filterStatusRejected'),
+      // Filter Buttons
+      filterButtons: [
+        document.getElementById('filterStatusAll'),
+        document.getElementById('filterStatusDraft'),
+        document.getElementById('filterStatusPending'),
+        document.getElementById('filterStatusApproved'),
+        document.getElementById('filterStatusRejected')
+      ].filter(Boolean),
 
-      // Page size & result summary
-      pageSizeSelect: document.getElementById('pageSizeSelect'),
       resultCountBadge: document.getElementById('lessonResultCount'),
-
-      // Table & State containers
       stateContainer: document.getElementById('lessonStateContainer'),
       tableCard: document.getElementById('lessonTableCard'),
-      table: document.getElementById('lessonTable'),
       tableBody: document.getElementById('lessonTableBody'),
-      pagination: document.getElementById('lessonPagination'),
-      paginationSummary: document.getElementById('paginationSummary'),
-      paginationControls: document.getElementById('paginationControls'),
 
-      // Detail Modal Elements
+      // Standard First/Last Pagination Controls
+      paginationNav: document.getElementById('lessonPaginationNav'),
+      paginationList: document.getElementById('lessonPaginationList'),
+
+      // Legacy pagination fallback containers
+      legacyPaginationSummary: document.getElementById('paginationSummary'),
+      legacyPaginationControls: document.getElementById('paginationControls'),
+
+      // Detail Modal
       detailModal: document.getElementById('lessonDetailModal'),
-      modalDetailCloseBtn: document.getElementById('modalDetailCloseBtn'),
-      btnCancelDetailModal: document.getElementById('btnCancelDetailModal'),
-      modalDetailTitle: document.getElementById('modalDetailTitle'),
-      modalDetailDesc: document.getElementById('modalDetailDesc'),
+      detailModalCloseBtn: document.getElementById('modalDetailCloseBtn'),
+      detailModalCancelBtn: document.getElementById('btnCancelDetailModal'),
       detailLessonTitle: document.getElementById('detailLessonTitle'),
       detailLessonStatusBadge: document.getElementById('detailLessonStatusBadge'),
       detailLessonId: document.getElementById('detailLessonId'),
       detailLessonTimestamp: document.getElementById('detailLessonTimestamp'),
       detailContractLimitationAlert: document.getElementById('detailContractLimitationAlert'),
       detailContractLimitationMessage: document.getElementById('detailContractLimitationMessage'),
+      detailRejectionAlert: document.getElementById('detailRejectionAlert'),
+      detailRejectionMessage: document.getElementById('detailRejectionMessage'),
       detailVocabLoadingPrompt: document.getElementById('detailVocabLoadingPrompt'),
       detailErrorAlert: document.getElementById('detailErrorAlert'),
       detailErrorMessage: document.getElementById('detailErrorMessage'),
       detailVocabSection: document.getElementById('detailVocabSection'),
       detailVocabCount: document.getElementById('detailVocabCount'),
       detailVocabEmptyPrompt: document.getElementById('detailVocabEmptyPrompt'),
-      detailVocabList: document.getElementById('detailVocabList')
+      detailVocabList: document.getElementById('detailVocabList'),
+
+      // Revoke Modal (TASK-7.2)
+      revokeModal: document.getElementById('revokeLessonModal'),
+      btnCancelRevoke: document.getElementById('btnCancelRevoke'),
+      btnCancelRevokeClose: document.getElementById('btnCancelRevokeClose'),
+      btnConfirmRevoke: document.getElementById('btnConfirmRevoke'),
+      revokeLessonTitleText: document.getElementById('revokeLessonTitleText'),
+      revokeReasonInput: document.getElementById('revokeReasonInput'),
+      revokeModalError: document.getElementById('revokeModalError'),
+      revokeSpinner: document.getElementById('revokeSpinner'),
+
+      // Arbiter Approve Modal (TASK-7.2)
+      arbiterModal: document.getElementById('arbiterApproveModal'),
+      btnCancelArbiter: document.getElementById('btnCancelArbiter'),
+      btnCancelArbiterClose: document.getElementById('btnCancelArbiterClose'),
+      btnConfirmArbiter: document.getElementById('btnConfirmArbiter'),
+      arbiterLessonTitleText: document.getElementById('arbiterLessonTitleText'),
+      arbiterNoteInput: document.getElementById('arbiterNoteInput'),
+      arbiterModalError: document.getElementById('arbiterModalError'),
+      arbiterSpinner: document.getElementById('arbiterSpinner')
     };
   }
 
   /**
-   * Renders access denied state when non-Admin accesses the page.
+   * Attaches event listeners to buttons and modals.
    */
-  renderAccessDenied() {
-    if (this.elements.authGuardContainer) {
-      this.elements.authGuardContainer.classList.remove('d-none');
+  attachEventListeners() {
+    // KPI Refresh
+    if (this.elements.btnRefreshKpi) {
+      this.elements.btnRefreshKpi.addEventListener('click', () => this.refreshStatusCounts());
     }
-    if (this.elements.mainContent) {
-      this.elements.mainContent.classList.add('d-none');
-    }
-  }
 
-  /**
-   * Binds UI event listeners.
-   */
-  bindEvents() {
-    // 1. Status Filter Buttons
-    const filterButtons = [
-      this.elements.filterStatusAll,
-      this.elements.filterStatusDraft,
-      this.elements.filterStatusPending,
-      this.elements.filterStatusApproved,
-      this.elements.filterStatusRejected
-    ].filter(Boolean);
-
-    for (const btn of filterButtons) {
+    // Filter Buttons
+    for (const btn of this.elements.filterButtons) {
       btn.addEventListener('click', (e) => {
         const targetStatus = e.currentTarget.getAttribute('data-status') || '';
         this.setStatusFilter(targetStatus);
       });
     }
 
-    // 2. KPI Cards Clicking triggers filtering
-    const kpiCards = [
-      this.elements.kpiCardTotal,
-      this.elements.kpiCardDraft,
-      this.elements.kpiCardPending,
-      this.elements.kpiCardApproved,
-      this.elements.kpiCardRejected
-    ].filter(Boolean);
-
-    for (const card of kpiCards) {
-      card.addEventListener('click', (e) => {
-        const targetStatus = e.currentTarget.getAttribute('data-status') || '';
-        this.setStatusFilter(targetStatus);
-      });
-    }
-
-    // 3. Page Size Selector
-    if (this.elements.pageSizeSelect) {
-      this.elements.pageSizeSelect.addEventListener('change', (e) => {
-        this.pageSize = Math.max(1, Number(e.target.value) || 20);
-        this.currentPage = 0;
-        this.loadLessons();
-      });
-    }
-
-    // 4. Refresh KPI Button
-    if (this.elements.btnRefreshKpi) {
-      this.elements.btnRefreshKpi.addEventListener('click', () => {
-        this.loadStatusCounts();
-      });
-    }
-
-    // 5. Detail Modal Controls
-    if (this.elements.modalDetailCloseBtn) {
-      this.elements.modalDetailCloseBtn.addEventListener('click', () => {
-        this.closeDetailModal();
-      });
-    }
-    if (this.elements.btnCancelDetailModal) {
-      this.elements.btnCancelDetailModal.addEventListener('click', () => {
-        this.closeDetailModal();
-      });
-    }
-
-    if (this.elements.detailModal) {
-      // Backdrop click closes dialog
-      this.elements.detailModal.addEventListener('click', (e) => {
-        const rect = this.elements.detailModal.getBoundingClientRect();
-        const isInDialog = (
-          rect.top <= e.clientY && e.clientY <= rect.top + rect.height &&
-          rect.left <= e.clientX && e.clientX <= rect.left + rect.width
-        );
-        if (!isInDialog) {
-          this.closeDetailModal();
+    // KPI Cards click to filter
+    const statusContainer = document.getElementById('statusCountsContainer');
+    if (statusContainer) {
+      statusContainer.addEventListener('click', (e) => {
+        const card = e.target.closest('[data-status]');
+        if (card) {
+          const status = card.getAttribute('data-status') || '';
+          this.setStatusFilter(status);
         }
       });
+    }
 
-      // Escape key handles focus restoration
-      this.elements.detailModal.addEventListener('cancel', (e) => {
-        e.preventDefault();
-        this.closeDetailModal();
-      });
+    // Detail Modal Close
+    if (this.elements.detailModalCloseBtn) {
+      this.elements.detailModalCloseBtn.addEventListener('click', () => this.closeModal(this.elements.detailModal));
+    }
+    if (this.elements.detailModalCancelBtn) {
+      this.elements.detailModalCancelBtn.addEventListener('click', () => this.closeModal(this.elements.detailModal));
+    }
+
+    // Revoke Modal Cancel & Confirm
+    if (this.elements.btnCancelRevoke) {
+      this.elements.btnCancelRevoke.addEventListener('click', () => this.closeModal(this.elements.revokeModal));
+    }
+    if (this.elements.btnCancelRevokeClose) {
+      this.elements.btnCancelRevokeClose.addEventListener('click', () => this.closeModal(this.elements.revokeModal));
+    }
+    if (this.elements.btnConfirmRevoke) {
+      this.elements.btnConfirmRevoke.addEventListener('click', () => this.handleConfirmRevoke());
+    }
+
+    // Arbiter Modal Cancel & Confirm
+    if (this.elements.btnCancelArbiter) {
+      this.elements.btnCancelArbiter.addEventListener('click', () => this.closeModal(this.elements.arbiterModal));
+    }
+    if (this.elements.btnCancelArbiterClose) {
+      this.elements.btnCancelArbiterClose.addEventListener('click', () => this.closeModal(this.elements.arbiterModal));
+    }
+    if (this.elements.btnConfirmArbiter) {
+      this.elements.btnConfirmArbiter.addEventListener('click', () => this.handleConfirmArbiter());
     }
   }
 
   /**
-   * Sets status filter, updates button styles, resets page to 0 and reloads.
+   * Sets current lifecycle status filter, resets page, and updates UI.
    *
    * @param {string} status
    */
   setStatusFilter(status) {
-    const normalized = normalizeStatusFilter(status);
-    if (this.currentStatus === normalized && this.currentPage === 0) return;
-
-    this.currentStatus = normalized;
+    this.currentStatusFilter = normalizeStatusFilter(status);
     this.currentPage = 0;
-    this.updateFilterButtonStyles();
+
+    for (const btn of this.elements.filterButtons) {
+      const btnStatus = btn.getAttribute('data-status') || '';
+      if (btnStatus === this.currentStatusFilter) {
+        btn.classList.remove('btn-outline-secondary');
+        btn.classList.add('btn-chinese-primary', 'active');
+      } else {
+        btn.classList.remove('btn-chinese-primary', 'active');
+        btn.classList.add('btn-outline-secondary');
+      }
+    }
+
     this.loadLessons();
   }
 
   /**
-   * Updates visual active states of filter buttons.
+   * Checks if current authenticated admin is the creator of the lesson (Self-Review Prohibition).
+   *
+   * @param {object} lesson
+   * @returns {boolean}
    */
-  updateFilterButtonStyles() {
-    const map = [
-      { btn: this.elements.filterStatusAll, status: '' },
-      { btn: this.elements.filterStatusDraft, status: 'Draft' },
-      { btn: this.elements.filterStatusPending, status: 'Pending' },
-      { btn: this.elements.filterStatusApproved, status: 'Approved' },
-      { btn: this.elements.filterStatusRejected, status: 'Rejected' }
-    ];
+  isSelfReview(lesson) {
+    if (!lesson) return false;
+    const user = authManager.getUser();
+    if (!user) return false;
 
-    for (const item of map) {
-      if (!item.btn) continue;
-      const isActive = item.status === this.currentStatus;
-      if (isActive) {
-        item.btn.className = 'btn btn-sm btn-chinese-primary active';
-      } else {
-        item.btn.className = 'btn btn-sm btn-outline-secondary';
-      }
+    const currentId = user.accountId;
+    const currentEmail = (user.emailOrPhone || user.email || '').trim().toLowerCase();
+
+    if (lesson.creatorId && currentId && lesson.creatorId === currentId) {
+      return true;
     }
+    if (lesson.creatorEmail && currentEmail && lesson.creatorEmail.trim().toLowerCase() === currentEmail) {
+      return true;
+    }
+    return false;
   }
 
   /**
-   * Loads global status counts in parallel using lightweight size=1 requests.
-   * Does NOT derive counts from the current single table page.
-   */
-  async loadStatusCounts() {
-    if (this.isKpiLoading) return;
-    this.isKpiLoading = true;
-
-    if (this.elements.refreshKpiSpinner) {
-      this.elements.refreshKpiSpinner.classList.remove('d-none');
-    }
-
-    try {
-      const probeRequests = [
-        apiClient('/admin/lessons', { params: { size: 1 } }),
-        apiClient('/admin/lessons', { params: { status: 'Draft', size: 1 } }),
-        apiClient('/admin/lessons', { params: { status: 'Pending', size: 1 } }),
-        apiClient('/admin/lessons', { params: { status: 'Approved', size: 1 } }),
-        apiClient('/admin/lessons', { params: { status: 'Rejected', size: 1 } })
-      ];
-
-      const settled = await Promise.allSettled(probeRequests);
-      const counts = extractStatusCounts(settled);
-      this.kpiCounts = counts;
-
-      const formatCount = (val) => (typeof val === 'number' ? val.toLocaleString('vi-VN') : '—');
-
-      if (this.elements.kpiCountTotal) this.elements.kpiCountTotal.textContent = formatCount(counts.total);
-      if (this.elements.kpiCountDraft) this.elements.kpiCountDraft.textContent = formatCount(counts.draft);
-      if (this.elements.kpiCountPending) this.elements.kpiCountPending.textContent = formatCount(counts.pending);
-      if (this.elements.kpiCountApproved) this.elements.kpiCountApproved.textContent = formatCount(counts.approved);
-      if (this.elements.kpiCountRejected) this.elements.kpiCountRejected.textContent = formatCount(counts.rejected);
-    } catch (err) {
-      console.warn('Failed to refresh status counts:', err);
-    } finally {
-      this.isKpiLoading = false;
-      if (this.elements.refreshKpiSpinner) {
-        this.elements.refreshKpiSpinner.classList.add('d-none');
-      }
-    }
-  }
-
-  /**
-   * Loads paginated lesson list via GET /api/v1/admin/lessons.
+   * Loads lessons for current status filter and pagination page.
    */
   async loadLessons() {
-    if (!this.elements.stateContainer) return;
+    setComponentState(this.elements.stateContainer, 'LOADING');
+    if (this.elements.tableCard) this.elements.tableCard.classList.add('d-none');
+    if (this.elements.paginationNav) this.elements.paginationNav.classList.add('d-none');
 
-    setComponentState(this.elements.stateContainer, 'LOADING', {
-      message: 'Đang tải danh sách bài học toàn hệ thống...'
+    const params = buildAdminLessonsParams({
+      status: this.currentStatusFilter,
+      page: this.currentPage,
+      size: this.pageSize
     });
 
-    if (this.elements.tableCard) {
-      this.elements.tableCard.classList.add('d-none');
-    }
-
     try {
-      const params = buildAdminLessonsParams({
-        status: this.currentStatus,
-        page: this.currentPage,
-        size: this.pageSize
-      });
-
       const response = await apiClient('/admin/lessons', { params });
-      const data = response.data || response;
+      const rawData = response.data || response;
+      const parsed = parsePageResponse(rawData);
 
-      this.currentLessons = Array.isArray(data.items) ? data.items : [];
-      this.totalElements = Number(data.totalElements) || 0;
-      this.totalPages = Math.max(1, Number(data.totalPages) || 1);
-      this.currentPage = Number(data.page) || 0;
-      this.pageSize = Number(data.size) || this.pageSize;
+      this.currentLessons = parsed.items;
+      this.currentPage = parsed.page;
+      this.pageSize = parsed.size;
+      this.totalElements = parsed.totalElements;
+      this.totalPages = parsed.totalPages;
 
       this.updateResultBadge();
 
-      if (this.totalElements === 0) {
-        const statusLabel = this.currentStatus ? ` ở trạng thái "${mapStatusLabel(this.currentStatus)}"` : '';
+      if (this.currentLessons.length === 0) {
         setComponentState(this.elements.stateContainer, 'EMPTY', {
-          title: 'Không tìm thấy bài học',
-          message: `Hiện không có bài học nào${statusLabel} trong hệ thống.`
+          title: 'Không có bài học nào',
+          message: this.currentStatusFilter
+            ? `Chưa có bài học nào ở trạng thái "${mapStatusLabel(this.currentStatusFilter)}".`
+            : 'Hệ thống chưa ghi nhận bất kỳ bài học nào.'
         });
-      } else {
-        setComponentState(this.elements.stateContainer, 'READY');
-        if (this.elements.tableCard) {
-          this.elements.tableCard.classList.remove('d-none');
-        }
-        this.renderTableRows();
-        this.renderPagination();
+        return;
       }
+
+      setComponentState(this.elements.stateContainer, 'READY');
+      if (this.elements.tableCard) this.elements.tableCard.classList.remove('d-none');
+
+      this.renderTableRows();
+      this.renderPagination();
+
     } catch (err) {
       setComponentState(this.elements.stateContainer, 'ERROR', {
-        title: 'Lỗi nạp danh sách bài học',
+        title: 'Lỗi tải danh sách bài học',
         message: err?.message || 'Không thể kết nối đến máy chủ. Vui lòng thử lại.',
         onRetry: () => this.loadLessons()
       });
@@ -727,13 +734,19 @@ export class AdminLessonsPageController {
       }));
       tr.appendChild(tdUpdated);
 
-      // 6. Actions Column (Read-only Detail View)
+      // 6. Actions Column (View Detail, Emergency Revoke, Arbiter Approve)
       const tdActions = createSafeElement('td', {
-        className: 'text-end pe-3',
+        className: 'text-end pe-3 text-nowrap',
         attrs: { 'data-label': 'Thao tác' }
       });
+
+      const actionsWrapper = createSafeElement('div', {
+        className: 'd-inline-flex align-items-center gap-1 justify-content-end text-nowrap flex-nowrap'
+      });
+
+      // Detail Button (Always present)
       const btnDetail = createSafeElement('button', {
-        className: 'btn btn-outline-secondary btn-sm',
+        className: 'btn btn-outline-secondary btn-sm text-nowrap',
         text: 'Xem chi tiết',
         attrs: {
           type: 'button',
@@ -745,7 +758,59 @@ export class AdminLessonsPageController {
         this.lastFocusedElement = e.currentTarget;
         this.openDetailModal(lesson);
       });
-      tdActions.appendChild(btnDetail);
+      actionsWrapper.appendChild(btnDetail);
+
+      const selfReview = this.isSelfReview(lesson);
+
+      // Emergency Revoke Button (For 'Approved' lessons)
+      if (lesson.status === 'Approved') {
+        const btnRevoke = createSafeElement('button', {
+          className: 'btn btn-chinese-outline btn-sm text-danger border-danger text-nowrap',
+          text: '🚨 Gỡ bài',
+          attrs: {
+            type: 'button',
+            id: `btnRevokeLesson-${lesson.lessonId}`,
+            'aria-label': `Thu hồi bài học vi phạm ${lesson.title || `#${lesson.lessonId}`}`,
+            ...(selfReview ? {
+              disabled: 'true',
+              title: 'Bạn không thể tự thu hồi bài học do chính mình tạo ra'
+            } : {})
+          }
+        });
+        if (!selfReview) {
+          btnRevoke.addEventListener('click', (e) => {
+            this.lastFocusedElement = e.currentTarget;
+            this.openRevokeModal(lesson);
+          });
+        }
+        actionsWrapper.appendChild(btnRevoke);
+      }
+
+      // Supervisory Arbiter Approval Button (For 'Pending' or 'Rejected' lessons)
+      if (lesson.status === 'Pending' || lesson.status === 'Rejected') {
+        const btnApprove = createSafeElement('button', {
+          className: 'btn btn-chinese-primary btn-sm text-nowrap',
+          text: '⚖️ Duyệt trọng tài',
+          attrs: {
+            type: 'button',
+            id: `btnApproveLesson-${lesson.lessonId}`,
+            'aria-label': `Phê duyệt trọng tài bài học ${lesson.title || `#${lesson.lessonId}`}`,
+            ...(selfReview ? {
+              disabled: 'true',
+              title: 'Bạn không thể tự phê duyệt bài học do chính mình tạo ra'
+            } : {})
+          }
+        });
+        if (!selfReview) {
+          btnApprove.addEventListener('click', (e) => {
+            this.lastFocusedElement = e.currentTarget;
+            this.openArbiterModal(lesson);
+          });
+        }
+        actionsWrapper.appendChild(btnApprove);
+      }
+
+      tdActions.appendChild(actionsWrapper);
       tr.appendChild(tdActions);
 
       this.elements.tableBody.appendChild(tr);
@@ -753,76 +818,199 @@ export class AdminLessonsPageController {
   }
 
   /**
-   * Renders server-side pagination controls.
+   * Renders standardized First/Last pagination controls (<< < 1 2 3 > >>).
    */
   renderPagination() {
-    if (!this.elements.paginationSummary || !this.elements.paginationControls) return;
-
-    const summary = calculatePaginationSummary(this.currentPage, this.pageSize, this.totalElements);
-    this.elements.paginationSummary.textContent = `Hiển thị ${summary.start}–${summary.end} trong tổng số ${summary.total.toLocaleString('vi-VN')} bài học (Trang ${summary.currentPage + 1}/${summary.totalPages})`;
-
-    clearContainer(this.elements.paginationControls);
-
-    // Previous Button
-    const prevLi = createSafeElement('li', {
-      className: `page-item ${!summary.hasPrevious ? 'disabled' : ''}`
-    });
-    const prevBtn = createSafeElement('button', {
-      className: 'page-link',
-      text: '‹ Trước',
-      attrs: {
-        type: 'button',
-        'aria-label': 'Trang trước',
-        ...(summary.hasPrevious ? {} : { disabled: 'true' })
+    if (this.elements.paginationNav && this.elements.paginationList) {
+      if (this.totalPages <= 1) {
+        this.elements.paginationNav.classList.add('d-none');
+        clearContainer(this.elements.paginationList);
+        return;
       }
-    });
-    if (summary.hasPrevious) {
-      prevBtn.addEventListener('click', () => {
-        this.currentPage--;
-        this.loadLessons();
+
+      this.elements.paginationNav.classList.remove('d-none');
+      clearContainer(this.elements.paginationList);
+
+      const calc = calculatePagination(this.currentPage, this.pageSize, this.totalElements, this.totalPages, 5);
+
+      // 1. First Page Button (<<)
+      const firstBtn = createSafeElement('button', {
+        className: 'pagination-btn',
+        text: '<<',
+        attrs: {
+          type: 'button',
+          'aria-label': 'Trang đầu',
+          id: 'lessonPaginationFirstBtn',
+          ...(calc.currentPage === 0 ? { disabled: 'true' } : {})
+        }
       });
-    }
-    prevLi.appendChild(prevBtn);
-    this.elements.paginationControls.appendChild(prevLi);
-
-    // Current Page Indicator
-    const currentLi = createSafeElement('li', { className: 'page-item active' });
-    const currentSpan = createSafeElement('span', {
-      className: 'page-link',
-      text: String(summary.currentPage + 1)
-    });
-    currentLi.appendChild(currentSpan);
-    this.elements.paginationControls.appendChild(currentLi);
-
-    // Next Button
-    const nextLi = createSafeElement('li', {
-      className: `page-item ${!summary.hasNext ? 'disabled' : ''}`
-    });
-    const nextBtn = createSafeElement('button', {
-      className: 'page-link',
-      text: 'Sau ›',
-      attrs: {
-        type: 'button',
-        'aria-label': 'Trang kế tiếp',
-        ...(summary.hasNext ? {} : { disabled: 'true' })
+      if (calc.currentPage > 0) {
+        firstBtn.addEventListener('click', () => {
+          this.currentPage = 0;
+          this.loadLessons();
+        });
       }
-    });
-    if (summary.hasNext) {
-      nextBtn.addEventListener('click', () => {
-        this.currentPage++;
-        this.loadLessons();
+      this.elements.paginationList.appendChild(firstBtn);
+
+      // 2. Previous Button (<)
+      const prevBtn = createSafeElement('button', {
+        className: 'pagination-btn',
+        text: '<',
+        attrs: {
+          type: 'button',
+          'aria-label': 'Trang trước',
+          id: 'lessonPaginationPrevBtn',
+          ...(!calc.hasPrev ? { disabled: 'true' } : {})
+        }
       });
+      if (calc.hasPrev) {
+        prevBtn.addEventListener('click', () => {
+          this.currentPage = calc.currentPage - 1;
+          this.loadLessons();
+        });
+      }
+      this.elements.paginationList.appendChild(prevBtn);
+
+      // 3. Numbered Buttons
+      for (let p = calc.startPage; p <= calc.endPage; p++) {
+        const isCurrent = p === calc.currentPage;
+        const pageBtn = createSafeElement('button', {
+          className: `pagination-btn ${isCurrent ? 'active' : ''}`,
+          text: String(p + 1),
+          attrs: {
+            type: 'button',
+            'aria-label': `Trang ${p + 1}`,
+            'aria-current': isCurrent ? 'page' : 'false'
+          }
+        });
+        if (!isCurrent) {
+          pageBtn.addEventListener('click', () => {
+            this.currentPage = p;
+            this.loadLessons();
+          });
+        }
+        this.elements.paginationList.appendChild(pageBtn);
+      }
+
+      // 4. Next Button (>)
+      const nextBtn = createSafeElement('button', {
+        className: 'pagination-btn',
+        text: '>',
+        attrs: {
+          type: 'button',
+          'aria-label': 'Trang kế tiếp',
+          id: 'lessonPaginationNextBtn',
+          ...(!calc.hasNext ? { disabled: 'true' } : {})
+        }
+      });
+      if (calc.hasNext) {
+        nextBtn.addEventListener('click', () => {
+          this.currentPage = calc.currentPage + 1;
+          this.loadLessons();
+        });
+      }
+      this.elements.paginationList.appendChild(nextBtn);
+
+      // 5. Last Page Button (>>)
+      const lastBtn = createSafeElement('button', {
+        className: 'pagination-btn',
+        text: '>>',
+        attrs: {
+          type: 'button',
+          'aria-label': 'Trang cuối',
+          id: 'lessonPaginationLastBtn',
+          ...(calc.currentPage >= calc.totalPages - 1 ? { disabled: 'true' } : {})
+        }
+      });
+      if (calc.currentPage < calc.totalPages - 1) {
+        lastBtn.addEventListener('click', () => {
+          this.currentPage = calc.totalPages - 1;
+          this.loadLessons();
+        });
+      }
+      this.elements.paginationList.appendChild(lastBtn);
     }
-    nextLi.appendChild(nextBtn);
-    this.elements.paginationControls.appendChild(nextLi);
+  }
+
+  /**
+   * Refreshes server-side status totalElement metrics in parallel.
+   */
+  async refreshStatusCounts() {
+    if (this.elements.refreshKpiSpinner) {
+      this.elements.refreshKpiSpinner.classList.remove('d-none');
+    }
+
+    const resetSpinners = () => {
+      const targets = [
+        this.elements.kpiCountTotal,
+        this.elements.kpiCountDraft,
+        this.elements.kpiCountPending,
+        this.elements.kpiCountApproved,
+        this.elements.kpiCountRejected
+      ];
+      for (const el of targets) {
+        if (el) {
+          clearContainer(el);
+          el.appendChild(createSafeElement('span', {
+            className: 'spinner-border spinner-border-sm text-secondary',
+            attrs: { role: 'status', 'aria-hidden': 'true' }
+          }));
+        }
+      }
+    };
+    resetSpinners();
+
+    try {
+      const probe = async (status) => {
+        try {
+          const params = { page: 0, size: 1 };
+          if (status) params.status = status;
+          const res = await apiClient('/admin/lessons', { params });
+          return res.data || res;
+        } catch {
+          return null;
+        }
+      };
+
+      const [totalRes, draftRes, pendingRes, approvedRes, rejectedRes] = await Promise.all([
+        probe(''),
+        probe('Draft'),
+        probe('Pending'),
+        probe('Approved'),
+        probe('Rejected')
+      ]);
+
+      const counts = extractStatusCounts({
+        total: totalRes,
+        draft: draftRes,
+        pending: pendingRes,
+        approved: approvedRes,
+        rejected: rejectedRes
+      });
+
+      const renderCount = (el, val) => {
+        if (!el) return;
+        clearContainer(el);
+        el.textContent = typeof val === 'number' ? val.toLocaleString('vi-VN') : '—';
+      };
+
+      renderCount(this.elements.kpiCountTotal, counts.total);
+      renderCount(this.elements.kpiCountDraft, counts.draft);
+      renderCount(this.elements.kpiCountPending, counts.pending);
+      renderCount(this.elements.kpiCountApproved, counts.approved);
+      renderCount(this.elements.kpiCountRejected, counts.rejected);
+
+    } catch (err) {
+      console.warn('[AdminLessons] Failed to probe global status counts:', err);
+    } finally {
+      if (this.elements.refreshKpiSpinner) {
+        this.elements.refreshKpiSpinner.classList.add('d-none');
+      }
+    }
   }
 
   /**
    * Opens and renders the read-only lesson detail modal.
-   * Strictly adheres to verified endpoint availability by status:
-   * - Approved: calls GET /api/v1/lessons/{id}
-   * - Pending: calls GET /api/v1/moderator/lessons/{id}
-   * - Draft / Rejected: displays truthful limitation banner
    *
    * @param {object} lesson
    */
@@ -843,6 +1031,9 @@ export class AdminLessonsPageController {
     if (this.elements.detailContractLimitationAlert) {
       this.elements.detailContractLimitationAlert.classList.add('d-none');
     }
+    if (this.elements.detailRejectionAlert) {
+      this.elements.detailRejectionAlert.classList.add('d-none');
+    }
     if (this.elements.detailErrorAlert) {
       this.elements.detailErrorAlert.classList.add('d-none');
     }
@@ -853,12 +1044,19 @@ export class AdminLessonsPageController {
       this.elements.detailVocabLoadingPrompt.classList.add('d-none');
     }
 
+    // Show rejection reason if available
+    if (lesson.status === 'Rejected' && lesson.rejectionReason && this.elements.detailRejectionAlert) {
+      if (this.elements.detailRejectionMessage) {
+        this.elements.detailRejectionMessage.textContent = lesson.rejectionReason;
+      }
+      this.elements.detailRejectionAlert.classList.remove('d-none');
+    }
+
     const detailStrategy = determineDetailStrategy(lesson.status, lesson.lessonId);
 
     this.showDialog(this.elements.detailModal);
 
     if (!detailStrategy.canFetchDetail) {
-      // Truthful handling of backend gap for Draft/Rejected
       if (this.elements.detailContractLimitationAlert && this.elements.detailContractLimitationMessage) {
         this.elements.detailContractLimitationMessage.textContent = detailStrategy.limitationNotice;
         this.elements.detailContractLimitationAlert.classList.remove('d-none');
@@ -866,7 +1064,6 @@ export class AdminLessonsPageController {
       return;
     }
 
-    // For Approved or Pending: fetch detail content
     if (this.elements.detailVocabLoadingPrompt) {
       this.elements.detailVocabLoadingPrompt.classList.remove('d-none');
     }
@@ -885,6 +1082,143 @@ export class AdminLessonsPageController {
       if (this.elements.detailVocabLoadingPrompt) {
         this.elements.detailVocabLoadingPrompt.classList.add('d-none');
       }
+    }
+  }
+
+  /**
+   * Opens Emergency Lesson Revocation Modal (TASK-7.2).
+   *
+   * @param {object} lesson
+   */
+  openRevokeModal(lesson) {
+    if (!this.elements.revokeModal) return;
+    this.targetLesson = lesson;
+
+    if (this.elements.revokeLessonTitleText) {
+      this.elements.revokeLessonTitleText.textContent = `${lesson.title || `#${lesson.lessonId}`}`;
+    }
+    if (this.elements.revokeReasonInput) {
+      this.elements.revokeReasonInput.value = '';
+    }
+    if (this.elements.revokeModalError) {
+      this.elements.revokeModalError.classList.add('d-none');
+      this.elements.revokeModalError.textContent = '';
+    }
+    if (this.elements.revokeSpinner) {
+      this.elements.revokeSpinner.classList.add('d-none');
+    }
+
+    this.showDialog(this.elements.revokeModal);
+    if (this.elements.revokeReasonInput) {
+      setTimeout(() => this.elements.revokeReasonInput.focus(), 50);
+    }
+  }
+
+  /**
+   * Handles confirming Emergency Revocation.
+   */
+  async handleConfirmRevoke() {
+    if (!this.targetLesson) return;
+    const reason = (this.elements.revokeReasonInput?.value || '').trim();
+
+    if (!reason) {
+      if (this.elements.revokeModalError) {
+        this.elements.revokeModalError.textContent = 'Vui lòng nhập lý do thu hồi bài học vi phạm.';
+        this.elements.revokeModalError.classList.remove('d-none');
+      }
+      if (this.elements.revokeReasonInput) {
+        this.elements.revokeReasonInput.focus();
+      }
+      return;
+    }
+
+    if (this.elements.revokeSpinner) this.elements.revokeSpinner.classList.remove('d-none');
+    if (this.elements.btnConfirmRevoke) this.elements.btnConfirmRevoke.disabled = true;
+
+    try {
+      await apiClient(`/admin/lessons/${this.targetLesson.lessonId}/revoke`, {
+        method: 'POST',
+        body: { reason }
+      });
+
+      showToast('Đã thu hồi bài học vi phạm khẩn cấp thành công', 'success');
+      this.closeModal(this.elements.revokeModal);
+
+      await Promise.all([
+        this.loadLessons(),
+        this.refreshStatusCounts()
+      ]);
+    } catch (err) {
+      if (this.elements.revokeModalError) {
+        this.elements.revokeModalError.textContent = err?.message || 'Không thể thu hồi bài học. Vui lòng thử lại.';
+        this.elements.revokeModalError.classList.remove('d-none');
+      }
+    } finally {
+      if (this.elements.revokeSpinner) this.elements.revokeSpinner.classList.add('d-none');
+      if (this.elements.btnConfirmRevoke) this.elements.btnConfirmRevoke.disabled = false;
+    }
+  }
+
+  /**
+   * Opens Supervisory Arbiter Approval Modal (TASK-7.2).
+   *
+   * @param {object} lesson
+   */
+  openArbiterModal(lesson) {
+    if (!this.elements.arbiterModal) return;
+    this.targetLesson = lesson;
+
+    if (this.elements.arbiterLessonTitleText) {
+      this.elements.arbiterLessonTitleText.textContent = `${lesson.title || `#${lesson.lessonId}`}`;
+    }
+    if (this.elements.arbiterNoteInput) {
+      this.elements.arbiterNoteInput.value = '';
+    }
+    if (this.elements.arbiterModalError) {
+      this.elements.arbiterModalError.classList.add('d-none');
+      this.elements.arbiterModalError.textContent = '';
+    }
+    if (this.elements.arbiterSpinner) {
+      this.elements.arbiterSpinner.classList.add('d-none');
+    }
+
+    this.showDialog(this.elements.arbiterModal);
+    if (this.elements.arbiterNoteInput) {
+      setTimeout(() => this.elements.arbiterNoteInput.focus(), 50);
+    }
+  }
+
+  /**
+   * Handles confirming Supervisory Arbiter Approval.
+   */
+  async handleConfirmArbiter() {
+    if (!this.targetLesson) return;
+    const note = (this.elements.arbiterNoteInput?.value || '').trim();
+
+    if (this.elements.arbiterSpinner) this.elements.arbiterSpinner.classList.remove('d-none');
+    if (this.elements.btnConfirmArbiter) this.elements.btnConfirmArbiter.disabled = true;
+
+    try {
+      await apiClient(`/admin/lessons/${this.targetLesson.lessonId}/approve`, {
+        method: 'POST',
+        body: note ? { note } : {}
+      });
+
+      showToast('Đã phê duyệt trọng tài bài học thành công', 'success');
+      this.closeModal(this.elements.arbiterModal);
+
+      await Promise.all([
+        this.loadLessons(),
+        this.refreshStatusCounts()
+      ]);
+    } catch (err) {
+      if (this.elements.arbiterModalError) {
+        this.elements.arbiterModalError.textContent = err?.message || 'Không thể phê duyệt bài học. Vui lòng thử lại.';
+        this.elements.arbiterModalError.classList.remove('d-none');
+      }
+    } finally {
+      if (this.elements.arbiterSpinner) this.elements.arbiterSpinner.classList.add('d-none');
+      if (this.elements.btnConfirmArbiter) this.elements.btnConfirmArbiter.disabled = false;
     }
   }
 
@@ -979,7 +1313,7 @@ export class AdminLessonsPageController {
   }
 
   /**
-   * Displays modal dialog.
+   * Displays modal dialog safely.
    *
    * @param {HTMLDialogElement} dialog
    */
@@ -993,19 +1327,25 @@ export class AdminLessonsPageController {
   }
 
   /**
-   * Closes detail modal dialog and restores focus.
+   * Closes modal dialog and restores focus.
+   *
+   * @param {HTMLDialogElement} dialog
    */
-  closeDetailModal() {
-    if (!this.elements.detailModal) return;
-    if (typeof this.elements.detailModal.close === 'function') {
-      this.elements.detailModal.close();
+  closeModal(dialog) {
+    if (!dialog) return;
+    if (typeof dialog.close === 'function') {
+      dialog.close();
     } else {
-      this.elements.detailModal.removeAttribute('open');
+      dialog.removeAttribute('open');
     }
 
     if (this.lastFocusedElement && typeof this.lastFocusedElement.focus === 'function') {
       this.lastFocusedElement.focus();
     }
+  }
+
+  closeDetailModal() {
+    this.closeModal(this.elements.detailModal);
   }
 }
 

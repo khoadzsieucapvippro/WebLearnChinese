@@ -169,13 +169,8 @@ describe('Browser E2E: Admin Lesson Oversight UI (Task 9F.5)', () => {
       assert.strictEqual(await h1.count(), 1);
       assert.ok((await h1.textContent()).includes('Giám Sát Bài Học'));
 
-      // Verify 5-tab admin sub-nav
-      assert.ok(await page.locator('#tabAdminAccounts').isVisible());
-      assert.ok(await page.locator('#tabAdminRoles').isVisible());
-      assert.ok(await page.locator('#tabAdminRadicals').isVisible());
-      assert.ok(await page.locator('#tabAdminVocabulary').isVisible());
-      assert.ok(await page.locator('#tabAdminLessons').isVisible());
-      assert.strictEqual(await page.locator('#tabAdminLessons').getAttribute('aria-current'), 'page');
+      // Verify clean layout (no repeated tabs per clean UI spec)
+      assert.strictEqual(await page.locator('.moderator-nav-tabs').count(), 0);
 
       // Verify 5 KPI summary cards exist
       assert.ok(await page.locator('#kpiCountTotal').isVisible());
@@ -709,7 +704,10 @@ describe('Browser E2E: Admin Lesson Oversight UI (Task 9F.5)', () => {
       await page.locator('#filterStatusApproved').click();
 
       // Change page size
-      await page.locator('#pageSizeSelect').selectOption('50');
+      const pageSizeSelect = page.locator('#pageSizeSelect');
+      if (await pageSizeSelect.count() > 0) {
+        await pageSizeSelect.selectOption('50');
+      }
 
       // Click refresh counts
       await page.locator('#btnRefreshKpi').click();
@@ -723,6 +721,225 @@ describe('Browser E2E: Admin Lesson Oversight UI (Task 9F.5)', () => {
 
       // STRICT INVARIANT CHECK: Zero mutation requests
       assert.strictEqual(mutationMethods.length, 0, `Detected forbidden mutation calls: ${JSON.stringify(mutationMethods)}`);
+
+      const errors = getRuntimeErrors();
+      assert.strictEqual(errors.length, 0, `Runtime errors: ${JSON.stringify(errors)}`);
+    } finally {
+      await context.close();
+    }
+  });
+
+  /* ---------------------------------------------------------------------------
+   * AL-09: Emergency Lesson Revocation (TASK-7.2)
+   * --------------------------------------------------------------------------- */
+  test('AL-09: Admin can revoke an Approved lesson with a reason via POST /admin/lessons/:id/revoke', async () => {
+    const { page, context, getRuntimeErrors } = await createMonitoredPage(browser, {
+      viewportWidth: 1280,
+      viewportHeight: 720
+    });
+
+    try {
+      await setupAdminSession(page);
+      let revokeCalled = false;
+      let revokePayload = null;
+
+      await page.route(/\/api\/v1\/admin\/lessons(\?.*)?$/, async (route) => {
+        return route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            code: 'SUCCESS',
+            status: 'SUCCESS',
+            message: 'OK',
+            data: {
+              items: [createMockLessons()[0]], // Approved lesson #101
+              page: 0,
+              size: 20,
+              totalElements: 1,
+              totalPages: 1,
+              first: true,
+              last: true
+            }
+          })
+        });
+      });
+
+      await page.route(/\/api\/v1\/admin\/lessons\/101\/revoke$/, async (route) => {
+        revokeCalled = true;
+        revokePayload = JSON.parse(route.request().postData());
+        return route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            code: 'SUCCESS',
+            status: 'SUCCESS',
+            message: 'Thu hồi bài học thành công',
+            data: {
+              lessonId: 101,
+              title: 'Bài 1: Chào hỏi cơ bản',
+              status: 'Rejected',
+              rejectionReason: revokePayload.reason
+            }
+          })
+        });
+      });
+
+      await page.goto(`${baseUrl}/admin-lessons.html`, { waitUntil: 'domcontentloaded' });
+      await page.locator('#btnRevokeLesson-101').waitFor({ state: 'visible', timeout: 5000 });
+
+      // Click "🚨 Gỡ bài"
+      await page.locator('#btnRevokeLesson-101').click();
+
+      // Revoke Modal should open
+      const revokeModal = page.locator('#revokeLessonModal');
+      await revokeModal.waitFor({ state: 'visible', timeout: 3000 });
+      assert.ok(await revokeModal.isVisible());
+
+      // Fill reason and submit
+      await page.locator('#revokeReasonInput').fill('Vi phạm bản quyền giáo trình HSK');
+      await page.locator('#btnConfirmRevoke').click();
+
+      // Modal closes
+      await revokeModal.waitFor({ state: 'hidden', timeout: 3000 });
+      assert.strictEqual(revokeCalled, true);
+      assert.strictEqual(revokePayload.reason, 'Vi phạm bản quyền giáo trình HSK');
+
+      const errors = getRuntimeErrors();
+      assert.strictEqual(errors.length, 0, `Runtime errors: ${JSON.stringify(errors)}`);
+    } finally {
+      await context.close();
+    }
+  });
+
+  /* ---------------------------------------------------------------------------
+   * AL-10: Supervisory Arbiter Approval (TASK-7.2)
+   * --------------------------------------------------------------------------- */
+  test('AL-10: Admin can approve a Pending/Rejected lesson via POST /admin/lessons/:id/approve', async () => {
+    const { page, context, getRuntimeErrors } = await createMonitoredPage(browser, {
+      viewportWidth: 1280,
+      viewportHeight: 720
+    });
+
+    try {
+      await setupAdminSession(page);
+      let approveCalled = false;
+      let approvePayload = null;
+
+      await page.route(/\/api\/v1\/admin\/lessons(\?.*)?$/, async (route) => {
+        return route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            code: 'SUCCESS',
+            status: 'SUCCESS',
+            message: 'OK',
+            data: {
+              items: [createMockLessons()[1]], // Pending lesson #102
+              page: 0,
+              size: 20,
+              totalElements: 1,
+              totalPages: 1,
+              first: true,
+              last: true
+            }
+          })
+        });
+      });
+
+      await page.route(/\/api\/v1\/admin\/lessons\/102\/approve$/, async (route) => {
+        approveCalled = true;
+        const postData = route.request().postData();
+        approvePayload = postData ? JSON.parse(postData) : {};
+        return route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            code: 'SUCCESS',
+            status: 'SUCCESS',
+            message: 'Phê duyệt trọng tài bài học thành công',
+            data: {
+              lessonId: 102,
+              title: 'Bài 2: Gia đình và Nghề nghiệp',
+              status: 'Approved'
+            }
+          })
+        });
+      });
+
+      await page.goto(`${baseUrl}/admin-lessons.html`, { waitUntil: 'domcontentloaded' });
+      await page.locator('#btnApproveLesson-102').waitFor({ state: 'visible', timeout: 5000 });
+
+      // Click "⚖️ Duyệt trọng tài"
+      await page.locator('#btnApproveLesson-102').click();
+
+      // Arbiter Modal opens
+      const arbiterModal = page.locator('#arbiterApproveModal');
+      await arbiterModal.waitFor({ state: 'visible', timeout: 3000 });
+      assert.ok(await arbiterModal.isVisible());
+
+      // Fill note and confirm
+      await page.locator('#arbiterNoteInput').fill('Trọng tài duyệt sau khi giải quyết tranh chấp');
+      await page.locator('#btnConfirmArbiter').click();
+
+      // Modal closes
+      await arbiterModal.waitFor({ state: 'hidden', timeout: 3000 });
+      assert.strictEqual(approveCalled, true);
+      assert.strictEqual(approvePayload.note, 'Trọng tài duyệt sau khi giải quyết tranh chấp');
+
+      const errors = getRuntimeErrors();
+      assert.strictEqual(errors.length, 0, `Runtime errors: ${JSON.stringify(errors)}`);
+    } finally {
+      await context.close();
+    }
+  });
+
+  /* ---------------------------------------------------------------------------
+   * AL-11: Clean Layout Verification (TASK-7.2)
+   * --------------------------------------------------------------------------- */
+  test('AL-11: Verifies clean layout (no breadcrumbs, no tabs, no pageSizeSelect dropdown)', async () => {
+    const { page, context, getRuntimeErrors } = await createMonitoredPage(browser, {
+      viewportWidth: 1280,
+      viewportHeight: 720
+    });
+
+    try {
+      await setupAdminSession(page);
+
+      await page.route(/\/api\/v1\/admin\/lessons(\?.*)?$/, async (route) => {
+        return route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            code: 'SUCCESS',
+            status: 'SUCCESS',
+            message: 'OK',
+            data: {
+              items: createMockLessons(),
+              page: 0,
+              size: 20,
+              totalElements: 4,
+              totalPages: 1,
+              first: true,
+              last: true
+            }
+          })
+        });
+      });
+
+      await page.goto(`${baseUrl}/admin-lessons.html`, { waitUntil: 'domcontentloaded' });
+      await page.locator('#lessonTableBody tr').first().waitFor({ state: 'visible', timeout: 5000 });
+
+      // 1. Breadcrumbs must be absent
+      assert.strictEqual(await page.locator('.breadcrumb').count(), 0, 'Breadcrumbs must be absent');
+
+      // 2. Moderator nav tabs must be absent
+      assert.strictEqual(await page.locator('.moderator-nav-tabs').count(), 0, 'Moderator nav tabs must be absent');
+
+      // 3. pageSizeSelect must be absent
+      assert.strictEqual(await page.locator('#pageSizeSelect').count(), 0, 'PageSizeSelect must be absent');
+
+      // 4. Clean table class
+      assert.strictEqual(await page.locator('.table-responsive-clean').count(), 1, 'Table must use .table-responsive-clean');
 
       const errors = getRuntimeErrors();
       assert.strictEqual(errors.length, 0, `Runtime errors: ${JSON.stringify(errors)}`);

@@ -887,6 +887,146 @@ class DemoFallbackEngine {
     }
 
     // -------------------------------------------------------------------------
+    const adminLessonDetailMatch = cleanPath.match(/^\/admin\/lessons\/(\d+)$/);
+    if (adminLessonDetailMatch && method === 'GET') {
+      const id = parseInt(adminLessonDetailMatch[1], 10);
+      const lesson = data.lessons.find(l => l.lessonId === id);
+      if (!lesson) throw new ApiError(`Không tìm thấy bài học ${id}`, 404, 'NOT_FOUND');
+      return {
+        lessonId: lesson.lessonId,
+        title: lesson.title,
+        status: lesson.status,
+        rejectionReason: lesson.rejectionReason || null,
+        vocabularyCount: lesson.vocabularies ? lesson.vocabularies.length : (lesson.vocabularyCount || 0),
+        vocabularies: lesson.vocabularies || [],
+        createdAt: lesson.createdAt || new Date().toISOString(),
+        updatedAt: lesson.updatedAt || new Date().toISOString(),
+        creatorId: lesson.creatorId || 2,
+        creatorName: lesson.creatorName || 'Tác Giả'
+      };
+    }
+
+    const adminRevokeMatch = cleanPath.match(/^\/admin\/lessons\/(\d+)\/revoke$/);
+    if (adminRevokeMatch && method === 'POST') {
+      const id = parseInt(adminRevokeMatch[1], 10);
+      const lesson = data.lessons.find(l => l.lessonId === id);
+      if (!lesson) throw new ApiError(`Không tìm thấy bài học ${id}`, 404, 'NOT_FOUND');
+
+      const currentEmail = authManager.getUser()?.emailOrPhone || '';
+      const currentId = authManager.getUser()?.accountId;
+      if ((lesson.creatorId && currentId && lesson.creatorId === currentId) ||
+          (lesson.creatorEmail && currentEmail && lesson.creatorEmail.toLowerCase() === currentEmail.toLowerCase())) {
+        throw new ApiError('Bạn không thể tự thu hồi bài học do chính mình tạo ra', 403, 'FORBIDDEN');
+      }
+
+      if (lesson.status !== 'Approved') {
+        throw new ApiError(`Chỉ có thể thu hồi bài học đang ở trạng thái Approved (hiện tại: ${lesson.status})`, 409, 'CONFLICT');
+      }
+
+      const reason = (body?.reason || '').trim();
+      if (!reason) {
+        throw new ApiError('Lý do thu hồi không được để trống', 400, 'VALIDATION_ERROR');
+      }
+
+      lesson.status = 'Rejected';
+      lesson.rejectionReason = reason;
+      lesson.updatedAt = new Date().toISOString();
+
+      data.moderationHistory.unshift({
+        historyId: Date.now(),
+        lessonId: lesson.lessonId,
+        lessonTitle: lesson.title,
+        decision: 'Revoked',
+        moderatorName: authManager.getUser()?.fullName || 'Quản Trị Viên',
+        moderatorEmail: currentEmail || 'admin@weblearnchinese.com',
+        reviewedAt: new Date().toISOString(),
+        note: `Thu hồi khẩn cấp: ${reason}`
+      });
+
+      if (Array.isArray(data.auditLogs)) {
+        data.auditLogs.unshift({
+          logId: data.auditLogs.length + 1,
+          actionType: 'LESSON_REVOKE',
+          resourceType: 'LESSON',
+          resourceId: String(id),
+          actorUsername: currentEmail || 'admin@weblearnchinese.com',
+          actorRoles: 'Admin',
+          details: `Thu hồi bài học vi phạm khẩn cấp #${id} (${lesson.title}): ${reason}`,
+          createdAt: new Date().toISOString()
+        });
+      }
+
+      this.saveData();
+      return {
+        lessonId: lesson.lessonId,
+        title: lesson.title,
+        status: lesson.status,
+        rejectionReason: lesson.rejectionReason,
+        vocabularyCount: lesson.vocabularies ? lesson.vocabularies.length : 0,
+        vocabularies: lesson.vocabularies || [],
+        createdAt: lesson.createdAt,
+        updatedAt: lesson.updatedAt
+      };
+    }
+
+    const adminApproveMatch = cleanPath.match(/^\/admin\/lessons\/(\d+)\/approve$/);
+    if (adminApproveMatch && method === 'POST') {
+      const id = parseInt(adminApproveMatch[1], 10);
+      const lesson = data.lessons.find(l => l.lessonId === id);
+      if (!lesson) throw new ApiError(`Không tìm thấy bài học ${id}`, 404, 'NOT_FOUND');
+
+      const currentEmail = authManager.getUser()?.emailOrPhone || '';
+      const currentId = authManager.getUser()?.accountId;
+      if ((lesson.creatorId && currentId && lesson.creatorId === currentId) ||
+          (lesson.creatorEmail && currentEmail && lesson.creatorEmail.toLowerCase() === currentEmail.toLowerCase())) {
+        throw new ApiError('Bạn không thể tự phê duyệt bài học do chính mình tạo ra', 403, 'FORBIDDEN');
+      }
+
+      if (lesson.status === 'Approved') {
+        throw new ApiError('Bài học đã được phê duyệt trước đó', 409, 'CONFLICT');
+      }
+
+      const note = (body?.note || 'Trọng tài tối cao phê duyệt').trim();
+      lesson.status = 'Approved';
+      lesson.rejectionReason = null;
+      lesson.updatedAt = new Date().toISOString();
+
+      data.moderationHistory.unshift({
+        historyId: Date.now(),
+        lessonId: lesson.lessonId,
+        lessonTitle: lesson.title,
+        decision: 'Approved',
+        moderatorName: authManager.getUser()?.fullName || 'Quản Trị Viên (Trọng Tài)',
+        moderatorEmail: currentEmail || 'admin@weblearnchinese.com',
+        reviewedAt: new Date().toISOString(),
+        note: note
+      });
+
+      if (Array.isArray(data.auditLogs)) {
+        data.auditLogs.unshift({
+          logId: data.auditLogs.length + 1,
+          actionType: 'LESSON_APPROVE',
+          resourceType: 'LESSON',
+          resourceId: String(id),
+          actorUsername: currentEmail || 'admin@weblearnchinese.com',
+          actorRoles: 'Admin',
+          details: `Phê duyệt trọng tài bài học #${id} (${lesson.title}): ${note}`,
+          createdAt: new Date().toISOString()
+        });
+      }
+
+      this.saveData();
+      return {
+        lessonId: lesson.lessonId,
+        title: lesson.title,
+        status: lesson.status,
+        vocabularyCount: lesson.vocabularies ? lesson.vocabularies.length : 0,
+        vocabularies: lesson.vocabularies || [],
+        createdAt: lesson.createdAt,
+        updatedAt: lesson.updatedAt
+      };
+    }
+
     // 5. MODERATOR QUEUE & REVIEWS
     // -------------------------------------------------------------------------
     if (cleanPath === '/moderator/lessons/pending' && method === 'GET') {

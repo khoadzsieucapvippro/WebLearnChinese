@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' https://cdn.jsdelivr.net; style-src-elem 'self' https://cdn.jsdelivr.net; style-src-attr 'unsafe-inline'; font-src 'self'; img-src 'self' data: https:; media-src 'self' blob: https:; connect-src 'self' http://localhost:8080 http://127.0.0.1:8080 https://*.up.railway.app https://*.onrender.com https://*.koyeb.app; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'self' https://www.youtube-nocookie.com">
   <title>Giám Sát Bài Học Hệ Thống | Hán Ngữ Học Đường</title>
-  <meta name="description" content="Trung tâm giám sát toàn bộ bài học tiếng Trung trên toàn hệ thống dành cho Quản trị viên. Theo dõi vòng đời bài học, số lượng từ vựng và trạng thái kiểm duyệt.">
+  <meta name="description" content="Trung tâm giám sát toàn bộ bài học tiếng Trung trên toàn hệ thống dành cho Quản trị viên. Theo dõi vòng đời bài học, thu hồi vi phạm khẩn cấp và phê duyệt trọng tài tối cao.">
 
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>课</text></svg>">
@@ -17,14 +17,14 @@
         crossorigin="anonymous">
 
   <!-- Custom Core Design System CSS -->
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=20261029_02">
 </head>
 <body class="bg-chinese-cream">
 
   <!-- Accessible Skip Link Landmark -->
   <a href="#mainContent" class="skip-link">Chuyển đến nội dung chính</a>
 
-    <!-- Management Workspace Header -->
+  <!-- Management Workspace Header -->
   <header class="management-header sticky-top">
     <div class="container-fluid px-3 px-lg-4">
       <div class="d-flex align-items-center justify-content-between py-2">
@@ -56,7 +56,7 @@
     </div>
   </header>
 
-    <!-- Management Workspace Outer Layout Wrapper -->
+  <!-- Management Workspace Outer Layout Wrapper -->
   <div class="management-layout">
     <!-- Management Sidebar Landmark -->
     <aside id="managementSidebar" class="management-sidebar" aria-label="Điều hướng quản lý">
@@ -76,222 +76,174 @@
 
     <!-- Main Content Landmark -->
     <main id="mainContent" class="management-main-content">
-    <div class="container-xl creator-studio-wrapper">
+      <div class="container-xl creator-studio-wrapper py-3">
 
-              <!-- Management Sub-navigation Breadcrumb -->
-        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
-          <nav aria-label="Đường dẫn điều hướng">
-            <ol class="breadcrumb mb-0 small">
-              <li class="breadcrumb-item"><a href="management.html" class="text-decoration-none">Trung tâm quản lý</a></li>
-              <li class="breadcrumb-item active" aria-current="page">Giám sát bài học</li>
-            </ol>
-          </nav>
-        </div>
-
-      <!-- Admin Section Sub-navigation Tabs -->
-      <nav class="moderator-nav-tabs" aria-label="Phân khu quản trị hệ thống">
-        <a href="admin-accounts.html" class="moderator-nav-tab" id="tabAdminAccounts">
-          Quản trị tài khoản
-        </a>
-        <a href="admin-roles.html" class="moderator-nav-tab" id="tabAdminRoles">
-          Phân quyền vai trò
-        </a>
-        <a href="admin-radicals.html" class="moderator-nav-tab" id="tabAdminRadicals">
-          Quản trị bộ thủ
-        </a>
-        <a href="admin-vocabulary.html" class="moderator-nav-tab" id="tabAdminVocabulary">
-          Quản trị từ vựng
-        </a>
-        <a href="admin-lessons.html" class="moderator-nav-tab active" id="tabAdminLessons" aria-current="page">
-          Giám sát bài học
-        </a>
-      </nav>
-
-      <!-- Role Guard Message Container (Shown if unauthorized) -->
-      <div id="adminAuthGuardContainer" class="d-none mb-4">
-        <div class="creator-panel-card text-center py-5">
-          <div class="state-error-icon mx-auto mb-3" aria-hidden="true">&#9888;</div>
-          <h2 class="h5 fw-bold text-dark mb-2">Yêu Cầu Quyền Quản Trị Viên (Admin)</h2>
-          <p class="text-secondary small mb-4" id="adminAuthGuardMessage">
-            Bạn cần đăng nhập với vai trò Quản trị viên (Admin) để sử dụng màn hình giám sát bài học hệ thống.
-          </p>
-          <a href="login.html" class="btn-chinese-primary py-2 px-4 text-decoration-none">
-            Đăng nhập Quản trị
-          </a>
-        </div>
-      </div>
-
-      <!-- Main Admin Lessons Content Panel -->
-      <div id="adminLessonsMainContent">
-
-        <!-- Page Header & Oversight Banner -->
-        <div class="creator-panel-card mb-4">
-          <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
-            <div>
-              <div class="d-flex align-items-center gap-2 mb-1">
-                <span class="badge bg-secondary-subtle text-secondary border small">Chỉ đọc / Read-Only</span>
-                <span class="badge bg-primary-subtle text-primary border small">Toàn hệ thống</span>
-              </div>
-              <h1 class="h4 fw-bold text-chinese-red mb-1">
-                Giám Sát Bài Học Hệ Thống
-              </h1>
-              <p class="text-secondary small mb-0">
-                Theo dõi tập trung toàn bộ bài học qua các trạng thái vòng đời (Bản nháp, Chờ duyệt, Đã duyệt, Bị từ chối). Màn hình chuyên dụng cho công tác giám sát, bảo đảm tính toàn vẹn và không thực hiện chỉnh sửa nội dung.
-              </p>
-            </div>
-            <div class="d-flex align-items-center gap-2 flex-shrink-0">
-              <button type="button" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1" id="btnRefreshKpi" title="Làm mới chỉ số thống kê">
-                <span id="refreshKpiSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
-                <span>↻ Làm mới thống kê</span>
-              </button>
-            </div>
+        <!-- Role Guard Message Container (Shown if unauthorized) -->
+        <div id="adminAuthGuardContainer" class="d-none mb-4">
+          <div class="creator-panel-card text-center py-5">
+            <div class="state-error-icon mx-auto mb-3" aria-hidden="true">&#9888;</div>
+            <h2 class="h5 fw-bold text-dark mb-2">Yêu Cầu Quyền Quản Trị Viên (Admin)</h2>
+            <p class="text-secondary small mb-4" id="adminAuthGuardMessage">
+              Bạn cần đăng nhập với vai trò Quản trị viên (Admin) để sử dụng màn hình giám sát bài học hệ thống.
+            </p>
+            <a href="login.html" class="btn-chinese-primary py-2 px-4 text-decoration-none">
+              Đăng nhập Quản trị
+            </a>
           </div>
         </div>
 
-        <!-- Global Status Counts Dashboard (KPI Cards) -->
-        <div class="row g-3 mb-4" id="statusCountsContainer">
-          <!-- Total Lessons -->
-          <div class="col-6 col-md-4 col-lg">
-            <div class="card border-0 shadow-xs h-100 p-3 bg-white text-center cursor-pointer hover-shadow transition" id="kpiCardTotal" data-status="">
-              <div class="text-muted small fw-semibold mb-1">Tổng số bài học</div>
-              <div class="fs-3 fw-bold text-dark" id="kpiCountTotal">
-                <span class="spinner-border spinner-border-sm text-secondary" role="status" aria-hidden="true"></span>
+        <!-- Main Admin Lessons Content Panel -->
+        <div id="adminLessonsMainContent">
+
+          <!-- Page Header & Oversight Banner -->
+          <div class="creator-panel-card mb-4">
+            <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+              <div>
+                <div class="d-flex align-items-center gap-2 mb-1">
+                  <span class="badge bg-danger-subtle text-danger border border-danger small">Trọng tài Tối cao</span>
+                  <span class="badge bg-primary-subtle text-primary border small">Toàn hệ thống</span>
+                </div>
+                <h1 class="h4 fw-bold text-chinese-red mb-1">
+                  Giám Sát Bài Học Hệ Thống
+                </h1>
+                <p class="text-secondary small mb-0">
+                  Theo dõi tập trung toàn bộ bài học qua các trạng thái vòng đời (Bản nháp, Chờ duyệt, Đã duyệt, Bị từ chối). Thực hiện quyền thu hồi vi phạm khẩn cấp và phê duyệt trọng tài khi có tranh chấp.
+                </p>
               </div>
-              <div class="small text-secondary mt-1">Toàn bộ hệ thống</div>
-            </div>
-          </div>
-          <!-- Draft Lessons -->
-          <div class="col-6 col-md-4 col-lg">
-            <div class="card border-0 shadow-xs h-100 p-3 bg-white text-center cursor-pointer hover-shadow transition" id="kpiCardDraft" data-status="Draft">
-              <div class="text-muted small fw-semibold mb-1">Bản nháp (Draft)</div>
-              <div class="fs-3 fw-bold text-secondary" id="kpiCountDraft">
-                <span class="spinner-border spinner-border-sm text-secondary" role="status" aria-hidden="true"></span>
+              <div class="d-flex align-items-center gap-2 flex-shrink-0">
+                <button type="button" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1" id="btnRefreshKpi" title="Làm mới chỉ số thống kê">
+                  <span id="refreshKpiSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                  <span>↻ Làm mới thống kê</span>
+                </button>
               </div>
-              <div class="small text-secondary mt-1">Đang biên soạn</div>
             </div>
           </div>
-          <!-- Pending Lessons -->
-          <div class="col-6 col-md-4 col-lg">
-            <div class="card border-0 shadow-xs h-100 p-3 bg-white text-center cursor-pointer hover-shadow transition" id="kpiCardPending" data-status="Pending">
-              <div class="text-muted small fw-semibold mb-1">Chờ duyệt (Pending)</div>
-              <div class="fs-3 fw-bold text-warning" id="kpiCountPending">
-                <span class="spinner-border spinner-border-sm text-secondary" role="status" aria-hidden="true"></span>
+
+          <!-- Global Status Counts Dashboard (KPI Cards) -->
+          <div class="row g-3 mb-4" id="statusCountsContainer">
+            <!-- Total Lessons -->
+            <div class="col-6 col-md-4 col-lg">
+              <div class="card border-0 shadow-xs h-100 p-3 bg-white text-center cursor-pointer hover-shadow transition" id="kpiCardTotal" data-status="">
+                <div class="text-muted small fw-semibold mb-1">Tổng số bài học</div>
+                <div class="fs-3 fw-bold text-dark" id="kpiCountTotal">
+                  <span class="spinner-border spinner-border-sm text-secondary" role="status" aria-hidden="true"></span>
+                </div>
+                <div class="small text-secondary mt-1">Toàn bộ hệ thống</div>
               </div>
-              <div class="small text-secondary mt-1">Hàng đợi duyệt</div>
             </div>
-          </div>
-          <!-- Approved Lessons -->
-          <div class="col-6 col-md-4 col-lg">
-            <div class="card border-0 shadow-xs h-100 p-3 bg-white text-center cursor-pointer hover-shadow transition" id="kpiCardApproved" data-status="Approved">
-              <div class="text-muted small fw-semibold mb-1">Đã duyệt (Approved)</div>
-              <div class="fs-3 fw-bold text-success" id="kpiCountApproved">
-                <span class="spinner-border spinner-border-sm text-secondary" role="status" aria-hidden="true"></span>
+            <!-- Draft Lessons -->
+            <div class="col-6 col-md-4 col-lg">
+              <div class="card border-0 shadow-xs h-100 p-3 bg-white text-center cursor-pointer hover-shadow transition" id="kpiCardDraft" data-status="Draft">
+                <div class="text-muted small fw-semibold mb-1">Bản nháp (Draft)</div>
+                <div class="fs-3 fw-bold text-secondary" id="kpiCountDraft">
+                  <span class="spinner-border spinner-border-sm text-secondary" role="status" aria-hidden="true"></span>
+                </div>
+                <div class="small text-secondary mt-1">Đang biên soạn</div>
               </div>
-              <div class="small text-secondary mt-1">Đang phát hành</div>
             </div>
-          </div>
-          <!-- Rejected Lessons -->
-          <div class="col-6 col-md-4 col-lg">
-            <div class="card border-0 shadow-xs h-100 p-3 bg-white text-center cursor-pointer hover-shadow transition" id="kpiCardRejected" data-status="Rejected">
-              <div class="text-muted small fw-semibold mb-1">Bị từ chối (Rejected)</div>
-              <div class="fs-3 fw-bold text-danger" id="kpiCountRejected">
-                <span class="spinner-border spinner-border-sm text-secondary" role="status" aria-hidden="true"></span>
+            <!-- Pending Lessons -->
+            <div class="col-6 col-md-4 col-lg">
+              <div class="card border-0 shadow-xs h-100 p-3 bg-white text-center cursor-pointer hover-shadow transition" id="kpiCardPending" data-status="Pending">
+                <div class="text-muted small fw-semibold mb-1">Chờ duyệt (Pending)</div>
+                <div class="fs-3 fw-bold text-warning" id="kpiCountPending">
+                  <span class="spinner-border spinner-border-sm text-secondary" role="status" aria-hidden="true"></span>
+                </div>
+                <div class="small text-secondary mt-1">Hàng đợi duyệt</div>
               </div>
-              <div class="small text-secondary mt-1">Cần sửa đổi</div>
             </div>
-          </div>
-        </div>
-
-        <!-- Filter & Table Controls Card -->
-        <div class="creator-panel-card mb-4">
-          <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
-            
-            <!-- Status Filter Button Group -->
-            <div class="d-flex flex-wrap align-items-center gap-1" role="group" aria-label="Bộ lọc trạng thái bài học">
-              <span class="text-secondary small fw-semibold me-2 d-none d-sm-inline">Trạng thái:</span>
-              <button type="button" class="btn btn-sm btn-chinese-primary active" id="filterStatusAll" data-status="">
-                Tất cả
-              </button>
-              <button type="button" class="btn btn-sm btn-outline-secondary" id="filterStatusDraft" data-status="Draft">
-                Bản nháp
-              </button>
-              <button type="button" class="btn btn-sm btn-outline-secondary" id="filterStatusPending" data-status="Pending">
-                Chờ duyệt
-              </button>
-              <button type="button" class="btn btn-sm btn-outline-secondary" id="filterStatusApproved" data-status="Approved">
-                Đã duyệt
-              </button>
-              <button type="button" class="btn btn-sm btn-outline-secondary" id="filterStatusRejected" data-status="Rejected">
-                Bị từ chối
-              </button>
+            <!-- Approved Lessons -->
+            <div class="col-6 col-md-4 col-lg">
+              <div class="card border-0 shadow-xs h-100 p-3 bg-white text-center cursor-pointer hover-shadow transition" id="kpiCardApproved" data-status="Approved">
+                <div class="text-muted small fw-semibold mb-1">Đã duyệt (Approved)</div>
+                <div class="fs-3 fw-bold text-success" id="kpiCountApproved">
+                  <span class="spinner-border spinner-border-sm text-secondary" role="status" aria-hidden="true"></span>
+                </div>
+                <div class="small text-secondary mt-1">Đang phát hành</div>
+              </div>
             </div>
-
-            <!-- Page Size & Result Summary -->
-            <div class="d-flex align-items-center gap-2 flex-shrink-0">
-              <label for="pageSizeSelect" class="text-secondary small text-nowrap mb-0">Hiển thị:</label>
-              <select class="form-select form-select-sm w-auto" id="pageSizeSelect" aria-label="Số bản ghi trên mỗi trang">
-                <option value="12">12 bài</option>
-                <option value="20" selected>20 bài</option>
-                <option value="50">50 bài</option>
-              </select>
-              <span class="badge-status badge-status-published text-nowrap" id="lessonResultCount" aria-live="polite">
-                Đang tải...
-              </span>
+            <!-- Rejected Lessons -->
+            <div class="col-6 col-md-4 col-lg">
+              <div class="card border-0 shadow-xs h-100 p-3 bg-white text-center cursor-pointer hover-shadow transition" id="kpiCardRejected" data-status="Rejected">
+                <div class="text-muted small fw-semibold mb-1">Bị từ chối (Rejected)</div>
+                <div class="fs-3 fw-bold text-danger" id="kpiCountRejected">
+                  <span class="spinner-border spinner-border-sm text-secondary" role="status" aria-hidden="true"></span>
+                </div>
+                <div class="small text-secondary mt-1">Cần sửa đổi</div>
+              </div>
             </div>
           </div>
 
-          <!-- Documented Limitation Note -->
-          <div class="mt-3 pt-2 border-top text-muted small d-flex align-items-center gap-2">
-            <span class="badge bg-light text-muted border">Lưu ý hợp đồng</span>
-            <span>Hệ thống giám sát phân loại theo trạng thái vòng đời. Tính năng lọc theo Tác giả (Creator) và Tìm kiếm tự do chưa có endpoint hỗ trợ trong hợp đồng máy chủ hiện hành.</span>
-          </div>
-        </div>
+          <!-- Filter & Table Controls Card -->
+          <div class="creator-panel-card mb-4">
+            <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+              <!-- Status Filter Button Group -->
+              <div class="d-flex flex-wrap align-items-center gap-1" role="group" aria-label="Bộ lọc trạng thái bài học">
+                <span class="text-secondary small fw-semibold me-2 d-none d-sm-inline">Trạng thái:</span>
+                <button type="button" class="btn btn-sm btn-chinese-primary active" id="filterStatusAll" data-status="">
+                  Tất cả
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" id="filterStatusDraft" data-status="Draft">
+                  Bản nháp
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" id="filterStatusPending" data-status="Pending">
+                  Chờ duyệt
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" id="filterStatusApproved" data-status="Approved">
+                  Đã duyệt
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" id="filterStatusRejected" data-status="Rejected">
+                  Bị từ chối
+                </button>
+              </div>
 
-        <!-- Dynamic State Container (Loading / Empty / Error States) -->
-        <div id="lessonStateContainer" class="mb-4"></div>
-
-        <!-- Lessons Data Table Card -->
-        <div class="creator-panel-card p-0 overflow-hidden shadow-xs mb-4 d-none" id="lessonTableCard">
-          <div class="table-responsive">
-            <table class="table creator-table align-middle mb-0 table-hover table-responsive-stacked" id="lessonTable">
-              <caption class="visually-hidden">Danh sách toàn bộ bài học trong hệ thống</caption>
-              <thead class="table-light text-secondary small text-uppercase">
-                <tr>
-                  <th scope="col" class="text-center py-3 ps-3" style="width: 80px;">ID</th>
-                  <th scope="col" class="py-3">Tên bài học</th>
-                  <th scope="col" class="text-center py-3" style="width: 140px;">Trạng thái</th>
-                  <th scope="col" class="text-center py-3" style="width: 120px;">Số từ vựng</th>
-                  <th scope="col" class="py-3" style="width: 180px;">Cập nhật lần cuối</th>
-                  <th scope="col" class="text-end py-3 pe-3" style="width: 140px;">Thao tác</th>
-                </tr>
-              </thead>
-              <tbody id="lessonTableBody" class="border-top-0">
-                <!-- Dynamically constructed using safe DOM in admin-lessons-page.js -->
-              </tbody>
-            </table>
-          </div>
-
-          <!-- Table Pagination Footer -->
-          <div class="d-flex flex-column flex-sm-row align-items-center justify-content-between p-3 border-top gap-3 bg-light-subtle" id="lessonPagination">
-            <div class="text-secondary small" id="paginationSummary" aria-live="polite">
-              Đang tải dữ liệu trang...
+              <!-- Result Count Badge -->
+              <div class="d-flex align-items-center gap-2 flex-shrink-0">
+                <span class="badge-status badge-status-published text-nowrap" id="lessonResultCount" aria-live="polite">
+                  Đang tải...
+                </span>
+              </div>
             </div>
-            <nav aria-label="Phân trang danh sách bài học">
-              <ul class="pagination pagination-sm mb-0 gap-1" id="paginationControls">
+          </div>
+
+          <!-- Dynamic State Container (Loading / Empty / Error States) -->
+          <div id="lessonStateContainer" class="mb-4"></div>
+
+          <!-- Lessons Data Table Card -->
+          <div class="creator-panel-card p-0 overflow-hidden shadow-xs mb-4 d-none" id="lessonTableCard">
+            <div class="table-responsive-clean" style="max-width: 100%;">
+              <table class="table creator-table align-middle mb-0 table-hover table-responsive-stacked" id="lessonTable">
+                <caption class="visually-hidden">Danh sách toàn bộ bài học trong hệ thống</caption>
+                <thead class="table-light text-secondary small text-uppercase">
+                  <tr>
+                    <th scope="col" class="text-center py-3 ps-3" style="width: 70px;">ID</th>
+                    <th scope="col" class="py-3">Tên bài học</th>
+                    <th scope="col" class="text-center py-3" style="width: 140px;">Trạng thái</th>
+                    <th scope="col" class="text-center py-3" style="width: 120px;">Số từ vựng</th>
+                    <th scope="col" class="py-3" style="width: 160px;">Cập nhật</th>
+                    <th scope="col" class="text-end py-3 pe-3" style="min-width: 210px; width: 210px;">Thao tác</th>
+                  </tr>
+                </thead>
+                <tbody id="lessonTableBody" class="border-top-0">
+                  <!-- Dynamically constructed using safe DOM in admin-lessons-page.js -->
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Standardized First/Last Pagination Footer -->
+            <nav id="lessonPaginationNav" class="pagination-container justify-content-end p-3 border-top d-none" aria-label="Phân trang danh sách bài học">
+              <div class="pagination-controls" id="lessonPaginationList" role="group" aria-label="Điều khiển chuyển trang bài học">
                 <!-- Pagination buttons generated dynamically -->
-              </ul>
+              </div>
             </nav>
           </div>
-        </div>
 
+        </div>
       </div>
-    </div>
-      </main>
+    </main>
   </div>
 
   <!-- ========================================================================= -->
-  <!-- READ-ONLY LESSON DETAIL MODAL                                             -->
-  <!-- Native HTML5 <dialog> with APG compliant keyboard accessibility          -->
+  <!-- 1. LESSON DETAIL MODAL (Native HTML5 <dialog>)                            -->
   <!-- ========================================================================= -->
   <dialog class="admin-modal" id="lessonDetailModal" aria-labelledby="modalDetailTitle" aria-describedby="modalDetailDesc">
     <div class="admin-modal-dialog modal-dialog-scrollable modal-lg">
@@ -306,7 +258,7 @@
                 Chi Tiết Bài Học
               </h2>
               <p class="text-secondary small mb-0" id="modalDetailDesc">
-                Thông tin tổng quan và danh sách từ vựng trong bài học.
+                Thông tin tổng quan và danh sách từ vựng cấu thành bài học.
               </p>
             </div>
           </div>
@@ -338,7 +290,7 @@
             </div>
           </div>
 
-          <!-- Contract Limitation Notice Banner (Shown for Draft / Rejected) -->
+          <!-- Contract Limitation Notice Banner (Shown when detail is unsupported) -->
           <div id="detailContractLimitationAlert" class="alert alert-info border d-none" role="status">
             <div class="d-flex align-items-start gap-2">
               <span class="fs-5 lh-1" aria-hidden="true">ℹ</span>
@@ -347,6 +299,17 @@
                 <p class="small mb-0" id="detailContractLimitationMessage">
                   Nội dung chi tiết của bài học ở trạng thái này chưa có endpoint quản trị trong backend hiện tại.
                 </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Rejection / Revocation Reason Alert (Shown if Rejected) -->
+          <div id="detailRejectionAlert" class="alert alert-danger border d-none" role="status">
+            <div class="d-flex align-items-start gap-2">
+              <span class="fs-5 lh-1" aria-hidden="true">&#9888;</span>
+              <div>
+                <strong class="d-block mb-1">Lý do từ chối / thu hồi:</strong>
+                <p class="small mb-0" id="detailRejectionMessage">—</p>
               </div>
             </div>
           </div>
@@ -362,7 +325,7 @@
             <span id="detailErrorMessage">Không thể nạp thông tin chi tiết bài học.</span>
           </div>
 
-          <!-- Vocabulary Section (When detail is available for Approved or Pending) -->
+          <!-- Vocabulary Section -->
           <div id="detailVocabSection" class="d-none">
             <div class="d-flex align-items-center justify-content-between mb-2">
               <h3 class="h6 fw-bold text-chinese-red mb-0">
@@ -385,12 +348,100 @@
         </div>
 
         <!-- Modal Footer -->
-        <div class="admin-modal-footer border-top pt-3 d-flex justify-content-end">
+        <div class="admin-modal-footer border-top pt-3 d-flex justify-content-end gap-2">
           <button type="button" class="btn btn-secondary px-4" id="btnCancelDetailModal">
             Đóng
           </button>
         </div>
 
+      </div>
+    </div>
+  </dialog>
+
+  <!-- ========================================================================= -->
+  <!-- 2. EMERGENCY LESSON REVOCATION MODAL (<dialog>) (TASK-7.2)                -->
+  <!-- ========================================================================= -->
+  <dialog class="admin-modal" id="revokeLessonModal" aria-labelledby="modalRevokeTitle" aria-describedby="modalRevokeDesc">
+    <div class="admin-modal-dialog">
+      <div class="admin-modal-content">
+        <div class="admin-modal-header border-bottom pb-3">
+          <div class="d-flex align-items-center gap-2">
+            <span class="chinese-seal-icon small text-danger" aria-hidden="true">撤</span>
+            <div>
+              <h2 class="h5 fw-bold text-danger mb-0" id="modalRevokeTitle">
+                Thu Hồi Bài Học Vi Phạm Khẩn Cấp
+              </h2>
+              <p class="text-secondary small mb-0" id="modalRevokeDesc">
+                Gỡ bài học đã xuất bản về trạng thái Bị từ chối và ẩn khỏi học viên.
+              </p>
+            </div>
+          </div>
+          <button type="button" class="btn-close" id="btnCancelRevokeClose" aria-label="Đóng"></button>
+        </div>
+        <div class="admin-modal-body py-3">
+          <div class="alert alert-warning small mb-3">
+            <strong>Cảnh báo khẩn cấp:</strong> Bài học <strong id="revokeLessonTitleText">—</strong> sẽ lập tức bị gỡ khỏi toàn bộ danh mục khám phá của học viên.
+          </div>
+          <div class="mb-3">
+            <label for="revokeReasonInput" class="form-label small fw-semibold text-dark">
+              Lý do vi phạm / thu hồi <span class="text-danger">*</span>
+            </label>
+            <textarea class="form-control" id="revokeReasonInput" rows="3" placeholder="Nhập chi tiết lý do gỡ bài (vi phạm bản quyền, nội dung không phù hợp...)" maxlength="500" required></textarea>
+            <div class="form-text small">Tối đa 500 ký tự. Hành động này sẽ được ghi vào nhật ký kiểm toán bất biến.</div>
+          </div>
+          <div id="revokeModalError" class="alert alert-danger py-2 px-3 small d-none" role="alert"></div>
+        </div>
+        <div class="admin-modal-footer border-top pt-3 d-flex justify-content-end gap-2">
+          <button type="button" class="btn btn-secondary px-3" id="btnCancelRevoke">Hủy bỏ</button>
+          <button type="button" class="btn btn-danger px-3 d-flex align-items-center gap-1" id="btnConfirmRevoke">
+            <span id="revokeSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+            <span>🚨 Xác nhận thu hồi</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- ========================================================================= -->
+  <!-- 3. SUPERVISORY ARBITER APPROVAL MODAL (<dialog>) (TASK-7.2)               -->
+  <!-- ========================================================================= -->
+  <dialog class="admin-modal" id="arbiterApproveModal" aria-labelledby="modalArbiterTitle" aria-describedby="modalArbiterDesc">
+    <div class="admin-modal-dialog">
+      <div class="admin-modal-content">
+        <div class="admin-modal-header border-bottom pb-3">
+          <div class="d-flex align-items-center gap-2">
+            <span class="chinese-seal-icon small text-success" aria-hidden="true">审</span>
+            <div>
+              <h2 class="h5 fw-bold text-chinese-red mb-0" id="modalArbiterTitle">
+                Phê Duyệt Trọng Tài Tối Cao
+              </h2>
+              <p class="text-secondary small mb-0" id="modalArbiterDesc">
+                Giải quyết khiếu nại hoặc tranh chấp kiểm duyệt để phát hành bài học.
+              </p>
+            </div>
+          </div>
+          <button type="button" class="btn-close" id="btnCancelArbiterClose" aria-label="Đóng"></button>
+        </div>
+        <div class="admin-modal-body py-3">
+          <div class="alert alert-info small mb-3">
+            Phê duyệt trọng tài cho bài học: <strong id="arbiterLessonTitleText">—</strong>
+          </div>
+          <div class="mb-3">
+            <label for="arbiterNoteInput" class="form-label small fw-semibold text-dark">
+              Ghi chú phân giải trọng tài (tùy chọn)
+            </label>
+            <textarea class="form-control" id="arbiterNoteInput" rows="3" placeholder="Nhập căn cứ phê duyệt trọng tài (ví dụ: đã kiểm tra lại tài liệu bản quyền hợp lệ...)" maxlength="500"></textarea>
+            <div class="form-text small">Tối đa 500 ký tự. Ghi nhận minh bạch trong lịch sử kiểm duyệt.</div>
+          </div>
+          <div id="arbiterModalError" class="alert alert-danger py-2 px-3 small d-none" role="alert"></div>
+        </div>
+        <div class="admin-modal-footer border-top pt-3 d-flex justify-content-end gap-2">
+          <button type="button" class="btn btn-secondary px-3" id="btnCancelArbiter">Hủy bỏ</button>
+          <button type="button" class="btn btn-chinese-primary px-3 d-flex align-items-center gap-1" id="btnConfirmArbiter">
+            <span id="arbiterSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+            <span>⚖️ Phê duyệt trọng tài</span>
+          </button>
+        </div>
       </div>
     </div>
   </dialog>
@@ -407,7 +458,7 @@
           <span class="small text-white-50">Hán Ngữ Học Đường &copy; 2026. Phân hệ Quản trị Bài học Toàn hệ thống.</span>
         </div>
         <div class="small text-white-50">
-          Chỉ đọc &bull; Bảo mật &bull; Không đột biến
+          Trọng tài Tối cao &bull; An toàn &bull; Minh bạch
         </div>
       </div>
     </div>
@@ -419,10 +470,10 @@
           crossorigin="anonymous"></script>
 
   <!-- Application Configuration & Page Script -->
-  <script type="module" src="js/config.js"></script>
+  <script type="module" src="js/config.js?v=20261029_02"></script>
   <!-- Management Workspace Layout & Sidebar Component -->
-  <script type="module" src="js/ui/management-layout.js"></script>
+  <script type="module" src="js/ui/management-layout.js?v=20261029_02"></script>
 
-  <script type="module" src="js/pages/admin-lessons-page.js"></script>
+  <script type="module" src="js/pages/admin-lessons-page.js?v=20261029_02"></script>
 </body>
 </html>

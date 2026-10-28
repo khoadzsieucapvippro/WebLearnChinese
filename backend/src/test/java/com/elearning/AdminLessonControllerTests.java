@@ -1,6 +1,8 @@
 package com.elearning;
 
 import com.elearning.controller.AdminLessonController;
+import com.elearning.dto.request.AdminRevokeLessonRequest;
+import com.elearning.dto.request.ApproveLessonRequest;
 import com.elearning.dto.response.LessonDetailResponse;
 import com.elearning.dto.response.LessonSummaryResponse;
 import com.elearning.exception.BusinessException;
@@ -31,11 +33,12 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("Task 8D.4: AdminLessonController Unit Contract Tests")
+@DisplayName("Task 8D.4 & TASK-7.2: AdminLessonController Unit Contract Tests")
 class AdminLessonControllerTests {
 
     @Mock
@@ -104,5 +107,68 @@ class AdminLessonControllerTests {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value("NOT_FOUND"));
+    }
+
+    @Test
+    @DisplayName("GIVEN valid revoke request WHEN calling POST /api/v1/admin/lessons/{id}/revoke THEN returns 200 with updated Rejected detail")
+    void testRevokeLesson_success() throws Exception {
+        LessonDetailResponse revoked = new LessonDetailResponse(
+                10L, "Harmful Lesson", "Rejected", 0, Collections.emptyList(),
+                LocalDateTime.now(), LocalDateTime.now()
+        );
+
+        when(lessonService.revokeLesson(eq(10L), any(AdminRevokeLessonRequest.class))).thenReturn(revoked);
+
+        mockMvc.perform(post("/api/v1/admin/lessons/10/revoke")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"reason\": \"Vi phạm bản quyền giáo trình nghiêm trọng\"}")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value("SUCCESS"))
+                .andExpect(jsonPath("$.data.status").value("Rejected"));
+    }
+
+    @Test
+    @DisplayName("GIVEN blank reason WHEN calling POST /api/v1/admin/lessons/{id}/revoke THEN returns 400 BAD_REQUEST")
+    void testRevokeLesson_blankReason() throws Exception {
+        mockMvc.perform(post("/api/v1/admin/lessons/10/revoke")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"reason\": \"   \"}")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
+    }
+
+    @Test
+    @DisplayName("GIVEN valid approve request WHEN calling POST /api/v1/admin/lessons/{id}/approve THEN returns 200 with updated Approved detail")
+    void testSupervisoryApproveLesson_success() throws Exception {
+        LessonDetailResponse approved = new LessonDetailResponse(
+                12L, "Disputed Lesson", "Approved", 5, Collections.emptyList(),
+                LocalDateTime.now(), LocalDateTime.now()
+        );
+
+        when(lessonService.supervisoryApproveLesson(eq(12L), any(ApproveLessonRequest.class))).thenReturn(approved);
+
+        mockMvc.perform(post("/api/v1/admin/lessons/12/approve")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"note\": \"Trọng tài tối cao duyệt sau khi khiếu nại được làm rõ\"}")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value("SUCCESS"))
+                .andExpect(jsonPath("$.data.status").value("Approved"));
+    }
+
+    @Test
+    @DisplayName("GIVEN self-review attempt WHEN calling POST /api/v1/admin/lessons/{id}/approve THEN returns 403 FORBIDDEN")
+    void testSupervisoryApproveLesson_selfReviewForbidden() throws Exception {
+        when(lessonService.supervisoryApproveLesson(eq(15L), any(ApproveLessonRequest.class)))
+                .thenThrow(new BusinessException(ErrorCode.FORBIDDEN, "Bạn không thể tự phê duyệt bài học do chính mình tạo ra"));
+
+        mockMvc.perform(post("/api/v1/admin/lessons/15/approve")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value("FORBIDDEN"));
     }
 }

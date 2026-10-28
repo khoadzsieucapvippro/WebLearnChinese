@@ -1,5 +1,7 @@
 package com.elearning.service;
 
+import com.elearning.dto.request.AdminRevokeLessonRequest;
+import com.elearning.dto.request.ApproveLessonRequest;
 import com.elearning.dto.response.LessonDetailResponse;
 import com.elearning.dto.response.LessonSummaryResponse;
 import org.springframework.data.domain.Page;
@@ -52,4 +54,26 @@ public interface LessonService {
      * @throws com.elearning.exception.BusinessException if lesson is null or not found
      */
     LessonDetailResponse getAdminLessonById(Long lessonId);
+
+    /**
+     * Emergency Lesson Revocation (Take-Down) (TASK-7.2).
+     * Transitions an 'Approved' lesson back to 'Rejected' state with a violation reason.
+     * Enforces Self-Review Prohibition (Creator cannot revoke their own lesson even as Admin).
+     *
+     * @param lessonId the primary ID of the lesson
+     * @param request  revocation request with mandatory reason
+     * @return updated LessonDetailResponse
+     */
+    LessonDetailResponse revokeLesson(Long lessonId, AdminRevokeLessonRequest request);
+
+    /**
+     * Supervisory Arbiter Approval (Trọng Tài Tối Cao) (TASK-7.2).
+     * Approves a 'Pending' or 'Rejected' lesson that was disputed or delayed.
+     * Enforces Self-Review Prohibition (Creator cannot approve their own lesson).
+     *
+     * @param lessonId the primary ID of the lesson
+     * @param request  optional approval notes
+     * @return updated LessonDetailResponse
+     */
+    LessonDetailResponse supervisoryApproveLesson(Long lessonId, ApproveLessonRequest request);
 }

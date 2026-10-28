@@ -14,10 +14,10 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>字</text></svg>">
 
   <!-- Core Design Tokens & Styles -->
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=20261029_02">
 
   <!-- Runtime Environment Configuration -->
-  <script src="js/config.js"></script>
+  <script src="js/config.js?v=20261029_02"></script>
 </head>
 <body class="bg-chinese-surface text-chinese-text">
 
@@ -76,36 +76,7 @@
 
     <!-- Main Content Landmark -->
     <main id="mainContent" class="management-main-content">
-    <div class="container-xl creator-studio-wrapper">
-
-              <!-- Management Sub-navigation Breadcrumb -->
-        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
-          <nav aria-label="Đường dẫn điều hướng">
-            <ol class="breadcrumb mb-0 small">
-              <li class="breadcrumb-item"><a href="management.html" class="text-decoration-none">Trung tâm quản lý</a></li>
-              <li class="breadcrumb-item active" aria-current="page">Quản trị bộ thủ</li>
-            </ol>
-          </nav>
-        </div>
-
-      <!-- Admin Section Sub-navigation Tabs -->
-      <nav class="moderator-nav-tabs" aria-label="Phân khu quản trị hệ thống">
-        <a href="admin-accounts.html" class="moderator-nav-tab" id="tabAdminAccounts">
-          Quản trị tài khoản
-        </a>
-        <a href="admin-roles.html" class="moderator-nav-tab" id="tabAdminRoles">
-          Phân quyền vai trò
-        </a>
-        <a href="admin-radicals.html" class="moderator-nav-tab active" id="tabAdminRadicals" aria-current="page">
-          Quản trị bộ thủ
-        </a>
-        <a href="admin-vocabulary.html" class="moderator-nav-tab" id="tabAdminVocabulary">
-          Quản trị từ vựng
-        </a>
-        <a href="admin-lessons.html" class="moderator-nav-tab" id="tabAdminLessons">
-          Giám sát bài học
-        </a>
-      </nav>
+      <div class="container-xl creator-studio-wrapper py-3">
 
       <!-- Role Guard Message Container (Shown if unauthorized) -->
       <div id="adminAuthGuardContainer" class="d-none mb-4">
@@ -175,18 +146,9 @@
               </div>
             </div>
 
-            <!-- Page Size & Result Count -->
+            <!-- Result Count -->
             <div class="col-md-5 col-lg-4">
-              <div class="d-flex flex-column align-items-md-end gap-2">
-                <div class="d-flex align-items-center gap-2">
-                  <label for="pageSizeSelect" class="small text-secondary text-nowrap">Hiển thị:</label>
-                  <select id="pageSizeSelect" class="form-select form-select-sm w-auto">
-                    <option value="25">25 bộ thủ</option>
-                    <option value="50" selected>50 bộ thủ</option>
-                    <option value="100">100 bộ thủ</option>
-                    <option value="214">Tất cả</option>
-                  </select>
-                </div>
+              <div class="d-flex flex-column align-items-md-end gap-2 justify-content-center h-100">
                 <div id="radicalResultCount" class="badge-status badge-status-draft text-nowrap" aria-live="polite">
                   Đang tải danh mục...
                 </div>
@@ -202,7 +164,7 @@
 
         <!-- Radicals Data Table Card -->
         <div class="creator-panel-card p-0 overflow-hidden mb-4" id="radicalTableCard">
-          <div class="table-responsive">
+          <div class="table-responsive-clean" style="max-width: 100%;">
             <table class="table table-chinese align-middle mb-0 table-responsive-stacked" id="radicalTable">
               <caption class="visually-hidden">Danh sách bộ thủ Khang Hy trong hệ thống</caption>
               <thead>
@@ -223,11 +185,11 @@
           </div>
 
           <!-- Accessible Client-side Pagination Navigation -->
-          <nav id="radicalPagination" class="d-flex align-items-center justify-content-between p-3 border-top flex-wrap gap-2" aria-label="Phân trang danh mục bộ thủ">
-            <div class="small text-secondary" id="paginationSummary">
-              <!-- Summary populated dynamically -->
+          <nav id="radicalPagination" class="pagination-container justify-content-end p-3 border-top flex-wrap gap-2" aria-label="Phân trang danh mục bộ thủ">
+            <div class="small text-secondary d-none" id="paginationSummary">
+              <!-- Summary populated dynamically (hidden per clean UI spec) -->
             </div>
-            <div class="d-flex align-items-center gap-1" id="paginationControls">
+            <div class="pagination-controls" id="paginationControls" role="group" aria-label="Điều khiển chuyển trang bộ thủ">
               <!-- Buttons populated dynamically -->
             </div>
           </nav>
@@ -498,9 +460,9 @@
 
   <!-- Admin Radicals Page Controller Module -->
   <!-- Management Workspace Layout & Sidebar Component -->
-  <script type="module" src="js/ui/management-layout.js"></script>
+  <script type="module" src="js/ui/management-layout.js?v=20261029_02"></script>
 
-  <script type="module" src="js/pages/admin-radicals-page.js"></script>
+  <script type="module" src="js/pages/admin-radicals-page.js?v=20261029_02"></script>
 
 </body>
 </html>

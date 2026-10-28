@@ -12,6 +12,7 @@ public enum AuditActionType {
     // Kiểm duyệt bài học
     LESSON_APPROVE,
     LESSON_REJECT,
+    LESSON_REVOKE,
 
     // Quản lý bài học toàn hệ thống
     LESSON_CREATE,
