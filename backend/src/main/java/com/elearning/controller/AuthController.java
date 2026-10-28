@@ -8,6 +8,7 @@ import com.elearning.dto.request.RegisterRequest;
 import com.elearning.dto.request.ResetPasswordRequest;
 import com.elearning.dto.response.ApiResponse;
 import com.elearning.dto.response.AuthResponse;
+import com.elearning.dto.response.ForgotPasswordResponse;
 import com.elearning.exception.BusinessException;
 import com.elearning.security.LoginRateLimiter;
 import com.elearning.service.AuthService;
@@ -93,7 +94,7 @@ public class AuthController {
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<ApiResponse<Void>> forgotPassword(
+    public ResponseEntity<ApiResponse<ForgotPasswordResponse>> forgotPassword(
             @Valid @RequestBody ForgotPasswordRequest request,
             HttpServletRequest servletRequest) {
         String clientIp = resolveClientIp(servletRequest);
@@ -104,10 +105,10 @@ public class AuthController {
             );
         }
 
-        authService.forgotPassword(request);
+        ForgotPasswordResponse response = authService.forgotPassword(request);
         return ResponseEntity.ok(ApiResponse.success(
-                "Nếu email tồn tại trong hệ thống, mã xác thực đã được gửi đến hòm thư của bạn.",
-                null
+                response.getMessage() != null ? response.getMessage() : "Nếu email tồn tại trong hệ thống, mã xác thực đã được gửi đến hòm thư của bạn.",
+                response
         ));
     }
 

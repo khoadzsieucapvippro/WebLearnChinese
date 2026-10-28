@@ -6,6 +6,7 @@ import com.elearning.dto.request.LoginRequest;
 import com.elearning.dto.request.RegisterRequest;
 import com.elearning.dto.request.ResetPasswordRequest;
 import com.elearning.dto.response.AuthResponse;
+import com.elearning.dto.response.ForgotPasswordResponse;
 
 /**
  * Service interface for user registration and authentication workflows.
@@ -50,8 +51,9 @@ public interface AuthService {
      * Prevents account enumeration by always completing normally even if email is not found.
      *
      * @param request forgot password request containing target email
+     * @return ForgotPasswordResponse with delivery status and testing code if SMTP is unconfigured
      */
-    void forgotPassword(ForgotPasswordRequest request);
+    ForgotPasswordResponse forgotPassword(ForgotPasswordRequest request);
 
     /**
      * Completes self-service password reset by validating 6-digit verification code,

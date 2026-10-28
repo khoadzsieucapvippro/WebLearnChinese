@@ -8,6 +8,7 @@ import com.elearning.dto.request.ResetPasswordRequest;
 import com.elearning.dto.request.LoginRequest;
 import com.elearning.dto.request.RegisterRequest;
 import com.elearning.dto.response.AuthResponse;
+import com.elearning.dto.response.ForgotPasswordResponse;
 import com.elearning.exception.BusinessException;
 import com.elearning.exception.GlobalExceptionHandler;
 import com.elearning.service.AuthService;
@@ -261,13 +262,16 @@ class AuthControllerTests {
         @DisplayName("GIVEN valid email WHEN POST /forgot-password THEN returns 200 OK")
         void testForgotPasswordSuccess() throws Exception {
             ForgotPasswordRequest request = new ForgotPasswordRequest("learner@elearning.com");
+            when(authService.forgotPassword(any(ForgotPasswordRequest.class)))
+                    .thenReturn(new ForgotPasswordResponse("mã xác thực đã được gửi", "123456", false));
 
             mockMvc.perform(post("/api/v1/auth/forgot-password")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("SUCCESS"))
-                    .andExpect(jsonPath("$.message").value(containsString("mã xác thực đã được gửi")));
+                    .andExpect(jsonPath("$.message").value(containsString("mã xác thực đã được gửi")))
+                    .andExpect(jsonPath("$.data.devCode").value("123456"));
 
             verify(authService).forgotPassword(any(ForgotPasswordRequest.class));
         }

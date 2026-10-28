@@ -627,15 +627,25 @@ export function initForgotPasswordModal() {
       step1Section?.classList.add('d-none');
       step2Section?.classList.remove('d-none');
 
-      if (res?.demoCode && codeInput) {
-        codeInput.value = res.demoCode;
+      const activeCode = res?.devCode || res?.demoCode;
+      if (activeCode && codeInput) {
+        codeInput.value = activeCode;
+        if (step2Alert) {
+          step2Alert.className = 'alert alert-info small py-2 px-3 mb-3';
+          step2Alert.textContent = `💡 Chế độ thử nghiệm (chưa có SMTP): Mã xác nhận là ${activeCode}.`;
+          step2Alert.classList.remove('d-none');
+        }
       }
       if (codeInput) codeInput.focus();
 
     } catch (err) {
       if (step1Alert) {
         step1Alert.className = 'alert alert-danger small py-2 px-3 mb-3';
-        step1Alert.textContent = err.message || 'Không thể gửi yêu cầu đặt lại mật khẩu. Vui lòng thử lại.';
+        if (err.status === 404 || err.code === 'NOT_FOUND') {
+          step1Alert.textContent = 'Máy chủ Cloud (Render) đang cập nhật hoặc chưa triển khai phiên bản mới (HTTP 404). Vui lòng thử lại sau vài phút hoặc bấm Manual Deploy trên Render Dashboard.';
+        } else {
+          step1Alert.textContent = err.message || 'Không thể gửi yêu cầu đặt lại mật khẩu. Vui lòng thử lại.';
+        }
         step1Alert.classList.remove('d-none');
       }
     } finally {
