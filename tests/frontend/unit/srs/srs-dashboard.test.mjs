@@ -305,6 +305,40 @@ describe('SRS Dashboard Unit Tests (Task 9C.4)', () => {
       });
     });
 
+    test('renderStatistics correctly falls back to cardsDueReading when cardsDueFlashcard is 0', () => {
+      const mockContext = {
+        statCardsDue: { textContent: '' },
+        statCardsDueFlashcard: { textContent: '' },
+        statCardsDueReading: { textContent: '' },
+        statCardsDueListening: { textContent: '' },
+        statCardsDueWriting: { textContent: '' },
+        statReviewsToday: { textContent: '' },
+        statNewCardsToday: { textContent: '' },
+        statNewCardsQuotaText: { textContent: '' },
+        statNewCardsProgressBar: { style: {}, setAttribute: () => {} },
+        statNewCardsLimit: { textContent: '' }
+      };
+
+      // Legacy account with cardsDueFlashcard: 0 and cardsDueReading: 15
+      SrsDashboardController.prototype.renderStatistics.call(mockContext, {
+        cardsDue: 15,
+        cardsDueFlashcard: 0,
+        cardsDueReading: 15
+      });
+
+      assert.strictEqual(mockContext.statCardsDueFlashcard.textContent, '15');
+      assert.strictEqual(mockContext.statCardsDueReading.textContent, '15');
+
+      // Account with positive cardsDueFlashcard: 8 and cardsDueReading: 15
+      SrsDashboardController.prototype.renderStatistics.call(mockContext, {
+        cardsDue: 15,
+        cardsDueFlashcard: 8,
+        cardsDueReading: 15
+      });
+
+      assert.strictEqual(mockContext.statCardsDueFlashcard.textContent, '8');
+    });
+
   });
 
 });

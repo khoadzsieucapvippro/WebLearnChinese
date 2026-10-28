@@ -1,6 +1,7 @@
 package com.elearning.service;
 
 import com.elearning.dto.request.ReviewCardRequest;
+import com.elearning.dto.response.CurriculumProgressResponse;
 import com.elearning.dto.response.DueCardResponse;
 import com.elearning.dto.response.LessonSrsStatsResponse;
 import com.elearning.dto.response.StudyStatsResponse;
@@ -83,4 +84,12 @@ public interface SrsService {
      * @return {@link StudyStatsResponse} with due cards, reviews completed today, and limits
      */
     StudyStatsResponse getStudyStats();
+
+    /**
+     * Retrieves server-side curriculum learning progress for the authenticated learner.
+     * Returns learned counts per lesson, chapter progress, and total learned cards.
+     *
+     * @return {@link CurriculumProgressResponse} containing aggregated progress data
+     */
+    CurriculumProgressResponse getCurriculumProgress();
 }

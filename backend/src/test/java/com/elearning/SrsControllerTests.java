@@ -3,6 +3,7 @@ package com.elearning;
 import com.elearning.common.ErrorCode;
 import com.elearning.controller.SrsController;
 import com.elearning.dto.request.ReviewCardRequest;
+import com.elearning.dto.response.CurriculumProgressResponse;
 import com.elearning.dto.response.DueCardResponse;
 import com.elearning.dto.response.LessonSrsStatsResponse;
 import com.elearning.dto.response.StudyStatsResponse;
@@ -25,6 +26,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -362,6 +364,38 @@ class SrsControllerTests {
                     .andExpect(jsonPath("$.data[0].hanzi", is("习")));
 
             verify(srsService).getNewCardCandidates(2L, null);
+        }
+    }
+
+    @Nested
+    @DisplayName("GET /api/v1/srs/curriculum-progress Tests")
+    class GetCurriculumProgressEndpointTests {
+
+        @Test
+        @DisplayName("GET /api/v1/srs/curriculum-progress delegates to SrsService and returns aggregated progress")
+        void testGetCurriculumProgress_success() throws Exception {
+            CurriculumProgressResponse mockResponse = new CurriculumProgressResponse(
+                    Map.of(1L, 20, 2L, 15),
+                    Map.of("radicals50_chapter_0", 10),
+                    35,
+                    10,
+                    List.of(101L, 102L),
+                    List.of(1L, 2L)
+            );
+
+            when(srsService.getCurriculumProgress()).thenReturn(mockResponse);
+
+            mockMvc.perform(get("/api/v1/srs/curriculum-progress")
+                            .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code", is("SUCCESS")))
+                    .andExpect(jsonPath("$.data.totalLearnedVocabularies", is(35)))
+                    .andExpect(jsonPath("$.data.totalLearnedRadicals", is(10)))
+                    .andExpect(jsonPath("$.data.lessonProgress.1", is(20)))
+                    .andExpect(jsonPath("$.data.lessonProgress.2", is(15)))
+                    .andExpect(jsonPath("$.data.chapterProgress.radicals50_chapter_0", is(10)));
+
+            verify(srsService).getCurriculumProgress();
         }
     }
 }

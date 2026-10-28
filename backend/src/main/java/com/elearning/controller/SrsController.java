@@ -2,6 +2,7 @@ package com.elearning.controller;
 
 import com.elearning.dto.request.ReviewCardRequest;
 import com.elearning.dto.response.ApiResponse;
+import com.elearning.dto.response.CurriculumProgressResponse;
 import com.elearning.dto.response.DueCardResponse;
 import com.elearning.dto.response.LessonSrsStatsResponse;
 import com.elearning.dto.response.StudyStatsResponse;
@@ -193,5 +194,18 @@ public class SrsController {
     public ResponseEntity<ApiResponse<StudyStatsResponse>> getStudyStats() {
         StudyStatsResponse stats = srsService.getStudyStats();
         return ResponseEntity.ok(ApiResponse.success(stats));
+    }
+
+    /**
+     * Retrieves curriculum learning progress for the authenticated learner.
+     * Returns learned counts per lesson, chapter progress, and total learned cards.
+     * Enforces IDOR defense by deriving user identity strictly from SecurityContext.
+     *
+     * @return ApiResponse wrapping CurriculumProgressResponse
+     */
+    @GetMapping("/curriculum-progress")
+    public ResponseEntity<ApiResponse<CurriculumProgressResponse>> getCurriculumProgress() {
+        CurriculumProgressResponse progress = srsService.getCurriculumProgress();
+        return ResponseEntity.ok(ApiResponse.success(progress));
     }
 }

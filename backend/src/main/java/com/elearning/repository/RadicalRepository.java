@@ -44,4 +44,11 @@ public interface RadicalRepository extends JpaRepository<Radical, Integer> {
      * @return true if exists, false otherwise
      */
     boolean existsByCommonRank(Integer commonRank);
+
+    /**
+     * Finds all common radicals ordered by their common rank (1..50).
+     *
+     * @return List of radicals with non-null common rank in ascending order
+     */
+    java.util.List<Radical> findByCommonRankIsNotNullOrderByCommonRankAsc();
 }

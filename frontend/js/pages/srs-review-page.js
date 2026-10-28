@@ -10193,6 +10193,7 @@ export class SrsReviewController {
     // Preload radicals data
     if (authManager.isAuthenticated()) {
       this.fetchRadicalsData().catch(() => {});
+      await this.rehydrateCurriculumProgressIfEmpty();
     }
 
     // Route dispatch based on URL parameters
@@ -11031,6 +11032,142 @@ export class SrsReviewController {
   }
 
   /**
+   * Rehydrates curriculum progress from the backend when local storage is empty or missing for the authenticated user.
+   * Enables seamless multi-device synchronization (Desktop to Mobile, new browser, cleared cache).
+   */
+  async rehydrateCurriculumProgressIfEmpty() {
+    if (!authManager.isAuthenticated()) return;
+    try {
+      const current = getProgress(this.activeMode || 'flashcard');
+      const hasAnyProgress = current && Object.keys(current).some(k => 
+        ['hsk1', 'hsk2', 'hsk3', 'radicals50', 'radicals214'].includes(k) && Object.keys(current[k] || {}).length > 0
+      );
+
+      // If local storage already has curriculum progress for this user, do not overwrite
+      if (hasAnyProgress) {
+        return;
+      }
+
+      const res = await apiClient('/srs/curriculum-progress');
+      if (!res) return;
+
+      const lessonProgress = res.lessonProgress || {};
+      const learnedRadicalIds = new Set((res.learnedRadicalIds || []).map(Number));
+      const learnedVocabIds = new Set((res.learnedVocabIds || []).map(Number));
+
+      if (Object.keys(lessonProgress).length === 0 && learnedRadicalIds.size === 0 && learnedVocabIds.size === 0) {
+        return;
+      }
+
+      if (this.fullRadicalsCatalog.length === 0) {
+        await this.fetchRadicalsData().catch(() => {});
+      }
+      const lessons = await this.loadBackendLessons().catch(() => []);
+
+      const rehydrated = {
+        hsk1: {},
+        hsk2: {},
+        hsk3: {},
+        radicals50: {},
+        radicals214: {}
+      };
+
+      // 1. Populate HSK 1, 2, 3 topic progress from lessonProgress
+      const mapTopicsForLevel = (level, topics, groupKey) => {
+        topics.forEach((t, topicIndex) => {
+          const chapterStr = String(topicIndex + 1).padStart(2, '0');
+          const lessonNumberMatch = `Bài ${chapterStr}`;
+          const levelMatch = `HSK ${level}`;
+          const realLesson = (lessons || []).find(l => {
+            if (!l || !l.title) return false;
+            return l.title.includes(levelMatch) && l.title.includes(lessonNumberMatch);
+          }) || (lessons || []).find(l => {
+            if (!l || !l.title) return false;
+            return l.title.includes(t.title);
+          }) || (level === 1 ? ((lessons || [])[topicIndex] || null) : null);
+
+          let learnedCount = 0;
+          if (realLesson && lessonProgress[realLesson.lessonId] != null) {
+            learnedCount = Math.max(learnedCount, Number(lessonProgress[realLesson.lessonId]));
+          }
+          if (t.backendLessonId && lessonProgress[t.backendLessonId] != null) {
+            learnedCount = Math.max(learnedCount, Number(lessonProgress[t.backendLessonId]));
+          }
+          if (lessonProgress[t.topicId] != null) {
+            learnedCount = Math.max(learnedCount, Number(lessonProgress[t.topicId]));
+          }
+
+          if (Array.isArray(t.vocabularies) && learnedVocabIds.size > 0) {
+            const matches = t.vocabularies.filter(v => learnedVocabIds.has(Number(v.vocabId ?? v.itemId ?? v.id))).length;
+            if (matches > 0) learnedCount = Math.max(learnedCount, matches);
+          }
+
+          if (learnedCount > 0) {
+            rehydrated[groupKey][`topic_${t.topicId}`] = learnedCount;
+            if (realLesson) {
+              rehydrated[groupKey][`topic_${realLesson.lessonId}`] = learnedCount;
+            }
+            if (t.backendLessonId) {
+              rehydrated[groupKey][`topic_${t.backendLessonId}`] = learnedCount;
+            }
+          }
+        });
+      };
+
+      mapTopicsForLevel(1, HSK1_TOPICS, 'hsk1');
+      mapTopicsForLevel(2, HSK2_TOPICS, 'hsk2');
+      mapTopicsForLevel(3, HSK3_TOPICS, 'hsk3');
+
+      // 2. Populate Radicals 50 stage progress
+      const rad50List = this.commonRadicals.length > 0 ? this.commonRadicals : (this.fullRadicalsCatalog.slice(0, 50));
+      for (let i = 0; i < 5; i++) {
+        const start = i * 10;
+        const end = Math.min((i + 1) * 10, rad50List.length || 50);
+        let chapterLearned = 0;
+        if (rad50List.length > 0) {
+          const slice = rad50List.slice(start, end);
+          chapterLearned = slice.filter(r => learnedRadicalIds.has(Number(r.radicalId ?? r.id ?? r.itemId))).length;
+        } else if (res.chapterProgress && res.chapterProgress[`radicals50_chapter_${i}`] != null) {
+          chapterLearned = Number(res.chapterProgress[`radicals50_chapter_${i}`]);
+        }
+        if (chapterLearned > 0) {
+          rehydrated.radicals50[`chapter_${i}`] = chapterLearned;
+        }
+      }
+
+      // 3. Populate Radicals 214 chapter progress
+      const rad214List = this.fullRadicalsCatalog.length > 0 ? this.fullRadicalsCatalog : [];
+      for (let i = 0; i < 11; i++) {
+        const start = i * 20;
+        const end = Math.min((i + 1) * 20, 214);
+        let chapterLearned = 0;
+        if (rad214List.length > 0) {
+          const slice = rad214List.slice(start, end);
+          chapterLearned = slice.filter(r => learnedRadicalIds.has(Number(r.radicalId ?? r.id ?? r.itemId))).length;
+        } else if (res.chapterProgress && res.chapterProgress[`radicals214_chapter_${i}`] != null) {
+          chapterLearned = Number(res.chapterProgress[`radicals214_chapter_${i}`]);
+        }
+        if (chapterLearned > 0) {
+          rehydrated.radicals214[`chapter_${i}`] = chapterLearned;
+        }
+      }
+
+      // Save into flashcard mode and initialize other empty modes
+      for (const m of ['flashcard', 'writing', 'listening', 'reading']) {
+        const mProgress = getProgress(m);
+        const mHasProgress = mProgress && Object.keys(mProgress).some(k => ['hsk1', 'hsk2', 'hsk3', 'radicals50', 'radicals214'].includes(k) && Object.keys(mProgress[k] || {}).length > 0);
+        if (!mHasProgress) {
+          saveProgress(m, rehydrated);
+        }
+      }
+
+      this.updateCurriculaShelfMetrics();
+    } catch (err) {
+      console.warn('[SRS Review] Could not rehydrate curriculum progress:', err);
+    }
+  }
+
+  /**
    * Checks if a radical ID is currently due.
    * @param {number} radicalId
    * @returns {boolean}
@@ -11853,18 +11990,18 @@ export class SrsReviewController {
       const found = lessons.find(l => l.title?.includes('HSK 3') && l.title?.includes(chapStr));
       if (found) return Number(found.lessonId);
     }
-    // HSK 1 topic ID range (1..15)
-    if (numId >= 1 && numId <= 15) {
-      const chapStr = `Bài ${String(numId).padStart(2, '0')}`;
-      const found = lessons.find(l => l.title?.includes('HSK 1') && l.title?.includes(chapStr));
-      if (found) return Number(found.lessonId);
-    }
-    // Legacy catalog fallback 5..14
+    // Legacy catalog fallback 5..14 (maps to HSK 1 lessons 01..10 in order)
     if (numId >= 5 && numId <= 14) {
       const legacy = lessons[numId - 5];
       if (legacy) {
         return Number(legacy.lessonId);
       }
+    }
+    // HSK 1 topic ID range (1..15)
+    if (numId >= 1 && numId <= 15) {
+      const chapStr = `Bài ${String(numId).padStart(2, '0')}`;
+      const found = lessons.find(l => l.title?.includes('HSK 1') && l.title?.includes(chapStr));
+      if (found) return Number(found.lessonId);
     }
     return requestedId;
   }

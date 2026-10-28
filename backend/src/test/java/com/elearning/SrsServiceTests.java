@@ -2,6 +2,7 @@ package com.elearning;
 
 import com.elearning.common.ErrorCode;
 import com.elearning.dto.request.ReviewCardRequest;
+import com.elearning.dto.response.CurriculumProgressResponse;
 import com.elearning.dto.response.DueCardResponse;
 import com.elearning.dto.response.StudyStatsResponse;
 import com.elearning.entity.Account;
@@ -547,4 +548,77 @@ class SrsServiceTests {
             assertThat(stats.getMaxReviewLimit()).isEqualTo(120);
         }
     }
+
+    @Nested
+    @DisplayName("getCurriculumProgress Tests")
+    class GetCurriculumProgressTests {
+
+        @Test
+        @DisplayName("Returns aggregated lesson progress and radical chapter progress based on user card progress")
+        void testGetCurriculumProgress_success() {
+            mockCurrentUser();
+
+            List<Object[]> mockLessonCounts = List.of(
+                    new Object[]{1L, 20L},
+                    new Object[]{2L, 15L}
+            );
+            when(cardProgressRepository.countLearnedVocabulariesByLessonForUser(testUserProfile))
+                    .thenReturn(mockLessonCounts);
+
+            when(cardProgressRepository.findLearnedRadicalIdsForUser(testUserProfile))
+                    .thenReturn(List.of(1L, 2L, 21L));
+            when(cardProgressRepository.findLearnedVocabIdsForUser(testUserProfile))
+                    .thenReturn(List.of(101L, 102L, 103L));
+
+            CurriculumProgressResponse progress = srsService.getCurriculumProgress();
+
+            assertThat(progress).isNotNull();
+            assertThat(progress.getTotalLearnedVocabularies()).isEqualTo(3);
+            assertThat(progress.getTotalLearnedRadicals()).isEqualTo(3);
+            assertThat(progress.getLessonProgress()).containsEntry(1L, 20);
+            assertThat(progress.getLessonProgress()).containsEntry(2L, 15);
+            // Radicals 1 and 2 fall into chapter 0 (1..20), radical 21 into chapter 1 (21..40)
+            assertThat(progress.getChapterProgress().get("radicals214_chapter_0")).isEqualTo(2);
+            assertThat(progress.getChapterProgress().get("radicals214_chapter_1")).isEqualTo(1);
+            // Radicals 1 and 2 fall into radicals50 stage 0 (1..10)
+            assertThat(progress.getChapterProgress().get("radicals50_chapter_0")).isEqualTo(2);
+        }
+
+        @Test
+        @DisplayName("Accurately maps radicals50 stages when radicals have non-consecutive IDs using commonRank")
+        void testGetCurriculumProgress_withCommonRankedRadicals() {
+            mockCurrentUser();
+
+            when(cardProgressRepository.countLearnedVocabulariesByLessonForUser(testUserProfile))
+                    .thenReturn(Collections.emptyList());
+            when(cardProgressRepository.findLearnedVocabIdsForUser(testUserProfile))
+                    .thenReturn(Collections.emptyList());
+
+            // Learned Radical 85 (water - common rank 2) and Radical 9 (person - common rank 1)
+            when(cardProgressRepository.findLearnedRadicalIdsForUser(testUserProfile))
+                    .thenReturn(List.of(9L, 85L));
+
+            com.elearning.entity.Radical r1 = new com.elearning.entity.Radical();
+            r1.setRadicalId(9);
+            r1.setCommonRank(1);
+
+            com.elearning.entity.Radical r2 = new com.elearning.entity.Radical();
+            r2.setRadicalId(85);
+            r2.setCommonRank(2);
+
+            when(radicalRepository.findByCommonRankIsNotNullOrderByCommonRankAsc())
+                    .thenReturn(List.of(r1, r2));
+
+            CurriculumProgressResponse progress = srsService.getCurriculumProgress();
+
+            assertThat(progress).isNotNull();
+            assertThat(progress.getTotalLearnedRadicals()).isEqualTo(2);
+            // Radicals 9 and 85 are both in the first 10 common radicals (stage 0)
+            assertThat(progress.getChapterProgress().get("radicals50_chapter_0")).isEqualTo(2);
+            // In Kangxi 214: radical 9 is chapter 0 (1..20), radical 85 is chapter 4 (81..100)
+            assertThat(progress.getChapterProgress().get("radicals214_chapter_0")).isEqualTo(1);
+            assertThat(progress.getChapterProgress().get("radicals214_chapter_4")).isEqualTo(1);
+        }
+    }
 }
+

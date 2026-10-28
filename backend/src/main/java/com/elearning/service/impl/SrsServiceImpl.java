@@ -2,6 +2,7 @@ package com.elearning.service.impl;
 
 import com.elearning.common.ErrorCode;
 import com.elearning.dto.request.ReviewCardRequest;
+import com.elearning.dto.response.CurriculumProgressResponse;
 import com.elearning.dto.response.DueCardResponse;
 import com.elearning.dto.response.LessonSrsStatsResponse;
 import com.elearning.dto.response.StudyStatsResponse;
@@ -42,6 +43,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -756,6 +758,82 @@ public class SrsServiceImpl implements SrsService {
                 : 0L;
 
         return new LessonSrsStatsResponse(lessonId, totalVocab, newWordsCount, dueCount, dueListening, dueWriting, dueReading, dueFlashcard);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public CurriculumProgressResponse getCurriculumProgress() {
+        UserProfile user = resolveCurrentUserProfile();
+
+        List<Object[]> lessonCounts = cardProgressRepository != null
+                ? cardProgressRepository.countLearnedVocabulariesByLessonForUser(user)
+                : Collections.emptyList();
+        Map<Long, Integer> lessonProgress = new HashMap<>();
+        for (Object[] row : lessonCounts) {
+            Long lessonId = ((Number) row[0]).longValue();
+            Integer count = ((Number) row[1]).intValue();
+            lessonProgress.put(lessonId, count);
+        }
+
+        List<Long> learnedRadicalIds = cardProgressRepository != null
+                ? cardProgressRepository.findLearnedRadicalIdsForUser(user)
+                : Collections.emptyList();
+        List<Long> learnedVocabIds = cardProgressRepository != null
+                ? cardProgressRepository.findLearnedVocabIdsForUser(user)
+                : Collections.emptyList();
+
+        Map<String, Integer> chapterProgress = new HashMap<>();
+        Set<Long> radSet = new HashSet<>(learnedRadicalIds);
+
+        // Radicals 214 chapters (11 stages of 20 items: 1..20, 21..40, ..., 201..214)
+        for (int i = 0; i < 11; i++) {
+            long start = i * 20L + 1L;
+            long end = Math.min((i + 1) * 20L, 214L);
+            int count = 0;
+            for (long id = start; id <= end; id++) {
+                if (radSet.contains(id)) {
+                    count++;
+                }
+            }
+            chapterProgress.put("radicals214_chapter_" + i, count);
+        }
+
+        // Radicals 50 stages (5 stages of 10 items mapped by commonRank)
+        List<com.elearning.entity.Radical> commonRadicals = radicalRepository != null
+                ? radicalRepository.findByCommonRankIsNotNullOrderByCommonRankAsc()
+                : Collections.emptyList();
+
+        for (int i = 0; i < 5; i++) {
+            int count = 0;
+            if (commonRadicals != null && !commonRadicals.isEmpty()) {
+                int start = i * 10;
+                int end = Math.min((i + 1) * 10, commonRadicals.size());
+                for (int j = start; j < end; j++) {
+                    com.elearning.entity.Radical r = commonRadicals.get(j);
+                    if (r != null && r.getRadicalId() != null && radSet.contains(r.getRadicalId().longValue())) {
+                        count++;
+                    }
+                }
+            } else {
+                long start = i * 10L + 1L;
+                long end = Math.min((i + 1) * 10L, 50L);
+                for (long id = start; id <= end; id++) {
+                    if (radSet.contains(id)) {
+                        count++;
+                    }
+                }
+            }
+            chapterProgress.put("radicals50_chapter_" + i, count);
+        }
+
+        return new CurriculumProgressResponse(
+                lessonProgress,
+                chapterProgress,
+                learnedVocabIds.size(),
+                learnedRadicalIds.size(),
+                learnedVocabIds,
+                learnedRadicalIds
+        );
     }
 
     private UserProfile resolveCurrentUserProfile() {

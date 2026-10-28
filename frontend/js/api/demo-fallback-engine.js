@@ -134,22 +134,27 @@ class DemoFallbackEngine {
       ];
       this._data = {
         schemaVersion: CURRENT_DATASET_VERSION,
-        accounts: JSON.parse(JSON.stringify(SEED_ACCOUNTS)),
+        accounts: (() => {
+          const defaultAccounts = JSON.parse(JSON.stringify(SEED_ACCOUNTS));
+          if (saved && Array.isArray(saved.accounts) && saved.accounts.length > 0) {
+            const seedEmails = new Set(defaultAccounts.map(a => (a.email || '').toLowerCase()));
+            const seedIds = new Set(defaultAccounts.map(a => a.accountId));
+            const updatedSeeds = defaultAccounts.map(sa => {
+              const match = saved.accounts.find(a => a.accountId === sa.accountId || (a.email && a.email.toLowerCase() === sa.email.toLowerCase()));
+              return match ? { ...sa, ...match } : sa;
+            });
+            const customAccounts = saved.accounts.filter(a => !seedIds.has(a.accountId) && !seedEmails.has((a.email || '').toLowerCase()));
+            return [...updatedSeeds, ...customAccounts];
+          }
+          return defaultAccounts;
+        })(),
         radicals: JSON.parse(JSON.stringify(SEED_RADICALS)),
         vocabulary: JSON.parse(JSON.stringify(SEED_VOCABULARY)),
         lessons: JSON.parse(JSON.stringify(SEED_LESSONS)),
-        srsSettings: { ...SEED_SRS_SETTINGS },
+        srsSettings: (saved && saved.srsSettings) ? { ...SEED_SRS_SETTINGS, ...saved.srsSettings } : { ...SEED_SRS_SETTINGS },
         srsCards: preservedCards,
         srsReviews: preservedReviews,
-        notes: [
-          {
-            noteId: 1,
-            vocabId: 1,
-            content: 'Bộ thủ chữ Ái (爱): móng vuốt (爫) ở trên, khăn trùm (冖), ở giữa là con tim (心) và dưới cùng là bước chân chậm (夂).',
-            createdAt: '2026-08-01T10:00:00Z',
-            updatedAt: '2026-08-01T10:00:00Z'
-          }
-        ],
+        notes: preservedNotes,
         moderationHistory: [
           {
             historyId: 1,
@@ -1008,6 +1013,71 @@ class DemoFallbackEngine {
         newCardsLimit: data.srsSettings.newCardsPerDay || 20,
         maxReviewLimit: data.srsSettings.maxReviewsPerDay || 50,
         newCardsToday: allCards.filter(c => c.isNew).length
+      };
+    }
+
+    if (cleanPath === '/srs/curriculum-progress' && method === 'GET') {
+      const currentAccount = this.getCurrentAccount();
+      const userCards = (data.srsCards || []).filter(c => 
+        !c.accountId || c.accountId === currentAccount.accountId || (currentAccount.accountId === 1 && !c.accountId)
+      );
+
+      const learnedVocabCards = userCards.filter(c => (c.itemType || 'VOCABULARY').toUpperCase() === 'VOCABULARY' && (!c.isNew || c.repetitions > 0));
+      const learnedVocabIds = [...new Set(learnedVocabCards.map(c => Number(c.vocabId ?? c.itemId)).filter(Boolean))];
+
+      const learnedRadicalCards = userCards.filter(c => (c.itemType || '').toUpperCase() === 'RADICAL' && (!c.isNew || c.repetitions > 0));
+      const learnedRadicalIds = [...new Set(learnedRadicalCards.map(c => Number(c.radicalId ?? c.itemId)).filter(Boolean))];
+
+      const lessonProgress = {};
+      const lessons = data.lessons || [];
+      lessons.forEach(l => {
+        const vocabList = Array.isArray(l.vocabularies) ? l.vocabularies : [];
+        if (vocabList.length > 0) {
+          const learnedCount = vocabList.filter(v => learnedVocabIds.includes(Number(v.vocabId ?? v.itemId))).length;
+          lessonProgress[l.lessonId] = learnedCount;
+        } else {
+          lessonProgress[l.lessonId] = 0;
+        }
+      });
+
+      const chapterProgress = {};
+      const radSet = new Set(learnedRadicalIds);
+      for (let i = 0; i < 11; i++) {
+        const start = i * 20 + 1;
+        const end = Math.min((i + 1) * 20, 214);
+        let count = 0;
+        for (let id = start; id <= end; id++) {
+          if (radSet.has(id)) count++;
+        }
+        chapterProgress[`radicals214_chapter_${i}`] = count;
+      }
+      const rawRadicals = Array.isArray(data.radicals) ? data.radicals : [];
+      const rankedCommon = rawRadicals
+        .filter(r => r && Number(r.commonRank) >= 1 && Number(r.commonRank) <= 50)
+        .sort((a, b) => Number(a.commonRank) - Number(b.commonRank));
+      const effectiveCommon = rankedCommon.length > 0 ? rankedCommon : rawRadicals.slice(0, 50);
+      for (let i = 0; i < 5; i++) {
+        const slice = effectiveCommon.slice(i * 10, Math.min((i + 1) * 10, effectiveCommon.length));
+        let count = 0;
+        if (slice.length > 0) {
+          count = slice.filter(r => radSet.has(Number(r.radicalId ?? r.itemId))).length;
+        } else {
+          const start = i * 10 + 1;
+          const end = Math.min((i + 1) * 10, 50);
+          for (let id = start; id <= end; id++) {
+            if (radSet.has(id)) count++;
+          }
+        }
+        chapterProgress[`radicals50_chapter_${i}`] = count;
+      }
+
+      return {
+        lessonProgress,
+        chapterProgress,
+        totalLearnedVocabularies: learnedVocabIds.length,
+        totalLearnedRadicals: learnedRadicalIds.length,
+        learnedVocabIds,
+        learnedRadicalIds
       };
     }
 

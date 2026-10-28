@@ -131,4 +131,26 @@ public interface CardProgressRepository extends JpaRepository<CardProgress, Long
      * @return true if card progress records exist, false otherwise
      */
     boolean existsByItemTypeAndItemId(String itemType, Long itemId);
+
+    /**
+     * Counts distinct vocabulary items learned by the user for each lesson.
+     */
+    @Query("SELECT lv.lesson.lessonId, COUNT(DISTINCT cp.itemId) " +
+           "FROM LessonVocabulary lv " +
+           "JOIN CardProgress cp ON cp.itemId = lv.vocabulary.vocabId AND cp.itemType = 'VOCABULARY' AND cp.user = :user " +
+           "GROUP BY lv.lesson.lessonId")
+    List<Object[]> countLearnedVocabulariesByLessonForUser(@Param("user") UserProfile user);
+
+    /**
+     * Finds all distinct radical IDs that the user has studied.
+     */
+    @Query("SELECT DISTINCT cp.itemId FROM CardProgress cp WHERE cp.user = :user AND cp.itemType = 'RADICAL'")
+    List<Long> findLearnedRadicalIdsForUser(@Param("user") UserProfile user);
+
+    /**
+     * Finds all distinct vocabulary IDs that the user has studied.
+     */
+    @Query("SELECT DISTINCT cp.itemId FROM CardProgress cp WHERE cp.user = :user AND cp.itemType = 'VOCABULARY'")
+    List<Long> findLearnedVocabIdsForUser(@Param("user") UserProfile user);
 }
+

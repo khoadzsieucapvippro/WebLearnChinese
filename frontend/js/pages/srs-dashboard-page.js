@@ -222,7 +222,9 @@ export class SrsDashboardController {
     if (!stats) return;
 
     const cardsDue = stats.cardsDue ?? 0;
-    const cardsDueFlashcard = stats.cardsDueFlashcard ?? stats.cardsDueReading ?? 0;
+    const cardsDueFlashcard = (stats.cardsDueFlashcard != null && stats.cardsDueFlashcard > 0)
+      ? stats.cardsDueFlashcard
+      : (stats.cardsDueReading || 0);
     const cardsDueReading = stats.cardsDueReading ?? 0;
     const cardsDueListening = stats.cardsDueListening ?? 0;
     const cardsDueWriting = stats.cardsDueWriting ?? 0;
