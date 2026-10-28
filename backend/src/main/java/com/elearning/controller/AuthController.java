@@ -2,8 +2,10 @@ package com.elearning.controller;
 
 import com.elearning.common.ErrorCode;
 import com.elearning.dto.request.ChangePasswordRequest;
+import com.elearning.dto.request.ForgotPasswordRequest;
 import com.elearning.dto.request.LoginRequest;
 import com.elearning.dto.request.RegisterRequest;
+import com.elearning.dto.request.ResetPasswordRequest;
 import com.elearning.dto.response.ApiResponse;
 import com.elearning.dto.response.AuthResponse;
 import com.elearning.exception.BusinessException;
@@ -88,6 +90,44 @@ public class AuthController {
         }
         authService.changePassword(principal.getName(), request);
         return ResponseEntity.ok(ApiResponse.success("Đổi mật khẩu thành công", null));
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ApiResponse<Void>> forgotPassword(
+            @Valid @RequestBody ForgotPasswordRequest request,
+            HttpServletRequest servletRequest) {
+        String clientIp = resolveClientIp(servletRequest);
+        if (!loginRateLimiter.tryAcquire(clientIp)) {
+            throw new BusinessException(
+                    ErrorCode.TOO_MANY_REQUESTS,
+                    "Quá nhiều yêu cầu, vui lòng thử lại sau"
+            );
+        }
+
+        authService.forgotPassword(request);
+        return ResponseEntity.ok(ApiResponse.success(
+                "Nếu email tồn tại trong hệ thống, mã xác thực đã được gửi đến hòm thư của bạn.",
+                null
+        ));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<ApiResponse<Void>> resetPassword(
+            @Valid @RequestBody ResetPasswordRequest request,
+            HttpServletRequest servletRequest) {
+        String clientIp = resolveClientIp(servletRequest);
+        if (!loginRateLimiter.tryAcquire(clientIp)) {
+            throw new BusinessException(
+                    ErrorCode.TOO_MANY_REQUESTS,
+                    "Quá nhiều yêu cầu, vui lòng thử lại sau"
+            );
+        }
+
+        authService.resetPassword(request);
+        return ResponseEntity.ok(ApiResponse.success(
+                "Đặt lại mật khẩu thành công. Vui lòng đăng nhập bằng mật khẩu mới.",
+                null
+        ));
     }
 
     private String resolveClientIp(HttpServletRequest request) {

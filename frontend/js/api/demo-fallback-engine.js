@@ -352,7 +352,69 @@ class DemoFallbackEngine {
       };
     }
 
-    if (cleanPath === '/auth/logout' && method === 'POST') {
+    
+    if (cleanPath === '/auth/forgot-password' && method === 'POST') {
+      const email = String(body?.email || '').trim().toLowerCase();
+      if (!email) {
+        throw new ApiError('Vui lòng cung cấp email tài khoản', 400, 'VALIDATION_ERROR');
+      }
+      const acc = data.accounts.find(a => 
+        (a.email && a.email.toLowerCase() === email) ||
+        (Array.isArray(a.aliases) && a.aliases.some(al => al.toLowerCase() === email))
+      );
+      const demoCode = '123456';
+      this._resetCodes = this._resetCodes || {};
+      this._resetCodes[email] = {
+        code: demoCode,
+        expiresAt: Date.now() + 15 * 60 * 1000
+      };
+      return {
+        code: 'SUCCESS',
+        message: 'Mã xác thực đã được gửi tới email của bạn.',
+        demoCode: demoCode
+      };
+    }
+
+    if (cleanPath === '/auth/reset-password' && method === 'POST') {
+      const email = String(body?.email || '').trim().toLowerCase();
+      const code = String(body?.resetCode || body?.code || '').trim();
+      const newPassword = String(body?.newPassword || '').trim();
+
+      if (!email || !code || !newPassword) {
+        throw new ApiError('Email, mã xác nhận và mật khẩu mới không được để trống', 400, 'VALIDATION_ERROR');
+      }
+      if (newPassword.length < 6) {
+        throw new ApiError('Mật khẩu mới phải có tối thiểu 6 ký tự', 400, 'VALIDATION_ERROR');
+      }
+
+      const acc = data.accounts.find(a => 
+        (a.email && a.email.toLowerCase() === email) ||
+        (Array.isArray(a.aliases) && a.aliases.some(al => al.toLowerCase() === email))
+      );
+      if (!acc) {
+        throw new ApiError('Mã xác nhận không chính xác hoặc đã hết hạn', 400, 'INVALID_CODE');
+      }
+
+      this._resetCodes = this._resetCodes || {};
+      const savedCode = this._resetCodes[email];
+      const isValid = (savedCode && savedCode.code === code && savedCode.expiresAt > Date.now()) || code === '123456';
+      if (!isValid) {
+        throw new ApiError('Mã xác nhận không chính xác hoặc đã hết hạn', 400, 'INVALID_CODE');
+      }
+
+      acc.password = newPassword;
+      acc.passwordHash = newPassword;
+      acc.updatedAt = new Date().toISOString();
+      delete this._resetCodes[email];
+      this.saveData();
+
+      return {
+        code: 'SUCCESS',
+        message: 'Đặt lại mật khẩu thành công. Hãy đăng nhập bằng mật khẩu mới.'
+      };
+    }
+
+if (cleanPath === '/auth/logout' && method === 'POST') {
       return null;
     }
 
@@ -1663,40 +1725,6 @@ const currentAccount = this.getCurrentAccount();
         return acc;
       }
       throw new ApiError(`Không tìm thấy tài khoản ${id}`, 404, 'NOT_FOUND');
-    }
-
-    const accountResetPasswordMatch = cleanPath.match(/^\/admin\/accounts\/(\d+)\/reset-password$/);
-    if (accountResetPasswordMatch && method === 'POST') {
-      const id = parseInt(accountResetPasswordMatch[1], 10);
-      const acc = data.accounts.find(a => a.accountId === id);
-      if (!acc) {
-        throw new ApiError(`Không tìm thấy tài khoản ${id}`, 404, 'NOT_FOUND');
-      }
-      const currentAccount = this.getCurrentAccount();
-      if (currentAccount && (currentAccount.accountId === id || (currentAccount.email && currentAccount.email.toLowerCase() === (acc.email || acc.emailOrPhone || '').toLowerCase()))) {
-        throw new ApiError('Không thể tự đặt lại mật khẩu của chính mình qua tính năng quản trị. Vui lòng đổi mật khẩu tại trang Hồ sơ cá nhân.', 400, 'BAD_REQUEST');
-      }
-      let finalPassword = '';
-      if (body && typeof body.newPassword === 'string' && body.newPassword.trim().length >= 6) {
-        finalPassword = body.newPassword.trim();
-      } else {
-        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789@#$%&*!?';
-        let temporaryPassword = 'Tmp@';
-        for (let i = 0; i < 8; i++) {
-          temporaryPassword += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-        finalPassword = temporaryPassword;
-      }
-      acc.password = finalPassword;
-      acc.passwordHash = finalPassword;
-      acc.updatedAt = new Date().toISOString();
-      this.saveData();
-      return {
-        accountId: id,
-        emailOrPhone: acc.email || acc.emailOrPhone,
-        temporaryPassword: finalPassword,
-        newPassword: finalPassword
-      };
     }
 
     if (cleanPath === '/admin/roles' && method === 'GET') {

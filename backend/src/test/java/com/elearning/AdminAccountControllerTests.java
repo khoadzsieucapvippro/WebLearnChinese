@@ -29,7 +29,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -50,30 +49,44 @@ class AdminAccountControllerTests {
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(adminAccountController)
-                .setControllerAdvice(new GlobalExceptionHandler())
                 .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver())
+                .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
         objectMapper = new ObjectMapper();
     }
 
     @Test
-    @DisplayName("GIVEN accounts exist WHEN calling GET /api/v1/admin/accounts THEN returns 200 with PageResponse")
+    @DisplayName("GIVEN status and search WHEN calling GET /api/v1/admin/accounts THEN returns 200 with PageResponse")
     void testGetAccounts_success() throws Exception {
         AccountResponse acc = new AccountResponse(1L, "user@example.com", "Test User", "Active", List.of("Learner"), LocalDateTime.now(), LocalDateTime.now());
         PageResponse<AccountResponse> pageResponse = new PageResponse<>(0, 10, 1L, 1, List.of(acc));
 
-        when(adminAccountService.getAccounts(eq("Active"), eq("user"), any(Pageable.class))).thenReturn(pageResponse);
+        when(adminAccountService.getAccounts(eq("Active"), eq("test"), any(Pageable.class))).thenReturn(pageResponse);
 
         mockMvc.perform(get("/api/v1/admin/accounts")
                         .param("status", "Active")
-                        .param("search", "user")
-                        .param("page", "0")
-                        .param("size", "10")
+                        .param("search", "test")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value("SUCCESS"))
+                .andExpect(jsonPath("$.data.items[0].accountId").value(1))
                 .andExpect(jsonPath("$.data.items[0].emailOrPhone").value("user@example.com"))
+                .andExpect(jsonPath("$.data.items[0].fullName").value("Test User"))
                 .andExpect(jsonPath("$.data.totalElements").value(1));
+
+        verify(adminAccountService).getAccounts(eq("Active"), eq("test"), any(Pageable.class));
+    }
+
+    @Test
+    @DisplayName("GIVEN invalid status value WHEN calling PUT /api/v1/admin/accounts/{id}/status THEN returns 400 with VALIDATION_ERROR")
+    void testUpdateAccountStatus_invalidStatus_returns400() throws Exception {
+        UpdateAccountStatusRequest request = new UpdateAccountStatusRequest("");
+
+        mockMvc.perform(put("/api/v1/admin/accounts/1/status")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
     }
 
     @Test
@@ -91,37 +104,5 @@ class AdminAccountControllerTests {
                 .andExpect(jsonPath("$.code").value("SUCCESS"))
                 .andExpect(jsonPath("$.message").value("Cập nhật trạng thái tài khoản thành công"))
                 .andExpect(jsonPath("$.data.status").value("Inactive"));
-    }
-
-    @Test
-    @DisplayName("GIVEN target account WHEN calling POST /api/v1/admin/accounts/{id}/reset-password without body THEN returns 200 with temporary password")
-    void testResetPassword_success() throws Exception {
-        com.elearning.dto.response.AdminResetPasswordResponse response =
-                new com.elearning.dto.response.AdminResetPasswordResponse(1L, "user@example.com", "Tmp@12345678");
-        when(adminAccountService.resetPassword(eq(1L), any(), any())).thenReturn(response);
-
-        mockMvc.perform(post("/api/v1/admin/accounts/1/reset-password")
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.code").value("SUCCESS"))
-                .andExpect(jsonPath("$.message").value("Đặt lại mật khẩu tài khoản thành công"))
-                .andExpect(jsonPath("$.data.accountId").value(1))
-                .andExpect(jsonPath("$.data.emailOrPhone").value("user@example.com"))
-                .andExpect(jsonPath("$.data.temporaryPassword").value("Tmp@12345678"));
-    }
-
-    @Test
-    @DisplayName("GIVEN target account and custom password WHEN calling POST /api/v1/admin/accounts/{id}/reset-password THEN returns 200 with new password")
-    void testResetPassword_withCustomPassword_success() throws Exception {
-        com.elearning.dto.response.AdminResetPasswordResponse response =
-                new com.elearning.dto.response.AdminResetPasswordResponse(1L, "user@example.com", "CustomPass123");
-        when(adminAccountService.resetPassword(eq(1L), any(com.elearning.dto.request.AdminResetPasswordRequest.class), any())).thenReturn(response);
-
-        mockMvc.perform(post("/api/v1/admin/accounts/1/reset-password")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"newPassword\": \"CustomPass123\"}"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.code").value("SUCCESS"))
-                .andExpect(jsonPath("$.data.temporaryPassword").value("CustomPass123"));
     }
 }

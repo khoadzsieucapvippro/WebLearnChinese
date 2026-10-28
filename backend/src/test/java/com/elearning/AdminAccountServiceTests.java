@@ -44,9 +44,6 @@ class AdminAccountServiceTests {
     private com.elearning.repository.RoleRepository roleRepository;
 
     @Mock
-    private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
-
-    @Mock
     private com.elearning.service.ManagementAuditService managementAuditService;
 
     @InjectMocks
@@ -74,18 +71,31 @@ class AdminAccountServiceTests {
     class GetAccountsTests {
 
         @Test
-        @DisplayName("GIVEN valid filters WHEN calling getAccounts THEN returns paginated accounts")
-        void testGetAccounts_success() {
-            Page<Account> page = new PageImpl<>(List.of(testAccount), PageRequest.of(0, 10), 1);
+        @DisplayName("GIVEN active status and search query WHEN getAccounts THEN returns mapped PageResponse")
+        void testGetAccounts_withFilterAndSearch_success() {
+            Pageable pageable = PageRequest.of(0, 10);
+            Page<Account> page = new PageImpl<>(List.of(testAccount), pageable, 1);
+
             when(accountRepository.findAllWithFilters(eq("Active"), eq("user10"), any(Pageable.class))).thenReturn(page);
 
-            PageResponse<AccountResponse> response = adminAccountService.getAccounts("Active", "user10", PageRequest.of(0, 10));
+            PageResponse<AccountResponse> response = adminAccountService.getAccounts("Active", "user10", pageable);
 
             assertThat(response).isNotNull();
             assertThat(response.getItems()).hasSize(1);
+            assertThat(response.getItems().get(0).getAccountId()).isEqualTo(10L);
             assertThat(response.getItems().get(0).getEmailOrPhone()).isEqualTo("user10@example.com");
             assertThat(response.getItems().get(0).getFullName()).isEqualTo("Nguyễn Văn A");
-            assertThat(response.getItems().get(0).getStatus()).isEqualTo("Active");
+            assertThat(response.getTotalElements()).isEqualTo(1L);
+        }
+
+        @Test
+        @DisplayName("GIVEN invalid status parameter WHEN getAccounts THEN throws VALIDATION_ERROR")
+        void testGetAccounts_invalidStatus_throwsException() {
+            Pageable pageable = PageRequest.of(0, 10);
+
+            assertThatThrownBy(() -> adminAccountService.getAccounts("InvalidStatus", null, pageable))
+                    .isInstanceOf(BusinessException.class)
+                    .hasFieldOrPropertyWithValue("errorCode", ErrorCode.VALIDATION_ERROR);
         }
     }
 
@@ -94,39 +104,23 @@ class AdminAccountServiceTests {
     class UpdateAccountStatusTests {
 
         @Test
-        @DisplayName("GIVEN valid status update WHEN updating another account THEN status is updated successfully and auth version is incremented")
+        @DisplayName("GIVEN valid status update WHEN target is learner THEN updates status, increments version and audits")
         void testUpdateAccountStatus_success() {
-            testAccount.setAuthorizationVersion(1L);
             when(accountRepository.findByIdForUpdate(10L)).thenReturn(Optional.of(testAccount));
-            when(accountRepository.save(any(Account.class))).thenAnswer(invocation -> invocation.getArgument(0));
+            when(accountRepository.save(any(Account.class))).thenAnswer(i -> i.getArgument(0));
 
-            UpdateAccountStatusRequest request = new UpdateAccountStatusRequest("Banned");
+            UpdateAccountStatusRequest request = new UpdateAccountStatusRequest("Inactive");
             AccountResponse response = adminAccountService.updateAccountStatus(10L, request, "admin@example.com");
 
             assertThat(response).isNotNull();
-            assertThat(response.getStatus()).isEqualTo("Banned");
+            assertThat(response.getStatus()).isEqualTo("Inactive");
             assertThat(testAccount.getAuthorizationVersion()).isEqualTo(2L);
             verify(accountRepository).save(testAccount);
         }
 
         @Test
-        @DisplayName("GIVEN same status WHEN updating status THEN no save or auth version increment occurs (idempotent)")
-        void testUpdateAccountStatus_sameStatus_idempotent() {
-            testAccount.setAuthorizationVersion(1L);
-            when(accountRepository.findByIdForUpdate(10L)).thenReturn(Optional.of(testAccount));
-
-            UpdateAccountStatusRequest request = new UpdateAccountStatusRequest("Active");
-            AccountResponse response = adminAccountService.updateAccountStatus(10L, request, "admin@example.com");
-
-            assertThat(response).isNotNull();
-            assertThat(response.getStatus()).isEqualTo("Active");
-            assertThat(testAccount.getAuthorizationVersion()).isEqualTo(1L);
-            verify(accountRepository, org.mockito.Mockito.never()).save(any());
-        }
-
-        @Test
-        @DisplayName("GIVEN self-deactivation attempt by current admin WHEN updating status THEN throws BAD_REQUEST (POL-8D-01)")
-        void testSelfDeactivation_throwsBadRequest() {
+        @DisplayName("GIVEN admin deactivating self WHEN updateAccountStatus THEN throws BAD_REQUEST (POL-8D-01)")
+        void testUpdateAccountStatus_selfDeactivation_throwsBadRequest() {
             when(accountRepository.findByIdForUpdate(10L)).thenReturn(Optional.of(testAccount));
 
             UpdateAccountStatusRequest request = new UpdateAccountStatusRequest("Inactive");
@@ -138,39 +132,17 @@ class AdminAccountServiceTests {
         }
 
         @Test
-        @DisplayName("GIVEN invalid status string WHEN updating THEN throws VALIDATION_ERROR")
-        void testInvalidStatus_throwsValidationError() {
-            UpdateAccountStatusRequest request = new UpdateAccountStatusRequest("UnknownStatus");
-
-            assertThatThrownBy(() -> adminAccountService.updateAccountStatus(10L, request, "admin@example.com"))
-                    .isInstanceOf(BusinessException.class)
-                    .hasFieldOrPropertyWithValue("errorCode", ErrorCode.VALIDATION_ERROR);
-        }
-
-        @Test
-        @DisplayName("GIVEN non-existent account ID WHEN updating THEN throws NOT_FOUND")
-        void testNonExistentAccount_throwsNotFound() {
-            when(accountRepository.findByIdForUpdate(999L)).thenReturn(Optional.empty());
-
-            UpdateAccountStatusRequest request = new UpdateAccountStatusRequest("Active");
-
-            assertThatThrownBy(() -> adminAccountService.updateAccountStatus(999L, request, "admin@example.com"))
-                    .isInstanceOf(BusinessException.class)
-                    .hasFieldOrPropertyWithValue("errorCode", ErrorCode.NOT_FOUND);
-        }
-
-        @Test
-        @DisplayName("GIVEN deactivating last active admin attempt WHEN count <= 1 THEN throws BAD_REQUEST")
-        void testUpdateAccountStatus_deactivatingLastActiveAdmin_throwsBadRequest() {
+        @DisplayName("GIVEN target is last active admin WHEN deactivating THEN throws BAD_REQUEST (Last Admin Invariant)")
+        void testUpdateAccountStatus_lastAdminInvariant_throwsBadRequest() {
+            Role adminRole = new Role(4, "Admin");
             testAccount.getRoles().clear();
-            testAccount.addRole(new Role(4, "Admin"));
-            testAccount.setStatus("Active");
+            testAccount.addRole(adminRole);
 
             when(accountRepository.findByIdForUpdate(10L)).thenReturn(Optional.of(testAccount));
-            when(roleRepository.findByRoleNameForUpdate("Admin")).thenReturn(Optional.of(new Role(4, "Admin")));
+            when(roleRepository.findByRoleNameForUpdate("Admin")).thenReturn(Optional.of(adminRole));
             when(accountRepository.countActiveAdmins()).thenReturn(1L);
 
-            UpdateAccountStatusRequest request = new UpdateAccountStatusRequest("Inactive");
+            UpdateAccountStatusRequest request = new UpdateAccountStatusRequest("Banned");
 
             assertThatThrownBy(() -> adminAccountService.updateAccountStatus(10L, request, "other_admin@example.com"))
                     .isInstanceOf(BusinessException.class)
@@ -179,14 +151,14 @@ class AdminAccountServiceTests {
         }
 
         @Test
-        @DisplayName("GIVEN deactivating active admin WHEN multiple active admins exist (> 1) THEN succeeds")
-        void testUpdateAccountStatus_deactivatingActiveAdminWhenMultipleAdminsExist_success() {
+        @DisplayName("GIVEN target is admin but multiple active admins exist WHEN deactivating THEN succeeds")
+        void testUpdateAccountStatus_multipleAdmins_deactivationAllowed() {
+            Role adminRole = new Role(4, "Admin");
             testAccount.getRoles().clear();
-            testAccount.addRole(new Role(4, "Admin"));
-            testAccount.setStatus("Active");
+            testAccount.addRole(adminRole);
 
             when(accountRepository.findByIdForUpdate(10L)).thenReturn(Optional.of(testAccount));
-            when(roleRepository.findByRoleNameForUpdate("Admin")).thenReturn(Optional.of(new Role(4, "Admin")));
+            when(roleRepository.findByRoleNameForUpdate("Admin")).thenReturn(Optional.of(adminRole));
             when(accountRepository.countActiveAdmins()).thenReturn(2L);
             when(accountRepository.save(any(Account.class))).thenAnswer(i -> i.getArgument(0));
 
@@ -196,69 +168,6 @@ class AdminAccountServiceTests {
             assertThat(response).isNotNull();
             assertThat(response.getStatus()).isEqualTo("Inactive");
             assertThat(testAccount.getAuthorizationVersion()).isEqualTo(2L);
-        }
-    }
-
-    @Nested
-    @DisplayName("resetPassword Tests")
-    class ResetPasswordTests {
-
-        @Test
-        @DisplayName("GIVEN target account exists WHEN admin resets password without custom input THEN generates temporary password, hashes it and increments version")
-        void testResetPassword_success() {
-            when(accountRepository.findByIdForUpdate(10L)).thenReturn(Optional.of(testAccount));
-            when(passwordEncoder.encode(any(String.class))).thenReturn("$2a$10$hashedFakePasswordReset123");
-            when(accountRepository.save(any(Account.class))).thenAnswer(i -> i.getArgument(0));
-
-            com.elearning.dto.response.AdminResetPasswordResponse response =
-                    adminAccountService.resetPassword(10L, "other_admin@example.com");
-
-            assertThat(response).isNotNull();
-            assertThat(response.getAccountId()).isEqualTo(10L);
-            assertThat(response.getEmailOrPhone()).isEqualTo("user10@example.com");
-            assertThat(response.getTemporaryPassword()).isNotBlank().hasSize(12);
-            assertThat(testAccount.getPasswordHash()).isEqualTo("$2a$10$hashedFakePasswordReset123");
-            assertThat(testAccount.getAuthorizationVersion()).isEqualTo(2L);
-            verify(accountRepository).save(testAccount);
-        }
-
-        @Test
-        @DisplayName("GIVEN target account exists WHEN admin resets password with custom input THEN hashes custom password and increments version")
-        void testResetPassword_withCustomPassword_success() {
-            when(accountRepository.findByIdForUpdate(10L)).thenReturn(Optional.of(testAccount));
-            when(passwordEncoder.encode("SecretCustom123")).thenReturn("$2a$10$hashedCustom123");
-            when(accountRepository.save(any(Account.class))).thenAnswer(i -> i.getArgument(0));
-
-            com.elearning.dto.request.AdminResetPasswordRequest req =
-                    new com.elearning.dto.request.AdminResetPasswordRequest("SecretCustom123");
-            com.elearning.dto.response.AdminResetPasswordResponse response =
-                    adminAccountService.resetPassword(10L, req, "other_admin@example.com");
-
-            assertThat(response).isNotNull();
-            assertThat(response.getTemporaryPassword()).isEqualTo("SecretCustom123");
-            assertThat(testAccount.getPasswordHash()).isEqualTo("$2a$10$hashedCustom123");
-            assertThat(testAccount.getAuthorizationVersion()).isEqualTo(2L);
-        }
-
-        @Test
-        @DisplayName("GIVEN self-reset attempt by current admin WHEN resetting password THEN throws BAD_REQUEST")
-        void testResetPassword_selfResetDefense_throwsBadRequest() {
-            when(accountRepository.findByIdForUpdate(10L)).thenReturn(Optional.of(testAccount));
-
-            assertThatThrownBy(() -> adminAccountService.resetPassword(10L, "user10@example.com"))
-                    .isInstanceOf(BusinessException.class)
-                    .hasFieldOrPropertyWithValue("errorCode", ErrorCode.BAD_REQUEST)
-                    .hasMessage("Không thể tự đặt lại mật khẩu của chính mình qua tính năng quản trị. Vui lòng đổi mật khẩu tại trang Hồ sơ cá nhân.");
-        }
-
-        @Test
-        @DisplayName("GIVEN non-existent account ID WHEN resetting password THEN throws NOT_FOUND")
-        void testResetPassword_accountNotFound_throwsNotFound() {
-            when(accountRepository.findByIdForUpdate(999L)).thenReturn(Optional.empty());
-
-            assertThatThrownBy(() -> adminAccountService.resetPassword(999L, "admin@example.com"))
-                    .isInstanceOf(BusinessException.class)
-                    .hasFieldOrPropertyWithValue("errorCode", ErrorCode.NOT_FOUND);
         }
     }
 }

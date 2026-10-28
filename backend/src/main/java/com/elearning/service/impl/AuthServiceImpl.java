@@ -2,8 +2,10 @@ package com.elearning.service.impl;
 
 import com.elearning.common.ErrorCode;
 import com.elearning.dto.request.ChangePasswordRequest;
+import com.elearning.dto.request.ForgotPasswordRequest;
 import com.elearning.dto.request.LoginRequest;
 import com.elearning.dto.request.RegisterRequest;
+import com.elearning.dto.request.ResetPasswordRequest;
 import com.elearning.dto.response.AuthResponse;
 import com.elearning.entity.Account;
 import com.elearning.entity.Role;
@@ -14,6 +16,8 @@ import com.elearning.repository.RoleRepository;
 import com.elearning.security.CustomUserDetails;
 import com.elearning.security.JwtUtil;
 import com.elearning.service.AuthService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -22,20 +26,42 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.SecureRandom;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
- * Implementation of {@link AuthService} handling account registration and login.
+ * Implementation of {@link AuthService} handling account registration, login, and self-service password reset (Model A).
  * Orchestrates AccountRepository, RoleRepository, PasswordEncoder, AuthenticationManager, and JwtUtil.
  */
 @Service
 public class AuthServiceImpl implements AuthService {
+
+    private static final Logger log = LoggerFactory.getLogger(AuthServiceImpl.class);
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+    private static final long RESET_CODE_TTL_MS = 15 * 60 * 1000L; // 15 minutes
 
     private final AccountRepository accountRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
+    private final ConcurrentMap<String, ResetCodeEntry> resetCodeStore = new ConcurrentHashMap<>();
+
+    private static class ResetCodeEntry {
+        final String code;
+        final long expiresAt;
+
+        ResetCodeEntry(String code, long ttlMs) {
+            this.code = code;
+            this.expiresAt = System.currentTimeMillis() + ttlMs;
+        }
+
+        boolean isExpired() {
+            return System.currentTimeMillis() > expiresAt;
+        }
+    }
 
     public AuthServiceImpl(
             AccountRepository accountRepository,
@@ -176,5 +202,71 @@ public class AuthServiceImpl implements AuthService {
         account.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
         account.incrementAuthorizationVersion();
         accountRepository.save(account);
+    }
+
+    @Override
+    public void forgotPassword(ForgotPasswordRequest request) {
+        if (request == null || request.getEmail() == null || request.getEmail().trim().isEmpty()) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Email không được để trống");
+        }
+        String email = request.getEmail().trim().toLowerCase();
+
+        // Anti-enumeration defense: Return cleanly if email not found without disclosing non-existence
+        var accountOpt = accountRepository.findByEmailOrPhone(email);
+        if (accountOpt.isEmpty()) {
+            log.info("Yêu cầu quên mật khẩu cho email không tồn tại: {}", email);
+            return;
+        }
+
+        int num = 100000 + SECURE_RANDOM.nextInt(900000);
+        String code = String.valueOf(num);
+        resetCodeStore.put(email, new ResetCodeEntry(code, RESET_CODE_TTL_MS));
+        log.info("Đã tạo mã xác thực quên mật khẩu cho email: {} [TTL 15 phút]", email);
+    }
+
+    @Override
+    @Transactional
+    public void resetPassword(ResetPasswordRequest request) {
+        if (request == null) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Dữ liệu yêu cầu không hợp lệ");
+        }
+        String email = request.getEmail() != null ? request.getEmail().trim().toLowerCase() : "";
+        String code = request.getResetCode() != null ? request.getResetCode().trim() : "";
+        String newPassword = request.getNewPassword() != null ? request.getNewPassword() : "";
+
+        if (email.isEmpty()) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Email không được để trống");
+        }
+        if (code.isEmpty()) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Mã xác thực không được để trống");
+        }
+        if (newPassword.length() < 6 || newPassword.length() > 100) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Mật khẩu mới phải từ 6 đến 100 ký tự");
+        }
+
+        ResetCodeEntry entry = resetCodeStore.get(email);
+        if (entry == null || entry.isExpired() || !entry.code.equals(code)) {
+            throw new BusinessException(ErrorCode.BAD_REQUEST, "Mã xác thực không chính xác hoặc đã hết hạn");
+        }
+
+        Account account = accountRepository.findByEmailOrPhone(email)
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "Không tìm thấy tài khoản với email này"));
+
+        account.setPasswordHash(passwordEncoder.encode(newPassword));
+        account.incrementAuthorizationVersion();
+        accountRepository.save(account);
+
+        // Invalidate used code
+        resetCodeStore.remove(email);
+        log.info("Đặt lại mật khẩu thành công cho email: {}", email);
+    }
+
+    public void setResetCodeForTesting(String email, String code) {
+        resetCodeStore.put(email.trim().toLowerCase(), new ResetCodeEntry(code, RESET_CODE_TTL_MS));
+    }
+
+    public String getResetCodeForTesting(String email) {
+        ResetCodeEntry entry = resetCodeStore.get(email.trim().toLowerCase());
+        return (entry != null && !entry.isExpired()) ? entry.code : null;
     }
 }

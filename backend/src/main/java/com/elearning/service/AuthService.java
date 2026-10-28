@@ -1,8 +1,10 @@
 package com.elearning.service;
 
 import com.elearning.dto.request.ChangePasswordRequest;
+import com.elearning.dto.request.ForgotPasswordRequest;
 import com.elearning.dto.request.LoginRequest;
 import com.elearning.dto.request.RegisterRequest;
+import com.elearning.dto.request.ResetPasswordRequest;
 import com.elearning.dto.response.AuthResponse;
 
 /**
@@ -41,4 +43,21 @@ public interface AuthService {
      * @param request change password payload containing oldPassword and newPassword
      */
     void changePassword(String emailOrPhone, ChangePasswordRequest request);
+
+    /**
+     * Initiates self-service password reset process (Model A).
+     * Generates a 6-digit verification code with 15-minute TTL.
+     * Prevents account enumeration by always completing normally even if email is not found.
+     *
+     * @param request forgot password request containing target email
+     */
+    void forgotPassword(ForgotPasswordRequest request);
+
+    /**
+     * Completes self-service password reset by validating 6-digit verification code,
+     * hashing new password with BCrypt, and incrementing authorization_version to revoke sessions.
+     *
+     * @param request reset password request containing email, resetCode, and newPassword
+     */
+    void resetPassword(ResetPasswordRequest request);
 }

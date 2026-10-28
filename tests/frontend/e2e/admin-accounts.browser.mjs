@@ -558,9 +558,9 @@ describe('Browser E2E: Admin Accounts Lifecycle UI (Task 9F.1)', () => {
   });
 
   // ---------------------------------------------------------------------------
-  // AA-08: Admin Password Reset Workflow & Clean Layout Verification
+  // AA-08: Admin cannot reset user passwords directly (Zero-Knowledge Invariant) & Clean Layout
   // ---------------------------------------------------------------------------
-  test('AA-08: Admin can open reset password modal, generate temporary password, and see clean layout', async () => {
+  test('AA-08: Admin cannot reset user passwords directly (Zero-Knowledge Invariant) & Clean Layout', async () => {
     const { page, context, getRuntimeErrors } = await createMonitoredPage(browser, {
       viewportWidth: 1280,
       viewportHeight: 720
@@ -587,24 +587,6 @@ describe('Browser E2E: Admin Accounts Lifecycle UI (Task 9F.1)', () => {
         });
       });
 
-      let resetPostCalled = false;
-      await page.route(/\/api\/v1\/admin\/accounts\/2\/reset-password$/, async (route) => {
-        resetPostCalled = true;
-        await route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify({
-            code: 'SUCCESS',
-            message: 'Đặt lại mật khẩu thành công. Mật khẩu tạm thời đã được tạo.',
-            data: {
-              accountId: 2,
-              emailOrPhone: 'learner1@example.com',
-              temporaryPassword: 'Temp@Secret123'
-            }
-          })
-        });
-      });
-
       await page.goto(`${baseUrl}/admin-accounts.html`);
       await page.waitForSelector('#accountsTableBody tr', { timeout: 5000 });
 
@@ -621,38 +603,12 @@ describe('Browser E2E: Admin Accounts Lifecycle UI (Task 9F.1)', () => {
       const pageSizeCount = await page.locator('#pageSizeSelect').count();
       assert.strictEqual(pageSizeCount, 0, '#pageSizeSelect must be absent');
 
-      // 2. Open reset password modal for account 2 (learner1@example.com)
-      const resetBtn2 = page.locator('#btnResetPassword_2');
-      await resetBtn2.waitFor({ state: 'visible' });
-      await resetBtn2.click();
+      // 2. Verify Zero-Knowledge Invariant: Admin cannot reset user passwords directly
+      const resetBtnCount = await page.locator('.btn-reset-password').count();
+      assert.strictEqual(resetBtnCount, 0, 'Reset password buttons must be absent from account table');
 
-      const modal = page.locator('#resetPasswordModal');
-      await modal.waitFor({ state: 'visible' });
-
-      // Target identity displayed
-      const targetEmail = await page.locator('#resetModalTargetEmail').textContent();
-      assert.match(targetEmail, /learner1@example\.com/);
-
-      // Confirm button is visible initially
-      const confirmBtn = page.locator('#btnConfirmResetPassword');
-      await confirmBtn.waitFor({ state: 'visible' });
-      await confirmBtn.click();
-
-      // Verify POST call was executed
-      assert.strictEqual(resetPostCalled, true, 'POST /reset-password endpoint must be called');
-
-      // Verify result section is displayed with temporary password
-      const resultSection = page.locator('#resetPasswordResultSection');
-      await resultSection.waitFor({ state: 'visible' });
-
-      const tempPassInput = page.locator('#temporaryPasswordDisplay');
-      const passVal = await tempPassInput.inputValue();
-      assert.strictEqual(passVal, 'Temp@Secret123');
-
-      // Close modal
-      const cancelBtn = page.locator('#btnCancelResetPasswordModal');
-      await cancelBtn.click();
-      await modal.waitFor({ state: 'hidden' });
+      const modalCount = await page.locator('#resetPasswordModal').count();
+      assert.strictEqual(modalCount, 0, '#resetPasswordModal dialog must be absent');
 
       assert.deepStrictEqual(getRuntimeErrors(), []);
 

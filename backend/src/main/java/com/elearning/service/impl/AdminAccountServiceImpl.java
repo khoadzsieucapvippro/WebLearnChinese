@@ -1,30 +1,29 @@
 package com.elearning.service.impl;
 
+import com.elearning.common.AuditActionType;
+import com.elearning.common.AuditResourceType;
 import com.elearning.common.ErrorCode;
-import com.elearning.dto.request.AdminResetPasswordRequest;
 import com.elearning.dto.request.UpdateAccountStatusRequest;
 import com.elearning.dto.response.AccountResponse;
 import com.elearning.dto.response.PageResponse;
 import com.elearning.entity.Account;
 import com.elearning.exception.BusinessException;
 import com.elearning.repository.AccountRepository;
+import com.elearning.repository.RoleRepository;
 import com.elearning.service.AdminAccountService;
+import com.elearning.service.ManagementAuditService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.elearning.common.AuditActionType;
-import com.elearning.common.AuditResourceType;
-import com.elearning.dto.response.AdminResetPasswordResponse;
-import com.elearning.service.ManagementAuditService;
-
-import java.security.SecureRandom;
 import java.util.Map;
 import java.util.Set;
 
 /**
  * Implementation of {@link AdminAccountService} for administrative account management (Task 8D.1).
+ * Zero-Knowledge Invariant: Admin cannot inspect, generate, or reset user passwords directly.
  */
 @Service
 public class AdminAccountServiceImpl implements AdminAccountService {
@@ -32,33 +31,24 @@ public class AdminAccountServiceImpl implements AdminAccountService {
     private static final Set<String> VALID_STATUSES = Set.of("Active", "Inactive", "Banned");
 
     private final AccountRepository accountRepository;
-    private final com.elearning.repository.RoleRepository roleRepository;
+    private final RoleRepository roleRepository;
     private final ManagementAuditService managementAuditService;
-    private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
-    @org.springframework.beans.factory.annotation.Autowired
+    @Autowired
     public AdminAccountServiceImpl(AccountRepository accountRepository,
-                                  com.elearning.repository.RoleRepository roleRepository,
-                                  ManagementAuditService managementAuditService,
-                                  org.springframework.security.crypto.password.PasswordEncoder passwordEncoder) {
+                                  RoleRepository roleRepository,
+                                  ManagementAuditService managementAuditService) {
         this.accountRepository = accountRepository;
         this.roleRepository = roleRepository;
         this.managementAuditService = managementAuditService;
-        this.passwordEncoder = passwordEncoder;
     }
 
-    public AdminAccountServiceImpl(AccountRepository accountRepository,
-                                  com.elearning.repository.RoleRepository roleRepository,
-                                  ManagementAuditService managementAuditService) {
-        this(accountRepository, roleRepository, managementAuditService, null);
-    }
-
-    public AdminAccountServiceImpl(AccountRepository accountRepository, com.elearning.repository.RoleRepository roleRepository) {
-        this(accountRepository, roleRepository, null, null);
+    public AdminAccountServiceImpl(AccountRepository accountRepository, RoleRepository roleRepository) {
+        this(accountRepository, roleRepository, null);
     }
 
     public AdminAccountServiceImpl(AccountRepository accountRepository) {
-        this(accountRepository, null, null, null);
+        this(accountRepository, null, null);
     }
 
     @Override
@@ -103,7 +93,6 @@ public class AdminAccountServiceImpl implements AdminAccountService {
         boolean isDeactivating = !normalizedStatus.equalsIgnoreCase("Active");
 
         if (isTargetAdmin && isCurrentlyActive && isDeactivating) {
-            // Deactivating/locking an active admin: acquire pessimistic write lock on Admin role row to ensure concurrency safety
             if (roleRepository != null) {
                 roleRepository.findByRoleNameForUpdate("Admin");
             }
@@ -137,85 +126,6 @@ public class AdminAccountServiceImpl implements AdminAccountService {
         }
 
         return AccountResponse.fromEntity(account);
-    }
-
-    private static final String PWD_UPPER = "ABCDEFGHJKLMNPQRSTUVWXYZ";
-    private static final String PWD_LOWER = "abcdefghijkmnpqrstuvwxyz";
-    private static final String PWD_DIGITS = "23456789";
-    private static final String PWD_SPECIAL = "@#$%&*!?";
-    private static final String PWD_ALL = PWD_UPPER + PWD_LOWER + PWD_DIGITS + PWD_SPECIAL;
-    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
-
-    @Override
-    @Transactional
-    public AdminResetPasswordResponse resetPassword(Long accountId, AdminResetPasswordRequest request, String currentAdminEmail) {
-        Account account = accountRepository.findByIdForUpdate(accountId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "Không tìm thấy tài khoản với ID: " + accountId));
-
-        // Self-Reset Defense: Admin cannot reset own password via admin endpoint
-        if (currentAdminEmail != null && currentAdminEmail.equalsIgnoreCase(account.getEmailOrPhone())) {
-            throw new BusinessException(
-                    ErrorCode.BAD_REQUEST,
-                    "Không thể tự đặt lại mật khẩu của chính mình qua tính năng quản trị. Vui lòng đổi mật khẩu tại trang Hồ sơ cá nhân."
-            );
-        }
-
-        String finalPassword;
-        if (request != null && request.getNewPassword() != null && !request.getNewPassword().trim().isEmpty()) {
-            finalPassword = request.getNewPassword().trim();
-            if (finalPassword.length() < 6 || finalPassword.length() > 128) {
-                throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Mật khẩu mới phải có độ dài từ 6 đến 128 ký tự");
-            }
-        } else {
-            finalPassword = generateTemporaryPassword();
-        }
-
-        if (passwordEncoder != null) {
-            account.setPasswordHash(passwordEncoder.encode(finalPassword));
-        } else {
-            account.setPasswordHash(finalPassword);
-        }
-
-        account.incrementAuthorizationVersion();
-        account = accountRepository.save(account);
-
-        if (managementAuditService != null) {
-            String details = String.format("Đặt lại mật khẩu cho tài khoản %s (#%d)", account.getEmailOrPhone(), accountId);
-            managementAuditService.logSuccess(
-                    AuditActionType.PASSWORD_RESET,
-                    AuditResourceType.USER,
-                    String.valueOf(accountId),
-                    details,
-                    null,
-                    Map.of("targetAccountId", accountId, "emailOrPhone", account.getEmailOrPhone())
-            );
-        }
-
-        return new AdminResetPasswordResponse(account.getAccountId(), account.getEmailOrPhone(), finalPassword);
-    }
-
-    @Override
-    @Transactional
-    public AdminResetPasswordResponse resetPassword(Long accountId, String currentAdminEmail) {
-        return resetPassword(accountId, null, currentAdminEmail);
-    }
-
-    public static String generateTemporaryPassword() {
-        char[] password = new char[12];
-        password[0] = PWD_UPPER.charAt(SECURE_RANDOM.nextInt(PWD_UPPER.length()));
-        password[1] = PWD_LOWER.charAt(SECURE_RANDOM.nextInt(PWD_LOWER.length()));
-        password[2] = PWD_DIGITS.charAt(SECURE_RANDOM.nextInt(PWD_DIGITS.length()));
-        password[3] = PWD_SPECIAL.charAt(SECURE_RANDOM.nextInt(PWD_SPECIAL.length()));
-        for (int i = 4; i < 12; i++) {
-            password[i] = PWD_ALL.charAt(SECURE_RANDOM.nextInt(PWD_ALL.length()));
-        }
-        for (int i = password.length - 1; i > 0; i--) {
-            int j = SECURE_RANDOM.nextInt(i + 1);
-            char temp = password[i];
-            password[i] = password[j];
-            password[j] = temp;
-        }
-        return new String(password);
     }
 
     private String normalizeStatus(String rawStatus) {

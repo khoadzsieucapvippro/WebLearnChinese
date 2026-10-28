@@ -120,7 +120,7 @@
                   <label for="loginPassword" class="form-label fw-semibold mb-0">
                     Mật khẩu <span class="text-danger" aria-hidden="true">*</span>
                   </label>
-                  <a href="#forgotPasswordModal" class="small text-decoration-none" data-bs-toggle="modal" data-bs-target="#forgotPasswordModal" style="color: var(--color-accent-primary);">
+                  <a href="#forgotPasswordModal" id="forgotPasswordLink" class="small text-decoration-none" data-bs-toggle="modal" data-bs-target="#forgotPasswordModal" style="color: var(--color-accent-primary);">
                     Quên mật khẩu?
                   </a>
                 </div>
@@ -176,31 +176,96 @@
   </main>
 
 
-  <!-- Modal Khôi Phục Mật Khẩu (WCAG 2.2 Modal Dialog) -->
+  <!-- Modal Khôi Phục Mật Khẩu Tự Phục Vụ (Self-Service Password Reset - Model A) -->
   <div class="modal fade" id="forgotPasswordModal" tabindex="-1" aria-labelledby="forgotPasswordModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content card-chinese border-0 shadow">
         <div class="modal-header border-bottom">
-          <h5 class="modal-title fw-bold" id="forgotPasswordModalLabel">Khôi Phục Mật Khẩu</h5>
+          <h5 class="modal-title fw-bold d-flex align-items-center gap-2" id="forgotPasswordModalLabel">
+            <span aria-hidden="true">🔑</span> Khôi Phục Mật Khẩu
+          </h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
         </div>
         <div class="modal-body p-4">
-          <p class="text-secondary small mb-3">
-            Để đảm bảo an toàn tài khoản học viên, hệ thống áp dụng cơ chế xác thực bảo mật tập trung.
-          </p>
-          <div class="alert alert-info small d-flex align-items-start gap-2 mb-3">
-            <span aria-hidden="true">ℹ️</span>
-            <div>
-              Nếu bạn quên mật khẩu, vui lòng liên hệ ban quản trị để được hỗ trợ đặt lại mật khẩu an toàn:
-              <div class="mt-2 fw-bold text-dark">support@weblearnchinese.edu.vn</div>
-            </div>
+          <!-- Step 1: Request Reset Code -->
+          <div id="forgotStep1Section">
+            <p class="text-secondary small mb-3">
+              Nhập email tài khoản đã đăng ký. Hệ thống sẽ cấp mã xác thực để bạn tự đặt lại mật khẩu mới.
+            </p>
+            <div id="forgotStep1Alert" class="alert d-none small py-2 px-3 mb-3" role="alert"></div>
+            <form id="forgotStep1Form" novalidate>
+              <div class="mb-3">
+                <label for="forgotEmailInput" class="form-label small fw-semibold text-secondary mb-1">
+                  Email đã đăng ký <span class="text-danger" aria-hidden="true">*</span>
+                </label>
+                <input type="email" id="forgotEmailInput" class="form-control" placeholder="vd: learner@example.com" required autocomplete="email">
+                <div id="forgotEmailError" class="invalid-feedback d-none" role="alert"></div>
+              </div>
+              <button type="submit" id="btnSendResetCode" class="btn-chinese-primary w-100 py-2 d-flex align-items-center justify-content-center gap-2">
+                <span class="btn-text">Gửi mã xác nhận</span>
+                <span class="spinner-border spinner-border-sm d-none" aria-hidden="true"></span>
+              </button>
+            </form>
           </div>
-          <p class="text-secondary small mb-0">
-            Hệ thống sẽ xác minh danh tính và hỗ trợ đặt lại mật khẩu trong thời gian sớm nhất.
-          </p>
-        </div>
-        <div class="modal-footer border-top">
-          <button type="button" class="btn-chinese-primary py-2 px-4" data-bs-dismiss="modal">Đã hiểu</button>
+
+          <!-- Step 2: Verify Code & Set New Password -->
+          <div id="forgotStep2Section" class="d-none">
+            <div class="alert alert-info py-2 px-3 small mb-3 d-flex align-items-start gap-2">
+              <span aria-hidden="true">📨</span>
+              <div>
+                Mã xác nhận đã được gửi tới <strong id="forgotTargetEmailDisplay"></strong>.
+              </div>
+            </div>
+            <div id="forgotStep2Alert" class="alert d-none small py-2 px-3 mb-3" role="alert"></div>
+            <form id="forgotStep2Form" novalidate>
+              <div class="mb-3">
+                <label for="forgotCodeInput" class="form-label small fw-semibold text-secondary mb-1">
+                  Mã xác nhận (6 chữ số) <span class="text-danger" aria-hidden="true">*</span>
+                </label>
+                <input type="text" id="forgotCodeInput" class="form-control font-monospace text-center fs-5" maxlength="6" placeholder="123456" required autocomplete="one-time-code">
+                <div id="forgotCodeError" class="invalid-feedback d-none" role="alert"></div>
+              </div>
+              <div class="mb-3">
+                <label for="forgotNewPasswordInput" class="form-label small fw-semibold text-secondary mb-1">
+                  Mật khẩu mới <span class="text-danger" aria-hidden="true">*</span>
+                </label>
+                <div class="input-group">
+                  <input type="password" id="forgotNewPasswordInput" class="form-control" minlength="6" maxlength="100" placeholder="Tối thiểu 6 ký tự" required autocomplete="new-password">
+                  <button type="button" id="toggleForgotNewPassBtn" class="btn btn-outline-secondary toggle-password-btn" aria-label="Hiện mật khẩu" title="Hiện mật khẩu">👁️</button>
+                </div>
+                <div id="forgotNewPasswordError" class="invalid-feedback d-none" role="alert"></div>
+              </div>
+              <div class="mb-3">
+                <label for="forgotConfirmPasswordInput" class="form-label small fw-semibold text-secondary mb-1">
+                  Nhập lại mật khẩu mới <span class="text-danger" aria-hidden="true">*</span>
+                </label>
+                <div class="input-group">
+                  <input type="password" id="forgotConfirmPasswordInput" class="form-control" minlength="6" maxlength="100" placeholder="Nhập lại mật khẩu mới" required autocomplete="new-password">
+                  <button type="button" id="toggleForgotConfirmPassBtn" class="btn btn-outline-secondary toggle-password-btn" aria-label="Hiện mật khẩu" title="Hiện mật khẩu">👁️</button>
+                </div>
+                <div id="forgotConfirmPasswordError" class="invalid-feedback d-none" role="alert"></div>
+              </div>
+              <div class="d-flex gap-2">
+                <button type="button" id="btnBackToStep1" class="btn btn-outline-secondary py-2 flex-grow-1">Quay lại</button>
+                <button type="submit" id="btnSubmitResetPassword" class="btn-chinese-primary py-2 flex-grow-1 d-flex align-items-center justify-content-center gap-2">
+                  <span class="btn-text">Đặt lại mật khẩu</span>
+                  <span class="spinner-border spinner-border-sm d-none" aria-hidden="true"></span>
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Step 3: Success Result -->
+          <div id="forgotSuccessSection" class="d-none text-center py-3">
+            <div class="fs-1 text-success mb-2">✓</div>
+            <h6 class="fw-bold text-dark mb-2">Đặt Lại Mật Khẩu Thành Công!</h6>
+            <p class="text-secondary small mb-3">
+              Mật khẩu mới đã được cập nhật an toàn. Hãy đăng nhập bằng mật khẩu mới của bạn.
+            </p>
+            <button type="button" id="btnGoToLogin" class="btn-chinese-primary py-2 px-4" data-bs-dismiss="modal">
+              Đăng nhập ngay
+            </button>
+          </div>
         </div>
       </div>
     </div>

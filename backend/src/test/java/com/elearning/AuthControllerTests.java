@@ -3,6 +3,8 @@ package com.elearning;
 import com.elearning.common.ErrorCode;
 import com.elearning.controller.AuthController;
 import com.elearning.dto.request.ChangePasswordRequest;
+import com.elearning.dto.request.ForgotPasswordRequest;
+import com.elearning.dto.request.ResetPasswordRequest;
 import com.elearning.dto.request.LoginRequest;
 import com.elearning.dto.request.RegisterRequest;
 import com.elearning.dto.response.AuthResponse;
@@ -248,6 +250,74 @@ class AuthControllerTests {
                     .andExpect(jsonPath("$.code").value("UNAUTHORIZED"));
 
             verify(authService, never()).changePassword(any(), any());
+        }
+    }
+
+    @Nested
+    @DisplayName("Forgot Password Endpoint Tests (POST /api/v1/auth/forgot-password)")
+    class ForgotPasswordEndpointTests {
+
+        @Test
+        @DisplayName("GIVEN valid email WHEN POST /forgot-password THEN returns 200 OK")
+        void testForgotPasswordSuccess() throws Exception {
+            ForgotPasswordRequest request = new ForgotPasswordRequest("learner@elearning.com");
+
+            mockMvc.perform(post("/api/v1/auth/forgot-password")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("SUCCESS"))
+                    .andExpect(jsonPath("$.message").value(containsString("mã xác thực đã được gửi")));
+
+            verify(authService).forgotPassword(any(ForgotPasswordRequest.class));
+        }
+
+        @Test
+        @DisplayName("GIVEN invalid email WHEN POST /forgot-password THEN returns 400 Bad Request")
+        void testForgotPasswordInvalidEmail() throws Exception {
+            ForgotPasswordRequest request = new ForgotPasswordRequest("not-an-email");
+
+            mockMvc.perform(post("/api/v1/auth/forgot-password")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
+
+            verify(authService, never()).forgotPassword(any());
+        }
+    }
+
+    @Nested
+    @DisplayName("Reset Password Endpoint Tests (POST /api/v1/auth/reset-password)")
+    class ResetPasswordEndpointTests {
+
+        @Test
+        @DisplayName("GIVEN valid reset request WHEN POST /reset-password THEN returns 200 OK")
+        void testResetPasswordSuccess() throws Exception {
+            ResetPasswordRequest request = new ResetPasswordRequest("learner@elearning.com", "123456", "NewSecret@123");
+
+            mockMvc.perform(post("/api/v1/auth/reset-password")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("SUCCESS"))
+                    .andExpect(jsonPath("$.message").value(containsString("Đặt lại mật khẩu thành công")));
+
+            verify(authService).resetPassword(any(ResetPasswordRequest.class));
+        }
+
+        @Test
+        @DisplayName("GIVEN invalid reset request (blank code) WHEN POST /reset-password THEN returns 400 Bad Request")
+        void testResetPasswordValidationFailure() throws Exception {
+            ResetPasswordRequest request = new ResetPasswordRequest("learner@elearning.com", "", "NewSecret@123");
+
+            mockMvc.perform(post("/api/v1/auth/reset-password")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
+
+            verify(authService, never()).resetPassword(any());
         }
     }
 }

@@ -2,6 +2,8 @@ package com.elearning;
 
 import com.elearning.common.ErrorCode;
 import com.elearning.dto.request.ChangePasswordRequest;
+import com.elearning.dto.request.ForgotPasswordRequest;
+import com.elearning.dto.request.ResetPasswordRequest;
 import com.elearning.dto.request.LoginRequest;
 import com.elearning.dto.request.RegisterRequest;
 import com.elearning.dto.response.AuthResponse;
@@ -300,6 +302,102 @@ class AuthServiceTests {
                     .satisfies(ex -> assertThat(((BusinessException) ex).getErrorCode()).isEqualTo(ErrorCode.BAD_REQUEST));
 
             verify(accountRepository, never()).save(any());
+        }
+    }
+
+    @Nested
+    @DisplayName("ForgotPassword Tests (Model A)")
+    class ForgotPasswordTests {
+
+        @Test
+        @DisplayName("GIVEN existing account WHEN forgotPassword THEN generates 6-digit code")
+        void testForgotPassword_success() {
+            Account account = new Account();
+            account.setEmailOrPhone("user@elearning.com");
+            when(accountRepository.findByEmailOrPhone("user@elearning.com")).thenReturn(Optional.of(account));
+
+            ForgotPasswordRequest request = new ForgotPasswordRequest("user@elearning.com");
+            authService.forgotPassword(request);
+
+            String code = authService.getResetCodeForTesting("user@elearning.com");
+            assertThat(code).isNotNull().hasSize(6);
+        }
+
+        @Test
+        @DisplayName("GIVEN non-existent account WHEN forgotPassword THEN completes silently without revealing account status")
+        void testForgotPassword_nonExistentEmail_silentSuccess() {
+            when(accountRepository.findByEmailOrPhone("unknown@elearning.com")).thenReturn(Optional.empty());
+
+            ForgotPasswordRequest request = new ForgotPasswordRequest("unknown@elearning.com");
+            authService.forgotPassword(request);
+
+            String code = authService.getResetCodeForTesting("unknown@elearning.com");
+            assertThat(code).isNull();
+        }
+
+        @Test
+        @DisplayName("GIVEN blank email WHEN forgotPassword THEN throws VALIDATION_ERROR")
+        void testForgotPassword_blankEmail_throwsValidationError() {
+            ForgotPasswordRequest request = new ForgotPasswordRequest("");
+
+            assertThatThrownBy(() -> authService.forgotPassword(request))
+                    .isInstanceOf(BusinessException.class)
+                    .satisfies(ex -> assertThat(((BusinessException) ex).getErrorCode()).isEqualTo(ErrorCode.VALIDATION_ERROR));
+        }
+    }
+
+    @Nested
+    @DisplayName("ResetPassword Tests (Model A)")
+    class ResetPasswordTests {
+
+        @Test
+        @DisplayName("GIVEN valid verification code WHEN resetPassword THEN updates password hash and revokes sessions")
+        void testResetPassword_success() {
+            Account account = new Account();
+            account.setEmailOrPhone("user@elearning.com");
+            account.setPasswordHash("oldHashed");
+            account.setAuthorizationVersion(1L);
+
+            when(accountRepository.findByEmailOrPhone("user@elearning.com")).thenReturn(Optional.of(account));
+            when(passwordEncoder.encode("NewSecret@123")).thenReturn("newHashed@123");
+
+            authService.setResetCodeForTesting("user@elearning.com", "654321");
+
+            ResetPasswordRequest request = new ResetPasswordRequest("user@elearning.com", "654321", "NewSecret@123");
+            authService.resetPassword(request);
+
+            assertThat(account.getPasswordHash()).isEqualTo("newHashed@123");
+            assertThat(account.getAuthorizationVersion()).isEqualTo(2L);
+            verify(accountRepository).save(account);
+
+            // Code should be invalidated
+            assertThat(authService.getResetCodeForTesting("user@elearning.com")).isNull();
+        }
+
+        @Test
+        @DisplayName("GIVEN incorrect verification code WHEN resetPassword THEN throws BAD_REQUEST")
+        void testResetPassword_invalidCode_throwsBadRequest() {
+            authService.setResetCodeForTesting("user@elearning.com", "654321");
+
+            ResetPasswordRequest request = new ResetPasswordRequest("user@elearning.com", "999999", "NewSecret@123");
+
+            assertThatThrownBy(() -> authService.resetPassword(request))
+                    .isInstanceOf(BusinessException.class)
+                    .satisfies(ex -> assertThat(((BusinessException) ex).getErrorCode()).isEqualTo(ErrorCode.BAD_REQUEST));
+
+            verify(accountRepository, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("GIVEN invalid new password length WHEN resetPassword THEN throws VALIDATION_ERROR")
+        void testResetPassword_shortPassword_throwsValidationError() {
+            authService.setResetCodeForTesting("user@elearning.com", "654321");
+
+            ResetPasswordRequest request = new ResetPasswordRequest("user@elearning.com", "654321", "123");
+
+            assertThatThrownBy(() -> authService.resetPassword(request))
+                    .isInstanceOf(BusinessException.class)
+                    .satisfies(ex -> assertThat(((BusinessException) ex).getErrorCode()).isEqualTo(ErrorCode.VALIDATION_ERROR));
         }
     }
 }

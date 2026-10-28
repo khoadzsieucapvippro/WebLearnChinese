@@ -535,6 +535,211 @@ function initRegisterForm() {
   });
 }
 
+
+/**
+ * Initializes Self-Service Forgot Password Modal Dialog (Model A).
+ */
+export function initForgotPasswordModal() {
+  const modalEl = document.getElementById('forgotPasswordModal');
+  if (!modalEl) return;
+
+  const step1Section = document.getElementById('forgotStep1Section');
+  const step2Section = document.getElementById('forgotStep2Section');
+  const successSection = document.getElementById('forgotSuccessSection');
+
+  const step1Form = document.getElementById('forgotStep1Form');
+  const step2Form = document.getElementById('forgotStep2Form');
+
+  const emailInput = document.getElementById('forgotEmailInput');
+  const emailError = document.getElementById('forgotEmailError');
+  const step1Alert = document.getElementById('forgotStep1Alert');
+  const btnSendResetCode = document.getElementById('btnSendResetCode');
+
+  const targetEmailDisplay = document.getElementById('forgotTargetEmailDisplay');
+  const codeInput = document.getElementById('forgotCodeInput');
+  const codeError = document.getElementById('forgotCodeError');
+  const newPassInput = document.getElementById('forgotNewPasswordInput');
+  const newPassError = document.getElementById('forgotNewPasswordError');
+  const confirmPassInput = document.getElementById('forgotConfirmPasswordInput');
+  const confirmPassError = document.getElementById('forgotConfirmPasswordError');
+  const step2Alert = document.getElementById('forgotStep2Alert');
+  const btnSubmitReset = document.getElementById('btnSubmitResetPassword');
+  const btnBackToStep1 = document.getElementById('btnBackToStep1');
+  const btnGoToLogin = document.getElementById('btnGoToLogin');
+
+  const toggleNewPassBtn = document.getElementById('toggleForgotNewPassBtn');
+  if (toggleNewPassBtn && newPassInput) {
+    setupPasswordToggle(toggleNewPassBtn, newPassInput);
+  }
+  const toggleConfirmPassBtn = document.getElementById('toggleForgotConfirmPassBtn');
+  if (toggleConfirmPassBtn && confirmPassInput) {
+    setupPasswordToggle(toggleConfirmPassBtn, confirmPassInput);
+  }
+
+  let resetEmail = '';
+
+  function resetModalState() {
+    step1Section?.classList.remove('d-none');
+    step2Section?.classList.add('d-none');
+    successSection?.classList.add('d-none');
+
+    step1Form?.reset();
+    step2Form?.reset();
+
+    [emailInput, codeInput, newPassInput, confirmPassInput].forEach(inp => {
+      inp?.classList.remove('is-invalid', 'is-valid');
+    });
+    [emailError, codeError, newPassError, confirmPassError].forEach(err => {
+      if (err) { err.textContent = ''; err.classList.add('d-none'); }
+    });
+    if (step1Alert) { step1Alert.className = 'alert d-none small py-2 px-3 mb-3'; step1Alert.textContent = ''; }
+    if (step2Alert) { step2Alert.className = 'alert d-none small py-2 px-3 mb-3'; step2Alert.textContent = ''; }
+  }
+
+  modalEl.addEventListener('show.bs.modal', resetModalState);
+
+  // Step 1: Submit email to request reset code
+  step1Form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = (emailInput?.value || '').trim();
+    if (!email) {
+      if (emailInput && emailError) {
+        emailInput.classList.add('is-invalid');
+        emailError.textContent = 'Vui lòng nhập email tài khoản.';
+        emailError.classList.remove('d-none');
+        emailInput.focus();
+      }
+      return;
+    }
+
+    if (btnSendResetCode) setButtonLoading(btnSendResetCode, true, 'Đang gửi mã...');
+    if (step1Alert) step1Alert.classList.add('d-none');
+
+    try {
+      const res = await apiClient('/auth/forgot-password', {
+        method: 'POST',
+        body: { email }
+      });
+
+      resetEmail = email;
+      if (targetEmailDisplay) targetEmailDisplay.textContent = email;
+
+      step1Section?.classList.add('d-none');
+      step2Section?.classList.remove('d-none');
+
+      if (res?.demoCode && codeInput) {
+        codeInput.value = res.demoCode;
+      }
+      if (codeInput) codeInput.focus();
+
+    } catch (err) {
+      if (step1Alert) {
+        step1Alert.className = 'alert alert-danger small py-2 px-3 mb-3';
+        step1Alert.textContent = err.message || 'Không thể gửi yêu cầu đặt lại mật khẩu. Vui lòng thử lại.';
+        step1Alert.classList.remove('d-none');
+      }
+    } finally {
+      if (btnSendResetCode) setButtonLoading(btnSendResetCode, false);
+    }
+  });
+
+  // Step 2: Back to Step 1
+  btnBackToStep1?.addEventListener('click', () => {
+    step2Section?.classList.add('d-none');
+    step1Section?.classList.remove('d-none');
+    if (emailInput) emailInput.focus();
+  });
+
+  // Step 2: Submit code & new password
+  step2Form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const code = (codeInput?.value || '').trim();
+    const newPassword = newPassInput?.value || '';
+    const confirmPassword = confirmPassInput?.value || '';
+
+    let hasError = false;
+
+    if (!code || code.length < 4) {
+      if (codeInput && codeError) {
+        codeInput.classList.add('is-invalid');
+        codeError.textContent = 'Vui lòng nhập mã xác nhận hợp lệ.';
+        codeError.classList.remove('d-none');
+        hasError = true;
+      }
+    } else if (codeInput && codeError) {
+      codeInput.classList.remove('is-invalid');
+      codeError.classList.add('d-none');
+    }
+
+    if (!newPassword || newPassword.length < 6) {
+      if (newPassInput && newPassError) {
+        newPassInput.classList.add('is-invalid');
+        newPassError.textContent = 'Mật khẩu mới phải có tối thiểu 6 ký tự.';
+        newPassError.classList.remove('d-none');
+        hasError = true;
+      }
+    } else if (newPassInput && newPassError) {
+      newPassInput.classList.remove('is-invalid');
+      newPassError.classList.add('d-none');
+    }
+
+    if (newPassword !== confirmPassword) {
+      if (confirmPassInput && confirmPassError) {
+        confirmPassInput.classList.add('is-invalid');
+        confirmPassError.textContent = 'Mật khẩu xác nhận không trùng khớp.';
+        confirmPassError.classList.remove('d-none');
+        hasError = true;
+      }
+    } else if (confirmPassInput && confirmPassError) {
+      confirmPassInput.classList.remove('is-invalid');
+      confirmPassError.classList.add('d-none');
+    }
+
+    if (hasError) return;
+
+    if (btnSubmitReset) setButtonLoading(btnSubmitReset, true, 'Đang cập nhật...');
+    if (step2Alert) step2Alert.classList.add('d-none');
+
+    try {
+      await apiClient('/auth/reset-password', {
+        method: 'POST',
+        body: {
+          email: resetEmail,
+          resetCode: code,
+          newPassword
+        }
+      });
+
+      step2Section?.classList.add('d-none');
+      successSection?.classList.remove('d-none');
+
+      // Pre-fill main login email
+      const mainLoginEmail = document.getElementById('loginEmail');
+      const mainLoginPass = document.getElementById('loginPassword');
+      if (mainLoginEmail) mainLoginEmail.value = resetEmail;
+      if (mainLoginPass) {
+        mainLoginPass.value = '';
+        mainLoginPass.focus();
+      }
+
+    } catch (err) {
+      if (step2Alert) {
+        step2Alert.className = 'alert alert-danger small py-2 px-3 mb-3';
+        step2Alert.textContent = err.message || 'Mã xác nhận không chính xác hoặc đã hết hạn.';
+        step2Alert.classList.remove('d-none');
+      }
+    } finally {
+      if (btnSubmitReset) setButtonLoading(btnSubmitReset, false);
+    }
+  });
+
+  // Step 3: Dismiss modal & focus login
+  btnGoToLogin?.addEventListener('click', () => {
+    const mainLoginPass = document.getElementById('loginPassword');
+    if (mainLoginPass) mainLoginPass.focus();
+  });
+}
+
 if (typeof document !== 'undefined' && typeof document.addEventListener === 'function') {
   document.addEventListener('DOMContentLoaded', () => {
     if (authManager.isAuthenticated()) {
@@ -556,6 +761,7 @@ if (typeof document !== 'undefined' && typeof document.addEventListener === 'fun
     }
     initNavbarAuth('navAuthContainer');
     initLoginForm();
+    initForgotPasswordModal();
     initRegisterForm();
   });
 }

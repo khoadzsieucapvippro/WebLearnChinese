@@ -392,10 +392,9 @@ describe('Unit: Admin Accounts Lifecycle UI Logic (Task 9F.1)', () => {
   // ---------------------------------------------------------------------------
   // 9. Demo Fallback Engine Admin Endpoints Contract
   // ---------------------------------------------------------------------------
-  describe('9. Demo Fallback Engine Admin Operations', () => {
-    it('generates temporary password for target user via POST /admin/accounts/:id/reset-password', async () => {
+  describe('9. Demo Fallback Engine Self-Service (Model A) & SoD Operations', () => {
+    it('generates reset verification code via POST /auth/forgot-password (Model A)', async () => {
       const { demoFallbackEngine } = await import('../../../../frontend/js/api/demo-fallback-engine.js');
-      const { authManager } = await import('../../../../frontend/js/auth/auth-state.js');
 
       globalThis.sessionStorage = {
         _store: {},
@@ -411,45 +410,32 @@ describe('Unit: Admin Accounts Lifecycle UI Logic (Task 9F.1)', () => {
       };
 
       demoFallbackEngine.resetInMemoryData();
-      authManager.setSession({ token: 'mock_token', accountId: 4, emailOrPhone: 'admin@gmail.com', roles: ['Admin'] });
 
-      const res = await demoFallbackEngine.handleRequest('/admin/accounts/1/reset-password', { method: 'POST' });
+      const res = await demoFallbackEngine.handleRequest('/auth/forgot-password', {
+        method: 'POST',
+        body: { email: 'admin@gmail.com' }
+      });
       assert.ok(res);
-      assert.strictEqual(res.accountId, 1);
-      assert.strictEqual(typeof res.temporaryPassword, 'string');
-      assert.strictEqual(res.temporaryPassword.length, 12);
+      assert.strictEqual(res.code, 'SUCCESS');
+      assert.strictEqual(typeof res.demoCode, 'string');
+      assert.strictEqual(res.demoCode, '123456');
     });
 
-    it('strictly prohibits Admin from resetting own password via demo fallback (Self-Reset Defense)', async () => {
+    it('updates password self-service via POST /auth/reset-password (Model A)', async () => {
       const { demoFallbackEngine } = await import('../../../../frontend/js/api/demo-fallback-engine.js');
-      const { authManager } = await import('../../../../frontend/js/auth/auth-state.js');
-
-      globalThis.sessionStorage = {
-        _store: {},
-        getItem(k) { return this._store[k] || null; },
-        setItem(k, v) { this._store[k] = String(v); },
-        removeItem(k) { delete this._store[k]; }
-      };
-      globalThis.localStorage = {
-        _store: {},
-        getItem(k) { return this._store[k] || null; },
-        setItem(k, v) { this._store[k] = String(v); },
-        removeItem(k) { delete this._store[k]; }
-      };
 
       demoFallbackEngine.resetInMemoryData();
-      authManager.setSession({ token: 'mock_token', accountId: 4, emailOrPhone: 'admin@gmail.com', roles: ['Admin'] });
 
-      await assert.rejects(
-        async () => {
-          await demoFallbackEngine.handleRequest('/admin/accounts/4/reset-password', { method: 'POST' });
-        },
-        (err) => {
-          assert.strictEqual(err.status, 400);
-          assert.ok(err.message.includes('Không thể tự đặt lại mật khẩu của chính mình'));
-          return true;
+      const res = await demoFallbackEngine.handleRequest('/auth/reset-password', {
+        method: 'POST',
+        body: {
+          email: 'admin@gmail.com',
+          resetCode: '123456',
+          newPassword: 'NewSecurePassword@123'
         }
-      );
+      });
+      assert.ok(res);
+      assert.strictEqual(res.code, 'SUCCESS');
     });
 
     it('enforces SoD invariant rejecting simultaneously assigning Creator and Moderator in demo fallback', async () => {

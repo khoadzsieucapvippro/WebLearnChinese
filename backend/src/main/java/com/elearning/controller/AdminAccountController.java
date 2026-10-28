@@ -1,9 +1,7 @@
 package com.elearning.controller;
 
 import com.elearning.dto.request.UpdateAccountStatusRequest;
-import com.elearning.dto.request.AdminResetPasswordRequest;
 import com.elearning.dto.response.AccountResponse;
-import com.elearning.dto.response.AdminResetPasswordResponse;
 import com.elearning.dto.response.ApiResponse;
 import com.elearning.dto.response.PageResponse;
 import com.elearning.service.AdminAccountService;
@@ -11,10 +9,8 @@ import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,6 +22,7 @@ import java.security.Principal;
 /**
  * REST Controller for administrative account lifecycle management (Module 8D.1).
  * Protected: Requires ROLE_ADMIN.
+ * Zero-Knowledge Invariant: Admin cannot inspect, reset, or generate passwords for user accounts.
  */
 @RestController
 @RequestMapping("/api/v1/admin/accounts")
@@ -71,22 +68,5 @@ public class AdminAccountController {
         String currentAdminEmail = (principal != null) ? principal.getName() : null;
         AccountResponse response = adminAccountService.updateAccountStatus(id, request, currentAdminEmail);
         return ResponseEntity.ok(ApiResponse.success("Cập nhật trạng thái tài khoản thành công", response));
-    }
-
-    /**
-     * Resets target account password with server-generated secure temporary password.
-     *
-     * @param id        target account ID
-     * @param principal authenticated user principal
-     * @return ApiResponse wrapping AdminResetPasswordResponse
-     */
-    @PostMapping("/{id}/reset-password")
-    public ResponseEntity<ApiResponse<AdminResetPasswordResponse>> resetPassword(
-            @PathVariable("id") Long id,
-            @Valid @RequestBody(required = false) AdminResetPasswordRequest request,
-            Principal principal) {
-        String currentAdminEmail = (principal != null) ? principal.getName() : null;
-        AdminResetPasswordResponse response = adminAccountService.resetPassword(id, request, currentAdminEmail);
-        return ResponseEntity.ok(ApiResponse.success("Đặt lại mật khẩu tài khoản thành công", response));
     }
 }
