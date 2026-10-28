@@ -19,6 +19,7 @@ public class ParsedVocabularyItem {
     private Boolean isExisting;
     private Long existingVocabId;
     private Boolean isValid;
+    private String audioUrl;
     private List<String> errors = new ArrayList<>();
 
     public ParsedVocabularyItem() {
@@ -139,6 +140,14 @@ public class ParsedVocabularyItem {
 
     public List<String> getErrors() {
         return errors;
+    }
+
+    public String getAudioUrl() {
+        return audioUrl;
+    }
+
+    public void setAudioUrl(String audioUrl) {
+        this.audioUrl = audioUrl;
     }
 
     public void setErrors(List<String> errors) {

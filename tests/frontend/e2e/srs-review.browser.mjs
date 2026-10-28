@@ -80,6 +80,22 @@ async function setupAuthenticatedSession(page) {
     });
   });
 
+  await page.route('**/api/v1/srs/curriculum-progress*', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        code: 'SUCCESS',
+        message: 'OK',
+        data: {
+          lessonProgress: {},
+          learnedRadicalIds: [],
+          learnedVocabIds: []
+        }
+      })
+    });
+  });
+
   await page.route('**/api/v1/radicals*', async (route) => {
     await route.fulfill({
       status: 200,
@@ -717,13 +733,13 @@ describe('Browser E2E: Interactive SRS Flashcard Review Session (9C.3)', () => {
       const input = page.locator('#cardInlineNoteInput');
       assert.ok(await input.isVisible(), 'Note input field must be visible');
 
-      // Check max length 150
+      // Check max length 500 (standardized with lesson detail notes modal)
       const maxLength = await input.getAttribute('maxlength');
-      assert.strictEqual(maxLength, '150', 'Note input must have maxlength="150"');
+      assert.strictEqual(maxLength, '500', 'Note input must have maxlength="500"');
 
       // Check live character counter
       const charCount = page.locator('#cardInlineNoteCharCount');
-      assert.strictEqual((await charCount.textContent()).trim(), '0/150', 'Initial counter must show 0/150');
+      assert.strictEqual((await charCount.textContent()).trim(), '0/500', 'Initial counter must show 0/500');
 
       // Check checkmark save button exists and is visible at end of input bar
       const saveBtn = page.locator('#btnSaveInlineNote');
@@ -731,7 +747,7 @@ describe('Browser E2E: Interactive SRS Flashcard Review Session (9C.3)', () => {
 
       // 4. Requirement 3: Typing & keyboard safety (Space & 1..4 locked while editing)
       await input.type('Học tập mỗi ngày');
-      assert.strictEqual((await charCount.textContent()).trim(), '16/150', 'Character counter must update live to 16/150');
+      assert.strictEqual((await charCount.textContent()).trim(), '16/500', 'Character counter must update live to 16/500');
 
       // Press Space while typing in input - must NOT flip card back
       await page.keyboard.press('Space');

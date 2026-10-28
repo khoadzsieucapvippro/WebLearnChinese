@@ -705,6 +705,9 @@ class DemoFallbackEngine {
     }
 
     if (cleanPath === '/creator/lessons' && method === 'POST') {
+      if (Array.isArray(body?.vocabularyIds) && body.vocabularyIds.length > 20) {
+        throw new ApiError('Bài học không được vượt quá 20 từ vựng theo quy chuẩn giáo trình', 400, 'BAD_REQUEST');
+      }
       const newLesson = {
         lessonId: data.lessons.length + 101,
         title: body.title || 'Bài học mới',
@@ -742,6 +745,10 @@ class DemoFallbackEngine {
         return lesson;
       }
       if (method === 'DELETE') {
+        if (!lesson) throw new ApiError('Không tìm thấy bài học ' + id, 404, 'NOT_FOUND');
+        if (lesson.status !== 'Draft' && lesson.status !== 'Rejected') {
+          throw new ApiError('Chỉ có thể xóa bài học ở trạng thái bản nháp hoặc bị từ chối', 400, 'BAD_REQUEST');
+        }
         const idx = data.lessons.findIndex(l => l.lessonId === id);
         if (idx >= 0) {
           data.lessons.splice(idx, 1);
@@ -772,6 +779,9 @@ class DemoFallbackEngine {
       if (!lesson) throw new ApiError(`Không tìm thấy bài học ${lessonId}`, 404, 'NOT_FOUND');
 
       if (method === 'POST') {
+        if (lesson.vocabularies.length >= 20) {
+          throw new ApiError('Bài học đã đạt giới hạn tối đa 20 từ vựng theo quy chuẩn giáo trình', 400, 'BAD_REQUEST');
+        }
         const vocabItem = data.vocabulary.find(v => v.vocabId === vocabId);
         if (vocabItem && !lesson.vocabularies.some(v => v.vocabId === vocabId)) {
           lesson.vocabularies.push({
@@ -1407,7 +1417,7 @@ class DemoFallbackEngine {
       }
 
       if (method === 'POST') {
-        const currentAccount = this.getCurrentAccount();
+const currentAccount = this.getCurrentAccount();
         const newNote = {
           noteId: Date.now(),
           accountId: currentAccount.accountId,

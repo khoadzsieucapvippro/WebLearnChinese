@@ -32,8 +32,8 @@ flowchart TD
 | | `TASK-4.3` | SRS Phòng Luyện Viết (Writing Room HanziWriter) | `srs-review.html?mode=writing`, `character-writing` | ✅ Hoàn thành |
 | | `TASK-4.4` | SRS Phòng Luyện Đọc & Chấm Ngữ Điệu (Reading F0) | `srs-review.html?mode=reading`, `speech-service` | ✅ Hoàn thành |
 | | `TASK-4.5` | SRS Phòng Luyện Nghe & Bàn Phím Ảo IME (Listening) | `srs-review.html?mode=listening`, hint toggle, virtual IME | ✅ Hoàn thành |
-| **Chặng 5: Không gian Cá nhân** | `TASK-5.1` | Sổ tay Ghi chú Cá nhân (Personal Notes) | `notes-modal.js`, contextual notes integration | ⏳ Chờ rà soát |
-| **Chặng 6: Quản lý Nội dung** | `TASK-6.1` | Cổng Điều phối & Creator Studio (Tạo bài, Import) | `management.html`, `creator-lessons.html`, `creator-import.html` | ⏳ Chờ rà soát |
+| **Chặng 5: Không gian Cá nhân** | `TASK-5.1` | Sổ tay Ghi chú Cá nhân (Personal Notes) | `notes-modal.js`, contextual notes integration | ✅ Hoàn thành |
+| **Chặng 6: Quản lý Nội dung** | `TASK-6.1` | Cổng Điều phối & Creator Studio (Tạo bài, Import) | `management.html`, `creator-lessons.html`, `creator-import.html` | ✅ Hoàn thành |
 | | `TASK-6.2` | Moderator Queue & Thẩm định bài học | `moderator-queue.html`, `moderator-review.html` | ⏳ Chờ rà soát |
 | **Chặng 7: Quản trị Hệ thống** | `TASK-7.1` | Quản trị Tài khoản & Phân quyền Admin | `admin-accounts.html`, `admin-roles.html` | ⏳ Chờ rà soát |
 | | `TASK-7.2` | Quản trị Bài học, Từ vựng & Bộ thủ (Admin) | `admin-lessons.html`, `admin-vocabulary.html`, `admin-radicals.html` | ⏳ Chờ rà soát |
@@ -269,22 +269,47 @@ flowchart TD
 ---
 
 ### CHẶNG 5: KHÔNG GIAN CÁ NHÂN & GHI CHÚ
-#### `TASK-5.1`: Sổ Tay Ghi Chú Cá Nhân (`personal-notes.html`)
-- **Mục tiêu**: Quản lý ghi chú học tập an toàn, tiện lợi.
-- **Tiêu chí kiểm tra**:
-  1. *Thao tác Ghi chú*: Thêm, sửa, xóa ghi chú gắn liền với từ vựng hoặc bài học.
-  2. *Bộ lọc & Tìm kiếm*: Lọc theo thẻ tag, tìm kiếm theo từ khóa trong nội dung ghi chú.
-  3. *An toàn DOM*: Ngăn chặn tuyệt đối tấn công XSS thông qua nội dung ghi chú.
+#### `TASK-5.1`: Sổ Tay Ghi Chú Cá Nhân Theo Ngữ Cảnh (Contextual Personal Notes & Modal)
+- **Mục tiêu**: Quản lý ghi chú học tập an toàn, tiện lợi, gắn liền với ngữ cảnh từ vựng bài học và phòng lật thẻ SRS, đồng bộ 2 chiều và thống nhất giới hạn 500 ký tự.
+- **Tệp mã nguồn & kiểm thử đã sửa đổi**:
+  * `frontend/srs-review.html`: Đồng bộ giới hạn `maxlength="500"`, placeholder và bộ đếm `0/500`.
+  * `frontend/js/pages/srs-review-page.js`: Nâng giới hạn ghi chú từ 150 lên 500 ký tự (`updateInlineNoteCharCount`, `exitInlineNoteEdit`, `saveInlineCardNote`), dọn dẹp các tham chiếu và method chết (`cardBackNotesSection`, `cardNewNoteInput`, `btnAddCardNote`, `saveCardNote`).
+  * `frontend/css/style.css`: Thêm `white-space: pre-wrap;` cho `.card-inline-note-text` bảo toàn định dạng xuống dòng, tăng padding-right cho `.card-inline-note-input` chống đè nút lưu.
+  * `frontend/js/ui/notes-modal.js`: Modal ghi chú độc lập `MAX_NOTE_LENGTH = 500`, bảo vệ IDOR và chống XSS 100% bằng `textContent`.
+  * `tests/frontend/e2e/srs-review.browser.mjs`: Cập nhật assertion kiểm thử `500` ký tự (16/16 tests PASS).
+  * `tests/frontend/e2e/personal-notes.browser.mjs`: Bộ kiểm thử E2E Modal Ghi chú (7/7 tests PASS).
+  * `tests/frontend/unit/notes/notes-modal.test.mjs`: Bổ sung Section 8 kiểm định giới hạn 500 ký tự (26/26 tests PASS).
+- **Tiêu chí & Hạng mục đã hoàn thiện**:
+  1. *Khắc phục sai lệch 150 vs 500 ký tự*: Đồng bộ tuyệt đối trần 500 ký tự giữa Modal chi tiết bài học và mặt sau thẻ Flashcard SRS.
+  2. *Đồng bộ 2 chiều (Bidirectional Sync)*: Ghi chú tạo/sửa ở bài học lập tức phản ánh lên thẻ Flashcard SRS và ngược lại qua khóa `srs_vocab_note_${userId}_${vocabId}`.
+  3. *An toàn DOM & Bảo mật IDOR*: Ngăn chặn tuyệt đối XSS bằng `textContent` và bảo vệ dữ liệu cá nhân theo JWT `SecurityContextHolder`.
+  4. *Dọn sạch mã chết*: Loại bỏ toàn bộ các biến/hàm legacy của layout 2 cột cũ.
 
 ---
 
 ### CHẶNG 6: KHU VỰC QUẢN LÝ NỘI DUNG (CREATOR & MODERATOR)
-#### `TASK-6.1`: Cổng Điều Phối & Creator Studio (`management.html`, `creator-lessons.html`, `creator-import.html`)
-- **Mục tiêu**: Tạo và quản lý học liệu dành cho vai trò Creator.
-- **Tiêu chí kiểm tra**:
-  1. *Cổng điều phối*: Hiển thị đúng các thẻ chức năng theo vai trò của người dùng (Creator, Moderator, Admin).
-  2. *Tạo bài học mới*: Form tạo bài học, chọn từ vựng, kiểm tra giới hạn 20 từ/bài.
-  3. *Nhập liệu hàng loạt*: Công cụ nhập dữ liệu từ CSV/JSON, xem trước và kiểm tra tính hợp lệ trước khi lưu.
+#### `TASK-6.1`: Cổng Điều Phối & Creator Studio (`management.html`, `creator-lessons.html`, `creator-lesson-editor.html`, `creator-import.html`) — ✅ ĐÃ HOÀN THÀNH & KHÓA CHẶT 100%
+- **Mục tiêu**: Quản lý và biên soạn học liệu cho vai trò Creator, phân lập tuyệt đối không gian quản lý với không gian học tập, tự động khóa định dạng chữ Hán CJK & âm thanh, kiểm soát trần 20 từ vựng/bài học, và thêm luồng xóa bài nháp/bị từ chối an toàn.
+- **Tệp mã nguồn & kiểm thử đã sửa đổi**:
+  * `frontend/management.html`: Sửa nhãn link ở màn hình chặn quyền từ "Quay lại trang học" sang "Về trang chủ". Triệt tiêu hoàn toàn bất kỳ nút "Quay lại học" nào trong header/sidebar khu vực quản lý, duy trì ranh giới bảo mật tuyệt đối: lối thoát duy nhất là "Đăng xuất" (Logout).
+  * `frontend/css/style.css`: Xóa đoạn CSS thừa `#btnBackToLearning`.
+  * `frontend/creator-import.html` & `frontend/js/pages/creator-import-page.js`: Nâng giới hạn tiêu đề import lên chuẩn 200 ký tự (`maxlength="200"`, counter `0 / 200`), đồng bộ với `creator-lessons-page.js`.
+  * `backend/src/main/java/com/elearning/service/impl/CreatorLessonServiceImpl.java`: Nâng giới hạn tiêu đề import lên 200 ký tự; chặn cứng giới hạn 20 từ vựng trong `createLesson` và `addVocabularyToLesson` (`currentCount >= 20`); bổ sung nạp `audioUrl` vào `Vocabulary` mới khi import Excel (nếu có).
+  * `backend/src/main/java/com/elearning/dto/response/ParsedVocabularyItem.java`: Bổ sung trường `audioUrl` và getter/setter.
+  * `backend/src/main/java/com/elearning/service/impl/ExcelParserServiceImpl.java`: Khóa cứng chữ Hán CJK chuẩn `\p{IsHan}` (chặn đứng Latin/số/ký tự rác ngay tại Bước 1); nhận diện linh hoạt header âm thanh (`audio`, `audiourl`, `amthanh`, `sound`, `phatam`) với cơ chế tùy chọn (hợp lệ nếu để trống hoặc là link an toàn `.mp3`, `.wav`, `.ogg`).
+  * `frontend/js/api/demo-fallback-engine.js`: Đồng bộ giới hạn 20 từ vựng (`POST /creator/lessons` và `POST /creator/lessons/:id/vocabularies/:vocabId`); kiểm tra điều kiện xóa bài học chỉ áp dụng cho trạng thái `Draft` hoặc `Rejected` khớp với Backend Spring Boot.
+  * `frontend/js/pages/creator-lesson-editor-page.js`: Định nghĩa `MAX_VOCAB_PER_LESSON = 20`, hiển thị huy hiệu `${count}/20 từ vựng` (`bg-success-subtle text-success` khi đạt ngưỡng 20 từ), vô hiệu hóa nút thêm "Đã đủ 20 từ", chặn và hiện toast cảnh báo nếu vượt ngưỡng.
+  * `frontend/creator-lessons.html`: Bổ sung native dialog `#deleteLessonModal` với đầy đủ cảnh báo và nút đóng/hủy/xác nhận xóa bài học nháp.
+  * `frontend/js/pages/creator-lessons-page.js`: Thêm helper `canDeleteLesson(status)`, thêm nút "Xóa" trên bảng bài học đối với bài `Draft`/`Rejected`, quản lý trạng thái mở/đóng và gửi API `DELETE /creator/lessons/:id`.
+  * `tests/frontend/unit/lesson/creator-lessons.test.mjs`: Bổ sung Section 11 (`canDeleteLesson`) và Section 12 (`MAX_VOCAB_PER_LESSON = 20`) (30/30 tests PASS).
+  * `tests/frontend/unit/lesson/creator-import.test.mjs`: Cập nhật boundary tiêu đề 200 ký tự (24/24 tests PASS).
+  * `tests/frontend/e2e/creator-lessons.browser.mjs`: Thêm test E2E `CL-05` (luồng modal xóa bài nháp và cập nhật danh sách) và `CL-06` (chặn trần 20 từ vựng và vô hiệu hóa nút thêm) (6/6 tests PASS).
+  * `tests/frontend/e2e/creator-import.browser.mjs`: Đồng bộ bộ đếm 200 ký tự (4/4 tests PASS).
+- **Tiêu chí & Hạng mục đã hoàn thiện**:
+  1. *Phân lập Ranh giới Quản lý (Context Isolation)*: Xóa sạch toàn bộ "Quay lại học" khỏi khu vực quản lý. Chỉ có Đăng xuất mới thoát khỏi phiên làm việc quản lý.
+  2. *Quy chuẩn Giáo trình 20 Từ Vựng (Curriculum Cap)*: Khóa cứng cả 3 tầng (UI Editor, Demo Engine, Spring Boot Service), hiển thị `X/20 từ vựng`.
+  3. *Tự động Khóa CJK & Xử lý Cột Audio khi Nhập Excel*: Máy tự động lọc và khóa cứng chữ Hán `\p{IsHan}`, cột âm thanh linh hoạt (tự động phát giọng đọc chuẩn zh-CN nếu để trống).
+  4. *Xóa Bài Học Nháp & Bị Từ Chối An Toàn*: Modal xác nhận an toàn, tuân thủ nghiêm ngặt bất biến vòng đời bài học.
 
 #### `TASK-6.2`: Moderator Queue & Thẩm Định Bài Học (`moderator-queue.html`, `moderator-review.html`)
 - **Mục tiêu**: Quy trình thẩm định nội dung khách quan, minh bạch.
@@ -348,21 +373,26 @@ flowchart TD
 | `TASK-4.5` (SRS Phòng Luyện Nghe & Bộ Gõ Ảo IME) | 2026-10-28 | Kiểm toán chuyên sâu phòng Luyện nghe: (1) Thanh chọn ngang "Thẻ, Viết, Nghe, Đọc" trong phiên học làm lẫn lộn các phòng với nhau; (2) Điểm đánh giá bị gán cứng Rating 3; (3) Màn hình kết thúc chưa đồng bộ với Flashcard và Luyện Viết; (4) Nút bấm "Ôn lại bài này" không reset chỉ số từ đầu; (5) `nextListeningItem()` chưa gọi `submitRating()`. | Xóa cái khung ngang "thẻ, viết, nghe, đọc" đi giờ mỗi phần học là tách biệt; khi hoàn thành 1 bài học sẽ hiện ra cái bảng bạn cần đồng bộ chuẩn với 4.2; kiểm nghiệm lại toàn bộ các nút bấm được (bắt đầu học -> hoàn thành các lượt -> bảng cuối -> bấm vào sẽ như thế nào); test toàn phần tránh dùng lại cái cũ. | **ĐÃ HOÀN TẤT & KHÓA CHẶT 100%**: (1) **Tệp đã sửa**: `frontend/srs-review.html`, `frontend/js/pages/srs-review-page.js`, `frontend/css/style.css`, `tests/frontend/unit/srs/srs-skill-listening.test.mjs`, `tests/frontend/unit/srs/all-four-skills-srs-rating.test.mjs`, `tests/frontend/e2e/srs-listening.browser.mjs`, `tests/frontend/e2e/srs-review.browser.mjs`; (2) **Tách Biệt Hoàn Toàn 4 Phòng**: Xóa bỏ hoàn toàn thanh chọn kỹ năng ngang trong phiên học trên `srs-review.html`; (3) **Quy Chuẩn 1–4 SM-2 Cho Luyện Nghe**: $\ge 3$ lỗi gõ sai $\rightarrow$ Rating 1 (Học lại, Requeue), 1–2 lỗi hoặc $\ge 3$ lần nghe lại $\rightarrow$ Rating 2 (Khó), 0 lỗi + 1–2 lần nghe lại $\rightarrow$ Rating 3 (Tốt), 0 lỗi + 0 lần nghe lại $\rightarrow$ Rating 4 (Dễ); (4) **Kế Thừa submitRating**: `nextListeningItem()` gọi trực tiếp `submitRating()`, tự động requeue khi gõ sai $\ge 3$ lần và cho phép tốt nghiệp khi làm lại đạt $\le 2$ lỗi; (5) **Chuẩn Hóa Màn Hình Hoàn Thành**: Đồng bộ 5 ô phân rã chỉ số cốt lõi và 3 nút hành động chuẩn: Ôn lại bài này (`btnCompletionRestartLesson`), Chặng tiếp theo (`btnCompletionNextChapter`), Quay lại danh mục (`btnCompletionBackToCatalog`); (6) **Sửa Nút Ôn Lại Bài Này**: Reset `savedIndex = 0` học lại từ đầu; (7) **Kiểm thử**: PASS 60/60 unit tests (`srs-skill-listening.test.mjs`), 5/5 tích hợp 4 kỹ năng (`all-four-skills-srs-rating.test.mjs`), 10/10 browser tests (`srs-listening.browser.mjs`). Commits `3f1cb48`, `8220f41`, `e8109be`, `53a694a`. |
 | `TASK-4.5-HINT` (Nút Xem Gợi Ý Phòng Luyện Nghe) | 2026-10-28 | Rà soát giao diện và thuật toán phòng Luyện Nghe (`srs-review.html?mode=listening`): (1) Phòng Luyện Nghe thiếu nút xem gợi ý, trong khi Luyện Viết có "Xem nét gợi ý" và Luyện Đọc có "Xem trước phiên âm & nghĩa"; (2) Cần hộp gợi ý hiển thị nghĩa tiếng Việt (`meaningVi`), âm Hán-Việt (`meaningHanViet`) và Pinyin (`pinyin`); (3) Tự động mở gợi ý khi người học gõ đúng và hoàn thành để đối chiếu thông tin; (4) Tích hợp vào quy chuẩn đánh giá 1–4 SM-2: Người học mở xem gợi ý bị chặn trần điểm tối đa ở mức Khó (Rating 2). | "à ở phần 'luyện nghe' bạn cho thêm nút xem gợi ý đi hay bạn cho rồi sao tôi không thấy" | **ĐÃ HOÀN TẤT & KHÓA CHẶT 100%**: (1) **Tệp đã sửa**: `frontend/srs-review.html`, `frontend/js/pages/srs-review-page.js`, `tests/frontend/unit/srs/srs-skill-listening.test.mjs`, `tests/frontend/e2e/srs-listening.browser.mjs`; (2) **Giao diện Nút & Hộp Gợi Ý**: Thêm `#btnListeningToggleHint` và `#listeningHintBox` nằm giữa khu vực loa và ô gõ chữ Hán, chuyển đổi linh hoạt giữa `👁️ Xem gợi ý` và `🙈 Ẩn gợi ý`; (3) **Tự Động Mở Khi Hoàn Thành**: Trong `handleListeningCorrect()`, tự động mở hộp gợi ý giúp người học đối chiếu đầy đủ nghĩa, Hán-Việt, Pinyin; (4) **Chuẩn Hóa Điểm Đánh Giá SRS**: Trong `nextListeningItem()`, cờ `hasUsedListeningHintForCurrentCard` tự động chặn trần Rating 2 (Hard) nếu đúng lần đầu có xem gợi ý; (5) **Kiểm thử**: Bổ sung Suite 12 trong `srs-skill-listening.test.mjs`, thêm E2E browser test `SL-08` trong `srs-listening.browser.mjs` (10/10 PASS). Fast tests PASS 1.094/1.094. Commit `048f578`. |
 | `HOTFIX-PROGRESS-SYNC` (Mất Tiến Trình Nick Cũ & Đồng Bộ Đa Thiết Bị Desktop ➔ Mobile) | 2026-10-28 | Rà soát kiến trúc lưu trữ tiến trình học tập chuyên sâu (`/boost`): (1) Phát hiện đứt gãy kiến trúc: Tiến trình bài học/chặng nằm 100% trong `localStorage` máy khách, trong khi dữ liệu thẻ SRS `CARD_PROGRESS` nằm trên TiDB Cloud; (2) Khi chuyển sang điện thoại (hoặc tab ẩn danh/trình duyệt mới), `localStorage` rỗng làm 50 bài học về 0%; bấm "Học tiếp" nạp từ #1 (đã học trên máy tính), khi đánh giá thẻ Backend ném ngoại lệ `HTTP 409 Conflict: Thẻ chưa đến hạn ôn tập`; (3) 6 nguyên nhân cộng dồn khiến nick cũ mất tiến trình: xung đột `_ownerAccountId` trong `localStorage`, lệch `card_type` Flyway V19 (`READING`) vs V33 (`FLASHCARD`), lỗi toán tử `??` trong `srs-dashboard-page.js` nuốt fallback `cardsDueReading`, lỗi Dead Code trong `resolveLessonId` (dải `1..15` đứng trước `5..14` làm Bài 01 thành Bài 05), Flyway V30 xóa bài học cũ tạo ID tự tăng mới, Demo Fallback Engine reset mảng `accounts` khi nâng version. | "hình như lưu tiến trình học tập đang không được ổn đúng không sao nick cũ của tôi mất hết tiến trình học tập hoặc chuyển thiết bị từ máy tính sang điện thoại thì tiến trình nó có mất không làm rà soát kỹ phần này /boost" | **ĐÃ HOÀN TẤT & KHÓA CHẶT 100% (4 TẦNG GIẢI PHÁP)**: (1) **Tệp đã tạo / sửa đổi**: `backend/src/main/resources/db/migration/V34__reconcile_legacy_reading_cards_to_flashcard.sql`, `backend/src/main/java/com/elearning/dto/response/CurriculumProgressResponse.java`, `backend/src/main/java/com/elearning/controller/SrsController.java`, `backend/src/main/java/com/elearning/service/SrsService.java`, `backend/src/main/java/com/elearning/service/impl/SrsServiceImpl.java`, `backend/src/main/java/com/elearning/repository/CardProgressRepository.java`, `backend/src/main/java/com/elearning/repository/RadicalRepository.java`, `frontend/js/pages/srs-dashboard-page.js`, `frontend/js/pages/srs-review-page.js`, `frontend/js/api/demo-fallback-engine.js`, `backend/src/test/java/com/elearning/SrsControllerTests.java`, `backend/src/test/java/com/elearning/SrsServiceTests.java`, `tests/frontend/unit/srs/curriculum-progress-rehydration.test.mjs`, `tests/frontend/unit/srs/srs-dashboard.test.mjs`; (2) **Tầng 1 (Flyway V34 Migration)**: Tạo `V34__reconcile_legacy_reading_cards_to_flashcard.sql`, sao chép bản ghi từ `READING` sang `FLASHCARD` trong `CARD_PROGRESS` và `REVIEW_LOG` cho người dùng cũ trên TiDB Cloud; (3) **Tầng 2 (Sửa Lỗi Frontend)**: Sửa toán tử `??` thành `cardsDueFlashcard > 0 ? stats.cardsDueFlashcard : (stats.cardsDueReading \|\| 0)` trên `srs-dashboard-page.js`; đảo dải `5..14` lên trước `1..15` trong `resolveLessonId` tại `srs-review-page.js`; (4) **Tầng 3 (Backend API)**: Tạo endpoint `GET /api/v1/srs/curriculum-progress` (`SrsController`, `SrsService`, `SrsServiceImpl`) trả về `lessonProgress` 50 bài HSK, `learnedRadicalIds` (50 bộ thủ theo `commonRank` và 214 bộ thủ Khang Hy) và `learnedVocabIds`, bảo vệ an toàn IDOR qua JWT `SecurityContextHolder`; (5) **Tầng 4 (Frontend Auto-Rehydration)**: Trong `srs-review-page.js`, hàm `rehydrateCurriculumProgressIfEmpty()` tự động gọi API `/srs/curriculum-progress` khi phát hiện `localStorage` trên thiết bị mới trống; nạp chuẩn xác tiến độ 50 bài và 16 chặng bộ thủ, loại bỏ hoàn toàn lỗi HTTP 409; trong `demo-fallback-engine.js`, bảo tồn tài khoản người dùng `accounts`, `srsSettings` và `notes` khi nâng cấp version; (6) **Kiểm thử Toàn diện**: PASS 28/28 tests (`curriculum-progress-rehydration.test.mjs`), 1.095/1.095 fast tests (`npm run verify:frontend:fast`), 74/74 E2E blackbox tests (Tiers 1–4), 33/33 SRS backend tests, 514/514 broad backend unit tests, 6/6 mobile browser tests. Commit `9407e99`. |
+| `TASK-5.1` (Sổ Tay Ghi Chú Cá Nhân Theo Ngữ Cảnh) | 2026-10-28 | Kiểm toán chuyên sâu phân hệ Ghi chú cá nhân: (1) Sai lệch giới hạn ký tự: mặt sau thẻ Flashcard SRS chỉ cho tối đa 150 ký tự (`maxlength="150"`, `slice(0, 150)`), trong khi Modal ghi chú bài học (`notes-modal.js`), REST API Backend và CSDL TiDB Cloud Flyway V1 cho phép tối đa 500 ký tự; (2) Tham chiếu và mã chết legacy: `cardBackNotesSection`, `cardNewNoteInput`, `btnAddCardNote`, `saveCardNote` còn sót lại từ bố cục 2 cột cũ; (3) Định dạng hiển thị ghi chú nhiều dòng tạo từ bài học bị gộp thành 1 dòng trên mặt sau thẻ do thiếu `white-space: pre-wrap;`. | Chọn phương án A (duy trì mô hình Contextual Notes Modal trong chi tiết bài học và Flashcard); sửa dứt điểm sai lệch 150 ký tự ở flashcard thành 500 ký tự; dọn sạch phần cũ hoặc những phần không có tác dụng. | **ĐÃ HOÀN TẤT & KHÓA CHẶT 100%**: (1) **Tệp đã sửa**: `frontend/srs-review.html`, `frontend/js/pages/srs-review-page.js`, `frontend/css/style.css`, `tests/frontend/e2e/srs-review.browser.mjs`, `tests/frontend/unit/notes/notes-modal.test.mjs`; (2) **Chuẩn Hóa 500 Ký Tự**: Nâng `maxlength="500"`, placeholder, bộ đếm `0/500`, hàm `updateInlineNoteCharCount`, `exitInlineNoteEdit`, `saveInlineCardNote` sang trần 500 ký tự đồng bộ tuyệt đối trên toàn hệ thống; (3) **Dọn Sạch Dead Code**: Loại bỏ các thuộc tính DOM chết `cardBackNotesSection`, `cardNewNoteInput`, `btnAddCardNote` và hàm `saveCardNote`; (4) **Bảo Toàn Xuống Dòng**: Thêm `white-space: pre-wrap;` cho `.card-inline-note-text` và mở rộng padding-right 90px cho `.card-inline-note-input`; (5) **Bổ Sung Test**: Thêm Suite 8 vào `notes-modal.test.mjs` (26/26 PASS), cập nhật `srs-review.browser.mjs` (16/16 PASS), `personal-notes.browser.mjs` (7/7 PASS); (6) **Kiểm thử Toàn diện**: PASS 1.100/1.100 fast tests, 74/74 E2E blackbox tests (Tiers 1–4). |
+| `TASK-6.1-SESSION` (Cô Lập Vòng Đời Phiên Quản Lý & Strict Reverse Role Guard - Phương án A) | 2026-10-28 | Khắc phục triệt để lỗ hổng bảo mật & nghiệp vụ phân quyền theo Phương án A: (1) Khi đăng nhập tài khoản quản lý (Admin, Creator, Moderator), nếu người dùng đóng tab trình duyệt (bấm dấu X tab Chrome) thì phiên quản trị lưu ở `localStorage` cũ vẫn còn nguyên và khi mở tab mới lại rơi vào giao diện học sinh với huy hiệu TÁC GIẢ; (2) Phân tách vòng đời lưu trữ: Tài khoản Quản trị/Tác giả/Kiểm duyệt lưu phiên vào `sessionStorage` (tự động xóa sổ 100% khi đóng tab/cửa sổ), tài khoản Học viên lưu vào `localStorage`; (3) Triển khai Strict Reverse Role Guard (`enforceRoleWorkspaceGuard()` & `resolveStaffLandingPage()`) chặn tuyệt đối không cho tài khoản Quản lý đứng ở các trang học viên (`index.html`, `lessons.html`, `vocabulary.html`, `radicals.html`, `srs-review.html`, `srs-dashboard.html`); tự động chuyển hướng cưỡng bức về đúng không gian làm việc (Admin -> `management.html`, Creator -> `creator-lessons.html`, Moderator -> `moderator-queue.html`); (4) Lối thoát duy nhất để quay về không gian học tập là bấm "Đăng xuất" (Logout). | "có 1 lỗi nhé tôi đăng nhập bằng tài khoản quản lý nhưng khi x tab chorme đi vào lại thì tài khoản quản lý vẫn còn và giao diện của người học, bạn đưa ý kiến đồ xuất chỉnh sửa chưa code" -> "bạn sửa luôn và dùng phương án A" | **ĐÃ HOÀN TẤT & KHÓA CHẶT 100%**: (1) **Tệp đã sửa**: `frontend/js/auth/auth-state.js`, `frontend/js/ui/nav.js`, `frontend/js/pages/auth-page.js`, `tests/frontend/unit/auth/auth-state.test.mjs`, `tests/frontend/unit/ui/role-workspace-guard.test.mjs`, `tests/frontend/e2e/management-session-isolation.browser.mjs`; (2) **Vòng Đời Phiên sessionStorage**: Trong `authManager.setSession()`, tài khoản có role `Admin`, `Creator`, hoặc `Moderator` được ghi vào `sessionStorage` và dọn sạch `localStorage`; (3) **Tự Động Hủy Phiên Khi X Tab**: Đóng tab trình duyệt (X tab) lập tức xóa sạch token quản lý, mở tab mới buộc phải đăng nhập lại; (4) **Strict Reverse Role Guard**: `enforceRoleWorkspaceGuard()` tích hợp trực tiếp vào `initNavbarAuth()` trên toàn bộ 25 trang, đá văng ngay lập tức mọi tài khoản quản lý cố tình truy cập vào trang học viên về đúng phòng ban tác nghiệp; (5) **Chuẩn Hóa Điều Hướng Sau Đăng Nhập**: Sửa `auth-page.js` tự động nhận diện vai trò để điều hướng chính xác; (6) **Kiểm thử Toàn diện**: PASS 1.109/1.109 fast tests (`npm run verify:frontend:fast`), 74/74 E2E blackbox tests (Tiers 1–4), 21/21 tests `role-workspace-guard.test.mjs`, 17/17 tests `auth-state.test.mjs`, 3/3 browser tests `management-session-isolation.browser.mjs` (MS-01, MS-02, MS-03). |
+| `TASK-6.1` (Cổng Điều Phối & Creator Studio) | 2026-10-28 | Kiểm toán toàn diện khu vực Creator: (1) Nguy cơ mờ ranh giới bảo mật do nút "Quay lại học" trong khu vực quản lý; (2) Lệch trần ký tự tiêu đề bài học giữa import (100 ký tự) và tạo thủ công (200 ký tự); (3) Thiếu chặn cứng 20 từ vựng/bài theo chuẩn giáo trình; (4) Nguy cơ nhập rác trong file Excel cột chữ Hán và xử lý cột Audio; (5) Thiếu chức năng xóa bài học nháp/bị từ chối; (6) Breadcrumb thừa "Trung tâm quản lý / Quản lý bài học". | (1) Dọn toàn bộ "quay lại học" đi, đây là khu vực quản lý không phải học, chỉ bấm đăng xuất thì mới quay lại; (2) Thảo luận khóa cột chữ Hán và xử lý cột radio (audio); (3) Thực hiện dọn dẹp mã cũ, kiểm nghiệm toàn phần mọi nút bấm và xây dựng test hành vi người dùng thật (End-to-End User Journey); (4) Test trên GitHub, TiDB, Render và chụp ảnh kiểm tra; (5) Bỏ dòng breadcrumb "Trung tâm quản lý / Quản lý bài học" và chụp ảnh phần khóa cứng các cột. | **ĐÃ HOÀN TẤT & KHÓA CHẶT 100%**: (1) **Tệp đã sửa**: `frontend/management.html`, `frontend/css/style.css`, `frontend/creator-import.html`, `frontend/creator-lessons.html`, `frontend/js/pages/creator-lessons-page.js`, `frontend/js/pages/creator-lesson-editor-page.js`, `frontend/js/pages/creator-import-page.js`, `frontend/js/api/demo-fallback-engine.js`, `backend/src/main/java/com/elearning/service/impl/CreatorLessonServiceImpl.java`, `backend/src/main/java/com/elearning/service/impl/ExcelParserServiceImpl.java`, `backend/src/main/java/com/elearning/dto/response/ParsedVocabularyItem.java`, `tests/frontend/unit/lesson/creator-lessons.test.mjs`, `tests/frontend/unit/lesson/creator-import.test.mjs`, `tests/frontend/e2e/creator-lessons.browser.mjs`, `tests/frontend/e2e/creator-import.browser.mjs`; (2) **Xóa Sạch "Quay lại học" & Breadcrumb Thừa**: Loại bỏ triệt để khỏi header/sidebar khu vực quản lý, màn hình chặn quyền chuyển thành "Về trang chủ", xóa bỏ dòng breadcrumb "Trung tâm quản lý / Quản lý bài học" trên `creator-lessons.html`; (3) **Chuẩn Hóa Tiêu Đề 200 Ký Tự**: Thống nhất 1..200 ký tự trên cả form tạo thủ công, trang import, demo engine và backend Java; (4) **Khóa Cứng 20 Từ Vựng/Bài**: Chặn cả 3 tầng (UI Editor, Demo Engine, Spring Boot Service), cập nhật badge `${count}/20 từ vựng`; (5) **Auto-Gate Chữ Hán CJK & Audio**: Chặn ký tự rác bằng `\p{IsHan}`; cột audio hỗ trợ link .mp3/.wav/.ogg hoặc tự động kích hoạt Web Speech API zh-CN nếu để trống; (6) **Nút & Modal Xóa Bài Nháp**: Bổ sung `#deleteLessonModal`, tích hợp API `DELETE /creator/lessons/:id`, chỉ cho phép xóa bài `Draft` hoặc `Rejected`; (7) **Kiểm Nghiệm Thực Tế & Chụp Ảnh**: Hoàn thành kiểm nghiệm trực tiếp trên GitHub Pages, Render Cloud (`/actuator/health` UP), TiDB Cloud Serverless (`/api/v1/lessons`, `/api/v1/radicals` phản hồi dữ liệu thật), chụp 10 ảnh minh chứng thực tế trong `CLOUD_AND_DATABASE_VERIFICATION_REPORT.md`; (8) **Kiểm thử Toàn diện**: PASS 1.104/1.104 fast tests (`npm run verify:frontend:fast`), 74/74 E2E blackbox tests (Tiers 1–4), 6/6 browser tests `creator-lessons.browser.mjs`, 4/4 `creator-import.browser.mjs`, 4/4 `creator-submission.browser.mjs`, biên dịch backend Java thành công (161 main + 136 test classes). |
 
 ---
 
 ## 5. HƯỚNG DẪN KẾ THỪA CHO AGENT TIẾP THEO (AGENT HANDOFF & CONTEXT INVARIANTS)
 
 > [!IMPORTANT]
-> **Dành cho Agent kế thừa**: Tiến trình kiểm toán thực tế giữa Người Dùng và Agent đã hoàn thành và được nghiệm thu rà soát chặt chẽ từ **Chặng 1 đến hết Chặng 4 (Nhiệm vụ TASK-1.1 đến TASK-4.5 kèm các hotfix đồng bộ)**:
+> **Dành cho Agent kế thừa**: Tiến trình kiểm toán thực tế giữa Người Dùng và Agent đã hoàn thành và được nghiệm thu rà soát chặt chẽ từ **Chặng 1 đến hết Chặng 5 (Nhiệm vụ TASK-1.1 đến TASK-5.1)**:
 > - **Chặng 1**: Trang chủ & Xác thực, Hồ sơ cá nhân (`TASK-1.1`, `TASK-1.2`) — ✅ Hoàn thành
 > - **Chặng 2**: Thư viện 1.068 từ HSK 1–3 & 214 Bộ thủ Khang Hy (`TASK-2.1`, `TASK-2.2`) — ✅ Hoàn thành
 > - **Chặng 3**: Chương trình 50 bài học HSK & chi tiết bài học (`TASK-3.1`) — ✅ Hoàn thành
 > - **Chặng 4**: Đấu trường Ôn tập SRS & 4 phân hệ độc lập Flashcard, Writing, Listening, Reading (`TASK-4.1` – `TASK-4.5` + Nút gợi ý nghe + Đồng bộ tiến trình đa thiết bị) — ✅ Hoàn thành & Khóa chặt 100%
+> - **Chặng 5**: Sổ tay Ghi chú Cá nhân Theo Ngữ Cảnh (`TASK-5.1`) — ✅ Hoàn thành & Khóa chặt 100%
 >
-> **Các Chặng tiếp theo (Chặng 5, 6, 7, 8)**: Đang ở trạng thái **⏳ Chờ rà soát (Pending Audit)**. Tuyệt đối KHÔNG tự ý đánh dấu hoàn thành khi chưa cùng Người Dùng mở nhiệm vụ và rà soát chi tiết từng tiêu chí:
-> - **Chặng 5**: Sổ tay Ghi chú Cá nhân (`TASK-5.1`) — ⏳ Chờ rà soát
-> - **Chặng 6**: Cổng Điều phối, Creator Studio & Moderator Queue (`TASK-6.1`, `TASK-6.2`) — ⏳ Chờ rà soát
+> **Các Chặng tiếp theo (Chặng 6, 7, 8)**: Đang ở trạng thái **⏳ Chờ rà soát (Pending Audit)**. Tuyệt đối KHÔNG tự ý đánh dấu hoàn thành khi chưa cùng Người Dùng mở nhiệm vụ và rà soát chi tiết từng tiêu chí:
+> - **Chặng 6**: Cổng Điều phối, Creator Studio & Moderator Queue:
+>   * `TASK-6.1`: Cổng Điều phối & Creator Studio — ✅ Hoàn thành & Khóa chặt 100%
+>   * `TASK-6.2`: Moderator Queue & Thẩm Định Bài Học — ⏳ Sẵn sàng tiến hành
 > - **Chặng 7**: Quản trị Hệ thống, Tài khoản, Phân quyền & Audit Logs (`TASK-7.1` – `TASK-7.3`) — ⏳ Chờ rà soát
 > - **Chặng 8**: Môi trường Live Đám mây & Thiết bị di động thực tế (`TASK-8.1` – `TASK-8.3`) — ⏳ Chờ rà soát
 
@@ -605,3 +635,123 @@ Hệ thống đã giải quyết dứt điểm tình trạng mất tiến trình
    - `srs-skill-listening.test.mjs`: **60/60 tests PASS** (12 suites).
    - `srs-listening.browser.mjs`: **10/10 tests PASS** (bao gồm test E2E `SL-08` kiểm tra toggle gợi ý và chặn trần điểm Rating 2).
 
+---
+
+### 5.8. Kết Quả Điều Tra & Nghiệm Thu: `TASK-5.1` (Sổ Tay Ghi Chú Cá Nhân Theo Ngữ Cảnh)
+
+Toàn bộ hiện trạng kỹ thuật và yêu cầu nghiệm thu của **`TASK-5.1`: Sổ Tay Ghi Chú Cá Nhân Theo Ngữ Cảnh (Contextual Personal Notes & Modal)** đã được xử lý triệt để:
+
+1. **Khắc Phục Dứt Điểm Sai Lệch Giới Hạn Ký Tự (150 vs 500 Ký Tự)**:
+   - Trước đây: Mặt sau thẻ Flashcard SRS (`srs-review.html` và `srs-review-page.js`) bị chặn cứng ở 150 ký tự (`maxlength="150"`, `slice(0, 150)`, counter `0/150`), trong khi Modal ghi chú chi tiết bài học (`notes-modal.js`), REST API Backend (`PersonalNoteController`, `PersonalNoteServiceImpl`) và bảng CSDL `PERSONAL_NOTE` (Flyway V1) hỗ trợ tối đa 500 ký tự.
+   - Khắc phục:
+     * Cập nhật `frontend/srs-review.html`: `maxlength="500"`, placeholder "Nhập mẹo nhớ hoặc ghi chú (tối đa 500 ký tự)...", counter `#cardInlineNoteCharCount` khởi tạo `0/500`.
+     * Cập nhật `frontend/js/pages/srs-review-page.js`:
+       - `updateInlineNoteCharCount`: Đếm động `${len}/500`, cảnh báo đỏ khi `len >= 500`.
+       - `exitInlineNoteEdit`: Cắt chuỗi an toàn `slice(0, 500)`.
+       - `saveInlineCardNote`: Cắt chuỗi an toàn `slice(0, 500)`.
+     * Cập nhật `frontend/css/style.css`: Thêm `white-space: pre-wrap;` cho `.card-inline-note-text` để các ghi chú nhiều dòng tạo từ bài học hiển thị trọn vẹn trên thẻ Flashcard mà không bị gộp dòng; điều chỉnh padding-right của `.card-inline-note-input` đảm bảo không bị đè lên nút lưu khi hiển thị `500/500`.
+
+2. **Dọn Sạch Mã Chết & Tham Chiếu Không Có Tác Dụng**:
+   - Loại bỏ các tham chiếu DOM chết không còn tồn tại trong HTML khỏi `_cacheDOMElements()`: `cardBackNotesSection`, `cardNotesList`, `cardNewNoteInput`, `btnAddCardNote`.
+   - Loại bỏ listener của nút chết `btnAddCardNote`.
+   - Loại bỏ đoạn code ẩn layout 2 cột cũ `if (this.dom.cardBackNotesSection)`.
+   - Xóa bỏ phương thức wrapper chết `saveCardNote()`.
+
+3. **Bảo Toàn Đồng Bộ 2 Chiều (Bidirectional Sync) & An Toàn Dữ Liệu**:
+   - Ghi chú tạo/sửa ở trang Chi tiết bài học (`lesson-detail.html`) và phòng Flashcard SRS (`srs-review.html`) đồng bộ tức thì 2 chiều qua `localStorage` (`srs_vocab_note_${userId}_${vocabId}` và `srs_vocab_note_${vocabId}`).
+   - An toàn DOM: 100% sử dụng DOM APIs an toàn (`textContent`, `createSafeElement`), triệt tiêu hoàn toàn nguy cơ XSS.
+   - Bảo mật IDOR: Backend chỉ trích xuất danh tính người dùng từ `SecurityContextHolder` đã giải mã từ JWT, ngăn chặn hoàn toàn việc client gửi `userId` giả mạo.
+
+4. **Bộ Kiểm Thử Đã Xác Minh & PASS 100%**:
+   - `tests/frontend/unit/notes/notes-modal.test.mjs`: **26/26 tests PASS** (9 suites - bổ sung Suite 8 kiểm định giới hạn 500 ký tự).
+   - `tests/frontend/e2e/personal-notes.browser.mjs`: **7/7 tests PASS** (Lifecycle Tạo, Sửa, Xóa, XSS defense, Anonymous guard).
+   - `tests/frontend/e2e/srs-review.browser.mjs`: **16/16 tests PASS** (bao gồm SR-08 kiểm tra tương tác inline note 500 ký tự trên mặt sau thẻ).
+   - `npm run verify:frontend:fast`: **1.100/1.100 tests PASS** (269 suites).
+   - `node tests/e2e/runner.mjs --tier=all`: **74/74 tests PASS** (Tiers 1–4).
+
+---
+
+### 5.9. Kết Quả Điều Tra & Nghiệm Thu: `TASK-6.1` (Cổng Điều Phối & Creator Studio)
+
+Toàn bộ hiện trạng kỹ thuật và yêu cầu nghiệm thu của **`TASK-6.1`: Cổng Điều Phối & Creator Studio (`management.html`, `creator-lessons.html`, `creator-lesson-editor.html`, `creator-import.html`)** đã được xử lý triệt để:
+
+1. **Phân Lập Tuyệt Đối Không Gian Quản Lý (Context Isolation Invariant)**:
+   - Xóa bỏ triệt để liên kết "Quay lại học" khỏi header, sidebar và toàn bộ trang quản lý.
+   - Tại màn hình chặn quyền truy cập (`management.html`), chuyển đổi nhãn link thành "Về trang chủ" (`index.html`).
+   - Lối thoát duy nhất để rời khỏi khu vực quản trị là **Đăng xuất (Logout)** để hủy sạch phiên làm việc JWT, bảo vệ ranh giới an ninh phân quyền giữa học viên và ban quản trị.
+
+2. **Khóa Cứng Quy Chuẩn Giáo Trình 20 Từ Vựng / Bài Học**:
+   - Chặn cả 3 tầng hệ thống:
+     * *Frontend UI*: Editor hiển thị badge `${count}/20 từ vựng` (`bg-success-subtle text-success` khi đạt 20 từ), nút thêm trong khung tìm kiếm chuyển thành `Đã đủ 20 từ` (vô hiệu hóa `disabled`), hàm `handleAddVocab` chặn và hiện toast cảnh báo nếu đã có đủ 20 từ.
+     * *Demo Fallback Engine*: Ném `ApiError 400 (BAD_REQUEST)` khi bài học đã đạt 20 từ.
+     * *Backend Spring Boot Service*: `CreatorLessonServiceImpl` kiểm tra `currentCount >= 20` và `request.getVocabularyIds().size() > 20`, ném `BusinessException`.
+
+3. **Chuẩn Hóa Tiêu Đề Bài Học (200 Ký Tự)**:
+   - Thống nhất giới hạn tiêu đề bài học từ 1..200 ký tự trên cả form tạo thủ công (`creator-lessons.html`), trang nhập Excel (`creator-import.html`, `creator-import-page.js`), demo fallback engine và backend service (`CreatorLessonServiceImpl.java`).
+
+4. **Bộ Lọc Tự Động (Auto-Gate) Chữ Hán CJK & Âm Thanh Khi Nhập Excel**:
+   - Cột chữ Hán được khóa chặt tự động bằng biểu thức chính quy `^[\p{IsHan}]+$` tại `ExcelParserServiceImpl.java`. Mọi ký tự Latin, số, rác bị chặn ngay tại Bước 1 (Preview) kèm thông báo lỗi rõ ràng.
+   - Cột âm thanh (Audio) được thiết kế là cột tùy chọn (Optional). Nếu người dùng để trống, hệ thống tự động liên kết MP3 sẵn có hoặc kích hoạt Web Speech API chuẩn giọng `zh-CN`. Nếu nhập, hệ thống xác thực đường dẫn HTTPS an toàn (`.mp3`, `.wav`, `.ogg`) hoặc đường dẫn nội bộ `/assets/audio/...mp3`.
+
+5. **Quy Trình Xóa Bài Học Nháp & Bị Từ Chối An Toàn**:
+   - Bổ sung native dialog modal `#deleteLessonModal` trên `creator-lessons.html`.
+   - Trên bảng bài học, chỉ các bài ở trạng thái `Draft` (Bản nháp) hoặc `Rejected` (Từ chối) mới hiển thị nút "Xóa" (`canDeleteLesson`). Các bài `Pending` (Chờ duyệt) hoặc `Approved` (Đã duyệt) tuyệt đối không có nút xóa.
+   - Tích hợp gọi API `DELETE /api/v1/creator/lessons/{id}`, cập nhật tức thì danh sách sau khi xóa.
+
+6. **Bộ Kiểm Thử Đã Xác Minh & PASS 100%**:
+   - `tests/frontend/unit/lesson/creator-lessons.test.mjs`: **30/30 tests PASS** (13 suites).
+   - `tests/frontend/unit/lesson/creator-import.test.mjs`: **24/24 tests PASS** (9 suites).
+   - `tests/frontend/e2e/creator-lessons.browser.mjs`: **6/6 tests PASS** (bao gồm `CL-05` xóa bài nháp và `CL-06` khóa trần 20 từ).
+   - `tests/frontend/e2e/creator-import.browser.mjs`: **4/4 tests PASS**.
+   - `tests/frontend/e2e/creator-submission.browser.mjs`: **4/4 tests PASS**.
+   - `npm run verify:frontend:fast`: **1.104/1.104 tests PASS** (271 suites).
+   - `node tests/e2e/runner.mjs --tier=all`: **74/74 tests PASS** (Tiers 1–4, 0.85s).
+   - `mvn -f backend/pom.xml test-compile`: **BUILD SUCCESS** (161 main + 136 test classes).
+
+7. **Kiểm Nghiệm Thực Tế Đa Nền Tảng (GitHub, Render, TiDB) & Tối Ưu Hóa Giao Diện**:
+   - **Bỏ Breadcrumb Thừa**: Xóa bỏ hoàn toàn dòng `Trung tâm quản lý / Quản lý bài học` trên `creator-lessons.html`, trả lại không gian thoáng đãng cho tiêu đề chính và bảng quản lý.
+   - **Kiểm Thử Render Cloud**: Endpoint `https://elearning-backend-pwyi.onrender.com/actuator/health` đạt HTTP 200 OK (`{"status":"UP","groups":["liveness","readiness"]}`).
+   - **Kiểm Thử TiDB Cloud Database**: Các API `/api/v1/lessons` và `/api/v1/radicals` tải dữ liệu thật 100% từ cụm CSDL MySQL Serverless trên TiDB Cloud, collation đồng nhất `utf8mb4_unicode_ci`.
+   - **Kiểm Thử GitHub Pages Live**: Triển khai web tĩnh 25 trang hoạt động ổn định tại `https://khoadzsieucapvippro.github.io/WebLearnChinese/index.html`.
+   - **Bộ Ảnh Minh Chứng Thực Tế**: Đã chụp và xuất bản 10 ảnh màn hình trực quan trong artifact `CLOUD_AND_DATABASE_VERIFICATION_REPORT.md` (bao gồm minh chứng màn hình khóa cứng các cột khi phát hiện lỗi chữ Hán CJK/Audio và chặn hoàn toàn Bước 2).
+
+---
+
+### 5.10. Kết Quả Điều Tra & Nghiệm Thu: `TASK-6.1-SESSION` (Cô Lập Vòng Đời Phiên Quản Lý & Strict Reverse Role Guard - Phương Án A)
+
+Hiện trạng lỗi bảo mật và ranh giới nghiệp vụ:
+- **Vấn đề phát hiện**: Khi người dùng đăng nhập tài khoản Quản lý (`creator@example.com`, `admin@example.com`), sau đó bấm dấu `X` tắt tab Chrome rồi mở lại trình duyệt vào trang web, tài khoản quản lý vẫn còn nguyên và giao diện mở ra lại là giao diện của người học (`lessons.html` hoặc `index.html`), menu hiển thị `Trang chủ | Bộ thủ | Từ vựng | Bài học | Ôn tập` kèm huy hiệu `TÁC GIẢ`.
+- **Nguyên nhân cốt lõi**:
+  1. `authManager.setSession()` trước đây ghi chung cả tài khoản quản lý lẫn học viên vào `localStorage`. Do `localStorage` lưu trữ vĩnh viễn trên ổ cứng máy tính, khi đóng tab (X tab) phiên không tự hủy.
+  2. Các trang học viên (`index.html`, `lessons.html`, `vocabulary.html`, `radicals.html`, `srs-review.html`, `srs-dashboard.html`) thiếu cơ chế bảo vệ ngược (Reverse Role Guard), để cho tài khoản quản trị đi lại tự do trong không gian học sinh.
+
+**Giải pháp triển khai toàn diện theo Phương án A đã chọn**:
+
+1. **Phân Tách Vòng Đời Lưu Trữ (Storage Lifecycle Isolation)**:
+   - Trong `frontend/js/auth/auth-state.js`:
+     * Bổ sung helper `isManagementRole(roles)` nhận diện chính xác các vai trò quản trị (`Admin`, `Creator`, `Moderator`).
+     * Trong `setSession(authData)`: Nếu là tài khoản quản lý, lưu `access_token` và `user_info` vào `sessionStorage` (tự động bị trình duyệt tiêu hủy 100% khi bấm X tắt tab Chrome), đồng thời dọn sạch `localStorage`. Nếu là tài khoản `Learner`, lưu vào `localStorage` để bảo toàn tiện ích học tập lâu dài.
+     * Hàm `getToken()` và `getUser()` ưu tiên đọc từ `sessionStorage` trước; hỗ trợ tự động di chuyển (auto-migrate) và tẩy rửa các token quản lý cũ còn sót lại trong `localStorage`.
+     * Hàm `clearSession()` dọn sạch cả `sessionStorage` và `localStorage`.
+
+2. **Cơ Chế Chặn Cứng & Chuyển Hướng Cưỡng Bức (Strict Reverse Role Guard)**:
+   - Trong `frontend/js/ui/nav.js`:
+     * Xuất khẩu hàm định tuyến tác nghiệp `resolveStaffLandingPage(roles)`:
+       - Có role `Admin` $\rightarrow$ chuyển hướng về `management.html`
+       - Có role `Creator` (không có Admin) $\rightarrow$ chuyển hướng về `creator-lessons.html`
+       - Có role `Moderator` (không có Admin) $\rightarrow$ chuyển hướng về `moderator-queue.html`
+     * Xây dựng hàm kiểm soát `enforceRoleWorkspaceGuard()`: Kiểm tra nếu người dùng đã xác thực và có vai trò quản lý mà đang ở trang học sinh (không thuộc `MANAGEMENT_PAGE_SET` và không phải `profile.html`), lập tức gọi `window.location.replace(targetPage)` để điều hướng về không gian tác nghiệp tương ứng, không lưu vết bẩn trong lịch sử duyệt (History Back).
+     * Tích hợp tự động vào đầu hàm `initNavbarAuth()`, đảm bảo mọi trang web của hệ thống đều tự động kiểm soát ngay khi DOM sẵn sàng.
+   - Trong `frontend/js/pages/auth-page.js`:
+     * Khi tài khoản quản lý đăng nhập hoặc đã đăng nhập mà vào `login.html`, hệ thống tự động đưa họ về đúng phòng ban tác nghiệp (`resolveStaffLandingPage`), chặn đứng hoàn toàn việc rơi về trang học sinh (`index.html` hay `lessons.html`).
+   - **Lối thoát duy nhất**: Lối thoát duy nhất để trở về không gian học tập là bấm nút **"Đăng xuất" (Logout)**. Khi đó hệ thống xóa sạch phiên làm việc và trở về trang chủ `index.html` với tư cách khách (Guest).
+
+3. **Bằng Chứng Kiểm Thử Đạt Chuẩn (Verification Evidence)**:
+   - `tests/frontend/unit/auth/auth-state.test.mjs`: **17/17 tests PASS** (bổ sung Suite Session Lifecycle Isolation).
+   - `tests/frontend/unit/ui/role-workspace-guard.test.mjs`: **21/21 tests PASS** (5 suites kiểm thử toàn diện mọi tình huống chuyển hướng và chặn trang học).
+   - `tests/frontend/e2e/management-session-isolation.browser.mjs`: **3/3 tests PASS** trên trình duyệt Chromium thật:
+     * `MS-01`: Creator lưu `sessionStorage`, bị chặn khi vào `lessons.html` & `index.html`, đóng tab (X tab) thì tự động đăng xuất 100%.
+     * `MS-02`: Admin lưu `sessionStorage`, bị đá về `management.html` khi vào trang học, đóng tab thì tự động đăng xuất 100%.
+     * `MS-03`: Learner lưu `localStorage`, truy cập tự do trang học, đóng tab mở lại vẫn duy trì phiên học.
+   - `npm run verify:frontend:fast`: **1.109/1.109 tests PASS** (272 suites).
+   - `node tests/e2e/runner.mjs --tier=all`: **74/74 tests PASS** (Tiers 1–4, 0.74s).

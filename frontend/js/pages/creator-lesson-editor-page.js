@@ -29,6 +29,7 @@ import { showLoading, showError, showToast } from '../ui/ui.js';
 import { getStatusBadgeClass, getStatusLabel, canSubmitLesson, getSubmitButtonConfig } from './creator-lessons-page.js';
 
 export { canSubmitLesson, getSubmitButtonConfig };
+export const MAX_VOCAB_PER_LESSON = 20;
 
 /* -----------------------------------------------------------------------------
  * 1. PURE LOGIC & UTILITY HELPERS (Exported for Testability)
@@ -503,7 +504,13 @@ export class CreatorLessonEditorController {
 
     // 3. Vocab Count Badge
     if (this.elements.vocabCountBadge) {
-      this.elements.vocabCountBadge.textContent = `${vocabularies.length} từ vựng`;
+      const count = vocabularies.length;
+      this.elements.vocabCountBadge.textContent = `${count}/${MAX_VOCAB_PER_LESSON} từ vựng`;
+      if (count >= MAX_VOCAB_PER_LESSON) {
+        this.elements.vocabCountBadge.className = 'badge rounded-pill bg-success-subtle text-success border border-success-subtle';
+      } else {
+        this.elements.vocabCountBadge.className = 'badge rounded-pill bg-light text-dark border';
+      }
     }
 
     // 4. Locked Banner Presentation
@@ -1007,6 +1014,7 @@ export class CreatorLessonEditorController {
       }
 
       const existingVocabs = this.currentLesson?.vocabularies || [];
+      const isLessonFull = existingVocabs.length >= MAX_VOCAB_PER_LESSON;
 
       for (const item of items) {
         const alreadyInLesson = isVocabInLesson(existingVocabs, item.vocabId);
@@ -1039,18 +1047,18 @@ export class CreatorLessonEditorController {
 
             // Action button
             createSafeElement('button', {
-              className: `btn btn-sm ${alreadyInLesson ? 'btn-light border text-muted' : 'btn-chinese-primary'} py-1 px-3`,
-              text: alreadyInLesson ? 'Đã có trong bài' : '+ Thêm',
+              className: `btn btn-sm ${alreadyInLesson ? 'btn-light border text-muted' : (isLessonFull ? 'btn-light border text-muted' : 'btn-chinese-primary')} py-1 px-3`,
+              text: alreadyInLesson ? 'Đã có trong bài' : (isLessonFull ? 'Đã đủ 20 từ' : '+ Thêm'),
               attrs: {
                 type: 'button',
-                ...(alreadyInLesson || this.isMutating ? { disabled: 'true' } : {}),
+                ...(alreadyInLesson || isLessonFull || this.isMutating ? { disabled: 'true' } : {}),
                 'aria-label': alreadyInLesson ? `Từ vựng ${item.hanzi} đã có trong bài` : `Thêm từ vựng ${item.hanzi} vào bài học`
               }
             })
           ]
         });
 
-        if (!alreadyInLesson) {
+        if (!alreadyInLesson && !isLessonFull) {
           const addBtn = row.querySelector('button');
           if (addBtn) {
             addBtn.addEventListener('click', () => {
@@ -1082,6 +1090,15 @@ export class CreatorLessonEditorController {
 
   async handleAddVocab(vocabItem) {
     if (this.isMutating || !vocabItem?.vocabId) return;
+
+    if ((this.currentLesson?.vocabularies?.length || 0) >= MAX_VOCAB_PER_LESSON) {
+      showToast({
+        type: 'warning',
+        title: 'Giới hạn từ vựng',
+        message: `Bài học đã đạt giới hạn tối đa ${MAX_VOCAB_PER_LESSON} từ vựng theo quy chuẩn giáo trình.`
+      });
+      return;
+    }
 
     this.isMutating = true;
 

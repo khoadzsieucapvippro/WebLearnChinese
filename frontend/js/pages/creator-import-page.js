@@ -28,7 +28,7 @@ import { showToast } from '../ui/ui.js';
 import { createSafeElement, clearContainer, escapeHtml } from '../ui/security.js';
 
 export const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
-export const MAX_IMPORT_TITLE_LENGTH = 100; // Authoritative backend constraint
+export const MAX_IMPORT_TITLE_LENGTH = 200; // Authoritative backend constraint
 
 /**
  * Validates an uploaded file on the client side (UX pre-check).

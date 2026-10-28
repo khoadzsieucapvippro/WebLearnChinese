@@ -37,6 +37,68 @@ export const MANAGEMENT_PAGE_SET = new Set([
 ]);
 
 /**
+ * Resolves the operational landing page for staff roles.
+ * Priority: Admin -> management.html, Creator -> creator-lessons.html, Moderator -> moderator-queue.html.
+ * 
+ * @param {string[]} [roles=[]]
+ * @returns {string}
+ */
+export function resolveStaffLandingPage(roles = []) {
+  if (!Array.isArray(roles) || roles.length === 0) return 'management.html';
+  if (roles.includes('Admin')) return 'management.html';
+  if (roles.includes('Creator')) return 'creator-lessons.html';
+  if (roles.includes('Moderator')) return 'moderator-queue.html';
+  return 'management.html';
+}
+
+/**
+ * Strict Reverse Role Guard (Phương án A)
+ * Strictly prevents privileged management roles (Admin, Creator, Moderator)
+ * from accessing learner-facing pages (index, lessons, radicals, vocabulary, srs-review, srs-dashboard).
+ * If a management user is detected on a learner page, immediately redirects them
+ * to their operational workspace. The only exit to learner space is logging out.
+ * 
+ * @returns {boolean} True if a redirect was triggered, false otherwise.
+ */
+export function enforceRoleWorkspaceGuard() {
+  if (typeof window === 'undefined' || !window.location) return false;
+  if (!authManager.isAuthenticated()) return false;
+
+  const roles = authManager.getRoles();
+  const hasStaffRole = roles.includes('Admin') || roles.includes('Creator') || roles.includes('Moderator');
+  if (!hasStaffRole) return false;
+
+  const rawPath = window.location.pathname || '';
+  const currentPage = (rawPath.split('/').pop() || 'index.html').toLowerCase();
+  const pageToCheck = (!currentPage || currentPage.endsWith('/')) ? 'index.html' : currentPage;
+
+  // Allowed pages for staff: Management workspace pages, account profile.html, login.html, register.html
+  if (
+    MANAGEMENT_PAGE_SET.has(pageToCheck) ||
+    pageToCheck === 'profile.html' ||
+    pageToCheck === 'login.html' ||
+    pageToCheck === 'register.html'
+  ) {
+    return false;
+  }
+
+  // Learner-facing page detected! Force redirect to staff operational workspace
+  const targetPage = resolveStaffLandingPage(roles);
+
+  try {
+    if (typeof window.location.replace === 'function') {
+      window.location.replace(targetPage);
+    } else {
+      window.location.href = targetPage;
+    }
+  } catch (_) {
+    window.location.href = targetPage;
+  }
+
+  return true;
+}
+
+/**
  * Creates the persistent Demo Mode Simulation Warning Badge.
  * Contract: <span class="badge badge-warning ...">🟡 Dữ liệu mô phỏng</span>
  * 
@@ -574,6 +636,10 @@ export function syncActiveNavLinks() {
  * @returns {() => void} Cleanup function to unbind listeners
  */
 export function initNavbarAuth(containerOrId = 'navAuthContainer') {
+  if (enforceRoleWorkspaceGuard()) {
+    return () => {};
+  }
+
   syncActiveNavLinks();
 
   const container = typeof containerOrId === 'string'

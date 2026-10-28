@@ -299,7 +299,7 @@ describe('Browser E2E: Creator Two-Step Excel Import UI (Task 9D.2)', () => {
 
       // Enter title
       await page.locator('#importLessonTitle').fill('HSK 1 — Bài 1 Tác Giả');
-      assert.strictEqual(await page.locator('#titleCharCounter').textContent().then(t => t.trim()), '21 / 100');
+      assert.strictEqual(await page.locator('#titleCharCounter').textContent().then(t => t.trim()), '21 / 200');
 
       // Click Confirm
       await page.locator('#btnConfirmImport').click();

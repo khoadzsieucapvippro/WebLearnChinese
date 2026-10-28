@@ -218,6 +218,18 @@ export function canSubmitLesson(status, vocabCount) {
  * @param {string} status 
  * @returns {{ label: string, actionText: string, className: string }|null}
  */
+/**
+ * Evaluates whether a lesson can be deleted.
+ * Permitted only for Draft or Rejected lessons.
+ * 
+ * @param {string} status 
+ * @returns {boolean}
+ */
+export function canDeleteLesson(status) {
+  const s = String(status || '').trim().toLowerCase();
+  return s === 'draft' || s === 'rejected';
+}
+
 export function getSubmitButtonConfig(status) {
   const s = String(status || '').trim().toLowerCase();
   if (s === 'rejected') {
@@ -250,6 +262,8 @@ export class CreatorLessonsPageController {
     this.isCreating = false;
     this.isSubmitting = false;
     this.pendingSubmitLesson = null;
+    this.isDeleting = false;
+    this.pendingDeleteLesson = null;
     this.lastActiveElement = null;
 
     this.elements = {};
@@ -303,7 +317,14 @@ export class CreatorLessonsPageController {
       btnConfirmSubmitModeration: document.getElementById('btnConfirmSubmitModeration'),
       submitModalLessonTitle: document.getElementById('submitModalLessonTitle'),
       submitModalLessonStatus: document.getElementById('submitModalLessonStatus'),
-      submitModalError: document.getElementById('submitModalError')
+      submitModalError: document.getElementById('submitModalError'),
+      deleteModal: document.getElementById('deleteLessonModal'),
+      btnCancelDeleteModal: document.getElementById('btnCancelDeleteModal'),
+      btnDismissDeleteModal: document.getElementById('btnDismissDeleteModal'),
+      btnConfirmDeleteLesson: document.getElementById('btnConfirmDeleteLesson'),
+      deleteModalLessonTitle: document.getElementById('deleteModalLessonTitle'),
+      deleteModalLessonStatus: document.getElementById('deleteModalLessonStatus'),
+      deleteModalError: document.getElementById('deleteModalError')
     };
   }
 
@@ -374,6 +395,29 @@ export class CreatorLessonsPageController {
     if (this.elements.submitModal) {
       this.elements.submitModal.addEventListener('cancel', () => {
         this.pendingSubmitLesson = null;
+      });
+    }
+
+    // 9. Close delete modal buttons
+    const closeDeleteHandler = () => this.closeDeleteModal();
+    if (this.elements.btnCancelDeleteModal) {
+      this.elements.btnCancelDeleteModal.addEventListener('click', closeDeleteHandler);
+    }
+    if (this.elements.btnDismissDeleteModal) {
+      this.elements.btnDismissDeleteModal.addEventListener('click', closeDeleteHandler);
+    }
+
+    // 10. Confirm delete button
+    if (this.elements.btnConfirmDeleteLesson) {
+      this.elements.btnConfirmDeleteLesson.addEventListener('click', () => {
+        this.handleConfirmDelete();
+      });
+    }
+
+    // 11. Handle native Escape on delete dialog
+    if (this.elements.deleteModal) {
+      this.elements.deleteModal.addEventListener('cancel', () => {
+        this.pendingDeleteLesson = null;
       });
     }
   }
@@ -519,6 +563,90 @@ export class CreatorLessonsPageController {
         this.elements.btnConfirmSubmitModeration.textContent = this.pendingSubmitLesson?.status === 'Rejected'
           ? 'Nộp lại bài học'
           : 'Nộp kiểm duyệt';
+      }
+    }
+  }
+
+  openDeleteModal(lesson) {
+    if (!this.elements.deleteModal || !lesson) return;
+    this.pendingDeleteLesson = lesson;
+    this.lastActiveElement = document.activeElement;
+
+    if (this.elements.deleteModalLessonTitle) {
+      this.elements.deleteModalLessonTitle.textContent = lesson.title || `#${lesson.lessonId}`;
+    }
+    if (this.elements.deleteModalLessonStatus) {
+      this.elements.deleteModalLessonStatus.textContent = getStatusLabel(lesson.status);
+      this.elements.deleteModalLessonStatus.className = getStatusBadgeClass(lesson.status);
+    }
+    if (this.elements.deleteModalError) {
+      this.elements.deleteModalError.textContent = '';
+    }
+    if (this.elements.btnConfirmDeleteLesson) {
+      this.elements.btnConfirmDeleteLesson.disabled = false;
+      this.elements.btnConfirmDeleteLesson.textContent = 'Xác nhận xóa';
+    }
+
+    if (typeof this.elements.deleteModal.showModal === 'function') {
+      this.elements.deleteModal.showModal();
+    } else {
+      this.elements.deleteModal.setAttribute('open', 'true');
+    }
+    if (this.elements.btnDismissDeleteModal) {
+      this.elements.btnDismissDeleteModal.focus();
+    }
+  }
+
+  closeDeleteModal() {
+    if (!this.elements.deleteModal) return;
+    if (typeof this.elements.deleteModal.close === 'function') {
+      this.elements.deleteModal.close();
+    } else {
+      this.elements.deleteModal.removeAttribute('open');
+    }
+    this.pendingDeleteLesson = null;
+    if (this.lastActiveElement && typeof this.lastActiveElement.focus === 'function') {
+      this.lastActiveElement.focus();
+    }
+  }
+
+  async handleConfirmDelete() {
+    if (!this.pendingDeleteLesson || this.isDeleting) return;
+
+    this.isDeleting = true;
+    if (this.elements.btnConfirmDeleteLesson) {
+      this.elements.btnConfirmDeleteLesson.disabled = true;
+      this.elements.btnConfirmDeleteLesson.textContent = 'Đang xóa...';
+    }
+    if (this.elements.deleteModalError) {
+      this.elements.deleteModalError.textContent = '';
+    }
+
+    try {
+      await apiClient(`/creator/lessons/${this.pendingDeleteLesson.lessonId}`, { method: 'DELETE' });
+      showToast({
+        type: 'success',
+        title: 'Xóa bài học',
+        message: 'Đã xóa bài học thành công.'
+      });
+      this.closeDeleteModal();
+      this.loadLessons();
+    } catch (err) {
+      console.warn('[CreatorLessons] Delete error:', err);
+      const msg = err.message || 'Không thể xóa bài học.';
+      if (this.elements.deleteModalError) {
+        this.elements.deleteModalError.textContent = msg;
+      }
+      showToast({
+        type: 'danger',
+        title: 'Lỗi xóa bài học',
+        message: msg
+      });
+    } finally {
+      this.isDeleting = false;
+      if (this.elements.btnConfirmDeleteLesson) {
+        this.elements.btnConfirmDeleteLesson.disabled = false;
+        this.elements.btnConfirmDeleteLesson.textContent = 'Xác nhận xóa';
       }
     }
   }
@@ -752,7 +880,24 @@ export class CreatorLessonsPageController {
                       href: `creator-lesson-editor.html?id=${item.lessonId}`,
                       'aria-label': `Biên soạn bài học ${item.title}`
                     }
-                  })
+                  }),
+                  ...(canDeleteLesson(item.status) ? [
+                    (() => {
+                      const delBtn = createSafeElement('button', {
+                        className: 'btn btn-outline-danger py-1 px-2 btn-sm text-decoration-none',
+                        text: 'Xóa',
+                        attrs: {
+                          type: 'button',
+                          'data-delete-lesson-id': String(item.lessonId),
+                          'aria-label': `Xóa bài học: ${item.title}`
+                        }
+                      });
+                      delBtn.addEventListener('click', () => {
+                        this.openDeleteModal(item);
+                      });
+                      return delBtn;
+                    })()
+                  ] : [])
                 ]
               })
             ]

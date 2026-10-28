@@ -473,4 +473,175 @@ describe('Browser E2E: Creator Lesson Studio & Vocabulary Ordering (9D.1)', () =
     }
   });
 
+  // CL-05: Delete Draft Lesson Confirmation and Safe Removal
+  test('CL-05: Delete Draft Lesson modal confirmation, deletion via DELETE endpoint, and list refresh', async () => {
+    const { page, context, getRuntimeErrors } = await createMonitoredPage(browser, {
+      viewportWidth: 1280,
+      viewportHeight: 720
+    });
+
+    try {
+      await setupCreatorSession(page, 'Creator');
+
+      let interceptedDelete = false;
+      let lessons = createMockLessons();
+
+      await page.route(/\/api\/v1\/creator\/lessons(\?.*)?$/, async (route) => {
+        const req = route.request();
+        const method = req.method();
+
+        if (method === 'GET') {
+          await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({
+              code: 'SUCCESS',
+              message: 'Success',
+              data: {
+                items: lessons,
+                page: 0,
+                size: 20,
+                totalElements: lessons.length,
+                totalPages: 1
+              }
+            })
+          });
+        } else {
+          await route.continue();
+        }
+      });
+
+      await page.route('**/api/v1/creator/lessons/101', async (route) => {
+        if (route.request().method() === 'DELETE') {
+          interceptedDelete = true;
+          lessons = lessons.filter(l => l.lessonId !== 101);
+          await route.fulfill({
+            status: 204,
+            body: ''
+          });
+        } else {
+          await route.continue();
+        }
+      });
+
+      await page.goto(`${baseUrl}/creator-lessons.html`, { waitUntil: 'domcontentloaded' });
+
+      // Verify row 101 has Delete button, row 102 (Approved) does NOT have delete button
+      await page.waitForSelector('#creatorLessonsTableBody tr');
+      const deleteBtn101 = page.locator('button[data-delete-lesson-id="101"]');
+      const deleteBtn102 = page.locator('button[data-delete-lesson-id="102"]');
+
+      assert.strictEqual(await deleteBtn101.isVisible(), true, 'Draft lesson must have Delete button');
+      assert.strictEqual(await deleteBtn102.count(), 0, 'Approved lesson must NOT have Delete button');
+
+      // Click delete button
+      await deleteBtn101.click();
+
+      // Modal opens
+      const deleteModal = page.locator('#deleteLessonModal');
+      await page.waitForSelector('#deleteModalLessonTitle');
+      const modalTitle = await page.locator('#deleteModalLessonTitle').textContent();
+      assert.match(modalTitle, /HSK 1 — Bài 1: Chào hỏi/);
+
+      // Confirm delete
+      const confirmBtn = page.locator('#btnConfirmDeleteLesson');
+      await confirmBtn.click();
+
+      // Wait for table to update
+      await page.waitForResponse(res => res.url().includes('/creator/lessons') && res.request().method() === 'GET');
+
+      assert.strictEqual(interceptedDelete, true, 'Expected DELETE /api/v1/creator/lessons/101 to be intercepted');
+      const remainingRows = await page.locator('#creatorLessonsTableBody tr').count();
+      assert.strictEqual(remainingRows, 1, 'Expected 1 lesson row remaining after deletion');
+
+      const errors = getRuntimeErrors();
+      assert.strictEqual(errors.length, 0, `Runtime errors detected: ${JSON.stringify(errors)}`);
+    } finally {
+      await context.close();
+    }
+  });
+
+  // CL-06: 20-Word Curriculum Boundary UI Lock
+  test('CL-06: 20-word curriculum boundary renders cap badge and disables addition', async () => {
+    const { page, context, getRuntimeErrors } = await createMonitoredPage(browser, {
+      viewportWidth: 1280,
+      viewportHeight: 720
+    });
+
+    try {
+      await setupCreatorSession(page, 'Creator');
+
+      // Generate 20 vocabulary items
+      const twentyVocabs = Array.from({ length: 20 }, (_, i) => ({
+        vocabId: 200 + i,
+        hanzi: `字${i + 1}`,
+        pinyin: `zì${i + 1}`,
+        meaningHanViet: 'Tự',
+        meaningVi: `Từ số ${i + 1}`,
+        orderIndex: i + 1
+      }));
+
+      await page.route('**/api/v1/creator/lessons/105', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            code: 'SUCCESS',
+            data: {
+              lessonId: 105,
+              title: 'Bài học 20 từ đạt ngưỡng',
+              status: 'Draft',
+              vocabularyCount: 20,
+              vocabularies: twentyVocabs,
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString()
+            }
+          })
+        });
+      });
+
+      await page.route('**/api/v1/vocabulary**', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            code: 'SUCCESS',
+            data: {
+              items: [
+                { vocabId: 999, hanzi: '超', pinyin: 'chāo', meaningVi: 'Vượt quá' }
+              ],
+              page: 0,
+              size: 8,
+              totalElements: 1,
+              totalPages: 1
+            }
+          })
+        });
+      });
+
+      await page.goto(`${baseUrl}/creator-lesson-editor.html?id=105`, { waitUntil: 'domcontentloaded' });
+
+      // Check badge shows 20/20 từ vựng
+      const badge = page.locator('#editorVocabCountBadge');
+      await badge.waitFor({ state: 'visible' });
+      const badgeText = await badge.textContent();
+      assert.match(badgeText, /20\/20 từ vựng/);
+
+      // Search for extra vocabulary
+      const searchInput = page.locator('#editorVocabSearchInput');
+      await searchInput.fill('chao');
+
+      // Search results appear
+      await page.waitForSelector('.creator-search-item');
+      const addBtn = page.locator('.creator-search-item button').first();
+      const addBtnText = await addBtn.textContent();
+      assert.match(addBtnText, /Đã đủ 20 từ/);
+      assert.strictEqual(await addBtn.isDisabled(), true, 'Button must be disabled when 20 cap is reached');
+
+      const errors = getRuntimeErrors();
+      assert.strictEqual(errors.length, 0, `Runtime errors detected: ${JSON.stringify(errors)}`);
+    } finally {
+      await context.close();
+    }
+  });
 });

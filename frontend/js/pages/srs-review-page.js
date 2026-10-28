@@ -10080,12 +10080,6 @@ export class SrsReviewController {
       cardInlineNoteStatus: document.getElementById('cardInlineNoteStatus'),
       btnSaveInlineNote: document.getElementById('btnSaveInlineNote'),
 
-      // Card Back 2-Column Notes Layout
-      cardBackNotesSection: document.getElementById('cardBackNotesSection'),
-      cardNotesList: document.getElementById('cardNotesList'),
-      cardNewNoteInput: document.getElementById('cardNewNoteInput'),
-      btnAddCardNote: document.getElementById('btnAddCardNote'),
-
       // Flashcard Rating Bar
       ratingSection: document.getElementById('srsRatingSection'),
       ratingBar: document.getElementById('ratingControlsBar'),
@@ -10433,15 +10427,6 @@ export class SrsReviewController {
         if (this.isEditingInlineNote) {
           await this.exitInlineNoteEdit(true);
         }
-      });
-    }
-
-    // Add Note button on Back of Card
-    if (this.dom.btnAddCardNote) {
-      this.dom.btnAddCardNote.addEventListener('click', async (e) => {
-        e.stopPropagation();
-        e.preventDefault();
-        await this.saveCardNote();
       });
     }
 
@@ -13013,11 +12998,6 @@ export class SrsReviewController {
       this.dom.btnCardNote.classList.add('d-none');
     }
 
-    // Ẩn 2-Column Notes section cũ nếu còn tồn tại
-    if (this.dom.cardBackNotesSection) {
-      this.dom.cardBackNotesSection.classList.add('d-none');
-    }
-
     // Reset inline note edit state if currently active
     if (this.isEditingInlineNote) {
       this.exitInlineNoteEdit(true);
@@ -13049,13 +13029,13 @@ export class SrsReviewController {
   }
 
   /**
-   * Updates live character counter badge (e.g. 0/150).
+   * Updates live character counter badge (e.g. 0/500).
    * @param {number} len 
    */
   updateInlineNoteCharCount(len) {
     if (!this.dom.cardInlineNoteCharCount) return;
-    this.dom.cardInlineNoteCharCount.textContent = `${len}/150`;
-    if (len >= 150) {
+    this.dom.cardInlineNoteCharCount.textContent = `${len}/500`;
+    if (len >= 500) {
       this.dom.cardInlineNoteCharCount.classList.add('is-limit');
     } else {
       this.dom.cardInlineNoteCharCount.classList.remove('is-limit');
@@ -13138,7 +13118,7 @@ export class SrsReviewController {
 
     if (save && this.dom.cardInlineNoteInput && targetCard) {
       const rawVal = this.dom.cardInlineNoteInput.value || '';
-      const trimmed = rawVal.trim().slice(0, 150);
+      const trimmed = rawVal.trim().slice(0, 500);
       const prevVal = (targetNote?.content || '').trim();
 
       // UX Optimistic update: instantly reflect user changes without waiting for API roundtrip
@@ -13341,7 +13321,7 @@ export class SrsReviewController {
 
   /**
    * Saves or updates the single note for the current card.
-   * Auto-limits to 150 chars.
+   * Auto-limits to 500 chars.
    * Supports Radicals (srs_radical_notes) and Vocabulary (/api/v1/vocabularies/{id}/notes).
    * @param {string} content
    * @param {Object|null} [targetCard=null]
@@ -13356,7 +13336,7 @@ export class SrsReviewController {
     const isVocab = (card.itemType || '').toUpperCase() === 'VOCABULARY';
     if (!isRadical && !isVocab) return;
 
-    const trimmed = (content || '').trim().slice(0, 150);
+    const trimmed = (content || '').trim().slice(0, 500);
     const itemTypeUpper = (card.itemType || '').toUpperCase();
     const cacheKey = `${itemTypeUpper}_${card.itemId}`;
 
@@ -13539,16 +13519,6 @@ export class SrsReviewController {
         this.showInlineNoteSaveStatus('saved');
         showToast({ type: 'info', title: 'Ghi chú', message: 'Đã lưu ghi chú vào phiên học.' });
       }
-    }
-  }
-
-  /**
-   * Compatibility wrapper for legacy saveCardNote calls.
-   */
-  async saveCardNote() {
-    if (this.dom.cardNewNoteInput) {
-      const content = (this.dom.cardNewNoteInput.value || '').trim();
-      await this.saveInlineCardNote(content);
     }
   }
 

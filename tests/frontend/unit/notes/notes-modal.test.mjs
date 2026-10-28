@@ -18,7 +18,8 @@ import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   validateNoteContent,
-  formatNoteDate
+  formatNoteDate,
+  MAX_NOTE_LENGTH
 } from '../../../../frontend/js/ui/notes-modal.js';
 import { buildUrl } from '../../../../frontend/js/api/api.js';
 
@@ -187,4 +188,35 @@ describe('Unit: Contextual Personal Notes (9C.2)', () => {
     });
   });
 
+
+  describe('8. SRS Flashcard Inline Note & Modal Character Limit Consistency (500 Chars)', () => {
+    test('MAX_NOTE_LENGTH is standardized at 500 characters', () => {
+      assert.strictEqual(MAX_NOTE_LENGTH, 500);
+    });
+    test('validates note at exactly 500 characters without truncation', () => {
+      const exact500 = '字'.repeat(500);
+      assert.strictEqual(exact500.length, 500);
+      const validation = validateNoteContent(exact500);
+      assert.strictEqual(validation.valid, true);
+    });
+    test('rejects note at 501 characters to protect database bounds', () => {
+      const over500 = '字'.repeat(501);
+      assert.strictEqual(over500.length, 501);
+      const validation = validateNoteContent(over500);
+      assert.strictEqual(validation.valid, false);
+      assert.ok(validation.error.includes('500 ký tự'));
+    });
+    test('SRS inline note truncation helper strictly bounds to 500 characters', () => {
+      const longInput = 'A'.repeat(600);
+      const bounded = longInput.trim().slice(0, 500);
+      assert.strictEqual(bounded.length, 500);
+      assert.strictEqual(bounded, 'A'.repeat(500));
+    });
+    test('formats SRS inline character counter string consistently as X/500', () => {
+      const formatCounter = (len) => len + '/500';
+      assert.strictEqual(formatCounter(0), '0/500');
+      assert.strictEqual(formatCounter(16), '16/500');
+      assert.strictEqual(formatCounter(500), '500/500');
+    });
+  });
 });

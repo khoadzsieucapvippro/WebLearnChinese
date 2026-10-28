@@ -3818,6 +3818,7 @@ a.lesson-vocab-hanzi:hover {
   line-height: 1.4;
   color: var(--color-text-secondary, #4b5563);
   word-break: break-word;
+  white-space: pre-wrap;
   flex: 1;
   text-align: left;
 }
@@ -5006,9 +5007,6 @@ a.lesson-vocab-hanzi:hover {
     font-size: 0.65rem !important;
   }
   .management-header #managementSidebarToggle {
-    padding: 0.25rem 0.45rem !important;
-  }
-  .management-header #btnBackToLearning {
     padding: 0.25rem 0.45rem !important;
   }
   .management-header #navLogoutBtn {

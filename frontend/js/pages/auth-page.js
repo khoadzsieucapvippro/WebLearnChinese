@@ -16,7 +16,7 @@
 
 import { apiClient, ApiError, parseFieldErrors } from '../api/api.js';
 import { authManager } from '../auth/auth-state.js';
-import { initNavbarAuth } from '../ui/nav.js';
+import { initNavbarAuth, resolveStaffLandingPage, MANAGEMENT_PAGE_SET } from '../ui/nav.js';
 import { showToast, setupPasswordToggle } from '../ui/ui.js';
 
 /**
@@ -385,11 +385,11 @@ function initLoginForm() {
       let target;
       if (redirectParam) {
         target = validateInternalRedirect(redirectParam);
-        if ((target === 'index.html' || target === 'login.html') && isStaffUser) {
-          target = 'management.html';
+        if (isStaffUser && (!MANAGEMENT_PAGE_SET.has(target) && target !== 'profile.html')) {
+          target = resolveStaffLandingPage(userRoles);
         }
       } else {
-        target = isStaffUser ? 'management.html' : 'index.html';
+        target = isStaffUser ? resolveStaffLandingPage(userRoles) : 'index.html';
       }
       window.location.href = target;
 
@@ -545,11 +545,11 @@ if (typeof document !== 'undefined' && typeof document.addEventListener === 'fun
       let target;
       if (redirectParam) {
         target = validateInternalRedirect(redirectParam);
-        if ((target === 'index.html' || target === 'login.html') && isStaffUser) {
-          target = 'management.html';
+        if (isStaffUser && (!MANAGEMENT_PAGE_SET.has(target) && target !== 'profile.html')) {
+          target = resolveStaffLandingPage(userRoles);
         }
       } else {
-        target = isStaffUser ? 'management.html' : 'index.html';
+        target = isStaffUser ? resolveStaffLandingPage(userRoles) : 'index.html';
       }
       window.location.href = target;
       return;

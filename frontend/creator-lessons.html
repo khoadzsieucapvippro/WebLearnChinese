@@ -82,15 +82,7 @@
     <main id="mainContent" class="management-main-content">
       <div class="container-xl creator-studio-wrapper">
 
-        <!-- Management Sub-navigation Breadcrumb -->
-        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
-          <nav aria-label="Đường dẫn điều hướng">
-            <ol class="breadcrumb mb-0 small">
-              <li class="breadcrumb-item"><a href="management.html" class="text-decoration-none">Trung tâm quản lý</a></li>
-              <li class="breadcrumb-item active" aria-current="page">Quản lý bài học</li>
-            </ol>
-          </nav>
-        </div>
+        
 
       <!-- Role Guard Message Container (Shown if unauthorized) -->
       <div id="creatorAuthGuardContainer" class="d-none mb-4">
@@ -257,6 +249,48 @@
         <button type="button" id="btnDismissSubmitModal" class="btn-chinese-secondary btn-sm">Hủy bỏ</button>
         <button type="button" id="btnConfirmSubmitModeration" class="btn-chinese-primary btn-sm">
           Nộp kiểm duyệt
+        </button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Delete Draft Lesson Native Dialog Modal -->
+  <dialog id="deleteLessonModal" class="notes-dialog" aria-labelledby="deleteModalTitle">
+    <div class="notes-modal-card">
+      <div class="notes-modal-header p-3 border-bottom d-flex align-items-center justify-content-between">
+        <h2 id="deleteModalTitle" class="h6 fw-bold mb-0 text-danger">Xác Nhận Xóa Bài Học</h2>
+        <button type="button" id="btnCancelDeleteModal" class="toast-close-btn" aria-label="Đóng cửa sổ xóa bài học">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      <div class="p-3">
+        <p class="text-secondary small mb-2">
+          Bạn có chắc chắn muốn xóa bài học sau không?
+        </p>
+
+        <div class="p-3 bg-light rounded border mb-3">
+          <div class="fw-bold text-dark mb-1" id="deleteModalLessonTitle">--</div>
+          <div class="small text-secondary d-flex align-items-center gap-2">
+            <span>Trạng thái:</span>
+            <span id="deleteModalLessonStatus" class="badge-status badge-status-draft">Draft</span>
+          </div>
+        </div>
+
+        <div class="alert alert-danger py-2 px-3 small mb-0 d-flex align-items-start gap-2">
+          <span aria-hidden="true">⚠️</span>
+          <div>
+            <strong>Lưu ý:</strong> Thao tác này sẽ xóa bài học và toàn bộ liên kết từ vựng thuộc bài học này. Hành động này không thể hoàn tác.
+          </div>
+        </div>
+
+        <div id="deleteModalError" class="srs-field-error mt-2" role="alert"></div>
+      </div>
+
+      <div class="p-3 border-top bg-light d-flex align-items-center justify-content-end gap-2">
+        <button type="button" id="btnDismissDeleteModal" class="btn-chinese-secondary btn-sm">Hủy bỏ</button>
+        <button type="button" id="btnConfirmDeleteLesson" class="btn btn-danger btn-sm">
+          Xác nhận xóa
         </button>
       </div>
     </div>

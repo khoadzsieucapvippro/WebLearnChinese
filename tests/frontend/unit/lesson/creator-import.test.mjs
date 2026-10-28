@@ -106,20 +106,20 @@ describe('Unit: Creator Two-Step Excel Import UI (Task 9D.2)', () => {
       assert.match(rSpaces.error, /không được để trống/);
     });
 
-    test('rejects titles exceeding 100 characters (authoritative backend limit)', () => {
-      const title101 = 'A'.repeat(101);
-      const res = validateImportTitle(title101);
+    test('rejects titles exceeding 200 characters (authoritative backend limit)', () => {
+      const title201 = 'A'.repeat(201);
+      const res = validateImportTitle(title201);
 
       assert.strictEqual(res.valid, false);
-      assert.match(res.error, /100 ký tự/);
+      assert.match(res.error, /200 ký tự/);
     });
 
-    test('accepts titles of exactly 100 characters', () => {
+    test('accepts titles of exactly 200 characters', () => {
       const title100 = 'B'.repeat(MAX_IMPORT_TITLE_LENGTH);
       const res = validateImportTitle(title100);
 
       assert.strictEqual(res.valid, true);
-      assert.strictEqual(res.sanitizedTitle.length, 100);
+      assert.strictEqual(res.sanitizedTitle.length, 200);
     });
 
     test('trims surrounding whitespace from valid titles', () => {

@@ -70,19 +70,22 @@ class MockCustomEvent {
 
 // Setup globals before importing module
 const mockStorage = new MockLocalStorage();
+const mockSessionStorage = new MockLocalStorage();
 const mockWin = new MockWindow();
 
 globalThis.localStorage = mockStorage;
+globalThis.sessionStorage = mockSessionStorage;
 globalThis.window = mockWin;
 globalThis.CustomEvent = MockCustomEvent;
 
 // Dynamic import to bind mock globals
-const { authManager } = await import('../../../../frontend/js/auth/auth-state.js');
+const { authManager, isManagementRole } = await import('../../../../frontend/js/auth/auth-state.js');
 
 describe('Auth State Manager Contract', () => {
 
   beforeEach(() => {
     mockStorage.clear();
+    mockSessionStorage.clear();
     mockWin.location.pathname = '/index.html';
     mockWin.location.href = '/index.html';
     authManager.resetRedirectHandler();
@@ -90,6 +93,7 @@ describe('Auth State Manager Contract', () => {
 
   afterEach(() => {
     mockStorage.clear();
+    mockSessionStorage.clear();
     authManager.resetRedirectHandler();
   });
 
@@ -313,6 +317,97 @@ describe('Auth State Manager Contract', () => {
     assert.strictEqual(redirectCalled, 1);
 
     mockWin.removeEventListener('auth:expired', expiredHandler);
+  });
+
+  describe('Session Lifecycle Isolation: Staff (sessionStorage) vs Learner (localStorage)', () => {
+    test('isManagementRole correctly identifies management roles vs learner', () => {
+      assert.strictEqual(isManagementRole(['Admin']), true);
+      assert.strictEqual(isManagementRole(['Creator']), true);
+      assert.strictEqual(isManagementRole(['Moderator']), true);
+      assert.strictEqual(isManagementRole(['Learner', 'Creator']), true);
+      assert.strictEqual(isManagementRole(['Learner']), false);
+      assert.strictEqual(isManagementRole([]), false);
+      assert.strictEqual(isManagementRole(null), false);
+    });
+
+    test('Staff login (Creator/Admin/Moderator) persists strictly to sessionStorage and cleanses localStorage', () => {
+      authManager.setSession({
+        token: 'creator-session-jwt',
+        accountId: 99,
+        emailOrPhone: 'creator@example.com',
+        fullName: 'Người Sáng Tạo',
+        roles: ['Creator']
+      });
+
+      // Must be present in sessionStorage
+      assert.strictEqual(mockSessionStorage.getItem('access_token'), 'creator-session-jwt');
+      assert.ok(mockSessionStorage.getItem('user_info')?.includes('Creator'));
+
+      // Must NOT be present in persistent localStorage
+      assert.strictEqual(mockStorage.getItem('access_token'), null);
+      assert.strictEqual(mockStorage.getItem('user_info'), null);
+
+      assert.strictEqual(authManager.getToken(), 'creator-session-jwt');
+      assert.strictEqual(authManager.hasRole('Creator'), true);
+    });
+
+    test('Simulating X tab Chrome: clearing sessionStorage terminates Staff session', () => {
+      authManager.setSession({
+        token: 'admin-temp-jwt',
+        accountId: 88,
+        emailOrPhone: 'admin@example.com',
+        fullName: 'Quản Trị Viên',
+        roles: ['Admin']
+      });
+
+      assert.strictEqual(authManager.isAuthenticated(), true);
+
+      // Simulate closing the browser tab (Chrome destroys sessionStorage for the closed tab)
+      mockSessionStorage.clear();
+
+      // On new tab / next access: session is cleanly gone
+      assert.strictEqual(authManager.getToken(), null);
+      assert.strictEqual(authManager.getUser(), null);
+      assert.strictEqual(authManager.isAuthenticated(), false);
+    });
+
+    test('Learner login persists in localStorage and cleanses sessionStorage', () => {
+      authManager.setSession({
+        token: 'learner-persistent-jwt',
+        accountId: 77,
+        emailOrPhone: 'student@example.com',
+        fullName: 'Em Học Sinh',
+        roles: ['Learner']
+      });
+
+      assert.strictEqual(mockStorage.getItem('access_token'), 'learner-persistent-jwt');
+      assert.ok(mockStorage.getItem('user_info')?.includes('Learner'));
+      assert.strictEqual(mockSessionStorage.getItem('access_token'), null);
+
+      assert.strictEqual(authManager.getToken(), 'learner-persistent-jwt');
+      assert.strictEqual(authManager.hasRole('Learner'), true);
+    });
+
+    test('Legacy staff tokens in localStorage are automatically migrated to sessionStorage on read', () => {
+      // Simulate an old session from before the update in localStorage
+      mockStorage.setItem('access_token', 'legacy-mod-jwt');
+      mockStorage.setItem('user_info', JSON.stringify({
+        accountId: 66,
+        emailOrPhone: 'mod@example.com',
+        roles: ['Moderator']
+      }));
+
+      // Call getToken() which triggers migration
+      const token = authManager.getToken();
+      assert.strictEqual(token, 'legacy-mod-jwt');
+
+      // Verified: moved to sessionStorage
+      assert.strictEqual(mockSessionStorage.getItem('access_token'), 'legacy-mod-jwt');
+
+      // Verified: deleted from persistent localStorage
+      assert.strictEqual(mockStorage.getItem('access_token'), null);
+      assert.strictEqual(mockStorage.getItem('user_info'), null);
+    });
   });
 
 });

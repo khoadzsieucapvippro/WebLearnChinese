@@ -25,6 +25,47 @@
 const TOKEN_KEY = 'access_token';
 const USER_KEY = 'user_info';
 
+/**
+ * Checks whether a given role list contains management/staff privileges.
+ * Contract: Backend AuthResponse roles include "Admin", "Creator", "Moderator", "Learner".
+ * 
+ * @param {string[]} roles 
+ * @returns {boolean}
+ */
+export function isManagementRole(roles) {
+  if (!Array.isArray(roles)) return false;
+  return roles.some(r => r === 'Admin' || r === 'Creator' || r === 'Moderator');
+}
+
+/**
+ * Safely migrates legacy staff tokens from localStorage to sessionStorage.
+ * Staff credentials must never permanently persist in disk-based localStorage,
+ * ensuring automatic session termination when the browser tab is closed (X tab).
+ */
+export function migrateLegacyStaffSession() {
+  try {
+    if (typeof sessionStorage === 'undefined' || typeof localStorage === 'undefined') {
+      return;
+    }
+    const localUserRaw = localStorage.getItem(USER_KEY);
+    const localUser = safeParseJson(localUserRaw);
+    if (localUser && isManagementRole(localUser.roles)) {
+      const localToken = localStorage.getItem(TOKEN_KEY);
+      if (localToken && !sessionStorage.getItem(TOKEN_KEY)) {
+        sessionStorage.setItem(TOKEN_KEY, localToken);
+        sessionStorage.setItem(USER_KEY, localUserRaw);
+      }
+      localStorage.removeItem(TOKEN_KEY);
+      localStorage.removeItem(USER_KEY);
+    }
+  } catch (_) {
+    // Storage access blocked in strict sandbox
+  }
+}
+
+// Automatically invoke migration upon module load
+migrateLegacyStaffSession();
+
 let redirectHandler = defaultRedirectHandler;
 
 /**
@@ -68,6 +109,11 @@ function safeParseJson(raw) {
 
 function cleanseCorruptedUser() {
   try {
+    if (typeof sessionStorage !== 'undefined') {
+      sessionStorage.removeItem(USER_KEY);
+    }
+  } catch (_) {}
+  try {
     if (typeof localStorage !== 'undefined') {
       localStorage.removeItem(USER_KEY);
     }
@@ -86,9 +132,20 @@ export const authManager = {
    */
   getToken() {
     try {
-      if (typeof localStorage === 'undefined') return null;
-      const token = localStorage.getItem(TOKEN_KEY);
-      return token && typeof token === 'string' && token.trim().length > 0 ? token.trim() : null;
+      migrateLegacyStaffSession();
+      if (typeof sessionStorage !== 'undefined') {
+        const token = sessionStorage.getItem(TOKEN_KEY);
+        if (token && typeof token === 'string' && token.trim().length > 0) {
+          return token.trim();
+        }
+      }
+      if (typeof localStorage !== 'undefined') {
+        const token = localStorage.getItem(TOKEN_KEY);
+        if (token && typeof token === 'string' && token.trim().length > 0) {
+          return token.trim();
+        }
+      }
+      return null;
     } catch (_) {
       return null;
     }
@@ -102,8 +159,14 @@ export const authManager = {
    */
   getUser() {
     try {
-      if (typeof localStorage === 'undefined') return null;
-      const raw = localStorage.getItem(USER_KEY);
+      migrateLegacyStaffSession();
+      let raw = null;
+      if (typeof sessionStorage !== 'undefined') {
+        raw = sessionStorage.getItem(USER_KEY);
+      }
+      if (!raw && typeof localStorage !== 'undefined') {
+        raw = localStorage.getItem(USER_KEY);
+      }
       const user = safeParseJson(raw);
       if (!user) return null;
 
@@ -180,18 +243,46 @@ export const authManager = {
       throw new Error('Invalid AuthResponse: missing required string field "token"');
     }
 
+    const roles = Array.isArray(authData.roles) ? authData.roles : [];
+    const isStaff = isManagementRole(roles);
+
     try {
-      if (typeof localStorage !== 'undefined') {
-        localStorage.setItem(TOKEN_KEY, token.trim());
+      const userInfo = {
+        accountId: authData.accountId ?? null,
+        emailOrPhone: authData.emailOrPhone ?? '',
+        fullName: authData.fullName ?? '',
+        roles: [...roles]
+      };
+      const userJson = JSON.stringify(userInfo);
+      const cleanToken = token.trim();
 
-        const userInfo = {
-          accountId: authData.accountId ?? null,
-          emailOrPhone: authData.emailOrPhone ?? '',
-          fullName: authData.fullName ?? '',
-          roles: Array.isArray(authData.roles) ? authData.roles : []
-        };
-
-        localStorage.setItem(USER_KEY, JSON.stringify(userInfo));
+      if (isStaff) {
+        // Staff/Management roles strictly stored in sessionStorage (destroyed when tab is closed)
+        if (typeof sessionStorage !== 'undefined') {
+          sessionStorage.setItem(TOKEN_KEY, cleanToken);
+          sessionStorage.setItem(USER_KEY, userJson);
+          // Purge persistent localStorage to prevent residual staff sessions on disk
+          if (typeof localStorage !== 'undefined') {
+            localStorage.removeItem(TOKEN_KEY);
+            localStorage.removeItem(USER_KEY);
+          }
+        } else if (typeof localStorage !== 'undefined') {
+          localStorage.setItem(TOKEN_KEY, cleanToken);
+          localStorage.setItem(USER_KEY, userJson);
+        }
+      } else {
+        // Learner role persists in localStorage
+        if (typeof localStorage !== 'undefined') {
+          localStorage.setItem(TOKEN_KEY, cleanToken);
+          localStorage.setItem(USER_KEY, userJson);
+        } else if (typeof sessionStorage !== 'undefined') {
+          sessionStorage.setItem(TOKEN_KEY, cleanToken);
+          sessionStorage.setItem(USER_KEY, userJson);
+        }
+        if (typeof sessionStorage !== 'undefined') {
+          sessionStorage.removeItem(TOKEN_KEY);
+          sessionStorage.removeItem(USER_KEY);
+        }
       }
 
       if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
@@ -227,9 +318,13 @@ export const authManager = {
     if (!Array.isArray(updated.roles)) {
       updated.roles = Array.isArray(current.roles) ? current.roles : [];
     }
+    const updatedJson = JSON.stringify(updated);
     try {
-      if (typeof localStorage !== 'undefined') {
-        localStorage.setItem(USER_KEY, JSON.stringify(updated));
+      if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem(USER_KEY)) {
+        sessionStorage.setItem(USER_KEY, updatedJson);
+      }
+      if (typeof localStorage !== 'undefined' && localStorage.getItem(USER_KEY)) {
+        localStorage.setItem(USER_KEY, updatedJson);
       }
       if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
         window.dispatchEvent(new CustomEvent('auth:update', { detail: { user: updated } }));
@@ -243,6 +338,12 @@ export const authManager = {
    * Purges access token and user identity from local storage idempotently.
    */
   clearSession() {
+    try {
+      if (typeof sessionStorage !== 'undefined') {
+        sessionStorage.removeItem(TOKEN_KEY);
+        sessionStorage.removeItem(USER_KEY);
+      }
+    } catch (_) {}
     try {
       if (typeof localStorage !== 'undefined') {
         localStorage.removeItem(TOKEN_KEY);

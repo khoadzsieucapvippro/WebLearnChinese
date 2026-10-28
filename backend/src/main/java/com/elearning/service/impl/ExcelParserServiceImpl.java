@@ -58,6 +58,12 @@ public class ExcelParserServiceImpl implements ExcelParserService {
      */
     private static final byte[] ZIP_HEADER = {0x50, 0x4B, 0x03, 0x04};
 
+    /**
+     * Regex matching valid Chinese CJK Unified Ideographs.
+     * Rejects Latin letters, numbers, or irregular ASCII symbols in the Hanzi column.
+     */
+    private static final java.util.regex.Pattern HANZI_CJK_PATTERN = java.util.regex.Pattern.compile("^[\\p{IsHan}]+$");
+
     private final VocabularyRepository vocabularyRepository;
 
     public ExcelParserServiceImpl(VocabularyRepository vocabularyRepository) {
@@ -308,6 +314,7 @@ public class ExcelParserServiceImpl implements ExcelParserService {
         String meaningVi = getCellValue(row, mapping.meaningViCol, dataFormatter);
         String exampleSentence = getCellValue(row, mapping.exampleSentenceCol, dataFormatter);
         String exampleTranslation = getCellValue(row, mapping.exampleTranslationCol, dataFormatter);
+        String audioUrl = getCellValue(row, mapping.audioUrlCol, dataFormatter);
 
         ParsedVocabularyItem item = new ParsedVocabularyItem();
         item.setRowNumber(rowNumber);
@@ -324,6 +331,8 @@ public class ExcelParserServiceImpl implements ExcelParserService {
             addError(item, report, rowNumber, "Chữ Hán", "MISSING_REQUIRED_FIELD", "Chữ Hán không được để trống");
         } else if (hanzi.length() > 50) {
             addError(item, report, rowNumber, "Chữ Hán", "INVALID_LENGTH", "Chữ Hán không được vượt quá 50 ký tự");
+        } else if (!HANZI_CJK_PATTERN.matcher(hanzi.trim()).matches()) {
+            addError(item, report, rowNumber, "Chữ Hán", "INVALID_HANZI", "Chữ Hán chứa ký tự không hợp lệ, bắt buộc phải là chữ Hán chuẩn");
         }
 
         // Validation rule: Pinyin required, max 100
@@ -355,6 +364,25 @@ public class ExcelParserServiceImpl implements ExcelParserService {
         // Optional: Example translation max 500
         if (exampleTranslation != null && exampleTranslation.length() > 500) {
             addError(item, report, rowNumber, "Dịch câu ví dụ", "INVALID_LENGTH", "Dịch câu ví dụ không được vượt quá 500 ký tự");
+        }
+
+        // Optional: Audio URL format validation
+        if (audioUrl != null && !audioUrl.isBlank()) {
+            String trimmedAudio = audioUrl.trim();
+            boolean isLocalAudio = trimmedAudio.startsWith("/assets/audio/") && trimmedAudio.toLowerCase().endsWith(".mp3");
+            boolean isSecureRemote = trimmedAudio.startsWith("https://") && (
+                    trimmedAudio.toLowerCase().endsWith(".mp3") ||
+                    trimmedAudio.toLowerCase().endsWith(".wav") ||
+                    trimmedAudio.toLowerCase().endsWith(".ogg")
+            );
+            if (!isLocalAudio && !isSecureRemote) {
+                addError(item, report, rowNumber, "Audio", "INVALID_AUDIO_URL",
+                        "Đường dẫn âm thanh phải là file an toàn (.mp3, .wav, .ogg) qua HTTPS hoặc đường dẫn nội bộ /assets/audio/...");
+            } else if (trimmedAudio.length() > 500) {
+                addError(item, report, rowNumber, "Audio", "INVALID_LENGTH", "Đường dẫn âm thanh không được vượt quá 500 ký tự");
+            } else {
+                item.setAudioUrl(trimmedAudio);
+            }
         }
 
         // Derive toneless pinyinRaw
@@ -421,6 +449,8 @@ public class ExcelParserServiceImpl implements ExcelParserService {
                 mapping.exampleSentenceCol = c;
             } else if (matchesHeader(headerText, "exampletranslation", "translation", "dichnghia", "dichvidu", "dichcauvidu")) {
                 mapping.exampleTranslationCol = c;
+            } else if (matchesHeader(headerText, "audio", "audiourl", "amthanh", "fileamthanh", "sound", "phatam")) {
+                mapping.audioUrlCol = c;
             }
         }
 
@@ -498,6 +528,7 @@ public class ExcelParserServiceImpl implements ExcelParserService {
         int meaningViCol = -1;
         int exampleSentenceCol = -1;
         int exampleTranslationCol = -1;
+        int audioUrlCol = -1;
 
         boolean isValid() {
             return hanziCol >= 0 && pinyinCol >= 0 && meaningHanVietCol >= 0 && meaningViCol >= 0;

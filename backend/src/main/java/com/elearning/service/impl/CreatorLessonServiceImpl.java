@@ -89,6 +89,9 @@ public class CreatorLessonServiceImpl implements CreatorLessonService {
 
         // Add initial vocabulary items if provided
         if (request.getVocabularyIds() != null && !request.getVocabularyIds().isEmpty()) {
+            if (request.getVocabularyIds().size() > 20) {
+                throw new BusinessException(ErrorCode.BAD_REQUEST, "Bài học không được vượt quá 20 từ vựng theo quy chuẩn giáo trình");
+            }
             int order = 1;
             for (Long vocabId : request.getVocabularyIds()) {
                 Vocabulary vocabulary = vocabularyRepository.findByIdWithLock(vocabId)
@@ -251,6 +254,11 @@ public class CreatorLessonServiceImpl implements CreatorLessonService {
         Account currentAccount = resolveCurrentAccount();
         checkOwnership(lesson, currentAccount);
         checkEditableState(lesson, "thêm từ vựng");
+
+        long currentCount = lessonVocabularyRepository.countByLesson_LessonId(lessonId);
+        if (currentCount >= 20) {
+            throw new BusinessException(ErrorCode.BAD_REQUEST, "Bài học đã đạt giới hạn tối đa 20 từ vựng theo quy chuẩn giáo trình");
+        }
 
         if (lessonVocabularyRepository.existsByLesson_LessonIdAndVocabulary_VocabId(lessonId, vocabId)) {
             throw new BusinessException(ErrorCode.CONFLICT, "Từ vựng đã tồn tại trong bài học");
@@ -450,8 +458,8 @@ public class CreatorLessonServiceImpl implements CreatorLessonService {
         if (title == null || title.trim().isEmpty()) {
             throw new BusinessException(ErrorCode.BAD_REQUEST, "Tiêu đề bài học không được để trống");
         }
-        if (title.trim().length() > 100) {
-            throw new BusinessException(ErrorCode.BAD_REQUEST, "Tiêu đề bài học không được vượt quá 100 ký tự");
+        if (title.trim().length() > 200) {
+            throw new BusinessException(ErrorCode.BAD_REQUEST, "Tiêu đề bài học không được vượt quá 200 ký tự");
         }
         if (file == null || file.isEmpty()) {
             throw new BusinessException(ErrorCode.BAD_REQUEST, "File tải lên không có dữ liệu");
@@ -499,6 +507,9 @@ public class CreatorLessonServiceImpl implements CreatorLessonService {
                     newVocab.setMeaningVi(item.getMeaningVi());
                     newVocab.setExampleSentence(item.getExampleSentence());
                     newVocab.setExampleTranslation(item.getExampleTranslation());
+                    if (item.getAudioUrl() != null && !item.getAudioUrl().isBlank()) {
+                        newVocab.setAudioUrl(item.getAudioUrl());
+                    }
                     vocabulary = vocabularyRepository.save(newVocab);
                 }
             }

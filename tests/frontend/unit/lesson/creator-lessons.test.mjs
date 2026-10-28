@@ -23,7 +23,8 @@ import {
   calculatePagination,
   getStatusBadgeClass,
   getStatusLabel,
-  formatLessonDate
+  formatLessonDate,
+  canDeleteLesson
 } from '../../../../frontend/js/pages/creator-lessons-page.js';
 import {
   validateLessonId,
@@ -32,7 +33,8 @@ import {
   buildReorderPayload,
   moveVocabItem,
   isVocabInLesson,
-  parseLessonDetail
+  parseLessonDetail,
+  MAX_VOCAB_PER_LESSON
 } from '../../../../frontend/js/pages/creator-lesson-editor-page.js';
 
 describe('Unit: Creator Lesson Studio & Vocabulary Ordering (Task 9D.1)', () => {
@@ -326,6 +328,34 @@ describe('Unit: Creator Lesson Studio & Vocabulary Ordering (Task 9D.1)', () => 
       assert.strictEqual(formatLessonDate(null), '--');
       assert.strictEqual(formatLessonDate(''), '--');
       assert.strictEqual(formatLessonDate('invalid-date'), '--');
+    });
+  });
+  describe('11. Delete Lesson Lifecycle Rules (canDeleteLesson)', () => {
+    test('strictly permits deletion for Draft and Rejected states', () => {
+      assert.strictEqual(canDeleteLesson('Draft'), true);
+      assert.strictEqual(canDeleteLesson('draft'), true);
+      assert.strictEqual(canDeleteLesson('Rejected'), true);
+      assert.strictEqual(canDeleteLesson('rejected'), true);
+    });
+
+    test('strictly forbids deletion for Pending and Approved states', () => {
+      assert.strictEqual(canDeleteLesson('Pending'), false);
+      assert.strictEqual(canDeleteLesson('pending'), false);
+      assert.strictEqual(canDeleteLesson('Approved'), false);
+      assert.strictEqual(canDeleteLesson('approved'), false);
+    });
+
+    test('forbids deletion for missing, null, or unrecognized states', () => {
+      assert.strictEqual(canDeleteLesson(null), false);
+      assert.strictEqual(canDeleteLesson(undefined), false);
+      assert.strictEqual(canDeleteLesson(''), false);
+      assert.strictEqual(canDeleteLesson('Archived'), false);
+    });
+  });
+
+  describe('12. 20 Vocabularies Curriculum Upper Bound Invariant', () => {
+    test('MAX_VOCAB_PER_LESSON is strictly set to 20', () => {
+      assert.strictEqual(MAX_VOCAB_PER_LESSON, 20);
     });
   });
 });
