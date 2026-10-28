@@ -97,7 +97,7 @@ export function parseLessonSummaries(envelopeOrData) {
  *   endRecord: number
  * }}
  */
-export function calculatePagination(page, size, totalElements, totalPages) {
+export function calculatePagination(page, size, totalElements, totalPages, maxButtons = 5) {
   const safeTotalPages = Math.max(0, totalPages || 0);
   const safePage = Math.max(0, Math.min(page || 0, Math.max(0, safeTotalPages - 1)));
   const hasPrev = safePage > 0;
@@ -105,13 +105,25 @@ export function calculatePagination(page, size, totalElements, totalPages) {
   const startRecord = totalElements === 0 ? 0 : safePage * size + 1;
   const endRecord = Math.min((safePage + 1) * size, totalElements);
 
+  let startPage = 0;
+  let endPage = -1;
+  if (safeTotalPages > 0) {
+    startPage = Math.max(0, safePage - Math.floor(maxButtons / 2));
+    endPage = Math.min(safeTotalPages - 1, startPage + maxButtons - 1);
+    if (endPage - startPage < maxButtons - 1) {
+      startPage = Math.max(0, endPage - maxButtons + 1);
+    }
+  }
+
   return {
     currentPage: safePage,
     totalPages: safeTotalPages,
     hasPrev,
     hasNext,
     startRecord,
-    endRecord
+    endRecord,
+    startPage,
+    endPage
   };
 }
 

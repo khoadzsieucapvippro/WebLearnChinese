@@ -305,11 +305,17 @@ flowchart TD
   * `tests/frontend/unit/lesson/creator-import.test.mjs`: Cập nhật boundary tiêu đề 200 ký tự (24/24 tests PASS).
   * `tests/frontend/e2e/creator-lessons.browser.mjs`: Thêm test E2E `CL-05` (luồng modal xóa bài nháp và cập nhật danh sách) và `CL-06` (chặn trần 20 từ vựng và vô hiệu hóa nút thêm) (6/6 tests PASS).
   * `tests/frontend/e2e/creator-import.browser.mjs`: Đồng bộ bộ đếm 200 ký tự (4/4 tests PASS).
+  * `frontend/css/style.css`: Thêm `overflow-x: hidden; max-width: 100vw;` cho `html, body, .management-layout`, `max-width: 100%` cho `.table-responsive-clean` và `.management-main-content` loại bỏ triệt để hiện tượng tràn ngang màn hình làm lệch thanh Sidebar và cắt cụt Header brand `Creator Studio`.
+  * `frontend/js/pages/creator-lessons-page.js`: Bổ sung tính toán `startPage` và `endPage` trong `calculatePagination`, kích hoạt đầy đủ chuỗi nút phân trang số `<< < 1 2 3 > >>` đồng bộ 100% với giao diện danh mục từ vựng của người học.
+  * `frontend/creator-lesson-editor.html` & `frontend/js/pages/creator-lesson-editor-page.js`: Dọn sạch thanh breadcrumb `Trung tâm quản lý / Creator Studio / ...` (chuyển tiêu đề bài học thành badge `#editorBreadcrumbTitle` chống XSS); tinh chỉnh chế độ "Chi Tiết Bài Học" (View Details) khi xem bài đã duyệt (`Approved`/`Pending`): chuyển tiêu đề sang "Chi Tiết Bài Học", ẩn nút "Nhập từ Excel", ẩn nút "Lưu tiêu đề", và ẩn cụm nút chỉnh sửa `▲`, `▼`, `Xóa` trên từng từ vựng giúp giao diện chỉ đọc sạch sẽ, chuyên nghiệp.
+  * `frontend/creator-lessons.html`, `frontend/creator-import.html`, `frontend/creator-lesson-editor.html`: Bổ sung query string chống cache `?v=20261028_02` trên các tệp module script và css.
 - **Tiêu chí & Hạng mục đã hoàn thiện**:
   1. *Phân lập Ranh giới Quản lý (Context Isolation)*: Xóa sạch toàn bộ "Quay lại học" khỏi khu vực quản lý. Chỉ có Đăng xuất mới thoát khỏi phiên làm việc quản lý.
   2. *Quy chuẩn Giáo trình 20 Từ Vựng (Curriculum Cap)*: Khóa cứng cả 3 tầng (UI Editor, Demo Engine, Spring Boot Service), hiển thị `X/20 từ vựng`.
   3. *Tự động Khóa CJK & Xử lý Cột Audio khi Nhập Excel*: Máy tự động lọc và khóa cứng chữ Hán `\p{IsHan}`, cột âm thanh linh hoạt (tự động phát giọng đọc chuẩn zh-CN nếu để trống).
   4. *Xóa Bài Học Nháp & Bị Từ Chối An Toàn*: Modal xác nhận an toàn, tuân thủ nghiêm ngặt bất biến vòng đời bài học.
+  5. *Chống Tràn Ngang Màn Hình & Đồng Bộ Phân Trang*: Không gian làm việc quản lý co giãn hoàn hảo trên màn hình laptop 1366x768 scale 125%, phân trang `<< < 1 2 3 > >>` đồng bộ chuẩn mực.
+  6. *Phân Định Rõ Ràng Biên Soạn vs Xem Chi Tiết*: Bài học đã duyệt hiển thị ở chế độ "Chi Tiết Bài Học" trang nhã, không còn hiển thị các nút thao tác bị vô hiệu hóa gây rối mắt.
 
 #### `TASK-6.2`: Moderator Queue & Thẩm Định Bài Học (`moderator-queue.html`, `moderator-review.html`, `moderator-history.html`) — ✅ ĐÃ HOÀN THÀNH & KHÓA CHẶT 100%
 - **Mục tiêu**: Quy trình thẩm định nội dung học liệu khách quan, minh bạch, thực thi nghiêm ngặt Phân lập trách nhiệm (Separation of Duties - SoD) và Bất biến cấm tự phê duyệt (Self-Review Invariant) theo đúng Phương án A.

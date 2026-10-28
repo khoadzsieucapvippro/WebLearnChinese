@@ -306,6 +306,9 @@ export class CreatorLessonEditorController {
       editorRejectedBanner: document.getElementById('editorRejectedBanner'),
       editorRejectedBannerContent: document.getElementById('editorRejectedBannerContent'),
       btnSubmitForModeration: document.getElementById('btnSubmitForModeration'),
+      pageHeading: document.getElementById('editorPageHeading'),
+      pageDesc: document.getElementById('editorPageDesc'),
+      btnLinkExcelImport: document.getElementById('btnLinkExcelImport'),
       statusBadge: document.getElementById('editorStatusBadge'),
       vocabCountBadge: document.getElementById('editorVocabCountBadge'),
       titleForm: document.getElementById('editorTitleForm'),
@@ -490,6 +493,25 @@ export class CreatorLessonEditorController {
 
     const { title, status, vocabularies } = this.currentLesson;
     const editable = isLessonEditable(status);
+
+    // 0. Page Heading Presentation
+    if (this.elements.pageHeading) {
+      this.elements.pageHeading.textContent = editable ? 'Phòng Biên Soạn Bài Học' : 'Chi Tiết Bài Học';
+    }
+    if (this.elements.pageDesc) {
+      this.elements.pageDesc.textContent = editable
+        ? 'Quản lý nội dung, tra cứu và bổ sung từ vựng, sắp xếp thứ tự hiển thị tuần tự cho người học.'
+        : 'Xem thông tin bài học và danh sách từ vựng đã được phê duyệt.';
+    }
+
+    // Hide Excel Import button when lesson is locked/not editable
+    if (this.elements.btnLinkExcelImport) {
+      if (editable) {
+        this.elements.btnLinkExcelImport.classList.remove('d-none');
+      } else {
+        this.elements.btnLinkExcelImport.classList.add('d-none');
+      }
+    }
 
     // 1. Breadcrumb
     if (this.elements.breadcrumbTitle) {
@@ -809,7 +831,7 @@ export class CreatorLessonEditorController {
 
           // Right: Reorder & Remove controls
           createSafeElement('div', {
-            className: 'creator-reorder-actions',
+            className: `creator-reorder-actions ${editable ? '' : 'd-none'}`,
             children: [
               // Move Up Button
               createSafeElement('button', {

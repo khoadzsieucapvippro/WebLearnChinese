@@ -123,13 +123,15 @@ describe('Unit: Creator Lesson Studio & Vocabulary Ordering (Task 9D.1)', () => 
   });
 
   describe('3. Pagination Boundary Math', () => {
-    test('calculates correct startRecord, endRecord, hasPrev, and hasNext', () => {
+    test('calculates correct startRecord, endRecord, hasPrev, hasNext, startPage, and endPage', () => {
       const calc = calculatePagination(0, 20, 45, 3);
       assert.strictEqual(calc.currentPage, 0);
       assert.strictEqual(calc.hasPrev, false);
       assert.strictEqual(calc.hasNext, true);
       assert.strictEqual(calc.startRecord, 1);
       assert.strictEqual(calc.endRecord, 20);
+      assert.strictEqual(calc.startPage, 0);
+      assert.strictEqual(calc.endPage, 2);
 
       const page2 = calculatePagination(2, 20, 45, 3);
       assert.strictEqual(page2.currentPage, 2);
@@ -137,6 +139,13 @@ describe('Unit: Creator Lesson Studio & Vocabulary Ordering (Task 9D.1)', () => 
       assert.strictEqual(page2.hasNext, false);
       assert.strictEqual(page2.startRecord, 41);
       assert.strictEqual(page2.endRecord, 45);
+      assert.strictEqual(page2.startPage, 0);
+      assert.strictEqual(page2.endPage, 2);
+
+      // Windowing test for 10 pages
+      const pageMiddle = calculatePagination(5, 10, 100, 10, 5);
+      assert.strictEqual(pageMiddle.startPage, 3);
+      assert.strictEqual(pageMiddle.endPage, 7);
     });
 
     test('handles empty dataset (0 totalElements)', () => {

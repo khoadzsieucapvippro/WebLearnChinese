@@ -14,7 +14,7 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>课</text></svg>">
 
   <!-- Core Design Tokens & Custom Stylesheet -->
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=20261028_02">
 
   <!-- Runtime Environment Configuration (Task FE-REMEDIATION-03) -->
   <script src="js/config.js"></script>
@@ -82,33 +82,23 @@
     <main id="mainContent" class="management-main-content">
       <div class="container-xl creator-studio-wrapper">
 
-        <!-- Management Sub-navigation Breadcrumb -->
+        <!-- Top Navigation Bar & Action -->
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
-          <nav aria-label="Đường dẫn điều hướng">
-            <ol class="breadcrumb mb-0 small">
-              <li class="breadcrumb-item"><a href="management.html" class="text-decoration-none">Trung tâm quản lý</a></li>
-              <li class="breadcrumb-item"><a href="creator-lessons.html" class="text-decoration-none">Creator Studio</a></li>
-              <li class="breadcrumb-item active" id="editorBreadcrumbTitle" aria-current="page">Chi tiết bài học</li>
-            </ol>
-          </nav>
+          <a href="creator-lessons.html" class="btn-chinese-secondary btn-sm text-decoration-none">
+            &larr; Về danh sách bài học
+          </a>
+          <span id="editorBreadcrumbTitle" class="badge bg-light text-secondary border font-monospace">Chi tiết bài học</span>
         </div>
-      </div>
 
-      <!-- Page Heading Section (Exactly 1 H1) -->
-      <section class="mb-4" aria-labelledby="editorPageHeading">
-        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
-          <div>
-            <h1 id="editorPageHeading" class="h2 fw-bold text-dark mb-1">Phòng Biên Soạn Bài Học</h1>
-            <p class="text-secondary mb-0">Quản lý nội dung, tra cứu và bổ sung từ vựng, sắp xếp thứ tự hiển thị tuần tự cho người học.</p>
+        <!-- Page Heading Section (Exactly 1 H1) -->
+        <section class="mb-4" aria-labelledby="editorPageHeading">
+          <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <div>
+              <h1 id="editorPageHeading" class="h2 fw-bold text-dark mb-1">Phòng Biên Soạn Bài Học</h1>
+              <p id="editorPageDesc" class="text-secondary mb-0">Quản lý nội dung, tra cứu và bổ sung từ vựng, sắp xếp thứ tự hiển thị tuần tự cho người học.</p>
+            </div>
           </div>
-          
-          <div class="d-flex align-items-center gap-2 flex-wrap">
-            <a href="creator-lessons.html" class="btn-chinese-secondary btn-sm text-decoration-none">
-              &larr; Về danh sách bài học
-            </a>
-          </div>
-        </div>
-      </section>
+        </section>
 
       <!-- 3-State Container Host for Initial Lesson Detail Loading / Errors -->
       <div id="editorStateContainer"></div>
@@ -309,10 +299,10 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 
   <!-- Management Workspace Layout & Sidebar Component -->
-  <script type="module" src="js/ui/management-layout.js"></script>
+  <script type="module" src="js/ui/management-layout.js?v=20261028_02"></script>
 
   <!-- Page Controller Module -->
-  <script type="module" src="js/pages/creator-lesson-editor-page.js"></script>
+  <script type="module" src="js/pages/creator-lesson-editor-page.js?v=20261028_02"></script>
 
 </body>
 </html>
