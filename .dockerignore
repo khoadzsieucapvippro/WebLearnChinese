@@ -37,7 +37,11 @@ docs/
 data/
 artifacts/
 scratch/
-speech-service/
+# Python build caches and tests (speech-service code is required by Dockerfile.unified)
+speech-service/__pycache__/
+speech-service/*/__pycache__/
+speech-service/*/*/__pycache__/
+speech-service/test_*.py
 scripts/
 *.csv
 *.json
