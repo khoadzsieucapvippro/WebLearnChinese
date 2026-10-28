@@ -25,6 +25,8 @@ public class LessonDetailResponse {
     private List<LessonVocabItemResponse> vocabularies = new ArrayList<>();
     private String rejectionReason;
     private String flaggedFields;
+    private Long creatorId;
+    private String creatorEmail;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -60,7 +62,7 @@ public class LessonDetailResponse {
         // Enforce deterministic ordering strictly by orderIndex ascending
         vocabList.sort(Comparator.comparing(LessonVocabItemResponse::getOrderIndex));
 
-        return new LessonDetailResponse(
+        LessonDetailResponse response = new LessonDetailResponse(
                 lesson.getLessonId(),
                 lesson.getTitle(),
                 lesson.getStatus(),
@@ -69,6 +71,11 @@ public class LessonDetailResponse {
                 lesson.getCreatedAt(),
                 lesson.getUpdatedAt()
         );
+        if (lesson.getCreatedBy() != null) {
+            response.setCreatorId(lesson.getCreatedBy().getAccountId());
+            response.setCreatorEmail(lesson.getCreatedBy().getEmailOrPhone());
+        }
+        return response;
     }
 
     public Long getLessonId() {
@@ -125,6 +132,22 @@ public class LessonDetailResponse {
 
     public void setFlaggedFields(String flaggedFields) {
         this.flaggedFields = flaggedFields;
+    }
+
+    public Long getCreatorId() {
+        return creatorId;
+    }
+
+    public void setCreatorId(Long creatorId) {
+        this.creatorId = creatorId;
+    }
+
+    public String getCreatorEmail() {
+        return creatorEmail;
+    }
+
+    public void setCreatorEmail(String creatorEmail) {
+        this.creatorEmail = creatorEmail;
     }
 
     public LocalDateTime getCreatedAt() {

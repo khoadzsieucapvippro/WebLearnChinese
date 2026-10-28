@@ -34,7 +34,7 @@ flowchart TD
 | | `TASK-4.5` | SRS Phòng Luyện Nghe & Bàn Phím Ảo IME (Listening) | `srs-review.html?mode=listening`, hint toggle, virtual IME | ✅ Hoàn thành |
 | **Chặng 5: Không gian Cá nhân** | `TASK-5.1` | Sổ tay Ghi chú Cá nhân (Personal Notes) | `notes-modal.js`, contextual notes integration | ✅ Hoàn thành |
 | **Chặng 6: Quản lý Nội dung** | `TASK-6.1` | Cổng Điều phối & Creator Studio (Tạo bài, Import) | `management.html`, `creator-lessons.html`, `creator-import.html` | ✅ Hoàn thành |
-| | `TASK-6.2` | Moderator Queue & Thẩm định bài học | `moderator-queue.html`, `moderator-review.html` | ⏳ Chờ rà soát |
+| | `TASK-6.2` | Moderator Queue & Thẩm định bài học | `moderator-queue.html`, `moderator-review.html`, `moderator-history.html` | ✅ Hoàn thành |
 | **Chặng 7: Quản trị Hệ thống** | `TASK-7.1` | Quản trị Tài khoản & Phân quyền Admin | `admin-accounts.html`, `admin-roles.html` | ⏳ Chờ rà soát |
 | | `TASK-7.2` | Quản trị Bài học, Từ vựng & Bộ thủ (Admin) | `admin-lessons.html`, `admin-vocabulary.html`, `admin-radicals.html` | ⏳ Chờ rà soát |
 | | `TASK-7.3` | Nhật ký Kiểm toán & Trung tâm Xác minh UI | `admin-audit-logs.html`, `verification-center.html` | ⏳ Chờ rà soát |
@@ -311,12 +311,24 @@ flowchart TD
   3. *Tự động Khóa CJK & Xử lý Cột Audio khi Nhập Excel*: Máy tự động lọc và khóa cứng chữ Hán `\p{IsHan}`, cột âm thanh linh hoạt (tự động phát giọng đọc chuẩn zh-CN nếu để trống).
   4. *Xóa Bài Học Nháp & Bị Từ Chối An Toàn*: Modal xác nhận an toàn, tuân thủ nghiêm ngặt bất biến vòng đời bài học.
 
-#### `TASK-6.2`: Moderator Queue & Thẩm Định Bài Học (`moderator-queue.html`, `moderator-review.html`)
-- **Mục tiêu**: Quy trình thẩm định nội dung khách quan, minh bạch.
-- **Tiêu chí kiểm tra**:
-  1. *Cấm Tự Phê Duyệt (Self-Review Invariant)*: Creator không thể tự phê duyệt hoặc tự từ chối bài học do chính mình tạo ra.
-  2. *Giao diện Review*: Xem chi tiết bài học, nghe thử âm thanh, kiểm tra từ vựng, nhập lý do phê duyệt/từ chối.
-  3. *Lịch sử Kiểm duyệt*: Lưu vết đầy đủ các quyết định kiểm duyệt vào hệ thống.
+#### `TASK-6.2`: Moderator Queue & Thẩm Định Bài Học (`moderator-queue.html`, `moderator-review.html`, `moderator-history.html`) — ✅ ĐÃ HOÀN THÀNH & KHÓA CHẶT 100%
+- **Mục tiêu**: Quy trình thẩm định nội dung học liệu khách quan, minh bạch, thực thi nghiêm ngặt Phân lập trách nhiệm (Separation of Duties - SoD) và Bất biến cấm tự phê duyệt (Self-Review Invariant) theo đúng Phương án A.
+- **Tệp mã nguồn & kiểm thử đã sửa đổi**:
+  * `backend/src/main/java/com/elearning/dto/response/LessonDetailResponse.java`: Bổ sung trường `creatorId` và `creatorEmail` (kèm `@JsonInclude(NON_NULL)`), cập nhật `fromEntity` nạp thông tin tác giả minh bạch từ thực thể Lesson.
+  * `frontend/js/api/demo-fallback-engine.js`: Trả về `creatorId` và `creatorEmail` trong `GET /moderator/lessons/:id`; tích hợp chốt chặn `Self-Review Invariant` ném lỗi HTTP 403 Forbidden khi kiểm duyệt viên trùng tác giả tại cả 2 endpoint `/approve` và `/reject`.
+  * `frontend/moderator-queue.html`, `frontend/moderator-review.html`, `frontend/moderator-history.html`: Dọn sạch hoàn toàn các dòng breadcrumb thừa (`Trung tâm quản lý / ...`), đồng bộ giao diện thoáng đãng, tinh gọn 100% với `creator-lessons.html`.
+  * `frontend/js/pages/moderator-review-page.js`:
+    - Xuất khẩu helper `isSelfReview(lesson, authManager)` so khớp `accountId` và `creatorEmail` (không phân biệt hoa thường).
+    - Cập nhật `parseLessonReviewDetail` trích xuất chính xác `creatorId` và `creatorEmail`.
+    - Phương thức `renderLessonHeader`: Hiển thị rõ ràng email tác giả tại `#reviewLessonAuthorNote`; nếu phát hiện tự kiểm duyệt bài của mình (`isSelfReview == true`), tự động kích hoạt `showSelfReviewWarning` (hộp cảnh báo vàng) và `disableModerationActions` (vô hiệu hóa/ẩn cả 2 nút Phê duyệt & Từ chối).
+    - Sửa `mapModerationError`: Bảo tồn nguyên trạng thông điệp lỗi 403 từ Backend (`msg || ...`), không gán đè chuỗi cứng sai lệch.
+  * `tests/frontend/unit/moderator/moderator-review.test.mjs`: Bổ sung Suite 15 với 6 tests chuyên sâu về Self-Review Invariant, trích xuất tác giả và thông điệp 403 (82/82 tests PASS).
+  * `tests/frontend/e2e/moderator-review.browser.mjs`: Bổ sung test E2E `MR-09` kiểm tra cảnh báo Self-Review và vô hiệu hóa nút hành động trên trình duyệt thật (9/9 tests PASS).
+- **Tiêu chí & Hạng mục đã hoàn thiện**:
+  1. *Khóa Cứng Bất Biến Cấm Tự Phê Duyệt (Self-Review Invariant)*: Hiển thị minh bạch tác giả bài học, tự động cảnh báo và vô hiệu hóa nút duyệt khi kiểm duyệt viên trùng tác giả.
+  2. *Giao Diện Tinh Gọn (Zero Breadcrumbs)*: Dọn sạch hoàn toàn breadcrumb rườm rà trên cả 3 trang của Moderator.
+  3. *Thẩm Định Đa Nền Tảng*: Kiểm tra âm thanh, cấu phần bộ thủ, modal phê duyệt/từ chối 500 ký tự và xử lý xung đột 409 Conflict.
+  4. *Kiểm thử Toàn diện*: PASS 82/82 unit tests, 19/19 browser E2E tests, 1.115/1.115 fast tests, 74/74 E2E blackbox tests (Tiers 1–4).
 
 ---
 

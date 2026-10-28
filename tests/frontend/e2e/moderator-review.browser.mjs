@@ -23,6 +23,8 @@ function createMockLessonDetail(id = 101) {
     title: 'HSK 1 — Bài 1: Chào hỏi căn bản',
     status: 'Pending',
     vocabularyCount: 3,
+    creatorId: 2,
+    creatorEmail: 'creator@gmail.com',
     createdAt: '2026-09-01T08:00:00Z',
     updatedAt: '2026-09-10T14:30:00Z',
     vocabularies: [
@@ -141,7 +143,7 @@ describe('Browser E2E: Moderator Lesson Review UI (Task 9E.2)', () => {
 
       // 3. Verify Author Note (unavailability truthfulness)
       const authorNote = await page.locator('#reviewLessonAuthorNote').textContent();
-      assert.ok(authorNote.includes('Không khả dụng'));
+      assert.ok(authorNote.includes('creator@gmail.com') || authorNote.includes('Chưa có thông tin tác giả'));
 
       // 4. Verify Vocabulary List and exact order
       const vocabItems = page.locator('#reviewVocabList > li');
@@ -596,6 +598,90 @@ describe('Browser E2E: Moderator Lesson Review UI (Task 9E.2)', () => {
       const returnBtn = page.locator('#btnConflictReturnQueue');
       await returnBtn.waitFor({ state: 'visible', timeout: 5000 });
       assert.ok(await returnBtn.isVisible());
+    } finally {
+      await context.close();
+    }
+  });
+
+
+  // MR-09: Self-Review Invariant -> Warning displayed and buttons disabled when viewing own lesson
+  test('MR-09: Self-Review Invariant -> Warning displayed and action buttons disabled when viewing own lesson', async () => {
+    const { page, context } = await createMonitoredPage(browser, {
+      viewportWidth: 1280,
+      viewportHeight: 720
+    });
+
+    try {
+      // Setup session as moderator with email 'moderator@test.com' and accountId 99
+      await page.addInitScript(() => {
+        sessionStorage.setItem('access_token', 'mockModeratorTokenForSelfReviewTest');
+        sessionStorage.setItem('user_info', JSON.stringify({
+          accountId: 99,
+          emailOrPhone: 'moderator@test.com',
+          fullName: 'Kiểm Duyệt Viên Kiêm Tác Giả',
+          roles: ['Moderator']
+        }));
+      });
+
+      const selfLessonDetail = {
+        lessonId: 202,
+        title: 'HSK 2 — Bài 5: Tự Biên Soạn',
+        status: 'Pending',
+        vocabularyCount: 2,
+        creatorId: 99,
+        creatorEmail: 'moderator@test.com',
+        createdAt: '2026-09-01T08:00:00Z',
+        updatedAt: '2026-09-10T14:30:00Z',
+        vocabularies: [
+          {
+            vocabId: 20,
+            hanzi: '学',
+            pinyin: 'xué',
+            pinyinRaw: 'xue2',
+            meaningHanViet: 'Học',
+            meaningVi: 'Học tập',
+            audioUrl: null,
+            videoWritingUrl: null,
+            exampleSentence: '我学习中文。',
+            exampleTranslation: 'Tôi học tiếng Trung.',
+            orderIndex: 1
+          }
+        ]
+      };
+
+      // Mock GET /api/v1/moderator/lessons/202
+      await page.route(/\/api\/v1\/moderator\/lessons\/202$/, async route => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            code: 'SUCCESS',
+            message: 'Thao tác thành công',
+            data: selfLessonDetail
+          })
+        });
+      });
+
+      await page.goto(`${baseUrl}/moderator-review.html?id=202`, { waitUntil: 'domcontentloaded' });
+
+      // 1. Author note should display creator email and ID
+      const authorNote = page.locator('#reviewLessonAuthorNote');
+      await authorNote.waitFor({ state: 'visible', timeout: 5000 });
+      const authorText = await authorNote.textContent();
+      assert.ok(authorText.includes('moderator@test.com'));
+
+      // 2. Self-Review warning banner must be visible
+      const alert = page.locator('#moderationStatusAlert');
+      await alert.waitFor({ state: 'visible', timeout: 5000 });
+      assert.ok(await alert.isVisible());
+      const alertText = await alert.textContent();
+      assert.ok(alertText.includes('Self-Review Invariant') || alertText.includes('chính mình'));
+
+      // 3. Action bar must be hidden or buttons disabled
+      const btnApprove = page.locator('#btnOpenApproveModal');
+      const isHidden = await btnApprove.isHidden().catch(() => true);
+      const isDisabled = await btnApprove.isDisabled().catch(() => false);
+      assert.ok(isHidden || isDisabled, 'Approve button must be hidden or disabled for self-review');
     } finally {
       await context.close();
     }

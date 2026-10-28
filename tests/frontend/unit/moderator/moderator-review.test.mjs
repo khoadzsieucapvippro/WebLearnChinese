@@ -31,6 +31,7 @@ import {
   serializeApprovePayload,
   serializeRejectPayload,
   mapModerationError,
+  isSelfReview,
   ModeratorReviewController
 } from '../../../../frontend/js/pages/moderator-review-page.js';
 
@@ -450,4 +451,58 @@ describe('Unit: Moderator Lesson Review & Moderation Workflow UI (Task 9E.2 & 9E
     });
   });
 
+
+  describe('15. Self-Review Invariant & Author Identity Parsing (Task 6.2 - Option A)', () => {
+    test('parseLessonReviewDetail extracts creatorId and creatorEmail from payload', () => {
+      const payload = {
+        lessonId: 105,
+        title: 'Bài kiểm tra tác giả',
+        creatorId: 42,
+        creatorEmail: 'author@weblearnchinese.com',
+        vocabularies: []
+      };
+      const parsed = parseLessonReviewDetail(payload);
+      assert.strictEqual(parsed.creatorId, 42);
+      assert.strictEqual(parsed.creatorEmail, 'author@weblearnchinese.com');
+    });
+
+    test('isSelfReview detects identical accountId', () => {
+      const mockAuth = {
+        getUser: () => ({ accountId: 99, emailOrPhone: 'user99@test.com' })
+      };
+      const lesson = { creatorId: 99, creatorEmail: 'other@test.com' };
+      assert.strictEqual(isSelfReview(lesson, mockAuth), true);
+    });
+
+    test('isSelfReview detects identical creatorEmail case-insensitively', () => {
+      const mockAuth = {
+        getUser: () => ({ accountId: 1, emailOrPhone: 'Author@Example.Com' })
+      };
+      const lesson = { creatorId: 999, creatorEmail: 'author@example.com' };
+      assert.strictEqual(isSelfReview(lesson, mockAuth), true);
+    });
+
+    test('isSelfReview returns false when logged in user is distinct', () => {
+      const mockAuth = {
+        getUser: () => ({ accountId: 5, emailOrPhone: 'moderator@test.com' })
+      };
+      const lesson = { creatorId: 2, creatorEmail: 'creator@test.com' };
+      assert.strictEqual(isSelfReview(lesson, mockAuth), false);
+    });
+
+    test('isSelfReview returns false safely for null or empty inputs', () => {
+      assert.strictEqual(isSelfReview(null, null), false);
+      assert.strictEqual(isSelfReview({}, { getUser: () => null }), false);
+    });
+
+    test('mapModerationError preserves backend 403 Self-Review forbidden message', () => {
+      const err = {
+        status: 403,
+        message: 'Bạn không thể tự kiểm duyệt nội dung do chính mình tạo ra'
+      };
+      const mapped = mapModerationError(err);
+      assert.strictEqual(mapped.type, 'forbidden');
+      assert.ok(mapped.message.includes('tự kiểm duyệt'));
+    });
+  });
 });

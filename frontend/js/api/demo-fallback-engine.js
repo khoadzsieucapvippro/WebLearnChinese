@@ -922,7 +922,11 @@ class DemoFallbackEngine {
       const id = parseInt(modLessonDetailMatch[1], 10);
       const lesson = data.lessons.find(l => l.lessonId === id);
       if (!lesson) throw new ApiError(`Không tìm thấy bài học ${id}`, 404, 'NOT_FOUND');
-      return lesson;
+      return {
+        ...lesson,
+        creatorId: lesson.creatorId || 2,
+        creatorEmail: lesson.creatorEmail || 'creator@gmail.com'
+      };
     }
 
     const modApproveMatch = cleanPath.match(/^\/moderator\/lessons\/(\d+)\/approve$/);
@@ -930,6 +934,14 @@ class DemoFallbackEngine {
       const id = parseInt(modApproveMatch[1], 10);
       const lesson = data.lessons.find(l => l.lessonId === id);
       if (!lesson) throw new ApiError(`Không tìm thấy bài học ${id}`, 404, 'NOT_FOUND');
+
+      // Self-Review Invariant: Moderator cannot approve their own lesson
+      const currentEmail = authManager.getUser()?.emailOrPhone || '';
+      const currentId = authManager.getUser()?.accountId;
+      if ((lesson.creatorId && currentId && lesson.creatorId === currentId) ||
+          (lesson.creatorEmail && currentEmail && lesson.creatorEmail.toLowerCase() === currentEmail.toLowerCase())) {
+        throw new ApiError('Bạn không thể tự kiểm duyệt nội dung do chính mình tạo ra', 403, 'FORBIDDEN');
+      }
 
       lesson.status = 'Approved';
       lesson.updatedAt = new Date().toISOString();
@@ -952,6 +964,14 @@ class DemoFallbackEngine {
       const id = parseInt(modRejectMatch[1], 10);
       const lesson = data.lessons.find(l => l.lessonId === id);
       if (!lesson) throw new ApiError(`Không tìm thấy bài học ${id}`, 404, 'NOT_FOUND');
+
+      // Self-Review Invariant: Moderator cannot reject their own lesson
+      const currentEmail = authManager.getUser()?.emailOrPhone || '';
+      const currentId = authManager.getUser()?.accountId;
+      if ((lesson.creatorId && currentId && lesson.creatorId === currentId) ||
+          (lesson.creatorEmail && currentEmail && lesson.creatorEmail.toLowerCase() === currentEmail.toLowerCase())) {
+        throw new ApiError('Bạn không thể tự kiểm duyệt nội dung do chính mình tạo ra', 403, 'FORBIDDEN');
+      }
 
       const resolvedReason = body?.rejectionReason || body?.reason || 'Cần bổ sung thêm ví dụ minh họa.';
       const resolvedFlags = body?.flaggedFields || null;

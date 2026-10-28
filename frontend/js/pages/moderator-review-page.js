@@ -158,11 +158,11 @@ export function mapModerationError(err) {
     };
   }
 
-  if (status === 403) {
+  if (status === 403 || msg.includes('403') || msg.includes('FORBIDDEN') || msg.includes('tự kiểm duyệt')) {
     return {
       type: 'forbidden',
       title: 'Không Có Quyền Kiểm Duyệt (403 Forbidden)',
-      message: 'Tài khoản của bạn không có vai trò Kiểm duyệt viên (Moderator) hoặc Quản trị viên (Admin).'
+      message: msg || 'Tài khoản của bạn không có vai trò Kiểm duyệt viên (Moderator) hoặc Quản trị viên (Admin).'
     };
   }
 
@@ -272,6 +272,33 @@ export function formatReviewDate(isoString) {
  *   }>
  * }}
  */
+/**
+ * Self-Review Invariant Helper (Phương án A)
+ * Checks whether the current logged-in user is the author of the lesson under review.
+ * Under SoD invariants, a creator cannot self-approve or self-reject their own lesson.
+ * 
+ * @param {object} lesson 
+ * @param {object} [authManagerInstance=authManager] 
+ * @returns {boolean}
+ */
+export function isSelfReview(lesson, authManagerInstance = authManager) {
+  if (!lesson || typeof lesson !== 'object') return false;
+  if (!authManagerInstance || typeof authManagerInstance.getUser !== 'function') return false;
+  const user = authManagerInstance.getUser();
+  if (!user) return false;
+
+  const currentId = user.accountId;
+  const currentEmail = (user.emailOrPhone || '').toLowerCase().trim();
+
+  if (lesson.creatorId && currentId && Number(lesson.creatorId) === Number(currentId)) {
+    return true;
+  }
+  if (lesson.creatorEmail && currentEmail && String(lesson.creatorEmail).toLowerCase().trim() === currentEmail) {
+    return true;
+  }
+  return false;
+}
+
 export function parseLessonReviewDetail(envelopeOrData) {
   if (!envelopeOrData) {
     throw new Error('Dữ liệu bài học trống');
@@ -312,6 +339,8 @@ export function parseLessonReviewDetail(envelopeOrData) {
     title: String(data.title || 'Bài học không tên').trim(),
     status: String(data.status || 'Pending').trim(),
     vocabularyCount: typeof data.vocabularyCount === 'number' ? data.vocabularyCount : vocabularies.length,
+    creatorId: data.creatorId ? Number(data.creatorId) : null,
+    creatorEmail: data.creatorEmail ? String(data.creatorEmail).trim() : null,
     createdAt: data.createdAt || null,
     updatedAt: data.updatedAt || null,
     vocabularies
@@ -631,6 +660,21 @@ export class ModeratorReviewController {
   /**
    * Disables all moderation mutation triggers once a decision is made or state is non-Pending.
    */
+  showSelfReviewWarning() {
+    if (this.dom.moderationStatusAlert) {
+      this.dom.moderationStatusAlert.className = 'alert alert-warning border border-warning d-flex align-items-center gap-2 mt-2 mb-3';
+      clearContainer(this.dom.moderationStatusAlert);
+      this.dom.moderationStatusAlert.appendChild(createSafeElement('span', {
+        attrs: { 'aria-hidden': 'true' },
+        text: '⚠️'
+      }));
+      this.dom.moderationStatusAlert.appendChild(createSafeElement('span', {
+        text: ' Bạn chính là tác giả của bài học này. Để đảm bảo tính khách quan và minh bạch (Self-Review Invariant), bạn không thể tự kiểm duyệt bài học do chính mình tạo ra.'
+      }));
+      this.dom.moderationStatusAlert.classList.remove('d-none');
+    }
+  }
+
   disableModerationActions() {
     if (this.dom.moderationActionBar) {
       this.dom.moderationActionBar.classList.add('d-none');
@@ -1015,10 +1059,20 @@ export class ModeratorReviewController {
       this.dom.lessonUpdatedAt.textContent = formatReviewDate(lesson.updatedAt);
     }
     if (this.dom.lessonAuthorNote) {
-      this.dom.lessonAuthorNote.textContent = 'Không khả dụng trong hợp đồng chi tiết hiện tại';
+      if (lesson.creatorEmail) {
+        this.dom.lessonAuthorNote.textContent = `${lesson.creatorEmail}${lesson.creatorId ? ` (Mã tác giả #${lesson.creatorId})` : ''}`;
+        this.dom.lessonAuthorNote.className = 'text-dark fw-semibold';
+      } else {
+        this.dom.lessonAuthorNote.textContent = 'Chưa có thông tin tác giả';
+        this.dom.lessonAuthorNote.className = 'text-muted fst-italic';
+      }
     }
 
-    if (String(lesson.status).toLowerCase() === 'pending') {
+    const isSelf = isSelfReview(lesson);
+    if (isSelf) {
+      this.showSelfReviewWarning();
+      this.disableModerationActions();
+    } else if (String(lesson.status).toLowerCase() === 'pending') {
       if (this.dom.moderationActionBar) this.dom.moderationActionBar.classList.remove('d-none');
       if (this.dom.reviewBottomActionBar) this.dom.reviewBottomActionBar.classList.remove('d-none');
     } else {
