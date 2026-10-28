@@ -575,6 +575,15 @@ p {
   color: var(--color-text-primary);
 }
 
+.btn-chinese-primary.btn-sm,
+.btn-chinese-secondary.btn-sm,
+.btn-chinese-outline.btn-sm {
+  font-size: 0.8125rem;
+  padding: 0.25rem 0.625rem;
+  min-height: 32px;
+  white-space: nowrap;
+}
+
 /* Outline Button */
 .btn-chinese-outline {
   display: inline-flex;

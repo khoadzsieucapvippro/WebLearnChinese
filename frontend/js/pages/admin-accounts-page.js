@@ -806,13 +806,13 @@ export class AdminAccountsController {
     });
 
     const actionContainer = createSafeElement('div', {
-      className: 'd-flex align-items-center justify-content-center gap-1'
+      className: 'd-flex align-items-center justify-content-center gap-1 flex-nowrap'
     });
 
     if (isCurrentAdmin) {
       // Self-Protection Policy (POL-8D-01): Admin cannot deactivate or ban self
       const selfDisabledBtn = createSafeElement('button', {
-        className: 'btn btn-chinese-secondary btn-sm opacity-50 btn-change-status',
+        className: 'btn btn-chinese-secondary btn-sm text-nowrap opacity-50 btn-change-status',
         attrs: {
           'type': 'button',
           'id': `btnChangeStatus_${account.accountId}`,
@@ -826,7 +826,7 @@ export class AdminAccountsController {
       actionContainer.appendChild(selfDisabledBtn);
 
       const selfResetDisabledBtn = createSafeElement('button', {
-        className: 'btn btn-chinese-secondary btn-sm opacity-50',
+        className: 'btn btn-chinese-secondary btn-sm text-nowrap opacity-50',
         attrs: {
           'type': 'button',
           'id': `btnResetPassword_${account.accountId}`,
@@ -840,7 +840,7 @@ export class AdminAccountsController {
       actionContainer.appendChild(selfResetDisabledBtn);
     } else {
       const changeStatusBtn = createSafeElement('button', {
-        className: 'btn btn-chinese-secondary btn-sm btn-change-status',
+        className: 'btn btn-chinese-secondary btn-sm text-nowrap btn-change-status',
         attrs: {
           'type': 'button',
           'id': `btnChangeStatus_${account.accountId}`,
@@ -857,7 +857,7 @@ export class AdminAccountsController {
       actionContainer.appendChild(changeStatusBtn);
 
       const resetPasswordBtn = createSafeElement('button', {
-        className: 'btn btn-chinese-secondary btn-sm btn-reset-password',
+        className: 'btn btn-chinese-secondary btn-sm text-nowrap btn-reset-password',
         attrs: {
           'type': 'button',
           'id': `btnResetPassword_${account.accountId}`,
