@@ -155,6 +155,13 @@ describe('Regression: Authenticated Links, Relative Paths & Data Isolation', () 
       const progressIdx = dropdownLinksContainer.children.indexOf(learningProgressLink);
       assert.strictEqual(progressIdx, profileIdx + 1, '#navLearningProgressBtn must appear immediately below #navProfileBtn');
 
+      // Verify logout button (#navLogoutBtn) is immediately below #navLearningProgressBtn for Learner
+      const logoutBtn = findElementByAttr(container, 'id', 'navLogoutBtn');
+      assert.ok(logoutBtn, 'Logout button (#navLogoutBtn) must be present in avatar dropdown');
+      assert.strictEqual(logoutBtn.textContent, 'Đăng xuất');
+      const logoutIdx = dropdownLinksContainer.children.indexOf(logoutBtn);
+      assert.strictEqual(logoutIdx, progressIdx + 1, '#navLogoutBtn must appear immediately below #navLearningProgressBtn');
+
       // Verify privileged management link is absent for Learner (Feature F15)
       assert.strictEqual(findElementByAttr(container, 'id', 'navManagementBtn'), null, 'Management link must NOT exist for Learner');
       assert.strictEqual(findElementByAttr(container, 'id', 'navCreatorStudioBtn'), null);

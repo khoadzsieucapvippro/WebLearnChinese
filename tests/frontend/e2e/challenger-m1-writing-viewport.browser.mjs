@@ -541,7 +541,7 @@ describe('Challenger M1: Viewport & Cross-Feature Adversarial Harness', () => {
       const bottomBackBtn = page.locator('#btnBottomBackToShelf');
 
       assert.ok(await backBtn.isVisible(), 'Header back button visible');
-      assert.ok(await bottomBackBtn.isVisible(), 'Bottom back button visible');
+      assert.strictEqual(await bottomBackBtn.count(), 0, 'Bottom back button is removed per user request');
 
       const errors = getRuntimeErrors();
       assert.strictEqual(errors.length, 0, `Runtime errors: ${errors.join('\n')}`);

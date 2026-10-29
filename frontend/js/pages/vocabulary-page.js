@@ -1325,7 +1325,8 @@ export class VocabularyPageController {
       this.elements.modalAudioPlayer.pause();
       this.elements.modalAudioPlayer.src = safeUrl;
       this.elements.modalAudioPlayer.load();
-      this.elements.modalAudioSection.classList.remove('d-none');
+      // Keep audio player section hidden; speaker button next to pinyin plays the authentic audio
+      this.elements.modalAudioSection.classList.add('d-none');
     } else {
       this.elements.modalAudioPlayer.pause();
       this.elements.modalAudioPlayer.removeAttribute('src');

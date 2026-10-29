@@ -465,6 +465,20 @@ p {
   outline: none;
 }
 
+.nav-dropdown-item.nav-dropdown-item-logout {
+  color: var(--color-status-danger);
+  border-top: 1px solid var(--color-border);
+  margin-top: 0.25rem;
+  padding-top: 0.625rem;
+}
+
+.nav-dropdown-item.nav-dropdown-item-logout:hover,
+.nav-dropdown-item.nav-dropdown-item-logout:focus-visible {
+  background-color: var(--color-status-danger-bg);
+  color: var(--color-primitive-crimson-700);
+  outline: none;
+}
+
 @media (max-width: 991.98px) {
   .nav-account-cluster {
     flex-wrap: wrap;

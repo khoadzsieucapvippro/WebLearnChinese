@@ -254,6 +254,50 @@ export function renderNavbarAuth(container) {
     const roles = authManager.getRoles();
     const primaryRole = getPrimaryRole(roles);
 
+    // Bind logout handler
+    const handleLogout = () => {
+      const isProtectedPage = typeof window !== 'undefined' && 
+        (window.location.pathname.endsWith('profile.html') ||
+         window.location.pathname.endsWith('srs-dashboard.html') ||
+         window.location.pathname.endsWith('srs-review.html') ||
+         window.location.pathname.endsWith('creator-lessons.html') ||
+         window.location.pathname.endsWith('creator-lesson-editor.html') ||
+         window.location.pathname.endsWith('creator-import.html') ||
+         window.location.pathname.endsWith('moderator-queue.html') ||
+         window.location.pathname.endsWith('moderator-review.html') ||
+         window.location.pathname.endsWith('moderator-history.html') ||
+         window.location.pathname.endsWith('admin-accounts.html') ||
+         window.location.pathname.endsWith('admin-roles.html') ||
+         window.location.pathname.endsWith('admin-radicals.html') ||
+         window.location.pathname.endsWith('admin-vocabulary.html') ||
+         window.location.pathname.endsWith('admin-lessons.html') ||
+         window.location.pathname.endsWith('management.html') ||
+         window.location.pathname.endsWith('admin-audit-logs.html'));
+
+      if (authManager.isAuthenticated()) {
+        try {
+          apiClient('/auth/logout', { method: 'POST', skipAuthRedirect: true }).catch(() => null);
+        } catch (_) {}
+      }
+
+      authManager.logout(false);
+
+      if (isProtectedPage) {
+        window.location.href = 'index.html';
+      } else {
+        try {
+          showToast({
+            type: 'info',
+            title: 'Phiên làm việc',
+            message: 'Bạn đã đăng xuất thành công.'
+          });
+        } catch (_) {
+          // Toast notification optional in standalone environments
+        }
+        renderNavbarAuth(container);
+      }
+    };
+
     // Build role shortcut links for the account dropdown
     const dropdownLinks = [];
 
@@ -316,6 +360,19 @@ export function renderNavbarAuth(container) {
         );
       }
     }
+
+    // Logout item placed inside the user dropdown menu under learning progress
+    const logoutBtn = createSafeElement('button', {
+      className: 'nav-dropdown-item nav-dropdown-item-logout py-2 px-3 text-start w-100',
+      text: 'Đăng xuất',
+      attrs: {
+        type: 'button',
+        id: 'navLogoutBtn',
+        'aria-label': 'Đăng xuất khỏi phiên làm việc'
+      }
+    });
+    logoutBtn.addEventListener('click', handleLogout);
+    dropdownLinks.push(logoutBtn);
 
     // Dropdown Menu Panel
     const dropdownPanel = createSafeElement('div', {
@@ -457,72 +514,15 @@ export function renderNavbarAuth(container) {
       }
     });
 
-    // Logout button
-    const logoutBtn = createSafeElement('button', {
-      className: 'btn-chinese-secondary py-1 px-3 btn-sm',
-      text: 'Đăng xuất',
-      attrs: {
-        type: 'button',
-        id: 'navLogoutBtn',
-        'aria-label': 'Đăng xuất khỏi phiên làm việc'
-      }
-    });
-
     const userWrapper = createSafeElement('div', {
       className: 'nav-account-cluster d-flex align-items-center gap-2',
       attrs: { id: 'navAuthenticatedSection' },
       children: [
         ...(isDemo ? [createDemoSimulationBadge()] : []),
         roleBadge,
-        dropdownWrapper,
-        logoutBtn
+        dropdownWrapper
       ]
     });
-
-    // Bind logout handler
-    const handleLogout = () => {
-      const isProtectedPage = typeof window !== 'undefined' && 
-        (window.location.pathname.endsWith('profile.html') ||
-         window.location.pathname.endsWith('srs-dashboard.html') ||
-         window.location.pathname.endsWith('srs-review.html') ||
-         window.location.pathname.endsWith('creator-lessons.html') ||
-         window.location.pathname.endsWith('creator-lesson-editor.html') ||
-         window.location.pathname.endsWith('creator-import.html') ||
-         window.location.pathname.endsWith('moderator-queue.html') ||
-         window.location.pathname.endsWith('moderator-review.html') ||
-         window.location.pathname.endsWith('moderator-history.html') ||
-         window.location.pathname.endsWith('admin-accounts.html') ||
-         window.location.pathname.endsWith('admin-roles.html') ||
-         window.location.pathname.endsWith('admin-radicals.html') ||
-         window.location.pathname.endsWith('admin-vocabulary.html') ||
-         window.location.pathname.endsWith('admin-lessons.html') ||
-         window.location.pathname.endsWith('management.html') ||
-         window.location.pathname.endsWith('admin-audit-logs.html'));
-
-      if (authManager.isAuthenticated()) {
-        try {
-          apiClient('/auth/logout', { method: 'POST', skipAuthRedirect: true }).catch(() => null);
-        } catch (_) {}
-      }
-
-      authManager.logout(false);
-
-      if (isProtectedPage) {
-        window.location.href = 'index.html';
-      } else {
-        try {
-          showToast({
-            type: 'info',
-            title: 'Phiên làm việc',
-            message: 'Bạn đã đăng xuất thành công.'
-          });
-        } catch (_) {
-          // Toast notification optional in standalone environments
-        }
-      }
-    };
-
-    logoutBtn.addEventListener('click', handleLogout);
 
     container.appendChild(userWrapper);
   }

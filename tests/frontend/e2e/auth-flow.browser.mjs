@@ -91,8 +91,10 @@ describe('Browser E2E: Authentication UI, Profile & Session Integration', () => 
       const roleBadgeText = await page.textContent('#navRoleBadge');
       assert.strictEqual(roleBadgeText.trim(), 'Học viên');
 
+      // Open user dropdown menu to access user actions
+      await page.click('#navAccountDropdownTrigger');
       const logoutBtn = await page.locator('#navLogoutBtn');
-      assert.ok(await logoutBtn.isVisible(), 'Logout button must be visible');
+      assert.ok(await logoutBtn.isVisible(), 'Logout button must be visible inside account dropdown');
 
       // Verify Token in localStorage
       const token = await page.evaluate(() => localStorage.getItem('access_token'));
@@ -134,7 +136,8 @@ describe('Browser E2E: Authentication UI, Profile & Session Integration', () => 
       await page.goto(`${baseUrl}/index.html`, { waitUntil: 'domcontentloaded' });
       await page.waitForSelector('#navAuthenticatedSection');
 
-      // Click logout
+      // Open dropdown menu and click logout
+      await page.click('#navAccountDropdownTrigger');
       await page.click('#navLogoutBtn');
 
       // Verify navbar returns to Guest state

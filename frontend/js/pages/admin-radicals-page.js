@@ -794,30 +794,42 @@ export class AdminRadicalsPageController {
       mediaNodes.push(createSafeElement('span', { className: 'text-muted small', text: '—' }));
     }
 
-    // Action buttons
+    // Action buttons inside unified btn-group (synchronized with admin-vocabulary)
+    const actionGroup = createSafeElement('div', {
+      className: 'btn-group btn-group-sm',
+      attrs: {
+        role: 'group',
+        'aria-label': `Thao tác cho bộ thủ ${character}`
+      }
+    });
+
     const btnEdit = createSafeElement('button', {
-      className: 'btn btn-sm btn-chinese-secondary py-1 px-2 me-1',
+      className: 'btn btn-outline-secondary',
       text: 'Sửa',
       attrs: {
         type: 'button',
+        id: `btnEditRadical-${id}`,
         'aria-label': `Chỉnh sửa bộ thủ ${character}`
       }
     });
     btnEdit.addEventListener('click', () => {
       this.openEditModal(item, btnEdit);
     });
+    actionGroup.appendChild(btnEdit);
 
     const btnDelete = createSafeElement('button', {
-      className: 'btn btn-sm btn-outline-danger py-1 px-2',
+      className: 'btn btn-outline-danger',
       text: 'Xóa',
       attrs: {
         type: 'button',
+        id: `btnDeleteRadical-${id}`,
         'aria-label': `Xóa bộ thủ ${character}`
       }
     });
     btnDelete.addEventListener('click', () => {
       this.openDeleteModal(item, btnDelete);
     });
+    actionGroup.appendChild(btnDelete);
 
     return createSafeElement('tr', {
       children: [
@@ -869,9 +881,9 @@ export class AdminRadicalsPageController {
         }),
         // 7. Actions
         createSafeElement('td', {
-          className: 'text-end pe-3 text-nowrap',
+          className: 'text-end pe-3 align-middle text-nowrap',
           attrs: { 'data-label': 'Thao tác' },
-          children: [btnEdit, btnDelete]
+          children: [actionGroup]
         })
       ]
     });
