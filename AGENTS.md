@@ -69,6 +69,7 @@ Khi thực thi bất kỳ lệnh hoặc tác vụ nền (background task) nào:
 - Luôn sử dụng DOM APIs an toàn: `document.createElement()`, `element.textContent`, `element.setAttribute()`.
 - Mọi liên kết URL và tài nguyên media phải qua `sanitizeNavigationUrl()` và `sanitizeResourceUrl()` trong `frontend/js/ui/security.js`.
 - Tuân thủ bảng màu Scholarly Cinnabar: `--color-primary: #8B2635`.
+- **Tính Nhất Quán Giao Diện (Design System & UI Consistency)**: Tuyệt đối CẤM tự ý bịa đặt (improvise) các thành phần giao diện, placeholder tạm bợ (như emoji 👁️, icon ngoại lai, inline styles mới). Mọi nút bấm, input, modal, toggle (như nút xem mật khẩu `.toggle-password-btn` với cặp SVG `.eye-icon` & `.eye-off-icon`) BẮT BUỘC phải tra cứu và tái sử dụng chuẩn mực cấu trúc HTML/CSS đã có sẵn từ các trang anh em (`login.html`, `register.html`, `profile.html`).
 
 ## 6. Các Bất Biến Nghiệp Vụ & Quy Trình
 - **Cấm Tự Phê Duyệt (Self-Review Prohibition)**: Creator không được phép tự phê duyệt hoặc tự từ chối bài học do chính mình tạo ra.

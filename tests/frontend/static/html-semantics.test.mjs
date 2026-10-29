@@ -78,6 +78,21 @@ describe('Static HTML5 Semantics & Project Invariants', () => {
         }
       });
 
+      test('enforces standardized SVG password toggle structure across all toggle-password-btn instances', () => {
+        const toggleBtnMatches = html.matchAll(/<button[^>]*class=["'][^"']*toggle-password-btn[^"']*["'][^>]*>([\s\S]*?)<\/button>/gi);
+        for (const match of toggleBtnMatches) {
+          const btnContent = match[1];
+          assert.ok(
+            btnContent.includes('eye-icon') && btnContent.includes('eye-off-icon'),
+            `Every .toggle-password-btn in ${fileName} must use standardized SVG .eye-icon and .eye-off-icon (no raw emojis or improvised buttons allowed)`
+          );
+          assert.ok(
+            !btnContent.includes('👁️') && !btnContent.includes('👁'),
+            `Found raw emoji eye placeholder in ${fileName} instead of standardized SVG vector`
+          );
+        }
+      });
+
       test('enforces guest navbar register button label is "Đăng ký" and not "Bắt đầu học"', () => {
         const navAuthMatch = html.match(/<div[^>]*id=["']navAuthContainer["'][^>]*>([\s\S]*?)<\/div>/i);
         if (navAuthMatch && navAuthMatch[1].includes('register.html')) {
