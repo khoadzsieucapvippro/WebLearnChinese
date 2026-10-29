@@ -1436,8 +1436,7 @@ export function adaptHeaderForManagement() {
           createSafeElement('span', { className: 'fw-bold fs-5 text-chinese-red lh-1', text: 'Hán Ngữ' }),
           createSafeElement('span', { className: 'fs-7 text-secondary tracking-wide', text: 'QUẢN LÝ & TÁC NGHIỆP' })
         ]
-      }),
-      createSafeElement('span', { className: 'management-brand-badge d-none d-sm-inline-block', text: 'Hồ sơ tài khoản' })
+      })
     ]
   });
 
