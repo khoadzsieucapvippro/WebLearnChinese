@@ -71,6 +71,12 @@ services:
       - key: SPRING_DATASOURCE_PASSWORD
         sync: false
 
+      # Brevo API Key for Worldwide Email Delivery (Port 443 HTTPS, All Recipients)
+      - key: BREVO_API_KEY
+        sync: false
+      - key: BREVO_SENDER_EMAIL
+        value: "keodeom1700a15@gmail.com"
+
       # Resend API Key for Cloud HTTPS Email Delivery (Port 443)
       - key: RESEND_API_KEY
         sync: false

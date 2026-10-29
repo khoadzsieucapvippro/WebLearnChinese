@@ -41,6 +41,9 @@ public class EmailServiceImpl implements EmailService {
     @Value("${app.email.brevo-api-key:${BREVO_API_KEY:}}")
     private String brevoApiKey;
 
+    @Value("${app.email.brevo-sender-email:${BREVO_SENDER_EMAIL:keodeom1700a15@gmail.com}}")
+    private String brevoSenderEmail;
+
     @Value("${app.email.from-email:${APP_EMAIL_FROM:onboarding@resend.dev}}")
     private String fromEmail;
 
@@ -77,7 +80,15 @@ public class EmailServiceImpl implements EmailService {
         String recipient = toEmail.trim().toLowerCase();
         log.info("Bắt đầu xử lý gửi email xác thực mã quên mật khẩu tới: {}", recipient);
 
-        // 1. Try Resend API over HTTPS (port 443) - instant, works on Render Free Tier
+        // 1. Try Brevo API over HTTPS (port 443) - sends to ANY Gmail/email address worldwide
+        if (brevoApiKey != null && !brevoApiKey.trim().isEmpty()) {
+            boolean success = sendViaBrevo(recipient, resetCode);
+            if (success) {
+                return true;
+            }
+        }
+
+        // 2. Try Resend API over HTTPS (port 443)
         if (resendApiKey != null && !resendApiKey.trim().isEmpty()) {
             boolean success = sendViaResend(recipient, resetCode);
             if (success) {
@@ -85,17 +96,9 @@ public class EmailServiceImpl implements EmailService {
             }
         }
 
-        // 2. Try Gmail / Standard SMTP via JavaMailSender if configured (Local dev)
+        // 3. Try Gmail / Standard SMTP via JavaMailSender if configured (Local dev)
         if (mailSender != null && mailUsername != null && !mailUsername.trim().isEmpty()) {
             boolean success = sendViaSmtp(recipient, resetCode);
-            if (success) {
-                return true;
-            }
-        }
-
-        // 2. Try Brevo API if API Key is configured
-        if (brevoApiKey != null && !brevoApiKey.trim().isEmpty()) {
-            boolean success = sendViaBrevo(recipient, resetCode);
             if (success) {
                 return true;
             }
@@ -148,7 +151,10 @@ public class EmailServiceImpl implements EmailService {
             Map<String, Object> payload = new HashMap<>();
             Map<String, String> sender = new HashMap<>();
             sender.put("name", fromName);
-            sender.put("email", fromEmail);
+            String senderEmail = (brevoSenderEmail != null && !brevoSenderEmail.isBlank())
+                    ? brevoSenderEmail.trim()
+                    : "keodeom1700a15@gmail.com";
+            sender.put("email", senderEmail);
             payload.put("sender", sender);
 
             Map<String, String> toRecipient = new HashMap<>();
@@ -166,6 +172,7 @@ public class EmailServiceImpl implements EmailService {
                     .header("api-key", brevoApiKey.trim())
                     .header("accept", "application/json")
                     .header("content-type", "application/json")
+                    .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Elearning/1.0.0")
                     .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                     .build();
 
