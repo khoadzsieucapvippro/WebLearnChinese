@@ -458,6 +458,10 @@ export class AdminRadicalsPageController {
       inputMeaningHanViet: document.getElementById('inputMeaningHanViet'),
       inputMeaningVi: document.getElementById('inputMeaningVi'),
       inputAudioUrl: document.getElementById('inputAudioUrl'),
+      btnChooseAudioFile: document.getElementById('btnChooseAudioFile'),
+      btnPreviewAudio: document.getElementById('btnPreviewAudio'),
+      btnPreviewAudioText: document.getElementById('btnPreviewAudioText'),
+      inputAudioFile: document.getElementById('inputAudioFile'),
       inputVideoWritingUrl: document.getElementById('inputVideoWritingUrl'),
       inputExplanationVi: document.getElementById('inputExplanationVi'),
       checkIsCommonRank: document.getElementById('checkIsCommonRank'),
@@ -550,6 +554,45 @@ export class AdminRadicalsPageController {
     if (this.elements.btnOpenCreateModal) {
       this.elements.btnOpenCreateModal.addEventListener('click', () => {
         this.openCreateModal(this.elements.btnOpenCreateModal);
+      });
+    }
+
+    // Trigger Audio File Picker
+    if (this.elements.btnChooseAudioFile && this.elements.inputAudioFile) {
+      this.elements.btnChooseAudioFile.addEventListener('click', () => {
+        this.elements.inputAudioFile.click();
+      });
+    }
+
+    // Handle Audio File Selection (Object URL preview)
+    if (this.elements.inputAudioFile) {
+      this.elements.inputAudioFile.addEventListener('change', (e) => {
+        const file = e.target.files?.[0];
+        if (file) {
+          const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+          if (this.elements.inputAudioUrl) {
+            this.elements.inputAudioUrl.value = `/assets/audio/custom/${safeName}`;
+          }
+          if (this._uploadedAudioBlobUrl) {
+            URL.revokeObjectURL(this._uploadedAudioBlobUrl);
+          }
+          this._uploadedAudioBlobUrl = URL.createObjectURL(file);
+          showToast({ message: `Đã chọn tệp âm thanh: ${file.name}`, type: 'success' });
+        }
+      });
+    }
+
+    // Audio Preview Button (Listens to uploaded file, pasted URL, or Web Speech API zh-CN TTS)
+    if (this.elements.btnPreviewAudio) {
+      this.elements.btnPreviewAudio.addEventListener('click', () => {
+        const char = this.elements.inputCharacter ? this.elements.inputCharacter.value.trim() : '';
+        const rawAudio = this.elements.inputAudioUrl ? this.elements.inputAudioUrl.value.trim() : '';
+        const audioToPlay = this._uploadedAudioBlobUrl || (rawAudio.length > 0 ? rawAudio : null);
+        playPronunciation({
+          text: char,
+          audioUrl: audioToPlay,
+          button: this.elements.btnPreviewAudio
+        });
       });
     }
 
@@ -1151,6 +1194,11 @@ export class AdminRadicalsPageController {
    * Clears form input values.
    */
   resetFormFields() {
+    if (this._uploadedAudioBlobUrl) {
+      URL.revokeObjectURL(this._uploadedAudioBlobUrl);
+      this._uploadedAudioBlobUrl = null;
+    }
+    if (this.elements.inputAudioFile) this.elements.inputAudioFile.value = '';
     if (this.elements.inputCharacter) this.elements.inputCharacter.value = '';
     if (this.elements.inputPinyin) this.elements.inputPinyin.value = '';
     if (this.elements.inputMeaningHanViet) this.elements.inputMeaningHanViet.value = '';

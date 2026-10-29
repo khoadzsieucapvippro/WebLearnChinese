@@ -311,36 +311,44 @@
             <div id="errorMeaningVi" class="invalid-feedback small"></div>
           </div>
 
-          <!-- Audio URL Field -->
-          <div class="col-sm-6">
-            <label for="inputAudioUrl" class="form-label small fw-semibold text-dark mb-1">
-              URL phát âm <span class="text-muted fw-normal">(Tùy chọn, tối đa 500 ký tự)</span>
+          <!-- Audio Pronunciation Control -->
+          <div class="col-12">
+            <label for="inputAudioUrl" class="form-label small fw-semibold text-dark mb-1 d-flex flex-wrap align-items-center justify-content-between gap-2">
+              <span>File âm thanh phát âm <span class="text-muted fw-normal">(Tùy chọn)</span></span>
+              <span class="badge bg-light text-secondary border">Mặc định: Tự động phát âm chuẩn zh-CN</span>
             </label>
-            <input
-              type="url"
-              id="inputAudioUrl"
-              class="form-control form-control-chinese"
-              maxlength="500"
-              placeholder="https://example.com/audio/nihao.mp3 hoặc /media/audio/..."
-              autocomplete="off"
-            >
+            <div class="input-group">
+              <input
+                type="text"
+                id="inputAudioUrl"
+                class="form-control form-control-chinese"
+                maxlength="500"
+                placeholder="Để trống để hệ thống tự động phát âm chuẩn zh-CN..."
+                autocomplete="off"
+              >
+              <button
+                type="button"
+                id="btnChooseAudioFile"
+                class="btn btn-chinese-secondary d-flex align-items-center gap-1"
+                title="Chọn tệp MP3 từ máy tính"
+              >
+                <span>Tải tệp MP3</span>
+              </button>
+              <button
+                type="button"
+                id="btnPreviewAudio"
+                class="btn btn-outline-secondary d-flex align-items-center gap-1"
+                title="Nghe thử phát âm"
+              >
+                <span aria-hidden="true">&#128266;</span>
+                <span id="btnPreviewAudioText">Nghe thử</span>
+              </button>
+            </div>
+            <input type="file" id="inputAudioFile" accept="audio/mp3,audio/*" class="d-none" aria-label="Tải lên tệp âm thanh MP3">
+            <div class="form-text small text-secondary mt-1">
+              Bạn có thể để trống (hệ thống tự động phát âm giọng chuẩn Bắc Kinh), tải tệp MP3 từ máy hoặc dán link URL. Nét vẽ tập viết được hệ thống tự động tạo dạng vector cho mọi chữ Hán.
+            </div>
             <div id="errorAudioUrl" class="invalid-feedback small"></div>
-          </div>
-
-          <!-- Video Writing URL Field -->
-          <div class="col-sm-6">
-            <label for="inputVideoWritingUrl" class="form-label small fw-semibold text-dark mb-1">
-              URL video viết chữ <span class="text-muted fw-normal">(Tùy chọn, tối đa 500 ký tự)</span>
-            </label>
-            <input
-              type="url"
-              id="inputVideoWritingUrl"
-              class="form-control form-control-chinese"
-              maxlength="500"
-              placeholder="https://example.com/video/nihao.mp4 hoặc /media/video/..."
-              autocomplete="off"
-            >
-            <div id="errorVideoWritingUrl" class="invalid-feedback small"></div>
           </div>
 
           <!-- Example Sentence Field -->

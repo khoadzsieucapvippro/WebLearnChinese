@@ -1265,10 +1265,29 @@ export class ModeratorReviewController {
    */
   createAudioControl(vocab) {
     if (!vocab.audioUrl) {
-      return createSafeElement('span', {
+      const container = createSafeElement('div', { className: 'd-inline-flex align-items-center gap-1' });
+      const badge = createSafeElement('span', {
         className: 'badge bg-light text-muted border px-2 py-1',
         text: 'Không có phát âm'
       });
+      const ttsBtn = createSafeElement('button', {
+        className: 'btn btn-sm btn-outline-secondary py-0 px-2 d-inline-flex align-items-center gap-1 fs-7',
+        attrs: {
+          'type': 'button',
+          'aria-label': `Nghe phát âm AI zh-CN của từ ${vocab.hanzi}`,
+          'title': 'Nghe phát âm AI (Web Speech zh-CN)'
+        },
+        children: [
+          createSpeakerIcon(12),
+          createSafeElement('span', { text: 'AI zh-CN' })
+        ]
+      });
+      ttsBtn.addEventListener('click', () => {
+        this.playAudio(null, vocab.hanzi, ttsBtn);
+      });
+      container.appendChild(badge);
+      container.appendChild(ttsBtn);
+      return container;
     }
 
     const safeAudioUrl = sanitizeResourceUrl(vocab.audioUrl);

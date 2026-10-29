@@ -466,6 +466,13 @@ export class AdminVocabularyPageController {
     this.cachedRadicals = null;
     this.selectedRadicalIds = new Set();
     this.pinyinRawTouched = false;
+    if (this._uploadedAudioBlobUrl) {
+      URL.revokeObjectURL(this._uploadedAudioBlobUrl);
+      this._uploadedAudioBlobUrl = null;
+    }
+    if (this.elements.inputAudioFile) {
+      this.elements.inputAudioFile.value = '';
+    }
 
     // Active records
     this.currentEditDetail = null;
@@ -536,6 +543,10 @@ export class AdminVocabularyPageController {
       inputMeaningHanViet: document.getElementById('inputMeaningHanViet'),
       inputMeaningVi: document.getElementById('inputMeaningVi'),
       inputAudioUrl: document.getElementById('inputAudioUrl'),
+      btnChooseAudioFile: document.getElementById('btnChooseAudioFile'),
+      btnPreviewAudio: document.getElementById('btnPreviewAudio'),
+      btnPreviewAudioText: document.getElementById('btnPreviewAudioText'),
+      inputAudioFile: document.getElementById('inputAudioFile'),
       inputVideoWritingUrl: document.getElementById('inputVideoWritingUrl'),
       inputExampleSentence: document.getElementById('inputExampleSentence'),
       inputExampleTranslation: document.getElementById('inputExampleTranslation'),
@@ -654,6 +665,45 @@ export class AdminVocabularyPageController {
     if (this.elements.btnOpenCreateModal) {
       this.elements.btnOpenCreateModal.addEventListener('click', () => {
         this.openCreateModal();
+      });
+    }
+
+    // Trigger Audio File Picker
+    if (this.elements.btnChooseAudioFile && this.elements.inputAudioFile) {
+      this.elements.btnChooseAudioFile.addEventListener('click', () => {
+        this.elements.inputAudioFile.click();
+      });
+    }
+
+    // Handle Audio File Selection (Object URL preview)
+    if (this.elements.inputAudioFile) {
+      this.elements.inputAudioFile.addEventListener('change', (e) => {
+        const file = e.target.files?.[0];
+        if (file) {
+          const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+          if (this.elements.inputAudioUrl) {
+            this.elements.inputAudioUrl.value = `/assets/audio/custom/${safeName}`;
+          }
+          if (this._uploadedAudioBlobUrl) {
+            URL.revokeObjectURL(this._uploadedAudioBlobUrl);
+          }
+          this._uploadedAudioBlobUrl = URL.createObjectURL(file);
+          showToast(`Đã chọn tệp âm thanh: ${file.name}`, 'success');
+        }
+      });
+    }
+
+    // Audio Preview Button (Listens to uploaded file, pasted URL, or Web Speech API zh-CN TTS)
+    if (this.elements.btnPreviewAudio) {
+      this.elements.btnPreviewAudio.addEventListener('click', () => {
+        const hanzi = this.elements.inputHanzi ? this.elements.inputHanzi.value.trim() : '';
+        const rawAudio = this.elements.inputAudioUrl ? this.elements.inputAudioUrl.value.trim() : '';
+        const audioToPlay = this._uploadedAudioBlobUrl || (rawAudio.length > 0 ? rawAudio : null);
+        playPronunciation({
+          text: hanzi,
+          audioUrl: audioToPlay,
+          button: this.elements.btnPreviewAudio
+        });
       });
     }
 
@@ -1135,6 +1185,13 @@ export class AdminVocabularyPageController {
     this.currentEditDetail = null;
     this.selectedRadicalIds.clear();
     this.pinyinRawTouched = false;
+    if (this._uploadedAudioBlobUrl) {
+      URL.revokeObjectURL(this._uploadedAudioBlobUrl);
+      this._uploadedAudioBlobUrl = null;
+    }
+    if (this.elements.inputAudioFile) {
+      this.elements.inputAudioFile.value = '';
+    }
 
     this.resetFormValidation();
 
@@ -1185,6 +1242,13 @@ export class AdminVocabularyPageController {
 
       this.currentEditDetail = detail;
       this.pinyinRawTouched = true; // prevent auto-overwrite in edit mode
+      if (this._uploadedAudioBlobUrl) {
+        URL.revokeObjectURL(this._uploadedAudioBlobUrl);
+        this._uploadedAudioBlobUrl = null;
+      }
+      if (this.elements.inputAudioFile) {
+        this.elements.inputAudioFile.value = '';
+      }
 
       if (this.elements.modalFormTitle) {
         this.elements.modalFormTitle.textContent = `Chỉnh Sửa Từ Vựng #${detail.vocabId}`;
