@@ -1075,7 +1075,8 @@ export class AdminRolesController {
     this.lastActiveElement = document.activeElement;
     this.isSelf = isSelfAccount(account, authManager.getUser());
     this.initialRoles = [...account.roles];
-    this.pendingRoles = new Set(account.roles);
+    const primaryRole = (account.roles && account.roles[0]) || "Learner";
+    this.pendingRoles = new Set([primaryRole]);
 
     // Populate target identity previews
     if (this.dom.modalTargetEmail) this.dom.modalTargetEmail.textContent = account.emailOrPhone;
@@ -1145,40 +1146,39 @@ export class AdminRolesController {
       const isSelected = this.pendingRoles.has(role.roleName);
       const isLockedAdmin = this.isSelf && role.roleName === 'Admin';
 
-      const checkboxAttrs = {
-        type: 'checkbox',
+      const radioAttrs = {
+        type: 'radio',
         id: `roleCheckbox_${role.roleName}`,
-        name: 'selectedRoles',
+        name: 'selectedRole',
         value: role.roleName
       };
       if (isLockedAdmin) {
-        checkboxAttrs['aria-describedby'] = 'modalSelfDemotionNotice';
+        radioAttrs['aria-describedby'] = 'modalSelfDemotionNotice';
       }
 
-      const checkbox = createSafeElement('input', {
+      const radio = createSafeElement('input', {
         className: 'form-check-input mt-1 ms-0',
-        attrs: checkboxAttrs
+        attrs: radioAttrs
       });
 
       if (isSelected || isLockedAdmin) {
-        checkbox.checked = true;
+        radio.checked = true;
       }
       if (isLockedAdmin) {
-        checkbox.disabled = true;
+        radio.disabled = true;
+      } else if (this.isSelf && role.roleName !== 'Admin') {
+        radio.disabled = true;
+        radio.title = 'Không thể tự hạ quyền Quản trị viên (POL-8D-02)';
       }
 
-      // Checkbox Change Listener
-      checkbox.addEventListener('change', (e) => {
-        if (isLockedAdmin) return; // Invariant defense
-
+      // Radio Change Listener (Single-role exclusive selection)
+      radio.addEventListener('change', (e) => {
+        if (this.isSelf && isLockedAdmin) return;
         if (e.target.checked) {
+          this.pendingRoles.clear();
           this.pendingRoles.add(role.roleName);
-        } else {
-          this.pendingRoles.delete(role.roleName);
+          this.onRoleSelectionChanged();
         }
-
-        this.syncRoleExclusivityUi(role.roleName);
-        this.onRoleSelectionChanged();
       });
 
       // Label Wrapper
@@ -1210,7 +1210,7 @@ export class AdminRolesController {
 
       const itemWrapper = createSafeElement('div', {
         className: 'form-check p-2 rounded-2 border mb-1 bg-light d-flex align-items-start gap-2',
-        children: [checkbox, label]
+        children: [radio, label]
       });
 
       this.dom.roleCheckboxesContainer.appendChild(itemWrapper);

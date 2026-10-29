@@ -358,14 +358,12 @@ describe('Browser E2E: Admin Role Management & Assignment UI (Task 9F.2)', () =>
 
       assert.ok(capturedPutPayload, 'PUT request must have been sent');
       assert.ok(Array.isArray(capturedPutPayload.roles), 'Payload must contain a roles array');
-      assert.strictEqual(capturedPutPayload.roles.length, 2);
-      assert.ok(capturedPutPayload.roles.includes('Learner'));
+      assert.strictEqual(capturedPutPayload.roles.length, 1);
       assert.ok(capturedPutPayload.roles.includes('Creator'));
 
-      // Check that the table cell for account 2 was updated with new role badges
+      // Check that the table cell for account 2 was updated with new role badge
       const rolesCell = page.locator('#accountRolesCell_2');
       const cellText = await rolesCell.textContent();
-      assert.ok(cellText.includes('Học viên'));
       assert.ok(cellText.includes('Tác giả'));
 
       assert.deepStrictEqual(getRuntimeErrors(), []);
@@ -641,20 +639,15 @@ describe('Browser E2E: Admin Role Management & Assignment UI (Task 9F.2)', () =>
       assert.strictEqual(await moderatorBox.isChecked(), false);
       assert.strictEqual(await moderatorBox.isEnabled(), true);
 
-      // Check Creator -> Moderator must become disabled
+      // Check Creator -> Creator is checked, others are unchecked
       await creatorBox.check();
       assert.strictEqual(await creatorBox.isChecked(), true);
-      assert.strictEqual(await moderatorBox.isDisabled(), true, 'Moderator must be disabled when Creator is checked');
+      assert.strictEqual(await moderatorBox.isChecked(), false);
 
-      // Uncheck Creator -> Moderator must become enabled
-      await creatorBox.uncheck();
-      assert.strictEqual(await creatorBox.isChecked(), false);
-      assert.strictEqual(await moderatorBox.isEnabled(), true, 'Moderator must be enabled when Creator is unchecked');
-
-      // Check Moderator -> Creator must become disabled
+      // Check Moderator -> Moderator is checked, Creator is automatically unchecked (radio mutual exclusivity)
       await moderatorBox.check();
       assert.strictEqual(await moderatorBox.isChecked(), true);
-      assert.strictEqual(await creatorBox.isDisabled(), true, 'Creator must be disabled when Moderator is checked');
+      assert.strictEqual(await creatorBox.isChecked(), false);
 
       // Close modal
       await page.locator('#btnCloseRoleModal').click();

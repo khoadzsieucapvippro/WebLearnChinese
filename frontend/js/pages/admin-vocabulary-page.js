@@ -29,7 +29,7 @@ import { apiClient, ApiError } from '../api/api.js';
 import { authManager } from '../auth/auth-state.js';
 import { initNavbarAuth } from '../ui/nav.js';
 import { createSafeElement, clearContainer, sanitizeResourceUrl } from '../ui/security.js';
-import { setComponentState, showToast } from '../ui/ui.js';
+import { setComponentState, showToast, createSpeechButton, playPronunciation } from '../ui/ui.js';
 
 /* -----------------------------------------------------------------------------
  * 1. PURE LOGIC & UTILITY HELPERS (Exported for Unit Testability)
@@ -854,6 +854,30 @@ export class AdminVocabularyPageController {
       tdHanzi.appendChild(spanHanzi);
       tr.appendChild(tdHanzi);
 
+      // 2b. Phát âm (Loa) Column
+      const tdAudio = createSafeElement('td', {
+        className: 'text-center',
+        attrs: { 'data-label': 'Phát âm' }
+      });
+      const speechBtn = createSpeechButton({
+        text: item.hanzi || '',
+        audioUrl: item.audioUrl || null,
+        buttonClass: 'btn btn-sm btn-chinese-outline p-1 rounded-circle d-inline-flex align-items-center justify-content-center',
+        ariaLabel: `Phát âm từ vựng ${item.hanzi || ''}`
+      });
+      speechBtn.style.width = '32px';
+      speechBtn.style.height = '32px';
+      speechBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        playPronunciation({
+          text: item.hanzi,
+          audioUrl: item.audioUrl,
+          button: speechBtn
+        });
+      });
+      tdAudio.appendChild(speechBtn);
+      tr.appendChild(tdAudio);
+
       // 3. Pinyin Column
       const tdPinyin = createSafeElement('td', {
         className: 'fw-semibold text-dark',
@@ -886,38 +910,31 @@ export class AdminVocabularyPageController {
       });
       tr.appendChild(tdVi);
 
-      // 7. Media indicators
-      const tdMedia = createSafeElement('td', {
+      // 7. Bộ thủ cấu thành Column
+      const tdRadicals = createSafeElement('td', {
         className: 'text-center',
-        attrs: { 'data-label': 'Đa phương tiện' }
+        attrs: { 'data-label': 'Bộ thủ cấu thành' }
       });
-      const mediaGroup = createSafeElement('div', { className: 'd-flex justify-content-center gap-2' });
-
-      if (item.audioUrl && isValidMediaUrl(item.audioUrl)) {
-        const audioBadge = createSafeElement('span', {
-          className: 'badge bg-light text-primary border',
-          attrs: { title: 'Có âm thanh phát âm' },
-          text: '🔊 Audio'
-        });
-        mediaGroup.appendChild(audioBadge);
-      }
-      if (item.videoWritingUrl && isValidMediaUrl(item.videoWritingUrl)) {
-        const videoBadge = createSafeElement('span', {
-          className: 'badge bg-light text-success border',
-          attrs: { title: 'Có video tập viết' },
-          text: '🎬 Video'
-        });
-        mediaGroup.appendChild(videoBadge);
-      }
-      if (!mediaGroup.hasChildNodes()) {
-        const emptyBadge = createSafeElement('span', {
+      const rads = Array.isArray(item.radicals) ? item.radicals : (Array.isArray(item.constituentRadicals) ? item.constituentRadicals : []);
+      if (rads.length > 0) {
+        const radGroup = createSafeElement('div', { className: 'd-flex flex-wrap justify-content-center gap-1' });
+        for (const r of rads) {
+          const char = r.character || r.radicalName || `#${r.radicalId || ''}`;
+          const tip = r.meaningHanViet ? `${char} (${r.meaningHanViet})` : char;
+          radGroup.appendChild(createSafeElement('span', {
+            className: 'badge bg-light text-dark border small fw-normal',
+            attrs: { title: tip },
+            text: char
+          }));
+        }
+        tdRadicals.appendChild(radGroup);
+      } else {
+        tdRadicals.appendChild(createSafeElement('span', {
           className: 'text-muted small',
           text: '—'
-        });
-        mediaGroup.appendChild(emptyBadge);
+        }));
       }
-      tdMedia.appendChild(mediaGroup);
-      tr.appendChild(tdMedia);
+      tr.appendChild(tdRadicals);
 
       // 8. Actions Column
       const tdActions = createSafeElement('td', {

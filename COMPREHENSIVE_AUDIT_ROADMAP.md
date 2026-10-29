@@ -607,3 +607,36 @@ Hệ thống đã giải quyết dứt điểm tình trạng mất tiến trình
    - `srs-skill-listening.test.mjs`: **60/60 tests PASS** (12 suites).
    - `srs-listening.browser.mjs`: **10/10 tests PASS** (bao gồm test E2E `SL-08` kiểm tra toggle gợi ý và chặn trần điểm Rating 2).
 
+---
+
+### 5.8. Đồng Bộ Toàn Diện Bảng Quản Trị, Chuẩn Hóa Phân Quyền Vai Trò Đơn (Single-Role Exclusive), Dọn Dẹp UI Thừa & Tách Cột Loa/Bộ Thủ
+
+1. **Chuẩn Hóa Phân Quyền Vai Trò Độc Lập (`admin-roles.html`, `admin-roles-page.js`)**:
+   - **Cơ chế Vai Trò Đơn Loại Trừ Tự Nhiên (Single-Role Exclusive)**: Chuyển đổi 100% từ ô Checkbox sang Radio Button (`type="radio"`, `name="selectedRole"`). Một tài khoản người dùng chỉ mang một vai trò phân định duy nhất: `Learner` (Học viên), `Creator` (Tác giả biên soạn), `Moderator` (Kiểm duyệt viên) hoặc `Admin` (Quản trị viên).
+   - **Nhãn Modal Chuẩn Xác**: Cập nhật tiêu đề từ `"Chọn tập hợp vai trò mới:"` thành `"Chọn vai trò mới (1 vai trò duy nhất):"`.
+   - **Bảo Vệ Bất Biến Admin Tự Thân (POL-8D-02)**: Khi Quản trị viên tự phân quyền cho chính mình, Radio `Admin` bị khóa cứng (`checked=true`, `disabled=true`) và các radio vai trò khác cũng bị disabled kèm tooltip `"Không thể tự hạ quyền Quản trị viên (POL-8D-02)"`.
+
+2. **Sửa Cột & Tách Phát Âm / Bộ Thủ Cấu Thành (`admin-vocabulary.html`, `admin-vocabulary-page.js`)**:
+   - **Khắc phục lỗi lệch cột**: Cột tiêu đề cũ ghi `"Bộ thủ"` nhưng nội dung lại hiển thị biểu tượng âm thanh/video và phát âm từ vựng.
+   - **Tách 2 cột chuẩn hóa**:
+     * Cột `Phát âm` (width: 80px): Chứa nút loa SVG chuẩn qua `createSpeechButton`, click phát âm thanh từ vựng bằng `playPronunciation({ text: item.hanzi, audioUrl: item.audioUrl, button: speechBtn })`.
+     * Cột `Bộ thủ cấu thành` (width: 150px): Hiển thị danh sách badge các bộ thủ cấu thành chữ Hán (ví dụ: `[亻] [尔]`) hoặc `—` nếu từ chưa gắn bộ thủ.
+
+3. **Đồng Bộ Giao Diện & Dọn Dẹp UI Dư Thừa Bảng Quản Trị**:
+   - `admin-lessons.html`: Xóa bỏ hoàn toàn huy hiệu dư thừa `<span class="management-brand-badge ...">Giám sát bài học</span>` ở thanh header cạnh logo thương hiệu "Hán Ngữ QUẢN LÝ & TÁC NGHIỆP". Đồng bộ tiêu đề trang sang dạng phẳng `h3 fw-bold text-dark mb-1` (bỏ khung đỏ `.creator-panel-card` rườm rà).
+   - `admin-radicals.html`: Đồng bộ tiêu đề trang và thanh tìm kiếm input-group sang chuẩn phẳng của `admin-roles.html`.
+   - `admin-audit-logs.html`: Xóa bỏ dòng chữ tĩnh `Trang 1 / 1` và cụm nút tĩnh `btn-group` (`« Đầu`, `‹ Trước`, `1`, `Tiếp ›`, `Cuối »`). Bổ sung container `#paginationControls` ăn khớp với logic `renderPagination()` động `<< < 1 2 3 > >>`.
+   - `management.html` & `management-layout.js`: Xóa bỏ hoàn toàn thẻ `"Kiểm chứng UI & Kỹ thuật"` khỏi giao diện trang chủ quản trị và menu sidebar.
+
+4. **Bộ Kiểm Thử Xác Minh Toàn Diện**:
+   - `npm run verify:frontend:fast`: **1.186/1.186 tests PASS** (294 suites).
+   - `node tests/e2e/runner.mjs --tier=all`: **74/74 tests PASS** (Tiers 1–4).
+   - `tests/frontend/e2e/admin-roles.browser.mjs`: **9/9 tests PASS** (bao gồm AR-04, AR-09 kiểm thử radio button đơn quyền).
+   - `tests/frontend/e2e/admin-vocabulary.browser.mjs`: **10/10 tests PASS** (kiểm thử nút loa cột Phát âm và hiển thị cột Bộ thủ cấu thành).
+   - `tests/frontend/e2e/admin-lessons.browser.mjs`: **11/11 tests PASS**.
+   - `tests/frontend/e2e/admin-radicals.browser.mjs`: **8/8 tests PASS**.
+   - `tests/frontend/e2e/admin-accounts.browser.mjs`: **8/8 tests PASS**.
+   - `tests/frontend/e2e/admin-audit-logs.browser.mjs`: **4/4 tests PASS**.
+   - `tests/frontend/e2e/forgot-password-model-a.browser.mjs`: **2/2 tests PASS**.
+
+

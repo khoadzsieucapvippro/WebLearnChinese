@@ -74,9 +74,9 @@ describe('Unit: Homepage Comprehensive Audit & Refactoring (Task 1.1)', () => {
       assert.doesNotMatch(indexHtml, /ui-verification\.html/, 'Homepage must not link to developer test harness');
     });
 
-    test('ui-verification.html is properly relocated to Admin section in management.html', () => {
-      assert.match(managementHtml, /id=["']cardLinkAdminVerification["']/, 'Admin section must contain verification card link');
-      assert.match(managementHtml, /href=["']ui-verification\.html["']/, 'Link must point to ui-verification.html');
+    test('ui-verification.html is completely absent from management.html (clean UI invariant)', () => {
+      assert.doesNotMatch(managementHtml, /ui-verification\.html/, 'Management hub must not link to developer test harness');
+      assert.doesNotMatch(managementHtml, /id=["']cardLinkAdminVerification["']/, 'Verification card must be removed');
     });
   });
 

@@ -96,58 +96,55 @@
       <div id="adminRadicalsMainContent">
 
         <!-- Page Header & Action Bar -->
-        <div class="creator-panel-card mb-4">
-          <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
-            <div>
-              <h1 class="h4 fw-bold text-chinese-red mb-1">
-                Quản Trị Danh Mục Bộ Thủ
-              </h1>
-              <p class="text-secondary small mb-0">
-                Thêm mới, cập nhật, tra cứu và quản lý danh mục bộ thủ Khang Hy trong cơ sở dữ liệu hệ thống.
-              </p>
-            </div>
-            <div class="d-flex align-items-center gap-2 flex-shrink-0">
-              <button type="button" id="btnOpenCreateModal" class="btn-chinese-primary d-flex align-items-center gap-2">
-                <span aria-hidden="true" class="fw-bold fs-5 leading-none">+</span>
-                <span>Thêm bộ thủ mới</span>
-              </button>
-            </div>
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+          <div>
+            <h1 class="h3 fw-bold text-dark mb-1">
+              Quản Trị Danh Mục Bộ Thủ
+            </h1>
+            <p class="text-secondary small mb-0">
+              Thêm mới, cập nhật, tra cứu và quản lý danh mục bộ thủ Khang Hy trong cơ sở dữ liệu hệ thống.
+            </p>
+          </div>
+          <div class="d-flex align-items-center gap-2 flex-shrink-0">
+            <button type="button" id="btnOpenCreateModal" class="btn-chinese-primary d-flex align-items-center gap-2">
+              <span aria-hidden="true" class="fw-bold fs-5 leading-none">+</span>
+              <span>Thêm bộ thủ mới</span>
+            </button>
           </div>
         </div>
 
         <!-- Filter, Search & Catalog Overview Controls -->
         <div class="creator-panel-card mb-4">
-          <div class="row g-3 align-items-center">
+          <div class="row g-3 align-items-end">
             <!-- Client-side Search Input -->
-            <div class="col-md-7 col-lg-8">
+            <div class="col-12 col-md-8">
               <label for="radicalSearchInput" class="form-label small fw-semibold text-secondary mb-1">
-                Tìm kiếm bộ thủ:
+                Tìm kiếm bộ thủ
               </label>
-              <div class="position-relative">
+              <div class="input-group">
                 <input
-                  type="search"
+                  type="text"
                   id="radicalSearchInput"
-                  class="form-control form-control-chinese pe-5"
+                  class="form-control"
                   placeholder="Tìm theo ký tự (木), Hán-Việt (Mộc), nghĩa tiếng Việt (Cây, gỗ)..."
                   autocomplete="off"
                 >
                 <button
                   type="button"
                   id="searchClearBtn"
-                  class="btn btn-sm text-secondary position-absolute end-0 top-50 translate-middle-y me-2 border-0 d-none"
+                  class="btn btn-outline-secondary"
                   aria-label="Xóa từ khóa tìm kiếm"
+                  title="Xóa tìm kiếm"
                 >
-                  &times;
+                  ✕
                 </button>
               </div>
             </div>
 
             <!-- Result Count -->
-            <div class="col-md-5 col-lg-4">
-              <div class="d-flex flex-column align-items-md-end gap-2 justify-content-center h-100">
-                <div id="radicalResultCount" class="badge-status badge-status-draft text-nowrap" aria-live="polite">
-                  Đang tải danh mục...
-                </div>
+            <div class="col-12 col-md-4 text-md-end">
+              <div id="radicalResultCount" class="badge-status badge-status-draft text-nowrap d-inline-block" aria-live="polite">
+                Đang tải danh mục...
               </div>
             </div>
           </div>

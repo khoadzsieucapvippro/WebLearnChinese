@@ -206,26 +206,9 @@
         </div>
 
         <!-- Accessible Pagination Bar -->
-        <nav id="auditPaginationNav" class="d-flex flex-wrap align-items-center justify-content-between gap-3" aria-label="Phân trang danh sách nhật ký">
-          <div class="text-secondary small" id="paginationSummary">
-            Trang 1 / 1
-          </div>
-          <div class="btn-group" role="group" aria-label="Điều hướng trang">
-            <button type="button" id="btnFirstPage" class="btn btn-outline-secondary btn-sm" disabled aria-label="Trang đầu">
-              &laquo; Đầu
-            </button>
-            <button type="button" id="btnPrevPage" class="btn btn-outline-secondary btn-sm" disabled aria-label="Trang trước">
-              &lsaquo; Trước
-            </button>
-            <span class="btn btn-outline-secondary btn-sm disabled fw-semibold" id="pageIndicator" aria-current="page">
-              1
-            </span>
-            <button type="button" id="btnNextPage" class="btn btn-outline-secondary btn-sm" disabled aria-label="Trang tiếp">
-              Tiếp &rsaquo;
-            </button>
-            <button type="button" id="btnLastPage" class="btn btn-outline-secondary btn-sm" disabled aria-label="Trang cuối">
-              Cuối &raquo;
-            </button>
+        <nav id="auditPaginationNav" class="pagination-container justify-content-end mt-4 d-none mb-5" aria-label="Phân trang danh sách nhật ký">
+          <div class="pagination-controls" id="paginationControls" role="group" aria-label="Điều khiển chuyển trang nhật ký">
+            <!-- Dynamically populated via << < 1 2 3 > >> -->
           </div>
         </nav>
       </section>
