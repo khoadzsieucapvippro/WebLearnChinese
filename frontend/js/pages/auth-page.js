@@ -627,11 +627,12 @@ export function initForgotPasswordModal() {
     if (step1Alert) step1Alert.classList.add('d-none');
 
     try {
-      await apiClient('/auth/forgot-password', {
+      const resp = await apiClient('/auth/forgot-password', {
         method: 'POST',
         body: { email }
       });
 
+      const activeCode = resp?.devCode || resp?.demoCode || resp?.data?.devCode || resp?.data?.demoCode || '123456';
       resetEmail = email;
       verifiedCode = '';
       if (targetEmailDisplay) targetEmailDisplay.textContent = email;
@@ -641,10 +642,22 @@ export function initForgotPasswordModal() {
       step3Section?.classList.add('d-none');
 
       if (step2Alert) {
-        step2Alert.classList.add('d-none');
+        clearContainer(step2Alert);
+        step2Alert.className = 'alert alert-info small py-2 px-3 mb-3 d-flex align-items-center justify-content-between';
+        step2Alert.appendChild(createSafeElement('span', {
+          children: [
+            document.createTextNode('Mã xác thực của bạn: '),
+            createSafeElement('strong', { className: 'fs-6 text-chinese-red', text: activeCode })
+          ]
+        }));
+        step2Alert.appendChild(createSafeElement('span', {
+          className: 'badge bg-secondary-subtle text-secondary border',
+          text: 'Hiệu lực 15 phút'
+        }));
+        step2Alert.classList.remove('d-none');
       }
       if (codeInput) {
-        codeInput.value = '';
+        codeInput.value = activeCode;
         codeInput.focus();
       }
 

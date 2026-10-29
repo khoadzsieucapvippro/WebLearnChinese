@@ -22,7 +22,7 @@
 
 import { apiClient, ApiError } from '../api/api.js';
 import { authManager } from '../auth/auth-state.js';
-import { initNavbarAuth, getRoleLabel, getRoleBadgeClass } from '../ui/nav.js';
+import { initNavbarAuth, getRoleLabel, getRoleBadgeClass, getPrimaryRole } from '../ui/nav.js';
 import { createSafeElement, clearContainer } from '../ui/security.js';
 import { setComponentState, showToast } from '../ui/ui.js';
 
@@ -698,13 +698,14 @@ export class AdminAccountsController {
       text: account.fullName || '—'
     });
 
-    // 4. Roles Cell
-    const roleBadges = account.roles.map(role => {
-      return createSafeElement('span', {
-        className: `${getRoleBadgeClass(role)} me-1`,
-        text: getRoleLabel(role)
-      });
-    });
+    // 4. Roles Cell (Single-Role Exclusivity: 1 primary badge)
+    const primaryRole = getPrimaryRole(account.roles);
+    const roleBadges = [
+      createSafeElement('span', {
+        className: `${getRoleBadgeClass(primaryRole)} me-1 small`,
+        text: getRoleLabel(primaryRole)
+      })
+    ];
 
     const tdRoles = createSafeElement('td', {
       className: 'py-3 px-3',

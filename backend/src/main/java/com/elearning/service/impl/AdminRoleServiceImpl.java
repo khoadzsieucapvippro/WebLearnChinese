@@ -95,15 +95,18 @@ public class AdminRoleServiceImpl implements AdminRoleService {
             throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Danh sách vai trò không được để trống");
         }
 
-        // Separation of Duties (SoD) Invariant: Creator and Moderator are mutually exclusive
-        boolean hasCreator = resolvedRoles.stream().anyMatch(r -> "Creator".equalsIgnoreCase(r.getRoleName()) || "ROLE_CREATOR".equalsIgnoreCase(r.getRoleName()));
-        boolean hasModerator = resolvedRoles.stream().anyMatch(r -> "Moderator".equalsIgnoreCase(r.getRoleName()) || "ROLE_MODERATOR".equalsIgnoreCase(r.getRoleName()));
-        if (hasCreator && hasModerator) {
-            throw new BusinessException(
-                    ErrorCode.BAD_REQUEST,
-                    "Vai trò Người sáng tạo (Creator) và Kiểm duyệt viên (Moderator) loại trừ lẫn nhau tuyệt đối. Một tài khoản không thể đồng thời giữ cả hai vai trò."
-            );
+        // Separation of Duties (SoD) & Single-Role Exclusivity: An account holds exactly 1 primary role
+        Role primaryRole;
+        if (resolvedRoles.stream().anyMatch(r -> "Admin".equalsIgnoreCase(r.getRoleName()) || "ROLE_ADMIN".equalsIgnoreCase(r.getRoleName()))) {
+            primaryRole = roleByNameMap.get("admin");
+        } else if (resolvedRoles.stream().anyMatch(r -> "Moderator".equalsIgnoreCase(r.getRoleName()) || "ROLE_MODERATOR".equalsIgnoreCase(r.getRoleName()))) {
+            primaryRole = roleByNameMap.get("moderator");
+        } else if (resolvedRoles.stream().anyMatch(r -> "Creator".equalsIgnoreCase(r.getRoleName()) || "ROLE_CREATOR".equalsIgnoreCase(r.getRoleName()))) {
+            primaryRole = roleByNameMap.get("creator");
+        } else {
+            primaryRole = roleByNameMap.get("learner");
         }
+        resolvedRoles = Set.of(primaryRole != null ? primaryRole : resolvedRoles.iterator().next());
 
         // 3. Concurrency-safe lookup with row-level lock on target account
         Account account = accountRepository.findByIdForUpdate(accountId)

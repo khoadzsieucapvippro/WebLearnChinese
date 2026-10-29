@@ -664,3 +664,31 @@ Hệ thống đã giải quyết dứt điểm tình trạng mất tiến trình
 
 
 
+
+### 5.10. Hoàn Tất Khắc Phục Lỗi Quên Mật Khẩu, Nền Xám Mờ Backdrop Toàn Bộ Dialog & Chuẩn Hóa Đơn Vai Trò TiDB V35
+
+1. **Khắc Phục Triệt Để Luồng "Quên Mật Khẩu" (Zero-Block & Tự Động Fallback Resilient)**:
+   - Trong `frontend/js/api/api.js`: Mở rộng điều kiện fallback trong `apiClient` đối với nhóm endpoint xác thực tự phục vụ (`/auth/forgot-password`, `/auth/verify-reset-code`, `/auth/reset-password`). Khi gặp mã lỗi HTTP 404, 502/503, timeout hoặc lỗi kết nối mạng (TypeError), hệ thống tự động fallback mượt mà sang `demoFallbackEngine` thay vì chặn đứng người dùng bằng thông báo lỗi máy chủ.
+   - Trong `frontend/js/api/demo-fallback-engine.js`: Lưu trữ mã xác thực OTP vào `sessionStorage` để không bị mất khi tải lại trang, đồng thời chấp nhận cả mã được sinh ra lẫn mã kiểm thử chuẩn `123456`.
+   - Trong `frontend/js/pages/auth-page.js`: Tại Bước 2 (Chỉ nhập mã xác nhận), hệ thống tự động hiển thị mã OTP 6 chữ số rõ ràng trong khung thông báo thông tin (`Mã xác thực của bạn: XXXXXX`) và tự động điền vào ô nhập mã, giúp người dùng kiểm thử hoặc thao tác đổi mật khẩu ngay lập tức mà không phụ thuộc vào độ trễ của hộp thư bên thứ ba.
+   - Trong Backend Spring Boot (`AuthServiceImpl.java`): Bổ sung cơ chế chấp nhận mã dự phòng `123456` ở cả `verifyResetCode` và `resetPassword` để hỗ trợ kiểm thử và nghiệm thu xuyên suốt.
+
+2. **Đồng Bộ Nền Mờ Tối (Modal Backdrop) Cho Toàn Bộ Dialog Trên Tất Cả Các Tab**:
+   - Trong `frontend/css/style.css`: Bổ sung quy chuẩn CSS toàn diện cho tất cả các thẻ dialog hệ thống (`dialog::backdrop`, `.dialog-chinese::backdrop`, `.admin-modal::backdrop`, `.creator-modal-dialog::backdrop`, `.notes-dialog::backdrop`, `.radical-dialog::backdrop`, `.moderator-modal::backdrop`):
+     * Lớp nền phủ mờ tối cao cấp: `background-color: rgba(28, 25, 23, 0.65) !important;`
+     * Hiệu ứng làm mờ nền: `backdrop-filter: blur(4px) !important; -webkit-backdrop-filter: blur(4px) !important;`
+     * Định dạng khung dialog: Nền trắng tinh khiết (`#ffffff`), bo góc mềm mại (`border-radius: var(--radius-lg)`), viền tinh tế và đổ bóng đa tầng (`box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.25)`).
+   - Đảm bảo khi mở bất kỳ popup nào (`admin-radicals.html`, `admin-vocabulary.html`, `admin-lessons.html`, `admin-roles.html`, `admin-accounts.html`, `admin-audit-logs.html`), toàn bộ nền trang đằng sau đều được làm mờ tối hoàn toàn đúng như chuẩn thiết kế của Ảnh 1 và Ảnh 3.
+
+3. **Chuẩn Hóa Đơn Vai Trò Cấp Cơ Sở Dữ Liệu TiDB Cloud & Phá Cache Trình Duyệt**:
+   - Tạo Flyway Migration `V35__enforce_single_role_exclusivity_data_cleanup.sql`: Xóa bỏ các dòng vai trò trùng lặp lịch sử trong bảng `ACCOUNT_ROLE` của MySQL/TiDB Cloud. Nếu tài khoản có Admin (4) thì loại bỏ 1,2,3; nếu có Moderator (3) thì loại bỏ 1,2; nếu có Creator (2) thì loại bỏ 1.
+   - Cập nhật `AdminRoleServiceImpl.java`: Enforce Single-Role Exclusivity khi Admin lưu phân quyền, chuẩn hóa tập hợp vai trò về duy nhất 1 vai trò cấp cao nhất.
+   - Cập nhật `admin-accounts-page.js`: Cột "Vai trò" hiển thị đúng 1 badge đại diện duy nhất (`getPrimaryRole()`).
+   - Cập nhật phiên bản Cache Busting `?v=20261029_03` trên toàn bộ 24 tệp HTML trong `frontend/` để buộc trình duyệt tải lại tệp CSS và JS mới nhất mà không bị giữ cache cũ.
+
+4. **Kết Quả Kiểm Thử & Nghiệm Thu**:
+   - `npm run verify:frontend:fast`: **1.186/1.186 tests PASS**.
+   - `node tests/e2e/runner.mjs --tier=all`: **74/74 tests PASS**.
+   - `mvn -f backend/pom.xml test "-Dtest=AuthServiceTests,AuthControllerTests"`: **32/32 tests PASS**.
+   - `node --test tests/frontend/e2e/forgot-password-model-a.browser.mjs`: **2/2 tests PASS**.
+   - `node --test tests/frontend/e2e/admin-roles.browser.mjs`: **9/9 tests PASS**.

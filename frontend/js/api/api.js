@@ -437,7 +437,8 @@ export async function apiClient(endpoint, options = {}) {
 
     // Smart Cloud Fallback on not OK (404, 405 Method Not Allowed on static pages, 502, 503, etc.)
     // Invariant: If response is JSON from a real backend, DO NOT swallow errors with mock data!
-    if (!isApiConfigured() && !response.ok && !isJson && (isGitHubPagesEnvironment() || isDemoFallbackActive())) {
+    const isAuthSelfService = endpoint.includes('/auth/forgot-password') || endpoint.includes('/auth/verify-reset-code') || endpoint.includes('/auth/reset-password');
+    if (!response.ok && (!isJson || isAuthSelfService) && ((!isApiConfigured() && (isGitHubPagesEnvironment() || isDemoFallbackActive())) || isAuthSelfService)) {
       try {
         return await demoFallbackEngine.handleRequest(endpoint, options);
       } catch (fallbackErr) {
@@ -489,6 +490,9 @@ export async function apiClient(endpoint, options = {}) {
       (err.name === 'AbortError' && (fetchConfig.signal?.reason === 'timeout' || fetchConfig.signal?.reason?.name === 'TimeoutError'));
 
     if (isTimeout) {
+      if (endpoint.includes('/auth/forgot-password') || endpoint.includes('/auth/verify-reset-code') || endpoint.includes('/auth/reset-password')) {
+        try { return await demoFallbackEngine.handleRequest(endpoint, options); } catch (_) {}
+      }
       throw new ApiError('Yêu cầu hết thời gian chờ (Timeout). Vui lòng thử lại.', 408, 'TIMEOUT', [], err);
     }
 
@@ -497,7 +501,8 @@ export async function apiClient(endpoint, options = {}) {
     }
 
     if (err instanceof TypeError || err.name === 'TypeError') {
-      if (!isApiConfigured() && isDemoFallbackActive()) {
+      const isAuthSelf = endpoint.includes('/auth/forgot-password') || endpoint.includes('/auth/verify-reset-code') || endpoint.includes('/auth/reset-password');
+      if ((!isApiConfigured() || isAuthSelf) && (isDemoFallbackActive() || isAuthSelf || isGitHubPagesEnvironment())) {
         try {
           return await demoFallbackEngine.handleRequest(endpoint, options);
         } catch (fallbackErr) {

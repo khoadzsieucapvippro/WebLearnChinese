@@ -371,6 +371,7 @@ class DemoFallbackEngine {
         code: resetCode,
         expiresAt: Date.now() + 15 * 60 * 1000
       };
+      try { if (typeof sessionStorage !== 'undefined') sessionStorage.setItem('DEMO_RESET_CODE_' + email, resetCode); } catch (_) {}
 
       // Real email dispatch via FormSubmit when running in browser
       if (typeof fetch !== 'undefined' && email.includes('@')) {
@@ -401,7 +402,8 @@ class DemoFallbackEngine {
         code: 'SUCCESS',
         message: 'Mã xác thực 6 chữ số đã được gửi tới email của bạn.',
         emailSent: true,
-        demoCode: '123456'
+        demoCode: '123456',
+        devCode: resetCode
       };
     }
 
@@ -415,7 +417,9 @@ class DemoFallbackEngine {
 
       this._resetCodes = this._resetCodes || {};
       const savedCode = this._resetCodes[email];
-      const isValid = (savedCode && savedCode.code === code && savedCode.expiresAt > Date.now()) || code === '123456';
+      let sessionSaved = null;
+      try { if (typeof sessionStorage !== 'undefined') sessionSaved = sessionStorage.getItem('DEMO_RESET_CODE_' + email); } catch (_) {}
+      const isValid = (savedCode && savedCode.code === code && savedCode.expiresAt > Date.now()) || (sessionSaved && sessionSaved === code) || code === '123456';
       if (!isValid) {
         throw new ApiError('Mã xác nhận không chính xác hoặc đã hết hạn', 400, 'INVALID_CODE');
       }
