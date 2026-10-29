@@ -566,6 +566,9 @@ export class AdminRadicalsPageController {
 
     // Handle Audio File Selection (Object URL preview)
     if (this.elements.inputAudioFile) {
+      this.elements.inputAudioFile.addEventListener('cancel', (e) => {
+        e.stopPropagation();
+      });
       this.elements.inputAudioFile.addEventListener('change', (e) => {
         const file = e.target.files?.[0];
         if (file) {
@@ -631,6 +634,10 @@ export class AdminRadicalsPageController {
     // Modal keyboard escape handling (ESC key)
     if (this.elements.formModal) {
       this.elements.formModal.addEventListener('cancel', (e) => {
+        if (e.target !== this.elements.formModal) {
+          e.stopPropagation();
+          return;
+        }
         e.preventDefault();
         if (!this.isSubmitting) this.closeFormModal();
       });
@@ -638,6 +645,10 @@ export class AdminRadicalsPageController {
 
     if (this.elements.deleteModal) {
       this.elements.deleteModal.addEventListener('cancel', (e) => {
+        if (e.target !== this.elements.deleteModal) {
+          e.stopPropagation();
+          return;
+        }
         e.preventDefault();
         if (!this.isSubmitting) this.closeDeleteModal();
       });

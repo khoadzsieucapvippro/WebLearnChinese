@@ -677,6 +677,9 @@ export class AdminVocabularyPageController {
 
     // Handle Audio File Selection (Object URL preview)
     if (this.elements.inputAudioFile) {
+      this.elements.inputAudioFile.addEventListener('cancel', (e) => {
+        e.stopPropagation();
+      });
       this.elements.inputAudioFile.addEventListener('change', (e) => {
         const file = e.target.files?.[0];
         if (file) {
@@ -782,12 +785,20 @@ export class AdminVocabularyPageController {
     // 11. Modal keyboard escape handling
     if (this.elements.formModal) {
       this.elements.formModal.addEventListener('cancel', (e) => {
+        if (e.target !== this.elements.formModal) {
+          e.stopPropagation();
+          return;
+        }
         e.preventDefault();
         this.closeFormModal();
       });
     }
     if (this.elements.deleteModal) {
       this.elements.deleteModal.addEventListener('cancel', (e) => {
+        if (e.target !== this.elements.deleteModal) {
+          e.stopPropagation();
+          return;
+        }
         e.preventDefault();
         this.closeDeleteModal();
       });
