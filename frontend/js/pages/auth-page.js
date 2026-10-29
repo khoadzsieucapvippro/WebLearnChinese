@@ -632,7 +632,8 @@ export function initForgotPasswordModal() {
         body: { email }
       });
 
-      const activeCode = resp?.devCode || resp?.demoCode || resp?.data?.devCode || resp?.data?.demoCode || '123456';
+      const isEmailDispatched = resp?.emailSent === true || resp?.data?.emailSent === true;
+      const activeDevCode = resp?.devCode || resp?.demoCode || resp?.data?.devCode || resp?.data?.demoCode;
       resetEmail = email;
       verifiedCode = '';
       if (targetEmailDisplay) targetEmailDisplay.textContent = email;
@@ -644,12 +645,23 @@ export function initForgotPasswordModal() {
       if (step2Alert) {
         clearContainer(step2Alert);
         step2Alert.className = 'alert alert-info small py-2 px-3 mb-3 d-flex align-items-center justify-content-between';
-        step2Alert.appendChild(createSafeElement('span', {
-          children: [
-            document.createTextNode('Mã xác thực của bạn: '),
-            createSafeElement('strong', { className: 'fs-6 text-chinese-red', text: activeCode })
-          ]
-        }));
+        if (isEmailDispatched && !activeDevCode) {
+          step2Alert.appendChild(createSafeElement('span', {
+            children: [
+              document.createTextNode('✉️ Mã xác nhận 6 chữ số đã gửi tới: '),
+              createSafeElement('strong', { className: 'text-chinese-red', text: email }),
+              document.createTextNode('. Vui lòng kiểm tra hộp thư đến (hoặc thư mục Spam).')
+            ]
+          }));
+        } else {
+          const displayCode = activeDevCode || '123456';
+          step2Alert.appendChild(createSafeElement('span', {
+            children: [
+              document.createTextNode('Mã xác thực của bạn: '),
+              createSafeElement('strong', { className: 'fs-6 text-chinese-red', text: displayCode })
+            ]
+          }));
+        }
         step2Alert.appendChild(createSafeElement('span', {
           className: 'badge bg-secondary-subtle text-secondary border',
           text: 'Hiệu lực 15 phút'
@@ -657,7 +669,7 @@ export function initForgotPasswordModal() {
         step2Alert.classList.remove('d-none');
       }
       if (codeInput) {
-        codeInput.value = activeCode;
+        codeInput.value = activeDevCode ? activeDevCode : '';
         codeInput.focus();
       }
 

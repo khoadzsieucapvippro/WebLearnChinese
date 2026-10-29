@@ -71,6 +71,16 @@ services:
       - key: SPRING_DATASOURCE_PASSWORD
         sync: false
 
+      # Gmail SMTP Configuration for Real Password Reset Delivery
+      - key: SPRING_MAIL_HOST
+        value: "smtp.gmail.com"
+      - key: SPRING_MAIL_PORT
+        value: "587"
+      - key: SPRING_MAIL_USERNAME
+        sync: false
+      - key: SPRING_MAIL_PASSWORD
+        sync: false
+
 # ==============================================================================
 # DECOUPLED SERVICES CONFIGURATION (OPTION 2 - OPTIONAL / PAID / SCALED CLUSTERS)
 # To use Decoupled Deployment instead of Unified Container:

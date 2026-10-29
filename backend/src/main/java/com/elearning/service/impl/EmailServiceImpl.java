@@ -6,6 +6,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeMessage;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -42,8 +47,20 @@ public class EmailServiceImpl implements EmailService {
     @Value("${app.email.from-name:${APP_EMAIL_FROM_NAME:Hán Ngữ Học Đường}}")
     private String fromName;
 
+    @Autowired(required = false)
+    private JavaMailSender mailSender;
+
+    @Value("${spring.mail.username:${SPRING_MAIL_USERNAME:}}")
+    private String mailUsername;
+
     public EmailServiceImpl(ObjectMapper objectMapper) {
+        this(objectMapper, null);
+    }
+
+    @Autowired
+    public EmailServiceImpl(ObjectMapper objectMapper, @Autowired(required = false) JavaMailSender mailSender) {
         this.objectMapper = objectMapper;
+        this.mailSender = mailSender;
         this.httpClient = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(10))
                 .followRedirects(HttpClient.Redirect.NORMAL)
@@ -60,7 +77,15 @@ public class EmailServiceImpl implements EmailService {
         String recipient = toEmail.trim().toLowerCase();
         log.info("Bắt đầu xử lý gửi email xác thực mã quên mật khẩu tới: {}", recipient);
 
-        // 1. Try Resend API if API Key is configured
+        // 1. Try Gmail / Standard SMTP via JavaMailSender if configured
+        if (mailSender != null && mailUsername != null && !mailUsername.trim().isEmpty()) {
+            boolean success = sendViaSmtp(recipient, resetCode);
+            if (success) {
+                return true;
+            }
+        }
+
+        // 2. Try Resend API if API Key is configured
         if (resendApiKey != null && !resendApiKey.trim().isEmpty()) {
             boolean success = sendViaResend(recipient, resetCode);
             if (success) {
@@ -191,6 +216,26 @@ public class EmailServiceImpl implements EmailService {
             log.error("FormSubmit relay không thể gửi tới {}: {}", recipient, e.getMessage());
         }
         return false;
+    }
+
+    private boolean sendViaSmtp(String recipient, String resetCode) {
+        try {
+            MimeMessage mimeMessage = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+
+            String senderAddress = (mailUsername != null && !mailUsername.isBlank()) ? mailUsername.trim() : fromEmail;
+            helper.setFrom(new InternetAddress(senderAddress, fromName, "UTF-8"));
+            helper.setTo(recipient);
+            helper.setSubject("Mã xác thực đặt lại mật khẩu - Hán Ngữ Học Đường");
+            helper.setText(buildHtmlContent(recipient, resetCode), true);
+
+            mailSender.send(mimeMessage);
+            log.info("Gửi email thành công qua Gmail SMTP tới {}", recipient);
+            return true;
+        } catch (Exception e) {
+            log.warn("Gửi email qua Gmail SMTP thất bại tới {}: {}", recipient, e.getMessage());
+            return false;
+        }
     }
 
     private String buildHtmlContent(String recipient, String resetCode) {
