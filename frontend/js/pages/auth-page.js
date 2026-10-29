@@ -627,16 +627,13 @@ export function initForgotPasswordModal() {
       step1Section?.classList.add('d-none');
       step2Section?.classList.remove('d-none');
 
-      const activeCode = res?.devCode || res?.demoCode;
-      if (activeCode && codeInput) {
-        codeInput.value = activeCode;
-        if (step2Alert) {
-          step2Alert.className = 'alert alert-info small py-2 px-3 mb-3';
-          step2Alert.textContent = `💡 Chế độ thử nghiệm (chưa có SMTP): Mã xác nhận là ${activeCode}.`;
-          step2Alert.classList.remove('d-none');
-        }
+      if (step2Alert) {
+        step2Alert.classList.add('d-none');
       }
-      if (codeInput) codeInput.focus();
+      if (codeInput) {
+        codeInput.value = '';
+        codeInput.focus();
+      }
 
     } catch (err) {
       if (step1Alert) {

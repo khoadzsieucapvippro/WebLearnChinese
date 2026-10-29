@@ -159,19 +159,23 @@ public class EmailServiceImpl implements EmailService {
     private boolean sendViaFormSubmit(String recipient, String resetCode) {
         try {
             Map<String, Object> payload = new HashMap<>();
-            payload.put("_subject", "Mã xác nhận đặt lại mật khẩu - Hán Ngữ Học Đường");
-            payload.put("message", "Mã xác thực 6 chữ số của bạn là: " + resetCode + 
-                    ". Mã này có hiệu lực trong vòng 15 phút. Vui lòng không chia sẻ mã này cho bất kỳ ai.");
-            payload.put("email", recipient);
+            payload.put("_subject", "Mã xác thực đặt lại mật khẩu - Hán Ngữ Học Đường");
+            payload.put("Mã xác nhận 6 chữ số", resetCode);
+            payload.put("Thời hạn hiệu lực", "15 phút");
+            payload.put("Lưu ý", "Tuyệt đối không chia sẻ mã này cho bất kỳ ai");
+            payload.put("Hệ thống", "Hán Ngữ Học Đường");
+            payload.put("_captcha", "false");
+            payload.put("_template", "box");
 
             String jsonBody = objectMapper.writeValueAsString(payload);
 
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create("https://formsubmit.co/ajax/" + recipient))
-                    .timeout(Duration.ofSeconds(8))
+                    .timeout(Duration.ofSeconds(10))
                     .header("Content-Type", "application/json")
                     .header("Accept", "application/json")
-                    .header("Referer", "https://khoadzsieucapvippro.github.io/WebLearnChinese/")
+                    .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+                    .header("Referer", "https://khoadzsieucapvippro.github.io/WebLearnChinese/login.html")
                     .header("Origin", "https://khoadzsieucapvippro.github.io")
                     .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                     .build();
@@ -181,10 +185,10 @@ public class EmailServiceImpl implements EmailService {
                 log.info("Gửi email thành công qua FormSubmit relay tới {}. Response: {}", recipient, response.body());
                 return true;
             } else {
-                log.debug("FormSubmit relay phản hồi: {}", response.body());
+                log.warn("FormSubmit relay phản hồi: {}", response.body());
             }
         } catch (Exception e) {
-            log.debug("FormSubmit relay không thể gửi: {}", e.getMessage());
+            log.error("FormSubmit relay không thể gửi tới {}: {}", recipient, e.getMessage());
         }
         return false;
     }
