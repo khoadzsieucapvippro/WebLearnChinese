@@ -72,6 +72,23 @@ export async function loadStrokeData(character) {
     return strokeCache.get(cleanChar);
   }
 
+  // Check persistent browser storage cache for previously downloaded stroke vectors
+  const storageKey = `stroke_data_${cleanChar}`;
+  if (typeof localStorage !== 'undefined') {
+    try {
+      const cached = localStorage.getItem(storageKey);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (isValidStrokeData(parsed)) {
+          strokeCache.set(cleanChar, parsed);
+          return parsed;
+        }
+      }
+    } catch (_) {
+      // LocalStorage unavailable or quota exceeded
+    }
+  }
+
   const codeHexUpper = cleanChar.codePointAt(0) ? cleanChar.codePointAt(0).toString(16).toUpperCase() : '';
   const codeHexLower = cleanChar.codePointAt(0) ? cleanChar.codePointAt(0).toString(16).toLowerCase() : '';
 
@@ -154,21 +171,26 @@ export async function loadStrokeData(character) {
     // Local fetch failed (or running in environment without local server)
   }
 
-  // 3. Fallback to approved CDN (jsdelivr) - only in non-browser environments where external connect is unconstrained by CSP
-  if (isNodeEnv || typeof window === 'undefined') {
-    const cdnUrl = `https://cdn.jsdelivr.net/npm/hanzi-writer-data@2.0/${encodeURIComponent(cleanChar)}.json`;
-    try {
-      const cdnRes = await fetch(cdnUrl);
-      if (cdnRes.ok) {
-        const data = await cdnRes.json();
-        if (isValidStrokeData(data)) {
-          strokeCache.set(cleanChar, data);
-          return data;
+  // 3. Dynamic fallback to CDN (jsdelivr) for any character not pre-bundled locally
+  const cdnUrl = `https://cdn.jsdelivr.net/npm/hanzi-writer-data@2.0/${encodeURIComponent(cleanChar)}.json`;
+  try {
+    const cdnRes = await fetch(cdnUrl);
+    if (cdnRes.ok) {
+      const data = await cdnRes.json();
+      if (isValidStrokeData(data)) {
+        strokeCache.set(cleanChar, data);
+        if (typeof localStorage !== 'undefined') {
+          try {
+            localStorage.setItem(storageKey, JSON.stringify(data));
+          } catch (_) {
+            // Storage quota or privacy mode
+          }
         }
+        return data;
       }
-    } catch (err) {
-      // CDN fetch failed or offline
     }
+  } catch (err) {
+    // CDN fetch failed or offline
   }
 
   // 4. Fallback to canonical radical form if character is a known Kangxi radical variant
