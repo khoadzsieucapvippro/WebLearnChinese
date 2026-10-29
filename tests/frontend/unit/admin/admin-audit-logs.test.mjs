@@ -1,6 +1,6 @@
 /**
  * =============================================================================
- * TARGETED UNIT TESTS: CENTRALIZED MANAGEMENT AUDIT LOGS (MILESTONE M3)
+ * TARGETED UNIT TESTS: CENTRALIZED MANAGEMENT AUDIT LOGS (MILESTONE M3 / TASK 7.3)
  * Module: tests/frontend/unit/admin/admin-audit-logs.test.mjs
  * 
  * Scope:
@@ -11,6 +11,8 @@
  *   4. getStatusBadgeClass: Status badge resolution for SUCCESS and FAILED.
  *   5. formatPayloadJson: JSON pretty-formatting and empty snapshot fallback.
  *   6. buildQueryParams: Defensive query parameter serialization and filtering.
+ *   7. calculatePagination: Standardized First/Last << < 1 2 3 > >> pagination model.
+ *   8. generateAuditLogsCsv: RFC 4180 CSV export with UTF-8 BOM for Excel compatibility.
  * =============================================================================
  */
 
@@ -23,10 +25,12 @@ import {
   getActionBadgeClass,
   getStatusBadgeClass,
   formatPayloadJson,
-  buildQueryParams
+  buildQueryParams,
+  calculatePagination,
+  generateAuditLogsCsv
 } from '../../../../frontend/js/pages/admin-audit-logs-page.js';
 
-describe('Milestone M3 — Admin Audit Logs Pure Logic Unit Tests', () => {
+describe('Milestone M3 / Task 7.3 — Admin Audit Logs Pure Logic Unit Tests', () => {
 
   /* ---------------------------------------------------------------------------
    * 1. hasAdminAccess (RBAC Role Guard Invariant)
@@ -72,7 +76,6 @@ describe('Milestone M3 — Admin Audit Logs Pure Logic Unit Tests', () => {
     });
 
     test('formats valid ISO datetime string into HH:mm:ss DD/MM/YYYY format', () => {
-      // Create a deterministic local date
       const testDate = new Date(2026, 9, 21, 14, 30, 45); // Month is 0-indexed: 9 = October
       const iso = testDate.toISOString();
       const formatted = formatTimestamp(iso);
@@ -203,6 +206,91 @@ describe('Milestone M3 — Admin Audit Logs Pure Logic Unit Tests', () => {
       assert.strictEqual(query.resourceType, undefined);
       assert.strictEqual(query.status, undefined);
       assert.strictEqual(query.actor, undefined);
+    });
+  });
+
+  /* ---------------------------------------------------------------------------
+   * 7. calculatePagination (Standardized First/Last Pagination Math)
+   * --------------------------------------------------------------------------- */
+  describe('7. calculatePagination', () => {
+    test('calculates correct model on first page', () => {
+      const res = calculatePagination(0, 10, 5);
+      assert.strictEqual(res.currentPage, 0);
+      assert.strictEqual(res.totalPages, 10);
+      assert.strictEqual(res.hasPrev, false);
+      assert.strictEqual(res.hasNext, true);
+      assert.deepStrictEqual(res.pages, [0, 1, 2, 3, 4]);
+    });
+
+    test('calculates correct model on middle page', () => {
+      const res = calculatePagination(5, 10, 5);
+      assert.strictEqual(res.currentPage, 5);
+      assert.strictEqual(res.hasPrev, true);
+      assert.strictEqual(res.hasNext, true);
+      assert.deepStrictEqual(res.pages, [3, 4, 5, 6, 7]);
+    });
+
+    test('calculates correct model on last page', () => {
+      const res = calculatePagination(9, 10, 5);
+      assert.strictEqual(res.currentPage, 9);
+      assert.strictEqual(res.hasPrev, true);
+      assert.strictEqual(res.hasNext, false);
+      assert.deepStrictEqual(res.pages, [5, 6, 7, 8, 9]);
+    });
+
+    test('handles single page totalPages=1 safely', () => {
+      const res = calculatePagination(0, 1, 5);
+      assert.strictEqual(res.totalPages, 1);
+      assert.strictEqual(res.hasPrev, false);
+      assert.strictEqual(res.hasNext, false);
+      assert.deepStrictEqual(res.pages, [0]);
+    });
+  });
+
+  /* ---------------------------------------------------------------------------
+   * 8. generateAuditLogsCsv (RFC 4180 CSV Export & UTF-8 BOM Invariant)
+   * --------------------------------------------------------------------------- */
+  describe('8. generateAuditLogsCsv', () => {
+    test('prepends UTF-8 BOM (\\uFEFF) for authentic Microsoft Excel support', () => {
+      const csv = generateAuditLogsCsv([]);
+      assert.ok(csv.startsWith('\uFEFF'));
+    });
+
+    test('includes standard headers matching schema specification', () => {
+      const csv = generateAuditLogsCsv([]);
+      assert.ok(csv.includes('Mã nhật ký'));
+      assert.ok(csv.includes('Người thực hiện (Actor)'));
+      assert.ok(csv.includes('Hành vi (Action)'));
+      assert.ok(csv.includes('Chi tiết thay đổi'));
+    });
+
+    test('formats log items and escapes double quotes and special characters per RFC 4180', () => {
+      const sampleLogs = [
+        {
+          logId: 101,
+          createdAt: '2026-10-29T03:00:00Z',
+          actorEmail: 'admin@elearning.local',
+          actionType: 'LESSON_APPROVE',
+          resourceType: 'LESSON',
+          resourceId: 42,
+          status: 'SUCCESS',
+          ipAddress: '127.0.0.1',
+          details: 'Duyệt bài học: "HSK 1 - Bài 1, Khởi đầu"'
+        }
+      ];
+
+      const csv = generateAuditLogsCsv(sampleLogs);
+      // Double quotes inside string must be escaped as ""
+      assert.ok(csv.includes('""HSK 1 - Bài 1, Khởi đầu""'));
+      assert.ok(csv.includes('"#101"'));
+      assert.ok(csv.includes('"admin@elearning.local"'));
+      assert.ok(csv.includes('"LESSON_APPROVE"'));
+    });
+
+    test('handles null and undefined fields gracefully with empty quotes', () => {
+      const emptyLog = [{ logId: undefined, createdAt: null, actorEmail: null, actionType: null }];
+      const csv = generateAuditLogsCsv(emptyLog);
+      assert.ok(csv.includes('"—"'));
     });
   });
 

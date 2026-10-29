@@ -86,7 +86,8 @@ export async function launchBrowser({ headless = true } = {}) {
  */
 export async function createMonitoredPage(browser, { viewportWidth = 1280, viewportHeight = 720 } = {}) {
   const context = await browser.newContext({
-    viewport: { width: viewportWidth, height: viewportHeight }
+    viewport: { width: viewportWidth, height: viewportHeight },
+    acceptDownloads: true
   });
 
   const page = await context.newPage();

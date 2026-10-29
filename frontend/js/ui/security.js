@@ -150,14 +150,16 @@ export function sanitizeResourceUrl(url) {
  * @param {Array<Node|string>} [options.children=[]] - child nodes or text strings
  * @returns {HTMLElement} safely constructed DOM element
  */
-export function createSafeElement(tag, { className = '', text = '', attrs = {}, children = [] } = {}) {
+export function createSafeElement(tag, options = {}) {
+  const { className = '', text = '', attrs = {}, children = [] } = options || {};
   const normalizedTag = String(tag || 'div').trim().toLowerCase();
   if (normalizedTag === 'script') {
     throw new Error('[Security] createSafeElement forbids dynamic script element creation');
   }
 
   const el = document.createElement(normalizedTag);
-  if (className) el.className = className;
+  const resolvedClass = className || options?.class || '';
+  if (resolvedClass) el.className = resolvedClass;
   if (text) el.textContent = text;
   
   for (const [key, value] of Object.entries(attrs)) {

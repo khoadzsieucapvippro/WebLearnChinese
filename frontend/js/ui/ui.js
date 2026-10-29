@@ -203,12 +203,17 @@ export function setComponentState(container, state, options = {}) {
 let _lastToastKey = '';
 let _lastToastTimestamp = 0;
 
-export function showToast({
-  type = 'info',
-  title = '',
-  message = '',
-  duration = 2500
-} = {}) {
+export function showToast(options = {}) {
+  let opts = options;
+  if (typeof options === 'string') {
+    opts = { message: options, type: arguments[1] || 'info' };
+  }
+  const {
+    type = 'info',
+    title = '',
+    message = '',
+    duration = 2500
+  } = opts || {};
   if (typeof document === 'undefined') return;
 
   // 1. Deduplication guard: ignore identical toast messages within 2.0s

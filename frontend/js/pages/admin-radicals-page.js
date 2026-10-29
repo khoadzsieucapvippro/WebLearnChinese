@@ -26,7 +26,7 @@ import { apiClient, ApiError } from '../api/api.js';
 import { authManager } from '../auth/auth-state.js';
 import { initNavbarAuth } from '../ui/nav.js';
 import { createSafeElement, clearContainer, sanitizeResourceUrl } from '../ui/security.js';
-import { setComponentState, showToast } from '../ui/ui.js';
+import { setComponentState, showToast, createSpeechButton, playPronunciation } from '../ui/ui.js';
 
 /* -----------------------------------------------------------------------------
  * 1. PURE LOGIC & UTILITY HELPERS (Exported for Unit Testability)
@@ -781,24 +781,20 @@ export class AdminRadicalsPageController {
     const meaningHanViet = item.meaningHanViet || '—';
     const meaningVi = item.meaningVi || '—';
 
-    // Media badges
+    // Standardized speaker button & media actions
     const mediaNodes = [];
-    if (item.audioUrl) {
-      const safeAudio = sanitizeResourceUrl(item.audioUrl);
-      if (safeAudio && safeAudio !== 'about:blank') {
-        const audioLink = createSafeElement('a', {
-          className: 'badge bg-light text-primary border text-decoration-none me-1',
-          text: '🔊 Audio',
-          attrs: {
-            href: safeAudio,
-            target: '_blank',
-            rel: 'noopener noreferrer',
-            title: `Nghe phát âm: ${character}`
-          }
-        });
-        mediaNodes.push(audioLink);
+    const safeAudio = item.audioUrl ? sanitizeResourceUrl(item.audioUrl) : null;
+    const speakerBtn = createSpeechButton({
+      className: 'radical-audio-btn me-1',
+      ariaLabel: `Nghe phát âm bộ thủ ${character}`,
+      title: `Nghe phát âm bộ thủ: ${character}`,
+      iconSize: 14,
+      onClick: (e) => {
+        e.stopPropagation();
+        playPronunciation({ text: character, audioUrl: safeAudio && safeAudio !== 'about:blank' ? safeAudio : null });
       }
-    }
+    });
+    mediaNodes.push(speakerBtn);
     if (item.videoWritingUrl) {
       const safeVideo = sanitizeResourceUrl(item.videoWritingUrl);
       if (safeVideo && safeVideo !== 'about:blank') {
@@ -910,67 +906,143 @@ export class AdminRadicalsPageController {
    * @param {number} pageSize 
    */
   renderPagination(totalItems, pageIndex, pageSize) {
-    if (!this.elements.paginationSummary || !this.elements.paginationControls) return;
+    if (!this.elements.paginationControls) return;
 
-    clearContainer(this.elements.paginationSummary);
     clearContainer(this.elements.paginationControls);
+    if (this.elements.paginationSummary) {
+      clearContainer(this.elements.paginationSummary);
+    }
 
     if (totalItems === 0) {
-      this.elements.paginationSummary.textContent = 'Không có bản ghi nào.';
+      if (this.elements.radicalPagination) {
+        this.elements.radicalPagination.classList.add('d-none');
+      }
       return;
     }
 
-    const { totalPages, startIndex, endIndex } = calculatePagination(totalItems, pageIndex, pageSize);
-
-    // Summary text
-    this.elements.paginationSummary.textContent = `Hiển thị ${startIndex + 1} – ${endIndex} trên tổng số ${totalItems} bộ thủ (Trang ${pageIndex + 1} / ${totalPages})`;
+    const { totalPages, pageIndex: clampedPage } = calculatePagination(totalItems, pageIndex, pageSize);
 
     if (totalPages <= 1) {
-      return; // Single page doesn't need prev/next buttons
+      if (this.elements.radicalPagination) {
+        this.elements.radicalPagination.classList.add('d-none');
+      }
+      return;
     }
 
-    // Prev Button
+    if (this.elements.radicalPagination) {
+      this.elements.radicalPagination.classList.remove('d-none');
+    }
+
+    const maxVisible = 5;
+    let startPage = Math.max(0, clampedPage - Math.floor(maxVisible / 2));
+    let endPage = Math.min(totalPages - 1, startPage + maxVisible - 1);
+    if (endPage - startPage + 1 < maxVisible) {
+      startPage = Math.max(0, endPage - maxVisible + 1);
+    }
+
+    // 1. First button (<<)
+    const firstBtn = createSafeElement('button', {
+      className: 'pagination-btn',
+      attrs: {
+        type: 'button',
+        'aria-label': 'Trang đầu',
+        id: 'radicalPaginationFirstBtn'
+      },
+      text: '<<'
+    });
+    if (clampedPage === 0) {
+      firstBtn.disabled = true;
+      firstBtn.setAttribute('disabled', 'true');
+    } else {
+      firstBtn.addEventListener('click', () => {
+        this.currentPage = 0;
+        this.renderCatalogView();
+      });
+    }
+    this.elements.paginationControls.appendChild(firstBtn);
+
+    // 2. Prev button (<)
     const prevBtn = createSafeElement('button', {
-      className: `btn btn-sm ${pageIndex === 0 ? 'btn-outline-secondary disabled' : 'btn-outline-dark'}`,
-      text: '‹ Trước',
+      className: 'pagination-btn',
       attrs: {
         type: 'button',
         'aria-label': 'Trang trước',
-        ...(pageIndex === 0 ? { disabled: '' } : {})
-      }
+        id: 'radicalPaginationPrevBtn'
+      },
+      text: '<'
     });
-    if (pageIndex > 0) {
+    if (clampedPage === 0) {
+      prevBtn.disabled = true;
+      prevBtn.setAttribute('disabled', 'true');
+    } else {
       prevBtn.addEventListener('click', () => {
-        this.currentPage = pageIndex - 1;
+        this.currentPage = clampedPage - 1;
         this.renderCatalogView();
       });
     }
     this.elements.paginationControls.appendChild(prevBtn);
 
-    // Page indicator
-    const pageBadge = createSafeElement('span', {
-      className: 'px-2 small text-secondary fw-semibold',
-      text: `${pageIndex + 1} / ${totalPages}`
-    });
-    this.elements.paginationControls.appendChild(pageBadge);
+    // 3. Page numbers
+    for (let p = startPage; p <= endPage; p++) {
+      const pageNumBtn = createSafeElement('button', {
+        className: `pagination-btn ${p === clampedPage ? 'active' : ''}`.trim(),
+        attrs: {
+          type: 'button',
+          'aria-label': `Trang ${p + 1}`,
+          ...(p === clampedPage ? { 'aria-current': 'page' } : {})
+        },
+        text: String(p + 1)
+      });
+      if (p !== clampedPage) {
+        pageNumBtn.addEventListener('click', () => {
+          this.currentPage = p;
+          this.renderCatalogView();
+        });
+      }
+      this.elements.paginationControls.appendChild(pageNumBtn);
+    }
 
-    // Next Button
+    // 4. Next button (>)
     const nextBtn = createSafeElement('button', {
-      className: `btn btn-sm ${pageIndex >= totalPages - 1 ? 'btn-outline-secondary disabled' : 'btn-outline-dark'}`,
-      text: 'Sau ›',
+      className: 'pagination-btn',
       attrs: {
         type: 'button',
         'aria-label': 'Trang sau',
-        ...(pageIndex >= totalPages - 1 ? { disabled: '' } : {})
-      }
+        id: 'radicalPaginationNextBtn'
+      },
+      text: '>'
     });
-    if (pageIndex < totalPages - 1) {
+    if (clampedPage >= totalPages - 1) {
+      nextBtn.disabled = true;
+      nextBtn.setAttribute('disabled', 'true');
+    } else {
       nextBtn.addEventListener('click', () => {
-        this.currentPage = pageIndex + 1;
+        this.currentPage = clampedPage + 1;
         this.renderCatalogView();
       });
     }
     this.elements.paginationControls.appendChild(nextBtn);
+
+    // 5. Last button (>>)
+    const lastBtn = createSafeElement('button', {
+      className: 'pagination-btn',
+      attrs: {
+        type: 'button',
+        'aria-label': 'Trang cuối',
+        id: 'radicalPaginationLastBtn'
+      },
+      text: '>>'
+    });
+    if (clampedPage >= totalPages - 1) {
+      lastBtn.disabled = true;
+      lastBtn.setAttribute('disabled', 'true');
+    } else {
+      lastBtn.addEventListener('click', () => {
+        this.currentPage = totalPages - 1;
+        this.renderCatalogView();
+      });
+    }
+    this.elements.paginationControls.appendChild(lastBtn);
   }
 
   /* ---------------------------------------------------------------------------

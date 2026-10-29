@@ -110,6 +110,7 @@
               <a href="#section-9d1" class="btn btn-sm btn-outline-secondary">9. 9D.1 Creator Studio</a>
               <a href="#section-9d2" class="btn btn-sm btn-outline-secondary">10. 9D.2 Import Excel</a>
               <a href="#section-9d3" class="btn btn-sm btn-outline-secondary">11. 9D.3 Nộp Duyệt</a>
+              <a href="#section-admin-audit-logs" class="btn btn-sm btn-outline-secondary">11B. 7.3 Audit Logs &amp; CSV</a>
               <a href="#section-fullstack" class="btn btn-sm btn-outline-secondary">12. Live Full-Stack</a>
             </nav>
             <div class="d-flex align-items-center gap-2 flex-wrap small">
@@ -1532,6 +1533,48 @@
             </p>
             <div id="adminLessonsProbeOutput" class="small font-monospace p-2 rounded bg-light border" style="min-height: 90px;" aria-live="polite">
               Chưa kiểm tra. Nhấn "Chạy Probe Năng Lực 9F.5" để kiểm tra tính sẵn sàng của phân hệ.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- 17D. SECTION 17D: ADMIN AUDIT LOGS & CSV EXPORT (TASK-7.3)         -->
+      <!-- =================================================================== -->
+      <section id="section-admin-audit-logs" class="mb-5" aria-labelledby="adminAuditLogsHeading">
+        <div class="card-chinese">
+          <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+            <div>
+              <h2 id="adminAuditLogsHeading" class="h5 fw-bold mb-1">
+                17D. Nhật Ký Kiểm Toán &amp; Xuất Báo Cáo CSV (Task 7.3)
+              </h2>
+              <p class="text-secondary small mb-0">
+                Kiểm chứng năng lực Nhật ký kiểm toán quản trị: Truy vấn lịch sử kiểm toán (GET /api/v1/admin/audit-logs), Phân trang chuẩn hóa, Lọc đa tiêu chí, Trích xuất báo cáo CSV RFC 4180 UTF-8 with BOM và An toàn DOM tuyệt đối.
+              </p>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge-status badge-mode-unit">CAPABILITY</span>
+              <span class="badge-status badge-mode-live">AUDIT &amp; EXPORT</span>
+            </div>
+          </div>
+
+          <div class="p-3 border rounded bg-white">
+            <div class="d-flex align-items-center justify-content-between mb-2 flex-wrap gap-2">
+              <span class="fw-bold small text-dark">Kiểm chứng Năng Lực Nhật Ký &amp; Định Dạng CSV (RFC 4180 Probe)</span>
+              <div class="d-flex gap-2">
+                <a href="admin-audit-logs.html" class="btn-chinese-outline py-1 px-3 small text-decoration-none">
+                  Mở Nhật Ký Kiểm Toán
+                </a>
+                <button type="button" id="btnProbeAuditLogsCapability" class="btn-chinese-primary py-1 px-3 small">
+                  Chạy Probe Task 7.3
+                </button>
+              </div>
+            </div>
+            <p class="text-muted small mb-2">
+              Kiểm tra logic client (<code>formatTimestamp</code>, <code>getActionBadgeClass</code>, <code>getStatusBadgeClass</code>, <code>buildQueryParams</code>, <code>calculatePagination</code>, <code>generateAuditLogsCsv</code>) và kiểm tra tính hợp lệ của tệp CSV (UTF-8 BOM, ký tự thoát chuẩn).
+            </p>
+            <div id="auditLogsProbeOutput" class="small font-monospace p-2 rounded bg-light border" style="min-height: 90px;" aria-live="polite">
+              Chưa kiểm tra. Nhấn "Chạy Probe Task 7.3" để kiểm tra tính sẵn sàng của phân hệ.
             </div>
           </div>
         </div>

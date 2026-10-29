@@ -768,20 +768,6 @@ export class AdminAccountsController {
         text: 'Đổi trạng thái'
       });
       actionContainer.appendChild(selfDisabledBtn);
-
-      const selfResetDisabledBtn = createSafeElement('button', {
-        className: 'btn btn-chinese-secondary btn-sm text-nowrap opacity-50',
-        attrs: {
-          'type': 'button',
-          'id': `btnResetPassword_${account.accountId}`,
-          'disabled': 'true',
-          'aria-disabled': 'true',
-          'aria-label': 'Không thể tự đặt lại mật khẩu của chính mình qua tính năng quản trị',
-          'title': 'Không thể tự đặt lại mật khẩu của chính mình qua tính năng quản trị'
-        },
-        text: '🔑 Đổi MK'
-      });
-      actionContainer.appendChild(selfResetDisabledBtn);
     } else {
       const changeStatusBtn = createSafeElement('button', {
         className: 'btn btn-chinese-secondary btn-sm text-nowrap btn-change-status',

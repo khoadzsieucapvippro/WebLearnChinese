@@ -150,6 +150,124 @@ export function buildQueryParams(params = {}) {
   return query;
 }
 
+/**
+ * Pure helper calculating standardized pagination model matching project contract.
+ *
+ * @param {number} currentPageOrPage
+ * @param {number} totalPagesOrSize
+ * @param {number} [maxVisibleOrTotalElements=5]
+ * @param {number} [maybeTotalPages]
+ * @param {number} [maybeMaxButtons=5]
+ * @returns {object}
+ */
+export function calculatePagination(currentPageOrPage, totalPagesOrSize, maxVisibleOrTotalElements, maybeTotalPages, maybeMaxButtons = 5) {
+  let page = 0;
+  let totalPages = 1;
+  let maxButtons = 5;
+
+  if (maybeTotalPages !== undefined) {
+    page = Number(currentPageOrPage) || 0;
+    totalPages = Number(maybeTotalPages) || 1;
+    maxButtons = Number(maybeMaxButtons) || 5;
+  } else {
+    page = Number(currentPageOrPage) || 0;
+    totalPages = Number(totalPagesOrSize) || 1;
+    maxButtons = Number(maxVisibleOrTotalElements) || 5;
+  }
+
+  const safeTotalPages = Math.max(1, totalPages);
+  const clampedPage = Math.max(0, Math.min(page, safeTotalPages - 1));
+  const safeMaxButtons = Math.max(1, maxButtons);
+
+  let startPage = Math.max(0, clampedPage - Math.floor(safeMaxButtons / 2));
+  let endPage = Math.min(safeTotalPages - 1, startPage + safeMaxButtons - 1);
+
+  if (endPage - startPage + 1 < safeMaxButtons) {
+    startPage = Math.max(0, endPage - safeMaxButtons + 1);
+  }
+
+  const pages = [];
+  for (let p = startPage; p <= endPage; p++) {
+    pages.push(p);
+  }
+
+  return {
+    currentPage: clampedPage,
+    totalPages: safeTotalPages,
+    startPage,
+    endPage,
+    pages,
+    hasPrev: clampedPage > 0,
+    hasNext: clampedPage < safeTotalPages - 1
+  };
+}
+
+/**
+ * Generates RFC 4180 compliant CSV string with UTF-8 BOM for Audit Logs.
+ * Escapes quotes and wraps fields to ensure perfect rendering across Excel and Google Sheets.
+ *
+ * @param {Array<object>} logs
+ * @returns {string}
+ */
+export function generateAuditLogsCsv(logs = []) {
+  const headers = [
+    'Mã nhật ký',
+    'Thời gian',
+    'Người thực hiện (Actor)',
+    'Hành vi (Action)',
+    'Tài nguyên (Resource)',
+    'Mã tài nguyên (Resource ID)',
+    'Kết quả (Status)',
+    'Địa chỉ IP',
+    'Chi tiết thay đổi'
+  ];
+
+  const escapeCsv = (val) => {
+    if (val === null || val === undefined) return '""';
+    const str = String(val).replace(/"/g, '""');
+    return `"${str}"`;
+  };
+
+  const rows = [headers.map(escapeCsv).join(',')];
+
+  for (const log of logs) {
+    const row = [
+      escapeCsv(log.logId !== undefined ? `#${log.logId}` : '—'),
+      escapeCsv(formatTimestamp(log.createdAt)),
+      escapeCsv(log.actorEmail || (log.actorId ? `Account #${log.actorId}` : 'Hệ thống')),
+      escapeCsv(log.actionType || '—'),
+      escapeCsv(log.resourceType || '—'),
+      escapeCsv(log.resourceId !== undefined ? log.resourceId : '—'),
+      escapeCsv(log.status || 'SUCCESS'),
+      escapeCsv(log.ipAddress || '—'),
+      escapeCsv(log.details || log.payloadDiff || '—')
+    ];
+    rows.push(row.join(','));
+  }
+
+  // UTF-8 BOM (﻿)
+  return '\uFEFF' + rows.join('\r\n');
+}
+
+/**
+ * Triggers browser download of generated CSV file.
+ *
+ * @param {string} content
+ * @param {string} [fileName='audit-logs.csv']
+ */
+export function downloadCsvFile(content, fileName = 'audit-logs.csv') {
+  const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+
 /* -----------------------------------------------------------------------------
  * 2. STATE MANAGEMENT & DOM CONTROLLER
  * ----------------------------------------------------------------------------- */
@@ -159,6 +277,7 @@ const pageSize = 20;
 let totalPages = 1;
 let totalElements = 0;
 let isLoading = false;
+let currentAuditLogs = [];
 
 /**
  * Initializes the Audit Logs page.
@@ -192,6 +311,20 @@ function setupEventListeners() {
     btnApplyFilter.addEventListener('click', () => {
       currentPage = 0;
       loadAuditLogs(0);
+    });
+  }
+
+  const btnExportCsv = document.getElementById('btnExportCsv');
+  if (btnExportCsv) {
+    btnExportCsv.addEventListener('click', () => {
+      if (!currentAuditLogs || currentAuditLogs.length === 0) {
+        showToast('Không có bản ghi nào để xuất CSV', 'warning');
+        return;
+      }
+      const csv = generateAuditLogsCsv(currentAuditLogs);
+      const dateStr = new Date().toISOString().slice(0, 10);
+      downloadCsvFile(csv, `audit-logs-${dateStr}.csv`);
+      showToast(`Đã xuất ${currentAuditLogs.length} bản ghi ra file CSV thành công`, 'success');
     });
   }
 
@@ -321,7 +454,7 @@ export async function loadAuditLogs(targetPage = 0) {
 
   try {
     const response = await apiClient('/admin/audit-logs', { params: query });
-    const pageData = response && response.data ? response.data : null;
+    const pageData = (response && response.data && typeof response.data === 'object') ? response.data : response;
 
     currentPage = pageData ? pageData.page : 0;
     totalPages = pageData ? Math.max(1, pageData.totalPages) : 1;
@@ -332,6 +465,7 @@ export async function loadAuditLogs(targetPage = 0) {
     }
 
     const items = pageData && Array.isArray(pageData.items) ? pageData.items : [];
+    currentAuditLogs = items;
 
     if (items.length === 0) {
       if (stateContainer) {
@@ -428,10 +562,10 @@ function renderAuditLogsTable(items) {
     tr.appendChild(tdDetails);
 
     // 8. Actions
-    const tdOps = createSafeElement('td', { class: 'text-end' });
+    const tdOps = createSafeElement('td', { className: 'text-end' });
     const btnView = createSafeElement('button', {
-      type: 'button',
-      class: 'btn btn-outline-primary btn-sm py-0 px-2'
+      className: 'btn btn-outline-primary btn-sm py-0 px-2 btn-view-detail',
+      attrs: { type: 'button', 'data-action': 'view-detail' }
     });
     btnView.textContent = 'Chi tiết';
     btnView.addEventListener('click', () => openDetailModal(item.logId));
@@ -453,7 +587,7 @@ export async function openDetailModal(logId) {
 
   try {
     const response = await apiClient(`/admin/audit-logs/${logId}`);
-    const data = response && response.data ? response.data : null;
+    const data = (response && response.data && typeof response.data === 'object') ? response.data : response;
     if (!data) {
       showToast('Không tìm thấy chi tiết bản ghi kiểm toán', 'warning');
       return;
@@ -511,34 +645,128 @@ export async function openDetailModal(logId) {
  * Updates pagination buttons and indicators.
  */
 function updatePaginationUI() {
-  const btnFirst = document.getElementById('btnFirstPage');
-  const btnPrev = document.getElementById('btnPrevPage');
-  const btnNext = document.getElementById('btnNextPage');
-  const btnLast = document.getElementById('btnLastPage');
-  const indicator = document.getElementById('pageIndicator');
-  const summary = document.getElementById('paginationSummary');
+  const nav = document.getElementById('auditPaginationNav');
+  const controls = document.getElementById('paginationControls');
+  if (!nav || !controls) return;
 
-  const isFirst = currentPage <= 0;
-  const isLast = currentPage >= totalPages - 1;
+  clearContainer(controls);
 
-  if (btnFirst) btnFirst.disabled = isFirst;
-  if (btnPrev) btnPrev.disabled = isFirst;
-  if (btnNext) btnNext.disabled = isLast;
-  if (btnLast) btnLast.disabled = isLast;
-
-  if (indicator) {
-    indicator.textContent = String(currentPage + 1);
+  if (totalPages <= 1) {
+    nav.classList.add('d-none');
+    return;
   }
-  if (summary) {
-    summary.textContent = `Trang ${currentPage + 1} / ${totalPages} (Tổng số: ${totalElements})`;
+
+  nav.classList.remove('d-none');
+  const calc = calculatePagination(currentPage, totalPages, 5);
+
+  // 1. First button (<<)
+  const firstBtn = createSafeElement('button', {
+    className: 'pagination-btn',
+    attrs: {
+      type: 'button',
+      'aria-label': 'Trang đầu',
+      id: 'btnFirstPage'
+    },
+    text: '<<'
+  });
+  if (!calc.hasPrev) {
+    firstBtn.disabled = true;
+    firstBtn.setAttribute('disabled', 'true');
+  } else {
+    firstBtn.addEventListener('click', () => {
+      if (!isLoading) loadAuditLogs(0);
+    });
   }
+  controls.appendChild(firstBtn);
+
+  // 2. Prev button (<)
+  const prevBtn = createSafeElement('button', {
+    className: 'pagination-btn',
+    attrs: {
+      type: 'button',
+      'aria-label': 'Trang trước',
+      id: 'btnPrevPage'
+    },
+    text: '<'
+  });
+  if (!calc.hasPrev) {
+    prevBtn.disabled = true;
+    prevBtn.setAttribute('disabled', 'true');
+  } else {
+    prevBtn.addEventListener('click', () => {
+      if (!isLoading) loadAuditLogs(calc.currentPage - 1);
+    });
+  }
+  controls.appendChild(prevBtn);
+
+  // 3. Numbered buttons
+  for (const p of calc.pages) {
+    const pageNumBtn = createSafeElement('button', {
+      className: `pagination-btn ${p === calc.currentPage ? 'active' : ''}`.trim(),
+      attrs: {
+        type: 'button',
+        'aria-label': `Trang ${p + 1}`,
+        ...(p === calc.currentPage ? { 'aria-current': 'page' } : {})
+      },
+      text: String(p + 1)
+    });
+    if (p !== calc.currentPage) {
+      pageNumBtn.addEventListener('click', () => {
+        if (!isLoading) loadAuditLogs(p);
+      });
+    }
+    controls.appendChild(pageNumBtn);
+  }
+
+  // 4. Next button (>)
+  const nextBtn = createSafeElement('button', {
+    className: 'pagination-btn',
+    attrs: {
+      type: 'button',
+      'aria-label': 'Trang sau',
+      id: 'btnNextPage'
+    },
+    text: '>'
+  });
+  if (!calc.hasNext) {
+    nextBtn.disabled = true;
+    nextBtn.setAttribute('disabled', 'true');
+  } else {
+    nextBtn.addEventListener('click', () => {
+      if (!isLoading) loadAuditLogs(calc.currentPage + 1);
+    });
+  }
+  controls.appendChild(nextBtn);
+
+  // 5. Last button (>>)
+  const lastBtn = createSafeElement('button', {
+    className: 'pagination-btn',
+    attrs: {
+      type: 'button',
+      'aria-label': 'Trang cuối',
+      id: 'btnLastPage'
+    },
+    text: '>>'
+  });
+  if (!calc.hasNext) {
+    lastBtn.disabled = true;
+    lastBtn.setAttribute('disabled', 'true');
+  } else {
+    lastBtn.addEventListener('click', () => {
+      if (!isLoading) loadAuditLogs(calc.totalPages - 1);
+    });
+  }
+  controls.appendChild(lastBtn);
 }
 
-// Auto-run on DOM ready
+// Auto-run on DOM ready strictly when on admin-audit-logs.html
 if (typeof document !== 'undefined') {
+  const isTargetPage = () => Boolean(document.getElementById('adminAuditLogsWorkspaceSection'));
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initAdminAuditLogsPage);
-  } else {
+    document.addEventListener('DOMContentLoaded', () => {
+      if (isTargetPage()) initAdminAuditLogsPage();
+    });
+  } else if (isTargetPage()) {
     initAdminAuditLogsPage();
   }
 }

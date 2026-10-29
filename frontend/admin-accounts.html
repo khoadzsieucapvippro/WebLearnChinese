@@ -117,11 +117,12 @@
         <div class="card-chinese p-3 mb-4" id="accountToolbarCard">
           <div class="row g-3 align-items-end">
             <!-- Search Query Input -->
-            <div class="col-12 col-md-7 col-lg-8">
+            <!-- Search Input -->
+            <div class="col-12 col-md-6 col-lg-6">
               <label for="accountSearchInput" class="form-label small fw-semibold text-secondary mb-1">
                 Tìm kiếm tài khoản
               </label>
-              <div class="input-group input-group-sm">
+              <div class="input-group">
                 <input type="text" id="accountSearchInput" class="form-control" placeholder="Tìm theo email, SĐT hoặc họ tên..." aria-label="Tìm kiếm theo email, số điện thoại hoặc họ tên">
                 <button type="button" id="btnAccountSearch" class="btn btn-chinese-primary">
                   Tìm kiếm
@@ -133,11 +134,11 @@
             </div>
 
             <!-- Status Filter Select -->
-            <div class="col-12 col-md-5 col-lg-4">
+            <div class="col-12 col-md-6 col-lg-6">
               <label for="statusFilterSelect" class="form-label small fw-semibold text-secondary mb-1">
                 Lọc trạng thái
               </label>
-              <select id="statusFilterSelect" class="form-select form-select-sm" aria-label="Bộ lọc trạng thái tài khoản">
+              <select id="statusFilterSelect" class="form-select" aria-label="Bộ lọc trạng thái tài khoản">
                 <option value="" selected>Tất cả trạng thái</option>
                 <option value="Active">Hoạt động (Active)</option>
                 <option value="Inactive">Tạm khóa (Inactive)</option>

@@ -17,8 +17,10 @@ import com.elearning.repository.RoleRepository;
 import com.elearning.security.CustomUserDetails;
 import com.elearning.security.JwtUtil;
 import com.elearning.service.AuthService;
+import com.elearning.service.EmailService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -48,6 +50,7 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
+    private final EmailService emailService;
     private final ConcurrentMap<String, ResetCodeEntry> resetCodeStore = new ConcurrentHashMap<>();
 
     private static class ResetCodeEntry {
@@ -70,11 +73,23 @@ public class AuthServiceImpl implements AuthService {
             PasswordEncoder passwordEncoder,
             AuthenticationManager authenticationManager,
             JwtUtil jwtUtil) {
+        this(accountRepository, roleRepository, passwordEncoder, authenticationManager, jwtUtil, null);
+    }
+
+    @Autowired
+    public AuthServiceImpl(
+            AccountRepository accountRepository,
+            RoleRepository roleRepository,
+            PasswordEncoder passwordEncoder,
+            AuthenticationManager authenticationManager,
+            JwtUtil jwtUtil,
+            @Autowired(required = false) EmailService emailService) {
         this.accountRepository = accountRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
+        this.emailService = emailService;
     }
 
     @Override
@@ -224,8 +239,19 @@ public class AuthServiceImpl implements AuthService {
         resetCodeStore.put(email, new ResetCodeEntry(code, RESET_CODE_TTL_MS));
         log.info("Đã tạo mã xác thực quên mật khẩu cho email: {} [TTL 15 phút]", email);
 
-        // When external SMTP is not configured, provide devCode so real account tests succeed seamlessly
-        return new ForgotPasswordResponse("Mã xác nhận 6 chữ số đã được tạo thành công.", code, false);
+        boolean emailSent = false;
+        if (emailService != null) {
+            emailSent = emailService.sendPasswordResetCode(email, code);
+        }
+
+        // When external email dispatch succeeds, devCode is omitted (null) for security.
+        // If email could not be sent (or in local dev without keys), devCode is provided for seamless testing.
+        String devCode = emailSent ? null : code;
+        String message = emailSent
+                ? "Mã xác thực 6 chữ số đã được gửi tới email của bạn."
+                : "Mã xác nhận 6 chữ số đã được tạo thành công.";
+
+        return new ForgotPasswordResponse(message, devCode, emailSent);
     }
 
     @Override

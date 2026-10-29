@@ -78,38 +78,6 @@
     <main id="mainContent" class="management-main-content">
     <div class="container-xl creator-studio-wrapper">
 
-              <!-- Management Sub-navigation Breadcrumb -->
-        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
-          <nav aria-label="Đường dẫn điều hướng">
-            <ol class="breadcrumb mb-0 small">
-              <li class="breadcrumb-item"><a href="management.html" class="text-decoration-none">Trung tâm quản lý</a></li>
-              <li class="breadcrumb-item active" aria-current="page">Nhật ký kiểm toán</li>
-            </ol>
-          </nav>
-        </div>
-
-      <!-- Admin Section Sub-navigation Tabs -->
-      <nav class="moderator-nav-tabs" aria-label="Phân khu quản trị hệ thống">
-        <a href="admin-accounts.html" class="moderator-nav-tab" id="tabAdminAccounts">
-          Quản trị tài khoản
-        </a>
-        <a href="admin-roles.html" class="moderator-nav-tab" id="tabAdminRoles">
-          Phân quyền vai trò
-        </a>
-        <a href="admin-radicals.html" class="moderator-nav-tab" id="tabAdminRadicals">
-          Quản trị bộ thủ
-        </a>
-        <a href="admin-vocabulary.html" class="moderator-nav-tab" id="tabAdminVocabulary">
-          Quản trị từ vựng
-        </a>
-        <a href="admin-lessons.html" class="moderator-nav-tab" id="tabAdminLessons">
-          Giám sát bài học
-        </a>
-        <a href="admin-audit-logs.html" class="moderator-nav-tab active" id="tabAdminAuditLogs" aria-current="page">
-          Nhật ký kiểm toán
-        </a>
-      </nav>
-
       <!-- Role Guard Message Container (Shown if unauthorized) -->
       <div id="adminAuthGuardContainer" class="d-none mb-4">
         <div class="creator-panel-card text-center py-5">
@@ -186,12 +154,15 @@
               <input type="text" id="actorSearchInput" class="form-control form-control-sm" placeholder="Email, SĐT hoặc ID...">
             </div>
 
-            <div class="col-12 col-sm-6 col-md-2 d-flex align-items-end gap-2">
+            <div class="col-12 col-sm-6 col-md-4 d-flex align-items-end gap-2">
               <button type="button" id="btnApplyFilter" class="btn-chinese-primary btn-sm flex-fill">
                 Lọc dữ liệu
               </button>
               <button type="button" id="btnResetFilter" class="btn-chinese-secondary btn-sm" title="Đặt lại bộ lọc">
                 Đặt lại
+              </button>
+              <button type="button" id="btnExportCsv" class="btn btn-outline-success btn-sm d-flex align-items-center gap-1 text-nowrap" title="Xuất dữ liệu nhật ký kiểm toán ra tệp CSV (RFC 4180)">
+                <span>📥 Xuất CSV</span>
               </button>
             </div>
           </div>
@@ -210,7 +181,7 @@
 
         <!-- Table Container & Three-State Engine -->
         <div class="creator-panel-card p-0 overflow-hidden mb-4">
-          <div class="table-responsive">
+          <div class="table-responsive table-responsive-clean" style="max-width: 100%;">
             <table class="table table-hover align-middle mb-0" id="auditLogsTable" aria-label="Bảng nhật ký kiểm toán quản trị">
               <thead class="table-light">
                 <tr>

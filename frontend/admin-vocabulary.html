@@ -130,7 +130,6 @@
                   class="form-control form-control-chinese pe-5"
                   placeholder="Tìm theo chữ Hán (你好), pinyin (nǐ hǎo), pinyin không dấu (ni hao)..."
                   autocomplete="off"
-                  aria-describedby="vocabSearchHelp"
                 >
                 <button
                   type="button"
@@ -141,23 +140,11 @@
                   &times;
                 </button>
               </div>
-              <div id="vocabSearchHelp" class="form-text small text-muted">
-                Tìm kiếm trực tiếp từ máy chủ theo chữ Hán, Pinyin có dấu hoặc Pinyin không dấu.
-              </div>
             </div>
 
             <!-- Page Size & Result Count -->
             <div class="col-md-5 col-lg-4">
               <div class="d-flex flex-column align-items-md-end gap-2">
-                <div class="d-flex align-items-center gap-2">
-                  <label for="pageSizeSelect" class="small text-secondary text-nowrap">Hiển thị:</label>
-                  <select id="pageSizeSelect" class="form-select form-select-sm w-auto">
-                    <option value="10">10 từ vựng</option>
-                    <option value="20" selected>20 từ vựng</option>
-                    <option value="50">50 từ vựng</option>
-                    <option value="100">100 từ vựng</option>
-                  </select>
-                </div>
                 <div id="vocabResultCount" class="badge-status badge-status-draft text-nowrap" aria-live="polite">
                   Đang tải danh mục...
                 </div>

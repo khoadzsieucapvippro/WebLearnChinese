@@ -206,8 +206,8 @@ describe('Browser E2E: Admin Role Management & Assignment UI (Task 9F.2)', () =>
         const roleCard = page.locator('#roleCatalogContainer').getByText(r.roleName, { exact: true });
         await roleCard.waitFor({ state: 'visible' });
 
-        const idBadge = page.locator('#roleCatalogContainer').getByText(`#${r.roleId}`);
-        await idBadge.waitFor({ state: 'visible' });
+        const idBadgeCount = await page.locator('#roleCatalogContainer').getByText(`#${r.roleId}`).count();
+        assert.strictEqual(idBadgeCount, 0, `#${r.roleId} badge must be removed from role catalog`);
       }
 
       assert.deepStrictEqual(getRuntimeErrors(), []);

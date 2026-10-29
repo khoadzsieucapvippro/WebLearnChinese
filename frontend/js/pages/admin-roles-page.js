@@ -730,14 +730,9 @@ export class AdminRolesController {
         ]
       });
 
-      const idBadge = createSafeElement('span', {
-        className: 'badge bg-light text-secondary border small',
-        text: `#${role.roleId}`
-      });
-
       const headerDiv = createSafeElement('div', {
         className: 'd-flex align-items-center justify-content-between mb-2',
-        children: [titleWrapper, idBadge]
+        children: [titleWrapper]
       });
 
       const labelDiv = createSafeElement('div', {

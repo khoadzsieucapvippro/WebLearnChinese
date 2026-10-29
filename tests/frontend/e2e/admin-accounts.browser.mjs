@@ -446,10 +446,9 @@ describe('Browser E2E: Admin Accounts Lifecycle UI (Task 9F.1)', () => {
       const titleAttr = await actionBtn.getAttribute('title');
       assert.match(titleAttr, /POL-8D-01/, 'Button title must mention POL-8D-01');
 
-      // Verify reset password button on self account is also disabled
-      const resetBtn = row1.locator('#btnResetPassword_1');
-      await resetBtn.waitFor({ state: 'visible' });
-      assert.strictEqual(await resetBtn.isDisabled(), true, 'Reset password button on self account must be disabled');
+      // Verify reset password button on self account is completely purged
+      const resetBtnCount = await row1.locator('#btnResetPassword_1').count();
+      assert.strictEqual(resetBtnCount, 0, 'Reset password button on self account must be purged');
 
       // Other non-self account buttons MUST be enabled
       const otherBtn = page.locator('#btnChangeStatus_2');
