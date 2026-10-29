@@ -71,6 +71,10 @@ services:
       - key: SPRING_DATASOURCE_PASSWORD
         sync: false
 
+      # Resend API Key for Cloud HTTPS Email Delivery (Port 443)
+      - key: RESEND_API_KEY
+        sync: false
+
       # Gmail SMTP Configuration for Real Password Reset Delivery
       - key: SPRING_MAIL_HOST
         value: "smtp.gmail.com"

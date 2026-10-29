@@ -77,17 +77,17 @@ public class EmailServiceImpl implements EmailService {
         String recipient = toEmail.trim().toLowerCase();
         log.info("Bắt đầu xử lý gửi email xác thực mã quên mật khẩu tới: {}", recipient);
 
-        // 1. Try Gmail / Standard SMTP via JavaMailSender if configured
-        if (mailSender != null && mailUsername != null && !mailUsername.trim().isEmpty()) {
-            boolean success = sendViaSmtp(recipient, resetCode);
+        // 1. Try Resend API over HTTPS (port 443) - instant, works on Render Free Tier
+        if (resendApiKey != null && !resendApiKey.trim().isEmpty()) {
+            boolean success = sendViaResend(recipient, resetCode);
             if (success) {
                 return true;
             }
         }
 
-        // 2. Try Resend API if API Key is configured
-        if (resendApiKey != null && !resendApiKey.trim().isEmpty()) {
-            boolean success = sendViaResend(recipient, resetCode);
+        // 2. Try Gmail / Standard SMTP via JavaMailSender if configured (Local dev)
+        if (mailSender != null && mailUsername != null && !mailUsername.trim().isEmpty()) {
+            boolean success = sendViaSmtp(recipient, resetCode);
             if (success) {
                 return true;
             }
@@ -126,6 +126,7 @@ public class EmailServiceImpl implements EmailService {
                     .timeout(Duration.ofSeconds(10))
                     .header("Authorization", "Bearer " + resendApiKey.trim())
                     .header("Content-Type", "application/json")
+                    .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Elearning/1.0.0")
                     .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                     .build();
 
