@@ -23,7 +23,7 @@ import { apiClient, ApiError } from '../api/api.js';
 import { authManager } from '../auth/auth-state.js';
 import { initNavbarAuth } from '../ui/nav.js';
 import { createSafeElement, clearContainer, sanitizeResourceUrl } from '../ui/security.js';
-import { setComponentState, showToast } from '../ui/ui.js';
+import { setComponentState, showToast, createSpeechButton, playPronunciation } from '../ui/ui.js';
 
 /* -----------------------------------------------------------------------------
  * 1. PURE LOGIC & UTILITY HELPERS (Exported for Unit Testing)
@@ -1315,14 +1315,26 @@ export class AdminLessonsPageController {
       });
       rightCol.appendChild(viSpan);
 
-      if (item.audioUrl) {
-        const audioBadge = createSafeElement('span', {
-          className: 'badge bg-light text-primary border ms-1',
-          attrs: { title: 'Có phát âm' },
-          text: '🔊'
-        });
-        rightCol.appendChild(audioBadge);
-      }
+      const safeAudio = item.audioUrl ? sanitizeResourceUrl(item.audioUrl) : null;
+      const speechBtn = createSpeechButton({
+        className: 'ms-2 flex-shrink-0',
+        ariaLabel: `Nghe phát âm từ vựng ${item.hanzi || ''}`,
+        title: `Phát âm: ${item.hanzi || ''}`,
+        iconSize: 14,
+        onClick: (e) => {
+          e.stopPropagation();
+          if (item.hanzi) {
+            playPronunciation({
+              text: item.hanzi,
+              audioUrl: safeAudio && safeAudio !== 'about:blank' ? safeAudio : null,
+              button: speechBtn
+            });
+          }
+        }
+      });
+      speechBtn.style.width = '30px';
+      speechBtn.style.height = '30px';
+      rightCol.appendChild(speechBtn);
 
       row.appendChild(rightCol);
 

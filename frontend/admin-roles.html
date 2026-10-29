@@ -188,20 +188,21 @@
   <!-- =========================================================================
        ROLE ASSIGNMENT MODAL DIALOG (Native HTML5 <dialog> with WAI-ARIA)
        ========================================================================= -->
-  <dialog id="roleAssignmentModal" class="notes-dialog" aria-labelledby="roleModalTitle" aria-describedby="roleModalDesc">
-    <div class="notes-modal-card">
+  <dialog id="roleAssignmentModal" class="dialog-chinese p-0 rounded-3 shadow-lg border-0" aria-labelledby="roleModalTitle" aria-describedby="roleModalDesc" aria-modal="true">
+    <div class="dialog-content p-4" style="max-width: 520px; width: 100%; max-height: 90vh; overflow-y: auto;">
       <!-- Modal Header -->
-      <div class="notes-modal-header p-3 border-bottom d-flex align-items-center justify-content-between bg-white">
-        <h2 id="roleModalTitle" class="h6 fw-bold text-dark mb-0 d-flex align-items-center gap-2">
-          <span aria-hidden="true">🛡️</span> Phân Quyền Vai Trò Tài Khoản
-        </h2>
-        <button type="button" id="btnCloseRoleModal" class="toast-close-btn" aria-label="Đóng hộp thoại phân quyền">
-          <span aria-hidden="true">&times;</span>
-        </button>
+      <div class="d-flex align-items-center justify-content-between pb-3 mb-3 border-bottom">
+        <div class="d-flex align-items-center gap-2">
+          <span class="chinese-seal-icon small text-chinese-red" aria-hidden="true">权</span>
+          <div>
+            <h2 id="roleModalTitle" class="h5 fw-bold text-chinese-red mb-0">Phân Quyền Vai Trò Tài Khoản</h2>
+          </div>
+        </div>
+        <button type="button" id="btnCloseRoleModal" class="btn-close" aria-label="Đóng hộp thoại phân quyền"></button>
       </div>
 
-      <!-- Modal Body (Scrollable, max-height 60vh) -->
-      <div class="p-3" style="max-height: 60vh; overflow-y: auto;">
+      <!-- Modal Body (Scrollable) -->
+      <div>
         <!-- Compact Target Account Header -->
         <div class="p-2 px-3 bg-light rounded border mb-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
           <div class="small">
@@ -260,9 +261,9 @@
         </form>
       </div>
 
-      <!-- Sticky Modal Actions Footer (Fixed at bottom) -->
-      <div class="p-3 border-top bg-light d-flex align-items-center justify-content-end gap-2">
-        <button type="button" id="btnCancelRoleModal" class="btn btn-chinese-secondary btn-sm">
+      <!-- Modal Actions Footer -->
+      <div class="pt-3 border-top d-flex align-items-center justify-content-end gap-2 mt-3">
+        <button type="button" id="btnCancelRoleModal" class="btn btn-outline-secondary btn-sm">
           Hủy bỏ
         </button>
         <button type="button" id="btnSaveRoles" class="btn btn-chinese-primary btn-sm">
