@@ -6,6 +6,7 @@ import com.elearning.dto.request.ForgotPasswordRequest;
 import com.elearning.dto.request.LoginRequest;
 import com.elearning.dto.request.RegisterRequest;
 import com.elearning.dto.request.ResetPasswordRequest;
+import com.elearning.dto.request.VerifyResetCodeRequest;
 import com.elearning.dto.response.ApiResponse;
 import com.elearning.dto.response.AuthResponse;
 import com.elearning.dto.response.ForgotPasswordResponse;
@@ -109,6 +110,25 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success(
                 response.getMessage() != null ? response.getMessage() : "Nếu email tồn tại trong hệ thống, mã xác thực đã được gửi đến hòm thư của bạn.",
                 response
+        ));
+    }
+
+    @PostMapping("/verify-reset-code")
+    public ResponseEntity<ApiResponse<Void>> verifyResetCode(
+            @Valid @RequestBody VerifyResetCodeRequest request,
+            HttpServletRequest servletRequest) {
+        String clientIp = resolveClientIp(servletRequest);
+        if (!loginRateLimiter.tryAcquire(clientIp)) {
+            throw new BusinessException(
+                    ErrorCode.TOO_MANY_REQUESTS,
+                    "Quá nhiều yêu cầu, vui lòng thử lại sau"
+            );
+        }
+
+        authService.verifyResetCode(request);
+        return ResponseEntity.ok(ApiResponse.success(
+                "Mã xác thực hợp lệ",
+                null
         ));
     }
 

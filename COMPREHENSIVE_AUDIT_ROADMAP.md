@@ -639,4 +639,28 @@ Hệ thống đã giải quyết dứt điểm tình trạng mất tiến trình
    - `tests/frontend/e2e/admin-audit-logs.browser.mjs`: **4/4 tests PASS**.
    - `tests/frontend/e2e/forgot-password-model-a.browser.mjs`: **2/2 tests PASS**.
 
+---
+
+### 5.9. Hoàn Tất 5 Yêu Cầu Bổ Sung Về Giao Diện & Logic Quản Trị Hệ Thống
+
+1. **Đồng Bộ Nút Loa Trang Chủ (`index.html`, `app.js`)**:
+   - Thay thế biểu tượng emoji `🔊` bằng icon vector SVG chuẩn mực `createSpeakerIcon(16)` đồng bộ với toàn hệ thống.
+   - Tích hợp `playPronunciation({ text: '学', audioUrl: 'assets/audio/vocabulary/vocab_0418.mp3', button: heroAudioBtn })` có hiệu ứng sóng âm/đổi trạng thái chuẩn mực.
+
+2. **Quy Trình Quên Mật Khẩu 3 Bước Tách Biệt (`login.html`, `auth-page.js`, `demo-fallback-engine.js`, `AuthController.java`, `AuthService.java`)**:
+   - **Bước 1**: Nhập email tài khoản -> Gửi mã xác nhận 6 số.
+   - **Bước 2 (Chỉ nhập mã)**: Giao diện chỉ hiển thị ô nhập mã xác nhận 6 chữ số kèm nút "Xác thực mã". Tuyệt đối không hiển thị ô đổi mật khẩu. Nếu mã sai, báo lỗi đỏ và chặn tại chỗ.
+   - **Bước 3 (Nhập mật khẩu mới)**: Chỉ khi mã xác thực hợp lệ, giao diện mới mở Bước 3 cho phép nhập mật khẩu mới và xác nhận mật khẩu.
+   - Bổ sung endpoint và xử lý `POST /api/v1/auth/verify-reset-code` ở cả Backend Spring Boot lẫn Fallback Engine.
+
+3. **Dọn Sạch Toàn Bộ Huy Hiệu Dư Thừa Ở Header Logo Trên Toàn Bộ Hệ Thống**:
+   - Quét và loại bỏ triệt để $100\%$ các thẻ `<span class="management-brand-badge ...">` còn sót lại trên toàn bộ các trang quản trị (`admin-accounts.html`, `admin-audit-logs.html`, `admin-radicals.html`, `admin-roles.html`, `admin-vocabulary.html`, `creator-import.html`, `creator-lesson-editor.html`, `creator-lessons.html`, `management.html`, `moderator-history.html`, `moderator-queue.html`, `moderator-review.html`).
+   - Logo thương hiệu *Hán Ngữ QUẢN LÝ & TÁC NGHIỆP* phẳng, sạch sẽ, nhất quán trên tất cả các trang.
+
+4. **Chuẩn Hóa Đơn Vai Trò Tuyệt Đối (Single-Role Exclusivity) Cả Dữ Liệu Cũ Lẫn Mới**:
+   - Sửa `SEED_ACCOUNTS` trong `demo-seed-data.js` và `DemoAccountSeeder.java`: các tài khoản `creator`, `moderator`, `admin` chỉ mang 1 vai trò duy nhất (`['Creator']`, `['Moderator']`, `['Admin']`), xóa bỏ triệt để vai trò kép `['Creator', 'Learner']`.
+   - Trong `demo-fallback-engine.js`: tự động migrate và chuẩn hóa mọi tài khoản trong `localStorage` về 1 vai trò duy nhất (`Admin` > `Creator` > `Moderator` > `Learner`).
+   - Trong `admin-roles-page.js`: hàm `renderAccountRolesBadges` lọc và chỉ hiển thị đúng 1 badge duy nhất cho mỗi tài khoản trên bảng phân quyền, giải quyết triệt để tình trạng hiển thị cùng lúc 2 vai trò.
+
+
 

@@ -545,10 +545,12 @@ export function initForgotPasswordModal() {
 
   const step1Section = document.getElementById('forgotStep1Section');
   const step2Section = document.getElementById('forgotStep2Section');
+  const step3Section = document.getElementById('forgotStep3Section');
   const successSection = document.getElementById('forgotSuccessSection');
 
   const step1Form = document.getElementById('forgotStep1Form');
   const step2Form = document.getElementById('forgotStep2Form');
+  const step3Form = document.getElementById('forgotStep3Form');
 
   const emailInput = document.getElementById('forgotEmailInput');
   const emailError = document.getElementById('forgotEmailError');
@@ -558,13 +560,17 @@ export function initForgotPasswordModal() {
   const targetEmailDisplay = document.getElementById('forgotTargetEmailDisplay');
   const codeInput = document.getElementById('forgotCodeInput');
   const codeError = document.getElementById('forgotCodeError');
+  const step2Alert = document.getElementById('forgotStep2Alert');
+  const btnVerifyResetCode = document.getElementById('btnVerifyResetCode');
+  const btnBackToStep1 = document.getElementById('btnBackToStep1');
+
   const newPassInput = document.getElementById('forgotNewPasswordInput');
   const newPassError = document.getElementById('forgotNewPasswordError');
   const confirmPassInput = document.getElementById('forgotConfirmPasswordInput');
   const confirmPassError = document.getElementById('forgotConfirmPasswordError');
-  const step2Alert = document.getElementById('forgotStep2Alert');
+  const step3Alert = document.getElementById('forgotStep3Alert');
   const btnSubmitReset = document.getElementById('btnSubmitResetPassword');
-  const btnBackToStep1 = document.getElementById('btnBackToStep1');
+  const btnBackToStep2 = document.getElementById('btnBackToStep2');
   const btnGoToLogin = document.getElementById('btnGoToLogin');
 
   const toggleNewPassBtn = document.getElementById('toggleForgotNewPassBtn');
@@ -577,14 +583,18 @@ export function initForgotPasswordModal() {
   }
 
   let resetEmail = '';
+  let verifiedCode = '';
 
   function resetModalState() {
     step1Section?.classList.remove('d-none');
     step2Section?.classList.add('d-none');
+    step3Section?.classList.add('d-none');
     successSection?.classList.add('d-none');
 
     step1Form?.reset();
     step2Form?.reset();
+    step3Form?.reset();
+    verifiedCode = '';
 
     [emailInput, codeInput, newPassInput, confirmPassInput].forEach(inp => {
       inp?.classList.remove('is-invalid', 'is-valid');
@@ -594,6 +604,7 @@ export function initForgotPasswordModal() {
     });
     if (step1Alert) { step1Alert.className = 'alert d-none small py-2 px-3 mb-3'; step1Alert.textContent = ''; }
     if (step2Alert) { step2Alert.className = 'alert d-none small py-2 px-3 mb-3'; step2Alert.textContent = ''; }
+    if (step3Alert) { step3Alert.className = 'alert d-none small py-2 px-3 mb-3'; step3Alert.textContent = ''; }
   }
 
   modalEl.addEventListener('show.bs.modal', resetModalState);
@@ -616,16 +627,18 @@ export function initForgotPasswordModal() {
     if (step1Alert) step1Alert.classList.add('d-none');
 
     try {
-      const res = await apiClient('/auth/forgot-password', {
+      await apiClient('/auth/forgot-password', {
         method: 'POST',
         body: { email }
       });
 
       resetEmail = email;
+      verifiedCode = '';
       if (targetEmailDisplay) targetEmailDisplay.textContent = email;
 
       step1Section?.classList.add('d-none');
       step2Section?.classList.remove('d-none');
+      step3Section?.classList.add('d-none');
 
       if (step2Alert) {
         step2Alert.classList.add('d-none');
@@ -657,26 +670,79 @@ export function initForgotPasswordModal() {
     if (emailInput) emailInput.focus();
   });
 
-  // Step 2: Submit code & new password
+  // Step 2: Verify Code (Mã đúng mới hiện đổi mật khẩu)
   step2Form?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const code = (codeInput?.value || '').trim();
-    const newPassword = newPassInput?.value || '';
-    const confirmPassword = confirmPassInput?.value || '';
-
-    let hasError = false;
 
     if (!code || code.length < 4) {
       if (codeInput && codeError) {
         codeInput.classList.add('is-invalid');
-        codeError.textContent = 'Vui lòng nhập mã xác nhận hợp lệ.';
+        codeError.textContent = 'Vui lòng nhập mã xác nhận 6 chữ số hợp lệ.';
         codeError.classList.remove('d-none');
-        hasError = true;
+        codeInput.focus();
       }
-    } else if (codeInput && codeError) {
+      return;
+    }
+    if (codeInput && codeError) {
       codeInput.classList.remove('is-invalid');
       codeError.classList.add('d-none');
     }
+
+    if (btnVerifyResetCode) setButtonLoading(btnVerifyResetCode, true, 'Đang xác thực...');
+    if (step2Alert) step2Alert.classList.add('d-none');
+
+    try {
+      await apiClient('/auth/verify-reset-code', {
+        method: 'POST',
+        body: {
+          email: resetEmail,
+          resetCode: code
+        }
+      });
+
+      // Mã đúng! Chuyển sang Bước 3 để đổi mật khẩu
+      verifiedCode = code;
+      step2Section?.classList.add('d-none');
+      step3Section?.classList.remove('d-none');
+
+      if (newPassInput) {
+        newPassInput.value = '';
+        newPassInput.focus();
+      }
+      if (confirmPassInput) {
+        confirmPassInput.value = '';
+      }
+
+    } catch (err) {
+      if (step2Alert) {
+        step2Alert.className = 'alert alert-danger small py-2 px-3 mb-3';
+        step2Alert.textContent = err.message || 'Mã xác nhận không chính xác hoặc đã hết hạn.';
+        step2Alert.classList.remove('d-none');
+      }
+      if (codeInput) {
+        codeInput.classList.add('is-invalid');
+        codeInput.focus();
+      }
+    } finally {
+      if (btnVerifyResetCode) setButtonLoading(btnVerifyResetCode, false);
+    }
+  });
+
+  // Step 3: Back to Step 2
+  btnBackToStep2?.addEventListener('click', () => {
+    step3Section?.classList.add('d-none');
+    step2Section?.classList.remove('d-none');
+    if (codeInput) codeInput.focus();
+  });
+
+  // Step 3: Submit New Password
+  step3Form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const newPassword = newPassInput?.value || '';
+    const confirmPassword = confirmPassInput?.value || '';
+
+    let hasError = false;
 
     if (!newPassword || newPassword.length < 6) {
       if (newPassInput && newPassError) {
@@ -705,19 +771,19 @@ export function initForgotPasswordModal() {
     if (hasError) return;
 
     if (btnSubmitReset) setButtonLoading(btnSubmitReset, true, 'Đang cập nhật...');
-    if (step2Alert) step2Alert.classList.add('d-none');
+    if (step3Alert) step3Alert.classList.add('d-none');
 
     try {
       await apiClient('/auth/reset-password', {
         method: 'POST',
         body: {
           email: resetEmail,
-          resetCode: code,
+          resetCode: verifiedCode || (codeInput?.value || '').trim(),
           newPassword
         }
       });
 
-      step2Section?.classList.add('d-none');
+      step3Section?.classList.add('d-none');
       successSection?.classList.remove('d-none');
 
       // Pre-fill main login email
@@ -730,17 +796,17 @@ export function initForgotPasswordModal() {
       }
 
     } catch (err) {
-      if (step2Alert) {
-        step2Alert.className = 'alert alert-danger small py-2 px-3 mb-3';
-        step2Alert.textContent = err.message || 'Mã xác nhận không chính xác hoặc đã hết hạn.';
-        step2Alert.classList.remove('d-none');
+      if (step3Alert) {
+        step3Alert.className = 'alert alert-danger small py-2 px-3 mb-3';
+        step3Alert.textContent = err.message || 'Không thể đặt lại mật khẩu. Vui lòng thử lại.';
+        step3Alert.classList.remove('d-none');
       }
     } finally {
       if (btnSubmitReset) setButtonLoading(btnSubmitReset, false);
     }
   });
 
-  // Step 3: Dismiss modal & focus login
+  // Step 4: Dismiss modal & focus login
   btnGoToLogin?.addEventListener('click', () => {
     const mainLoginPass = document.getElementById('loginPassword');
     if (mainLoginPass) mainLoginPass.focus();

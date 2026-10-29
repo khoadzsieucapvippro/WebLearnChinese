@@ -1,4 +1,19 @@
 /**
+ * Resolves single exclusive role prioritizing higher privileges (Admin > Creator > Moderator > Learner).
+ * Enforces Single-Role Exclusivity: An account cannot simultaneously be Admin and Learner.
+ *
+ * @param {string[]} roles
+ * @returns {string} canonical single role name
+ */
+export function resolvePrimarySingleRole(roles) {
+  if (!Array.isArray(roles) || roles.length === 0) return 'Learner';
+  if (roles.includes('Admin')) return 'Admin';
+  if (roles.includes('Creator')) return 'Creator';
+  if (roles.includes('Moderator')) return 'Moderator';
+  return 'Learner';
+}
+
+/**
  * =============================================================================
  * ADMIN ROLE MANAGEMENT & ROLE ASSIGNMENT CONTROLLER (TASK 9F.2)
  * Module: frontend/js/pages/admin-roles-page.js
@@ -922,15 +937,15 @@ export class AdminRolesController {
       return;
     }
 
+    const primaryRole = resolvePrimarySingleRole(roles);
+    const badgeClass = getRoleBadgeClass(primaryRole);
+    const label = getRoleLabel(primaryRole);
+
     const wrapper = createSafeElement('div', { className: 'd-flex flex-wrap gap-1 align-items-center' });
-    for (const role of roles) {
-      const badgeClass = getRoleBadgeClass(role);
-      const label = getRoleLabel(role);
-      wrapper.appendChild(createSafeElement('span', {
-        className: `${badgeClass} small`,
-        text: label
-      }));
-    }
+    wrapper.appendChild(createSafeElement('span', {
+      className: `${badgeClass} small`,
+      text: label
+    }));
     container.appendChild(wrapper);
   }
 

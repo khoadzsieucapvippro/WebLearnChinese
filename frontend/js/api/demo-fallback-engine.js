@@ -136,14 +136,21 @@ class DemoFallbackEngine {
         schemaVersion: CURRENT_DATASET_VERSION,
         accounts: (() => {
           const defaultAccounts = JSON.parse(JSON.stringify(SEED_ACCOUNTS));
+          function normalizeSingleRole(roles) {
+            if (!Array.isArray(roles) || roles.length === 0) return ['Learner'];
+            if (roles.includes('Admin')) return ['Admin'];
+            if (roles.includes('Creator')) return ['Creator'];
+            if (roles.includes('Moderator')) return ['Moderator'];
+            return ['Learner'];
+          }
           if (saved && Array.isArray(saved.accounts) && saved.accounts.length > 0) {
             const seedEmails = new Set(defaultAccounts.map(a => (a.email || '').toLowerCase()));
             const seedIds = new Set(defaultAccounts.map(a => a.accountId));
             const updatedSeeds = defaultAccounts.map(sa => {
               const match = saved.accounts.find(a => a.accountId === sa.accountId || (a.email && a.email.toLowerCase() === sa.email.toLowerCase()));
-              return match ? { ...sa, ...match } : sa;
+              return match ? { ...sa, ...match, roles: normalizeSingleRole(match.roles || sa.roles) } : { ...sa, roles: normalizeSingleRole(sa.roles) };
             });
-            const customAccounts = saved.accounts.filter(a => !seedIds.has(a.accountId) && !seedEmails.has((a.email || '').toLowerCase()));
+            const customAccounts = saved.accounts.filter(a => !seedIds.has(a.accountId) && !seedEmails.has((a.email || '').toLowerCase())).map(a => ({ ...a, roles: normalizeSingleRole(a.roles) }));
             return [...updatedSeeds, ...customAccounts];
           }
           return defaultAccounts;
@@ -265,13 +272,13 @@ class DemoFallbackEngine {
         let assignedRoles = ['Learner'];
         let roleName = 'Học Viên Demo';
         if (emailOrPhone.includes('admin')) {
-          assignedRoles = ['Admin', 'Learner'];
+          assignedRoles = ['Admin'];
           roleName = 'Quản Trị Viên Demo';
         } else if (emailOrPhone.includes('creator')) {
-          assignedRoles = ['Creator', 'Learner'];
+          assignedRoles = ['Creator'];
           roleName = 'Biên Soạn Demo';
         } else if (emailOrPhone.includes('moderator')) {
-          assignedRoles = ['Moderator', 'Learner'];
+          assignedRoles = ['Moderator'];
           roleName = 'Kiểm Duyệt Demo';
         }
 
@@ -395,6 +402,28 @@ class DemoFallbackEngine {
         message: 'Mã xác thực 6 chữ số đã được gửi tới email của bạn.',
         emailSent: true,
         demoCode: '123456'
+      };
+    }
+
+    if (cleanPath === '/auth/verify-reset-code' && method === 'POST') {
+      const email = String(body?.email || '').trim().toLowerCase();
+      const code = String(body?.resetCode || body?.code || '').trim();
+
+      if (!email || !code) {
+        throw new ApiError('Email và mã xác nhận không được để trống', 400, 'VALIDATION_ERROR');
+      }
+
+      this._resetCodes = this._resetCodes || {};
+      const savedCode = this._resetCodes[email];
+      const isValid = (savedCode && savedCode.code === code && savedCode.expiresAt > Date.now()) || code === '123456';
+      if (!isValid) {
+        throw new ApiError('Mã xác nhận không chính xác hoặc đã hết hạn', 400, 'INVALID_CODE');
+      }
+
+      return {
+        code: 'SUCCESS',
+        message: 'Mã xác thực hợp lệ.',
+        valid: true
       };
     }
 

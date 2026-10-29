@@ -94,9 +94,9 @@ public class DemoAccountSeeder implements ApplicationRunner {
         Role adminRole = getOrCreateRole(4, "Admin");
 
         Set<Role> learnerRoles = Set.of(learnerRole);
-        Set<Role> creatorRoles = Set.of(creatorRole, learnerRole);
-        Set<Role> moderatorRoles = Set.of(moderatorRole, learnerRole);
-        Set<Role> adminRoles = Set.of(adminRole, learnerRole);
+        Set<Role> creatorRoles = Set.of(creatorRole);
+        Set<Role> moderatorRoles = Set.of(moderatorRole);
+        Set<Role> adminRoles = Set.of(adminRole);
 
         String encodedPassword = passwordEncoder.encode(DEFAULT_DEMO_PASSWORD);
 

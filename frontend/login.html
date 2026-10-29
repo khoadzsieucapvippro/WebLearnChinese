@@ -208,7 +208,7 @@
             </form>
           </div>
 
-          <!-- Step 2: Verify Code & Set New Password -->
+          <!-- Step 2: Verify Code (Only Code Input) -->
           <div id="forgotStep2Section" class="d-none">
             <div class="alert alert-info py-2 px-3 small mb-3 d-flex align-items-start gap-2">
               <span aria-hidden="true">📨</span>
@@ -225,6 +225,24 @@
                 <input type="text" id="forgotCodeInput" class="form-control font-monospace text-center fs-5" maxlength="6" placeholder="123456" required autocomplete="one-time-code">
                 <div id="forgotCodeError" class="invalid-feedback d-none" role="alert"></div>
               </div>
+              <div class="d-flex gap-2">
+                <button type="button" id="btnBackToStep1" class="btn btn-outline-secondary py-2 flex-grow-1">Quay lại</button>
+                <button type="submit" id="btnVerifyResetCode" class="btn-chinese-primary py-2 flex-grow-1 d-flex align-items-center justify-content-center gap-2">
+                  <span class="btn-text">Xác thực mã</span>
+                  <span class="spinner-border spinner-border-sm d-none" aria-hidden="true"></span>
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Step 3: Set New Password (Only Shown After Valid Code) -->
+          <div id="forgotStep3Section" class="d-none">
+            <div class="alert alert-success py-2 px-3 small mb-3 d-flex align-items-center gap-2">
+              <span aria-hidden="true">✓</span>
+              <div>Mã xác thực hợp lệ! Hãy nhập mật khẩu mới của bạn.</div>
+            </div>
+            <div id="forgotStep3Alert" class="alert d-none small py-2 px-3 mb-3" role="alert"></div>
+            <form id="forgotStep3Form" novalidate>
               <div class="mb-3">
                 <label for="forgotNewPasswordInput" class="form-label small fw-semibold text-secondary mb-1">
                   Mật khẩu mới <span class="text-danger" aria-hidden="true">*</span>
@@ -246,7 +264,7 @@
                 <div id="forgotConfirmPasswordError" class="invalid-feedback d-none" role="alert"></div>
               </div>
               <div class="d-flex gap-2">
-                <button type="button" id="btnBackToStep1" class="btn btn-outline-secondary py-2 flex-grow-1">Quay lại</button>
+                <button type="button" id="btnBackToStep2" class="btn btn-outline-secondary py-2 flex-grow-1">Quay lại</button>
                 <button type="submit" id="btnSubmitResetPassword" class="btn-chinese-primary py-2 flex-grow-1 d-flex align-items-center justify-content-center gap-2">
                   <span class="btn-text">Đặt lại mật khẩu</span>
                   <span class="spinner-border spinner-border-sm d-none" aria-hidden="true"></span>
@@ -255,7 +273,7 @@
             </form>
           </div>
 
-          <!-- Step 3: Success Result -->
+          <!-- Step 4: Success Result -->
           <div id="forgotSuccessSection" class="d-none text-center py-3">
             <div class="fs-1 text-success mb-2">✓</div>
             <h6 class="fw-bold text-dark mb-2">Đặt Lại Mật Khẩu Thành Công!</h6>

@@ -5,6 +5,7 @@ import com.elearning.dto.request.ForgotPasswordRequest;
 import com.elearning.dto.request.LoginRequest;
 import com.elearning.dto.request.RegisterRequest;
 import com.elearning.dto.request.ResetPasswordRequest;
+import com.elearning.dto.request.VerifyResetCodeRequest;
 import com.elearning.dto.response.AuthResponse;
 import com.elearning.dto.response.ForgotPasswordResponse;
 
@@ -54,6 +55,13 @@ public interface AuthService {
      * @return ForgotPasswordResponse with delivery status and testing code if SMTP is unconfigured
      */
     ForgotPasswordResponse forgotPassword(ForgotPasswordRequest request);
+
+    /**
+     * Verifies whether the 6-digit verification code is valid and unexpired without resetting the password yet.
+     *
+     * @param request verify reset code payload containing email and resetCode
+     */
+    void verifyResetCode(VerifyResetCodeRequest request);
 
     /**
      * Completes self-service password reset by validating 6-digit verification code,

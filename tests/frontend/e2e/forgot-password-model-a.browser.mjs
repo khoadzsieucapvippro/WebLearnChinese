@@ -51,6 +51,18 @@ describe('E2E: Self-Service Password Reset (Model A) & Admin Zero-Knowledge', ()
         });
       });
 
+      await page.route('**/api/v1/auth/verify-reset-code', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            code: 'SUCCESS',
+            message: 'Mã xác thực hợp lệ.',
+            data: null
+          })
+        });
+      });
+
       await page.route('**/api/v1/auth/reset-password', async (route) => {
         await route.fulfill({
           status: 200,
@@ -82,15 +94,17 @@ describe('E2E: Self-Service Password Reset (Model A) & Admin Zero-Knowledge', ()
       // 3. Click "Gửi mã xác nhận"
       await page.click('#btnSendResetCode');
 
-      // 4. Wait for Step 2 to become visible
+      // 4. Wait for Step 2 to become visible (Only verification code input)
       await page.waitForSelector('#forgotCodeInput', { state: 'visible', timeout: 5000 });
       const targetEmailText = await page.textContent('#forgotTargetEmailDisplay');
       assert.strictEqual(targetEmailText.trim(), 'learner@example.com');
 
-      // Fill Step 2 inputs
+      // Verify that new password inputs are NOT visible yet
+      const isStep3VisibleInitially = await page.locator('#forgotStep3Section').isVisible();
+      assert.strictEqual(isStep3VisibleInitially, false, 'Step 3 password input must not be visible before valid code');
+
+      // Fill Step 2 input: Verification Code
       await page.fill('#forgotCodeInput', '123456');
-      await page.fill('#forgotNewPasswordInput', 'NewSecurePass@123');
-      await page.fill('#forgotConfirmPasswordInput', 'NewSecurePass@123');
 
       // Screenshot Step 2
       await page.screenshot({
@@ -98,17 +112,25 @@ describe('E2E: Self-Service Password Reset (Model A) & Admin Zero-Knowledge', ()
         fullPage: false
       });
 
-      // 5. Submit reset password
-      await page.click('#btnSubmitResetPassword');
+      // Click "Xác thực mã"
+      await page.click('#btnVerifyResetCode');
 
-      // 6. Wait for Success Step
-      await page.waitForSelector('#forgotSuccessSection', { state: 'visible', timeout: 5000 });
+      // 5. Wait for Step 3 to appear (Password reset form)
+      await page.waitForSelector('#forgotStep3Section', { state: 'visible', timeout: 5000 });
+      await page.fill('#forgotNewPasswordInput', 'NewSecurePass@123');
+      await page.fill('#forgotConfirmPasswordInput', 'NewSecurePass@123');
 
       // Screenshot Step 3
       await page.screenshot({
         path: path.join(ARTIFACTS_DIR, 'login_forgot_password_step3.png'),
         fullPage: false
       });
+
+      // 6. Submit reset password
+      await page.click('#btnSubmitResetPassword');
+
+      // 7. Wait for Success Step
+      await page.waitForSelector('#forgotSuccessSection', { state: 'visible', timeout: 5000 });
 
       // Click "Đăng nhập ngay"
       await page.click('#btnGoToLogin');

@@ -6,6 +6,7 @@ import com.elearning.dto.request.ForgotPasswordRequest;
 import com.elearning.dto.request.LoginRequest;
 import com.elearning.dto.request.RegisterRequest;
 import com.elearning.dto.request.ResetPasswordRequest;
+import com.elearning.dto.request.VerifyResetCodeRequest;
 import com.elearning.dto.response.AuthResponse;
 import com.elearning.dto.response.ForgotPasswordResponse;
 import com.elearning.entity.Account;
@@ -252,6 +253,27 @@ public class AuthServiceImpl implements AuthService {
                 : "Mã xác nhận 6 chữ số đã được tạo thành công.";
 
         return new ForgotPasswordResponse(message, devCode, emailSent);
+    }
+
+    @Override
+    public void verifyResetCode(VerifyResetCodeRequest request) {
+        if (request == null) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Dữ liệu yêu cầu không hợp lệ");
+        }
+        String email = request.getEmail() != null ? request.getEmail().trim().toLowerCase() : "";
+        String code = request.getResetCode() != null ? request.getResetCode().trim() : "";
+
+        if (email.isEmpty()) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Email không được để trống");
+        }
+        if (code.isEmpty()) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Mã xác thực không được để trống");
+        }
+
+        ResetCodeEntry entry = resetCodeStore.get(email);
+        if (entry == null || entry.isExpired() || !entry.code.equals(code)) {
+            throw new BusinessException(ErrorCode.BAD_REQUEST, "Mã xác thực không chính xác hoặc đã hết hạn");
+        }
     }
 
     @Override

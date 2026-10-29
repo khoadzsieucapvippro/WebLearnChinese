@@ -45562,8 +45562,7 @@ export const SEED_ACCOUNTS = [
     ],
     "fullName": "Tác Giả Khóa Học",
     "roles": [
-      "Creator",
-      "Learner"
+      "Creator"
     ],
     "password": "Password@123",
     "status": "Active",
@@ -45579,8 +45578,7 @@ export const SEED_ACCOUNTS = [
     ],
     "fullName": "Kiểm Duyệt Viên",
     "roles": [
-      "Moderator",
-      "Learner"
+      "Moderator"
     ],
     "password": "Password@123",
     "status": "Active",
@@ -45596,8 +45594,7 @@ export const SEED_ACCOUNTS = [
     ],
     "fullName": "Quản Trị Viên Hệ Thống",
     "roles": [
-      "Admin",
-      "Learner"
+      "Admin"
     ],
     "password": "Password@123",
     "status": "Active",

@@ -14,6 +14,7 @@
 import { initNavbarAuth } from './ui/nav.js';
 import { authManager } from './auth/auth-state.js';
 import { resolveSubpathAudioUrl, speakHanzi } from './ui/speech.js';
+import { playPronunciation } from './ui/ui.js';
 
 /**
  * Initializes the production application shell on DOM ready.
@@ -59,12 +60,10 @@ export function initHeroSampleAudio() {
 
   heroAudioBtn.addEventListener('click', () => {
     const rawAudioUrl = 'assets/audio/vocabulary/vocab_0418.mp3';
-    const safeUrl = resolveSubpathAudioUrl(rawAudioUrl);
-    const audio = new Audio(safeUrl);
-
-    audio.play().catch(() => {
-      // Graceful fallback to Web Speech API synthesis if audio file playback is blocked
-      speakHanzi('学');
+    playPronunciation({
+      text: '学',
+      audioUrl: rawAudioUrl,
+      button: heroAudioBtn
     });
   });
 }
