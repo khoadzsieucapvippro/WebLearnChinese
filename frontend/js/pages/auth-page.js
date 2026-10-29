@@ -605,6 +605,20 @@ export function initForgotPasswordModal() {
     if (step1Alert) { step1Alert.className = 'alert d-none small py-2 px-3 mb-3'; step1Alert.textContent = ''; }
     if (step2Alert) { step2Alert.className = 'alert d-none small py-2 px-3 mb-3'; step2Alert.textContent = ''; }
     if (step3Alert) { step3Alert.className = 'alert d-none small py-2 px-3 mb-3'; step3Alert.textContent = ''; }
+
+    if (newPassInput) newPassInput.type = 'password';
+    if (confirmPassInput) confirmPassInput.type = 'password';
+    [toggleNewPassBtn, toggleConfirmPassBtn].forEach(btn => {
+      if (!btn) return;
+      const eye = btn.querySelector('.eye-icon');
+      const eyeOff = btn.querySelector('.eye-off-icon');
+      if (eye && eyeOff) {
+        eye.classList.remove('d-none');
+        eyeOff.classList.add('d-none');
+      }
+      btn.setAttribute('aria-label', 'Hiện mật khẩu');
+      btn.setAttribute('title', 'Hiện mật khẩu');
+    });
   }
 
   modalEl.addEventListener('show.bs.modal', resetModalState);
