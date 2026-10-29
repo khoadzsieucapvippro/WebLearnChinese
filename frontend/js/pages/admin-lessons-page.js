@@ -560,6 +560,26 @@ export class AdminLessonsPageController {
     if (this.elements.btnConfirmArbiter) {
       this.elements.btnConfirmArbiter.addEventListener('click', () => this.handleConfirmArbiter());
     }
+
+    // Modal keyboard escape handling (ESC key)
+    if (this.elements.detailModal) {
+      this.elements.detailModal.addEventListener('cancel', (e) => {
+        e.preventDefault();
+        this.closeModal(this.elements.detailModal);
+      });
+    }
+    if (this.elements.revokeModal) {
+      this.elements.revokeModal.addEventListener('cancel', (e) => {
+        e.preventDefault();
+        this.closeModal(this.elements.revokeModal);
+      });
+    }
+    if (this.elements.arbiterModal) {
+      this.elements.arbiterModal.addEventListener('cancel', (e) => {
+        e.preventDefault();
+        this.closeModal(this.elements.arbiterModal);
+      });
+    }
   }
 
   /**

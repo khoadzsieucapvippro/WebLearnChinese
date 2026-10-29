@@ -238,159 +238,157 @@
   <!-- ========================================================================= -->
   <!-- 1. LESSON DETAIL MODAL (Native HTML5 <dialog>)                            -->
   <!-- ========================================================================= -->
-  <dialog class="admin-modal" id="lessonDetailModal" aria-labelledby="modalDetailTitle" aria-describedby="modalDetailDesc">
-    <div class="admin-modal-dialog modal-dialog-scrollable modal-lg">
-      <div class="admin-modal-content">
+  <dialog id="lessonDetailModal" class="dialog-chinese p-0 rounded-3 shadow-lg border-0" aria-labelledby="modalDetailTitle" aria-describedby="modalDetailDesc" aria-modal="true">
+    <div class="dialog-content p-4" style="max-width: 680px; width: 100%; max-height: 90vh; overflow-y: auto;">
 
-        <!-- Modal Header -->
-        <div class="admin-modal-header border-bottom pb-3">
-          <div class="d-flex align-items-center gap-2">
-            <span class="chinese-seal-icon small" aria-hidden="true">课</span>
+      <!-- Modal Header -->
+      <div class="d-flex align-items-center justify-content-between pb-3 mb-3 border-bottom">
+        <div class="d-flex align-items-center gap-2">
+          <span class="chinese-seal-icon small" aria-hidden="true">课</span>
+          <div>
+            <h2 class="h5 fw-bold text-chinese-red mb-0" id="modalDetailTitle">
+              Chi Tiết Bài Học
+            </h2>
+            <p class="text-secondary small mb-0" id="modalDetailDesc">
+              Thông tin tổng quan và danh sách từ vựng cấu thành bài học.
+            </p>
+          </div>
+        </div>
+        <button type="button" class="btn-close" id="modalDetailCloseBtn" aria-label="Đóng hộp thoại chi tiết bài học"></button>
+      </div>
+
+      <!-- Modal Body -->
+      <div id="modalDetailBody">
+
+        <!-- Lesson Overview Metadata Card -->
+        <div class="bg-light rounded p-3 mb-3 border">
+          <div class="row g-2">
+            <div class="col-sm-6">
+              <span class="text-muted small d-block">Tên bài học:</span>
+              <strong class="fs-6 text-dark" id="detailLessonTitle">—</strong>
+            </div>
+            <div class="col-sm-6 text-sm-end">
+              <span class="text-muted small d-block">Trạng thái vòng đời:</span>
+              <span id="detailLessonStatusBadge" class="badge bg-secondary">—</span>
+            </div>
+            <div class="col-sm-6">
+              <span class="text-muted small d-block">Mã định danh (ID):</span>
+              <code id="detailLessonId" class="text-secondary">#—</code>
+            </div>
+            <div class="col-sm-6 text-sm-end">
+              <span class="text-muted small d-block">Thời gian cập nhật:</span>
+              <span id="detailLessonTimestamp" class="small text-secondary">—</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contract Limitation Notice Banner (Shown when detail is unsupported) -->
+        <div id="detailContractLimitationAlert" class="alert alert-info border d-none" role="status">
+          <div class="d-flex align-items-start gap-2">
+            <span class="fs-5 lh-1" aria-hidden="true">ℹ</span>
             <div>
-              <h2 class="h5 fw-bold text-dark mb-0" id="modalDetailTitle">
-                Chi Tiết Bài Học
-              </h2>
-              <p class="text-secondary small mb-0" id="modalDetailDesc">
-                Thông tin tổng quan và danh sách từ vựng cấu thành bài học.
+              <strong class="d-block mb-1">Giới hạn hợp đồng máy chủ hiện hành</strong>
+              <p class="small mb-0" id="detailContractLimitationMessage">
+                Nội dung chi tiết của bài học ở trạng thái này chưa có endpoint quản trị trong backend hiện tại.
               </p>
             </div>
           </div>
-          <button type="button" class="btn-close" id="modalDetailCloseBtn" aria-label="Đóng hộp thoại chi tiết bài học"></button>
         </div>
 
-        <!-- Modal Body -->
-        <div class="admin-modal-body py-3" id="modalDetailBody">
-
-          <!-- Lesson Overview Metadata Card -->
-          <div class="bg-light rounded p-3 mb-3 border">
-            <div class="row g-2">
-              <div class="col-sm-6">
-                <span class="text-muted small d-block">Tên bài học:</span>
-                <strong class="fs-6 text-dark" id="detailLessonTitle">—</strong>
-              </div>
-              <div class="col-sm-6 text-sm-end">
-                <span class="text-muted small d-block">Trạng thái vòng đời:</span>
-                <span id="detailLessonStatusBadge" class="badge bg-secondary">—</span>
-              </div>
-              <div class="col-sm-6">
-                <span class="text-muted small d-block">Mã định danh (ID):</span>
-                <code id="detailLessonId" class="text-secondary">#—</code>
-              </div>
-              <div class="col-sm-6 text-sm-end">
-                <span class="text-muted small d-block">Thời gian cập nhật:</span>
-                <span id="detailLessonTimestamp" class="small text-secondary">—</span>
-              </div>
+        <!-- Rejection / Revocation Reason Alert (Shown if Rejected) -->
+        <div id="detailRejectionAlert" class="alert alert-danger border d-none" role="status">
+          <div class="d-flex align-items-start gap-2">
+            <span class="fs-5 lh-1" aria-hidden="true">&#9888;</span>
+            <div>
+              <strong class="d-block mb-1">Lý do từ chối / thu hồi:</strong>
+              <p class="small mb-0" id="detailRejectionMessage">—</p>
             </div>
           </div>
-
-          <!-- Contract Limitation Notice Banner (Shown when detail is unsupported) -->
-          <div id="detailContractLimitationAlert" class="alert alert-info border d-none" role="status">
-            <div class="d-flex align-items-start gap-2">
-              <span class="fs-5 lh-1" aria-hidden="true">ℹ</span>
-              <div>
-                <strong class="d-block mb-1">Giới hạn hợp đồng máy chủ hiện hành</strong>
-                <p class="small mb-0" id="detailContractLimitationMessage">
-                  Nội dung chi tiết của bài học ở trạng thái này chưa có endpoint quản trị trong backend hiện tại.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Rejection / Revocation Reason Alert (Shown if Rejected) -->
-          <div id="detailRejectionAlert" class="alert alert-danger border d-none" role="status">
-            <div class="d-flex align-items-start gap-2">
-              <span class="fs-5 lh-1" aria-hidden="true">&#9888;</span>
-              <div>
-                <strong class="d-block mb-1">Lý do từ chối / thu hồi:</strong>
-                <p class="small mb-0" id="detailRejectionMessage">—</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Loading Indicator for Vocabularies -->
-          <div id="detailVocabLoadingPrompt" class="text-center py-4 d-none">
-            <span class="spinner-border spinner-border-sm text-chinese-red me-2" role="status" aria-hidden="true"></span>
-            <span class="text-secondary small">Đang nạp nội dung từ vựng bài học...</span>
-          </div>
-
-          <!-- Error Alert for Detail Fetch Failure -->
-          <div id="detailErrorAlert" class="alert alert-danger border d-none" role="alert">
-            <span id="detailErrorMessage">Không thể nạp thông tin chi tiết bài học.</span>
-          </div>
-
-          <!-- Vocabulary Section -->
-          <div id="detailVocabSection" class="d-none">
-            <div class="d-flex align-items-center justify-content-between mb-2">
-              <h3 class="h6 fw-bold text-chinese-red mb-0">
-                Danh Sách Từ Vựng Cấu Thành (<span id="detailVocabCount">0</span>)
-              </h3>
-              <span class="text-muted small fst-italic">Bảo toàn thứ tự tuần tự chuẩn</span>
-            </div>
-
-            <!-- Empty Vocabularies Prompt -->
-            <div id="detailVocabEmptyPrompt" class="text-center py-3 text-muted small border rounded bg-white d-none">
-              Bài học này chưa có từ vựng nào.
-            </div>
-
-            <!-- Ordered Vocabulary Items List -->
-            <div class="list-group list-group-flush border rounded overflow-hidden" id="detailVocabList">
-              <!-- Dynamically constructed using safe DOM in admin-lessons-page.js -->
-            </div>
-          </div>
-
         </div>
 
-        <!-- Modal Footer -->
-        <div class="admin-modal-footer border-top pt-3 d-flex justify-content-end gap-2">
-          <button type="button" class="btn btn-secondary px-4" id="btnCancelDetailModal">
-            Đóng
-          </button>
+        <!-- Loading Indicator for Vocabularies -->
+        <div id="detailVocabLoadingPrompt" class="text-center py-4 d-none">
+          <span class="spinner-border spinner-border-sm text-chinese-red me-2" role="status" aria-hidden="true"></span>
+          <span class="text-secondary small">Đang nạp nội dung từ vựng bài học...</span>
+        </div>
+
+        <!-- Error Alert for Detail Fetch Failure -->
+        <div id="detailErrorAlert" class="alert alert-danger border d-none" role="alert">
+          <span id="detailErrorMessage">Không thể nạp thông tin chi tiết bài học.</span>
+        </div>
+
+        <!-- Vocabulary Section -->
+        <div id="detailVocabSection" class="d-none">
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <h3 class="h6 fw-bold text-chinese-red mb-0">
+              Danh Sách Từ Vựng Cấu Thành (<span id="detailVocabCount">0</span>)
+            </h3>
+            <span class="text-muted small fst-italic">Bảo toàn thứ tự tuần tự chuẩn</span>
+          </div>
+
+          <!-- Empty Vocabularies Prompt -->
+          <div id="detailVocabEmptyPrompt" class="text-center py-3 text-muted small border rounded bg-white d-none">
+            Bài học này chưa có từ vựng nào.
+          </div>
+
+          <!-- Ordered Vocabulary Items List -->
+          <div class="list-group list-group-flush border rounded overflow-hidden" id="detailVocabList">
+            <!-- Dynamically constructed using safe DOM in admin-lessons-page.js -->
+          </div>
         </div>
 
       </div>
+
+      <!-- Modal Footer -->
+      <div class="d-flex justify-content-end gap-2 pt-3 mt-3 border-top">
+        <button type="button" class="btn btn-chinese-secondary px-4" id="btnCancelDetailModal">
+          Đóng
+        </button>
+      </div>
+
     </div>
   </dialog>
 
   <!-- ========================================================================= -->
   <!-- 2. EMERGENCY LESSON REVOCATION MODAL (<dialog>) (TASK-7.2)                -->
   <!-- ========================================================================= -->
-  <dialog class="admin-modal" id="revokeLessonModal" aria-labelledby="modalRevokeTitle" aria-describedby="modalRevokeDesc">
-    <div class="admin-modal-dialog">
-      <div class="admin-modal-content">
-        <div class="admin-modal-header border-bottom pb-3">
-          <div class="d-flex align-items-center gap-2">
-            <span class="chinese-seal-icon small text-danger" aria-hidden="true">撤</span>
-            <div>
-              <h2 class="h5 fw-bold text-danger mb-0" id="modalRevokeTitle">
-                Thu Hồi Bài Học Vi Phạm Khẩn Cấp
-              </h2>
-              <p class="text-secondary small mb-0" id="modalRevokeDesc">
-                Gỡ bài học đã xuất bản về trạng thái Bị từ chối và ẩn khỏi học viên.
-              </p>
-            </div>
+  <dialog id="revokeLessonModal" class="dialog-chinese p-0 rounded-3 shadow-lg border-0" aria-labelledby="modalRevokeTitle" aria-describedby="modalRevokeDesc" aria-modal="true">
+    <div class="dialog-content p-4" style="max-width: 580px; width: 100%; max-height: 90vh; overflow-y: auto;">
+      <!-- Modal Header -->
+      <div class="d-flex align-items-center justify-content-between pb-3 mb-3 border-bottom">
+        <div class="d-flex align-items-center gap-2">
+          <span class="chinese-seal-icon small text-danger" aria-hidden="true">撤</span>
+          <div>
+            <h2 class="h5 fw-bold text-danger mb-0" id="modalRevokeTitle">
+              Thu Hồi Bài Học Vi Phạm Khẩn Cấp
+            </h2>
+            <p class="text-secondary small mb-0" id="modalRevokeDesc">
+              Gỡ bài học đã xuất bản về trạng thái Bị từ chối và ẩn khỏi học viên.
+            </p>
           </div>
-          <button type="button" class="btn-close" id="btnCancelRevokeClose" aria-label="Đóng"></button>
         </div>
-        <div class="admin-modal-body py-3">
-          <div class="alert alert-warning small mb-3">
-            <strong>Cảnh báo khẩn cấp:</strong> Bài học <strong id="revokeLessonTitleText">—</strong> sẽ lập tức bị gỡ khỏi toàn bộ danh mục khám phá của học viên.
-          </div>
-          <div class="mb-3">
-            <label for="revokeReasonInput" class="form-label small fw-semibold text-dark">
-              Lý do vi phạm / thu hồi <span class="text-danger">*</span>
-            </label>
-            <textarea class="form-control" id="revokeReasonInput" rows="3" placeholder="Nhập chi tiết lý do gỡ bài (vi phạm bản quyền, nội dung không phù hợp...)" maxlength="500" required></textarea>
-            <div class="form-text small">Tối đa 500 ký tự. Hành động này sẽ được ghi vào nhật ký kiểm toán bất biến.</div>
-          </div>
-          <div id="revokeModalError" class="alert alert-danger py-2 px-3 small d-none" role="alert"></div>
-        </div>
-        <div class="admin-modal-footer border-top pt-3 d-flex justify-content-end gap-2">
-          <button type="button" class="btn btn-secondary px-3" id="btnCancelRevoke">Hủy bỏ</button>
-          <button type="button" class="btn btn-danger px-3 d-flex align-items-center gap-1" id="btnConfirmRevoke">
-            <span id="revokeSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
-            <span>🚨 Xác nhận thu hồi</span>
-          </button>
-        </div>
+        <button type="button" class="btn-close" id="btnCancelRevokeClose" aria-label="Đóng"></button>
+      </div>
+
+      <div class="alert alert-warning small mb-3">
+        <strong>Cảnh báo khẩn cấp:</strong> Bài học <strong id="revokeLessonTitleText">—</strong> sẽ lập tức bị gỡ khỏi toàn bộ danh mục khám phá của học viên.
+      </div>
+      <div class="mb-3">
+        <label for="revokeReasonInput" class="form-label small fw-semibold text-dark">
+          Lý do vi phạm / thu hồi <span class="text-danger">*</span>
+        </label>
+        <textarea class="form-control" id="revokeReasonInput" rows="3" placeholder="Nhập chi tiết lý do gỡ bài (vi phạm bản quyền, nội dung không phù hợp...)" maxlength="500" required></textarea>
+        <div class="form-text small">Tối đa 500 ký tự. Hành động này sẽ được ghi vào nhật ký kiểm toán bất biến.</div>
+      </div>
+      <div id="revokeModalError" class="alert alert-danger py-2 px-3 small d-none" role="alert"></div>
+
+      <!-- Actions Footer -->
+      <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+        <button type="button" class="btn btn-chinese-secondary px-3" id="btnCancelRevoke">Hủy bỏ</button>
+        <button type="button" class="btn btn-danger px-3 d-flex align-items-center gap-1" id="btnConfirmRevoke">
+          <span id="revokeSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+          <span>🚨 Xác nhận thu hồi</span>
+        </button>
       </div>
     </div>
   </dialog>
@@ -398,43 +396,43 @@
   <!-- ========================================================================= -->
   <!-- 3. SUPERVISORY ARBITER APPROVAL MODAL (<dialog>) (TASK-7.2)               -->
   <!-- ========================================================================= -->
-  <dialog class="admin-modal" id="arbiterApproveModal" aria-labelledby="modalArbiterTitle" aria-describedby="modalArbiterDesc">
-    <div class="admin-modal-dialog">
-      <div class="admin-modal-content">
-        <div class="admin-modal-header border-bottom pb-3">
-          <div class="d-flex align-items-center gap-2">
-            <span class="chinese-seal-icon small text-success" aria-hidden="true">审</span>
-            <div>
-              <h2 class="h5 fw-bold text-chinese-red mb-0" id="modalArbiterTitle">
-                Phê Duyệt Trọng Tài Tối Cao
-              </h2>
-              <p class="text-secondary small mb-0" id="modalArbiterDesc">
-                Giải quyết khiếu nại hoặc tranh chấp kiểm duyệt để phát hành bài học.
-              </p>
-            </div>
+  <dialog id="arbiterApproveModal" class="dialog-chinese p-0 rounded-3 shadow-lg border-0" aria-labelledby="modalArbiterTitle" aria-describedby="modalArbiterDesc" aria-modal="true">
+    <div class="dialog-content p-4" style="max-width: 580px; width: 100%; max-height: 90vh; overflow-y: auto;">
+      <!-- Modal Header -->
+      <div class="d-flex align-items-center justify-content-between pb-3 mb-3 border-bottom">
+        <div class="d-flex align-items-center gap-2">
+          <span class="chinese-seal-icon small text-success" aria-hidden="true">审</span>
+          <div>
+            <h2 class="h5 fw-bold text-chinese-red mb-0" id="modalArbiterTitle">
+              Phê Duyệt Trọng Tài Tối Cao
+            </h2>
+            <p class="text-secondary small mb-0" id="modalArbiterDesc">
+              Giải quyết khiếu nại hoặc tranh chấp kiểm duyệt để phát hành bài học.
+            </p>
           </div>
-          <button type="button" class="btn-close" id="btnCancelArbiterClose" aria-label="Đóng"></button>
         </div>
-        <div class="admin-modal-body py-3">
-          <div class="alert alert-info small mb-3">
-            Phê duyệt trọng tài cho bài học: <strong id="arbiterLessonTitleText">—</strong>
-          </div>
-          <div class="mb-3">
-            <label for="arbiterNoteInput" class="form-label small fw-semibold text-dark">
-              Ghi chú phân giải trọng tài (tùy chọn)
-            </label>
-            <textarea class="form-control" id="arbiterNoteInput" rows="3" placeholder="Nhập căn cứ phê duyệt trọng tài (ví dụ: đã kiểm tra lại tài liệu bản quyền hợp lệ...)" maxlength="500"></textarea>
-            <div class="form-text small">Tối đa 500 ký tự. Ghi nhận minh bạch trong lịch sử kiểm duyệt.</div>
-          </div>
-          <div id="arbiterModalError" class="alert alert-danger py-2 px-3 small d-none" role="alert"></div>
-        </div>
-        <div class="admin-modal-footer border-top pt-3 d-flex justify-content-end gap-2">
-          <button type="button" class="btn btn-secondary px-3" id="btnCancelArbiter">Hủy bỏ</button>
-          <button type="button" class="btn btn-chinese-primary px-3 d-flex align-items-center gap-1" id="btnConfirmArbiter">
-            <span id="arbiterSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
-            <span>⚖️ Phê duyệt trọng tài</span>
-          </button>
-        </div>
+        <button type="button" class="btn-close" id="btnCancelArbiterClose" aria-label="Đóng"></button>
+      </div>
+
+      <div class="alert alert-info small mb-3">
+        Phê duyệt trọng tài cho bài học: <strong id="arbiterLessonTitleText">—</strong>
+      </div>
+      <div class="mb-3">
+        <label for="arbiterNoteInput" class="form-label small fw-semibold text-dark">
+          Ghi chú phân giải trọng tài (tùy chọn)
+        </label>
+        <textarea class="form-control" id="arbiterNoteInput" rows="3" placeholder="Nhập căn cứ phê duyệt trọng tài (ví dụ: đã kiểm tra lại tài liệu bản quyền hợp lệ...)" maxlength="500"></textarea>
+        <div class="form-text small">Tối đa 500 ký tự. Ghi nhận minh bạch trong lịch sử kiểm duyệt.</div>
+      </div>
+      <div id="arbiterModalError" class="alert alert-danger py-2 px-3 small d-none" role="alert"></div>
+
+      <!-- Actions Footer -->
+      <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+        <button type="button" class="btn btn-chinese-secondary px-3" id="btnCancelArbiter">Hủy bỏ</button>
+        <button type="button" class="btn btn-chinese-primary px-3 d-flex align-items-center gap-1" id="btnConfirmArbiter">
+          <span id="arbiterSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+          <span>⚖️ Phê duyệt trọng tài</span>
+        </button>
       </div>
     </div>
   </dialog>

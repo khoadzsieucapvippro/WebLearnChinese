@@ -585,36 +585,15 @@ export class AdminRadicalsPageController {
       this.elements.btnConfirmDeleteRadical.addEventListener('click', () => this.handleConfirmDeleteRadical());
     }
 
-    // Native backdrop clicks for modal 1
+    // Modal keyboard escape handling (ESC key)
     if (this.elements.formModal) {
-      this.elements.formModal.addEventListener('click', (e) => {
-        const rect = this.elements.formModal.getBoundingClientRect();
-        const isInDialog = (
-          rect.top <= e.clientY && e.clientY <= rect.top + rect.height &&
-          rect.left <= e.clientX && e.clientX <= rect.left + rect.width
-        );
-        if (!isInDialog && !this.isSubmitting) {
-          this.closeFormModal();
-        }
-      });
       this.elements.formModal.addEventListener('cancel', (e) => {
         e.preventDefault();
         if (!this.isSubmitting) this.closeFormModal();
       });
     }
 
-    // Native backdrop clicks for modal 2
     if (this.elements.deleteModal) {
-      this.elements.deleteModal.addEventListener('click', (e) => {
-        const rect = this.elements.deleteModal.getBoundingClientRect();
-        const isInDialog = (
-          rect.top <= e.clientY && e.clientY <= rect.top + rect.height &&
-          rect.left <= e.clientX && e.clientX <= rect.left + rect.width
-        );
-        if (!isInDialog && !this.isSubmitting) {
-          this.closeDeleteModal();
-        }
-      });
       this.elements.deleteModal.addEventListener('cancel', (e) => {
         e.preventDefault();
         if (!this.isSubmitting) this.closeDeleteModal();

@@ -574,7 +574,9 @@ if (cleanPath === '/auth/logout' && method === 'POST') {
         meaningVi: body.meaningVi || '',
         commonRank: body.commonRank ? parseInt(body.commonRank, 10) : null,
         explanationVi: body.explanationVi || null,
-        videoLessonUrl: body.videoLessonUrl || null,
+        audioUrl: body.audioUrl || null,
+        videoWritingUrl: body.videoWritingUrl || body.videoLessonUrl || null,
+        videoLessonUrl: body.videoWritingUrl || body.videoLessonUrl || null,
         strokeCount: body.strokeCount ? parseInt(body.strokeCount, 10) : null
       };
       data.radicals.push(newRad);
