@@ -17,7 +17,14 @@
         crossorigin="anonymous">
 
   <!-- Custom Core Design System CSS -->
-  <link rel="stylesheet" href="css/style.css?v=20261029_03">
+  <link rel="stylesheet" href="css/style.css?v=20261030_05">
+  <style>
+    /* Ẩn hoàn toàn tính năng duyệt trọng tài theo yêu cầu */
+    [id^="btnApproveLesson-"],
+    #arbiterApproveModal {
+      display: none !important;
+    }
+  </style>
 </head>
 <body class="bg-chinese-cream">
 
@@ -461,10 +468,10 @@
           crossorigin="anonymous"></script>
 
   <!-- Application Configuration & Page Script -->
-  <script type="module" src="js/config.js?v=20261029_03"></script>
+  <script type="module" src="js/config.js?v=20261030_05"></script>
   <!-- Management Workspace Layout & Sidebar Component -->
-  <script type="module" src="js/ui/management-layout.js?v=20261029_03"></script>
+  <script type="module" src="js/ui/management-layout.js?v=20261030_05"></script>
 
-  <script type="module" src="js/pages/admin-lessons-page.js?v=20261029_03"></script>
+  <script type="module" src="js/pages/admin-lessons-page.js?v=20261030_05"></script>
 </body>
 </html>
