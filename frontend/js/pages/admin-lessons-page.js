@@ -807,6 +807,8 @@ export class AdminLessonsPageController {
       }
 
       // Supervisory Arbiter Approval Button (For 'Pending' or 'Rejected' lessons)
+      // Đã ẩn tính năng duyệt trọng tài theo yêu cầu
+      /*
       if (lesson.status === 'Pending' || lesson.status === 'Rejected') {
         const btnApprove = createSafeElement('button', {
           className: 'btn btn-chinese-primary btn-sm text-nowrap',
@@ -829,6 +831,7 @@ export class AdminLessonsPageController {
         }
         actionsWrapper.appendChild(btnApprove);
       }
+      */
 
       tdActions.appendChild(actionsWrapper);
       tr.appendChild(tdActions);
