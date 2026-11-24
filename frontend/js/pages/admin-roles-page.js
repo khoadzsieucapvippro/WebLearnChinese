@@ -472,6 +472,7 @@ export class AdminRolesController {
     this.isSelf = false;
     this.lastActiveElement = null;
     this.isSubmitting = false;
+    this.searchDebounceTimer = null;
 
     // Bound Event Handlers
     this.handleKeyDown = this.handleKeyDown.bind(this);
@@ -519,7 +520,6 @@ export class AdminRolesController {
       roleCatalogContainer: document.getElementById('roleCatalogContainer'),
       btnRefreshRoleCatalog: document.getElementById('btnRefreshRoleCatalog'),
       accountSearchInput: document.getElementById('accountSearchInput'),
-      btnAccountSearch: document.getElementById('btnAccountSearch'),
       btnAccountClearSearch: document.getElementById('btnAccountClearSearch'),
       pageSizeSelect: document.getElementById('pageSizeSelect'),
       accountStateContainer: document.getElementById('accountStateContainer'),
@@ -560,19 +560,25 @@ export class AdminRolesController {
       });
     }
 
-    // Search controls
-    if (this.dom.btnAccountSearch) {
-      this.dom.btnAccountSearch.addEventListener('click', () => {
-        this.page = 0;
-        this.search = this.dom.accountSearchInput?.value?.trim() || '';
-        this.loadAccounts();
-      });
-    }
-
+    // Search controls (debounced live search + Enter + clear button)
     if (this.dom.accountSearchInput) {
+      this.dom.accountSearchInput.addEventListener('input', (e) => {
+        const val = e.target.value;
+        if (this.dom.btnAccountClearSearch) {
+          this.dom.btnAccountClearSearch.classList.toggle('d-none', !val);
+        }
+        clearTimeout(this.searchDebounceTimer);
+        this.searchDebounceTimer = setTimeout(() => {
+          this.page = 0;
+          this.search = val.trim();
+          this.loadAccounts();
+        }, 350);
+      });
+
       this.dom.accountSearchInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
           e.preventDefault();
+          clearTimeout(this.searchDebounceTimer);
           this.page = 0;
           this.search = this.dom.accountSearchInput.value.trim();
           this.loadAccounts();
@@ -584,7 +590,10 @@ export class AdminRolesController {
       this.dom.btnAccountClearSearch.addEventListener('click', () => {
         if (this.dom.accountSearchInput) {
           this.dom.accountSearchInput.value = '';
+          this.dom.accountSearchInput.focus();
         }
+        this.dom.btnAccountClearSearch.classList.add('d-none');
+        clearTimeout(this.searchDebounceTimer);
         this.search = '';
         this.page = 0;
         this.loadAccounts();

@@ -649,4 +649,79 @@ describe('Browser E2E: Admin Role Management & Assignment UI (Task 9F.2)', () =>
     }
   });
 
+  // ---------------------------------------------------------------------------
+  // AR-10: Live debounced search and clear button match vocabulary/radicals
+  // ---------------------------------------------------------------------------
+  test('AR-10: Live debounced search and clear button filter accounts without a search submit button', async () => {
+    const { page, context, getRuntimeErrors } = await createMonitoredPage(browser, {
+      viewportWidth: 1280,
+      viewportHeight: 720
+    });
+
+    try {
+      await setupAdminSession(page);
+
+      let lastCapturedUrl = null;
+      await page.route(/\/api\/v1\/admin\/roles(\?.*)?$/, async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ code: 'SUCCESS', message: 'Thành công', data: createMockRoles() })
+        });
+      });
+
+      await page.route(/\/api\/v1\/admin\/accounts(\?.*)?$/, async (route) => {
+        lastCapturedUrl = route.request().url();
+        const urlObj = new URL(lastCapturedUrl);
+        const search = urlObj.searchParams.get('search') || '';
+        const accounts = createMockAccounts();
+        const filtered = search
+          ? accounts.filter(a => a.emailOrPhone.includes(search) || (a.fullName && a.fullName.includes(search)))
+          : accounts;
+
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            code: 'SUCCESS',
+            message: 'Thành công',
+            data: {
+              items: filtered,
+              page: 0,
+              size: 20,
+              totalElements: filtered.length,
+              totalPages: 1
+            }
+          })
+        });
+      });
+
+      await page.goto(`${baseUrl}/admin-roles.html`);
+      await page.waitForSelector('#accountsTableBody tr', { timeout: 5000 });
+
+      assert.strictEqual(await page.locator('#btnAccountSearch').count(), 0, 'Search button must be absent to match vocabulary/radicals');
+
+      const searchInput = page.locator('#accountSearchInput');
+      await searchInput.fill('learner1');
+      await page.waitForTimeout(450);
+
+      assert.ok(lastCapturedUrl.includes('search=learner1'), `Expected search=learner1 in URL: ${lastCapturedUrl}`);
+      const rows = page.locator('#accountsTableBody tr');
+      assert.strictEqual(await rows.count(), 1);
+      assert.match(await rows.first().textContent(), /learner1@example\.com/);
+
+      const clearBtn = page.locator('#btnAccountClearSearch');
+      assert.strictEqual(await clearBtn.isVisible(), true);
+      await clearBtn.click();
+      await page.waitForTimeout(300);
+
+      assert.strictEqual(await searchInput.inputValue(), '');
+      assert.strictEqual(await rows.count(), 3);
+
+      assert.deepStrictEqual(getRuntimeErrors(), []);
+    } finally {
+      await context.close();
+    }
+  });
+
 });

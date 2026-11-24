@@ -223,17 +223,24 @@ describe('Browser E2E: Admin Accounts Lifecycle UI (Task 9F.1)', () => {
       assert.strictEqual(await filteredRows.count(), 1);
       assert.match(await filteredRows.first().textContent(), /learner2@example\.com/);
 
-      // 2. Test Search: search for "learner1"
+      // 2. Test Search: live debounced search + clear button for "learner1"
+      assert.strictEqual(await page.locator('#btnAccountSearch').count(), 0, 'Search button must be absent to match vocabulary/radicals');
       const searchInput = page.locator('#accountSearchInput');
-      await searchInput.fill('learner1');
       await statusSelect.selectOption(''); // All statuses
-      const searchBtn = page.locator('#btnAccountSearch');
-      await searchBtn.click();
-      await page.waitForTimeout(300);
+      await searchInput.fill('learner1');
+      await page.waitForTimeout(450);
 
       assert.ok(lastCapturedUrl.includes('search=learner1'), `Expected search=learner1 in URL: ${lastCapturedUrl}`);
       assert.strictEqual(await filteredRows.count(), 1);
       assert.match(await filteredRows.first().textContent(), /learner1@example\.com/);
+
+      // 3. Test Clear Search button (✕)
+      const clearBtn = page.locator('#btnAccountClearSearch');
+      assert.strictEqual(await clearBtn.isVisible(), true);
+      await clearBtn.click();
+      await page.waitForTimeout(300);
+      assert.strictEqual(await searchInput.inputValue(), '');
+      assert.strictEqual(await filteredRows.count(), 4);
 
       assert.deepStrictEqual(getRuntimeErrors(), []);
 

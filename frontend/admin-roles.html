@@ -111,11 +111,21 @@
                 Tìm kiếm tài khoản
               </label>
               <div class="input-group">
-                <input type="text" id="accountSearchInput" class="form-control" placeholder="Tìm theo email, SĐT hoặc họ tên..." aria-label="Tìm kiếm theo email, số điện thoại hoặc họ tên">
-                <button type="button" id="btnAccountSearch" class="btn btn-chinese-primary">
-                  Tìm kiếm
-                </button>
-                <button type="button" id="btnAccountClearSearch" class="btn btn-outline-secondary" title="Xóa bộ lọc tìm kiếm">
+                <input
+                  type="text"
+                  id="accountSearchInput"
+                  class="form-control"
+                  placeholder="Tìm theo email, SĐT hoặc họ tên..."
+                  aria-label="Tìm kiếm theo email, số điện thoại hoặc họ tên"
+                  autocomplete="off"
+                >
+                <button
+                  type="button"
+                  id="btnAccountClearSearch"
+                  class="btn btn-outline-secondary"
+                  aria-label="Xóa từ khóa tìm kiếm"
+                  title="Xóa tìm kiếm"
+                >
                   ✕
                 </button>
               </div>

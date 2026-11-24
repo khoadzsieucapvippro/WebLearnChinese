@@ -348,6 +348,7 @@ export class AdminAccountsController {
     this.activeAccountForMutation = null;
     this.isSubmitting = false;
     this.activeElementBeforeOpen = null;
+    this.searchDebounceTimer = null;
 
     this.dom = {};
   }
@@ -394,7 +395,6 @@ export class AdminAccountsController {
       resultCountBadge: document.getElementById('accountResultCountBadge'),
       
       searchInput: document.getElementById('accountSearchInput'),
-      btnSearch: document.getElementById('btnAccountSearch'),
       btnClearSearch: document.getElementById('btnAccountClearSearch'),
       statusFilterSelect: document.getElementById('statusFilterSelect'),
       pageSizeSelect: document.getElementById('pageSizeSelect'),
@@ -464,11 +464,22 @@ export class AdminAccountsController {
    * Binds interactive DOM listeners for search, filter, pagination, and modal dialog.
    */
   bindEvents() {
-    // Search form submission
-    this.dom.btnSearch?.addEventListener('click', () => this.handleSearch());
+    // Search input events with debouncing
+    this.dom.searchInput?.addEventListener('input', (e) => {
+      const val = e.target.value;
+      if (this.dom.btnClearSearch) {
+        this.dom.btnClearSearch.classList.toggle('d-none', !val);
+      }
+      clearTimeout(this.searchDebounceTimer);
+      this.searchDebounceTimer = setTimeout(() => {
+        this.handleSearch();
+      }, 350);
+    });
+
     this.dom.searchInput?.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
         e.preventDefault();
+        clearTimeout(this.searchDebounceTimer);
         this.handleSearch();
       }
     });
@@ -477,7 +488,10 @@ export class AdminAccountsController {
     this.dom.btnClearSearch?.addEventListener('click', () => {
       if (this.dom.searchInput) {
         this.dom.searchInput.value = '';
+        this.dom.searchInput.focus();
       }
+      this.dom.btnClearSearch?.classList.add('d-none');
+      clearTimeout(this.searchDebounceTimer);
       this.handleSearch();
     });
 
@@ -609,6 +623,8 @@ export class AdminAccountsController {
   resetFilters() {
     if (this.dom.searchInput) this.dom.searchInput.value = '';
     if (this.dom.statusFilterSelect) this.dom.statusFilterSelect.value = '';
+    this.dom.btnClearSearch?.classList.add('d-none');
+    clearTimeout(this.searchDebounceTimer);
     this.searchQuery = '';
     this.currentStatus = '';
     this.currentPage = 0;

@@ -130,7 +130,7 @@ async function runLiveVerification() {
     // 7.3 Search and open role assignment modal for target account
     const searchInput = page.locator('#accountSearchInput');
     await searchInput.fill(targetEmail);
-    await page.locator('#btnAccountSearch').click();
+    await searchInput.press('Enter');
     await page.waitForTimeout(600);
 
     const editBtn = page.locator(`#btnEditRoles_${targetAccountId}`);
@@ -163,7 +163,7 @@ async function runLiveVerification() {
 
     // 7.7 Verify Self-Protection POL-8D-02: Admin's own account has Admin checkbox disabled
     await searchInput.fill(adminEmail);
-    await page.locator('#btnAccountSearch').click();
+    await searchInput.press('Enter');
     await page.waitForTimeout(600);
 
     const editAdminBtn = page.locator(`#btnEditRoles_${adminAccountId}`);

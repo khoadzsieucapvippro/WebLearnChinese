@@ -131,7 +131,7 @@ async function runLiveVerification() {
     // 7.3 Verify Self-Protection (POL-8D-01) on Admin's own row (filter by admin email)
     const searchInput = page.locator('#accountSearchInput');
     await searchInput.fill(adminEmail);
-    await page.locator('#btnAccountSearch').click();
+    await searchInput.press('Enter');
     await page.waitForTimeout(600);
 
     const adminRow = page.locator(`#accountRow_${adminAccountId}`);
@@ -144,7 +144,7 @@ async function runLiveVerification() {
 
     // 7.4 Verify Search for target account
     await searchInput.fill(targetEmail);
-    await page.locator('#btnAccountSearch').click();
+    await searchInput.press('Enter');
     await page.waitForTimeout(600);
 
     const targetRow = page.locator(`#accountRow_${targetAccountId}`);
