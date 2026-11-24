@@ -69,8 +69,16 @@ public class LocalSpeechServiceClient {
      * Checks if the local speech microservice is up and responding.
      */
     public boolean isAvailable() {
+        return getHealthDetails() != null;
+    }
+
+    /**
+     * Fetches the /health metadata payload from the speech microservice, or null if disabled/unavailable.
+     */
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> getHealthDetails() {
         if (!localSpeechConfig.isEnabled()) {
-            return false;
+            return null;
         }
         try {
             String healthUrl = localSpeechConfig.getBaseUrl() + "/health";
@@ -86,10 +94,13 @@ public class LocalSpeechServiceClient {
                     requestEntity,
                     Map.class
             );
-            return response.getStatusCode().is2xxSuccessful();
+            if (response.getStatusCode().is2xxSuccessful()) {
+                return response.getBody() != null ? response.getBody() : java.util.Collections.emptyMap();
+            }
+            return null;
         } catch (Exception e) {
             log.debug("Local speech service health check failed at {}: {}", localSpeechConfig.getBaseUrl(), e.getMessage());
-            return false;
+            return null;
         }
     }
 

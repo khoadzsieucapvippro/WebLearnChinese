@@ -224,6 +224,29 @@ class ReadingAssessmentServiceTests {
     }
 
     @Test
+    @DisplayName("getServiceStatus reports hybrid-cloud-ai when speech-service /health reports azureAiConfigured=true")
+    void testGetServiceStatusHybridAiHealthy() {
+        when(localSpeechConfig.isEnabled()).thenReturn(true);
+        when(localSpeechServiceClient.isAvailable()).thenReturn(true);
+        when(localSpeechServiceClient.getHealthDetails()).thenReturn(Map.of(
+                "status", "READY",
+                "azureAiConfigured", true,
+                "asr", true,
+                "engine", "hybrid-azure-neural-and-chao-5-scale",
+                "model", "Azure Neural Speech AI + Chao-5-Scale Tone Sandhi Engine"
+        ));
+
+        Map<String, Object> status = readingAssessmentService.getServiceStatus();
+
+        assertEquals(true, status.get("configured"));
+        assertEquals(true, status.get("available"));
+        assertEquals("hybrid-cloud-ai", status.get("tier"));
+        assertEquals(true, status.get("azureAiConfigured"));
+        assertEquals(true, status.get("asr"));
+        assertEquals("Azure Neural Speech AI + Chao-5-Scale Tone Sandhi Engine", status.get("model"));
+    }
+
+    @Test
     @DisplayName("getServiceStatus indicates unavailable when local engine is offline")
     void testGetServiceStatusLocalUnavailable() {
         when(localSpeechConfig.isEnabled()).thenReturn(true);

@@ -57,6 +57,19 @@ services:
       - key: INTERNAL_SPEECH_TOKEN
         generateValue: true
 
+      # Hybrid Cloud Speech AI (Groq Whisper Large-v3 / Azure Speech) for Pronunciation Assessment
+      # Set GROQ_API_KEY (or AZURE_SPEECH_KEY) in Render Dashboard -> Environment
+      - key: AZURE_SPEECH_ENABLED
+        value: "true"
+      - key: GROQ_API_KEY
+        sync: false
+      - key: AZURE_SPEECH_KEY
+        sync: false
+      - key: AZURE_SPEECH_REGION
+        value: "southeastasia"
+      - key: SPEECH_CLOUD_TIMEOUT_SEC
+        value: "12"
+
       # SRS 2-Minute Test Mode (temporarily lock canonical SM-2 for fast review testing)
       - key: APP_SRS_TEST_MODE_ENABLED
         value: "true"

@@ -240,6 +240,26 @@ public class LocalSpeechServiceClientTests {
     }
 
     @Test
+    @DisplayName("getHealthDetails returns parsed hybrid AI metadata from /health")
+    void testGetHealthDetailsReturnsHybridMetadata() {
+        mockServer.expect(ExpectedCount.once(), requestTo("http://127.0.0.1:8000/health"))
+                .andExpect(method(HttpMethod.GET))
+                .andExpect(header("X-Internal-Token", "test-secret-token-xyz"))
+                .andRespond(withSuccess(
+                        "{\"status\":\"READY\",\"azureAiConfigured\":true,\"asr\":true,\"model\":\"Azure Neural Speech AI + Chao-5-Scale Tone Sandhi Engine\"}",
+                        MediaType.APPLICATION_JSON
+                ));
+
+        java.util.Map<String, Object> health = client.getHealthDetails();
+
+        assertNotNull(health);
+        assertEquals(true, health.get("azureAiConfigured"));
+        assertEquals(true, health.get("asr"));
+        assertEquals("Azure Neural Speech AI + Chao-5-Scale Tone Sandhi Engine", health.get("model"));
+        mockServer.verify();
+    }
+
+    @Test
     @DisplayName("isAvailable returns false on connection error or 5xx without throwing exception")
     void testIsAvailableReturnsFalseOnError() {
         mockServer.expect(ExpectedCount.once(), requestTo("http://127.0.0.1:8000/health"))

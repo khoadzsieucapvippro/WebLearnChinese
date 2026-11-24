@@ -169,6 +169,23 @@ def is_azure_configured() -> bool:
     return configured
 
 
+def _get_cloud_timeout_sec(default: float = 12.0) -> float:
+    """
+    Resolves cloud Speech AI HTTP timeout (seconds) from SPEECH_CLOUD_TIMEOUT_SEC.
+    Defaults to 12.0s so Render/cloud outbound TLS handshakes do not prematurely fall back to local DSP.
+    """
+    raw = (os.getenv("SPEECH_CLOUD_TIMEOUT_SEC") or "").strip()
+    if not raw:
+        raw = _read_dotenv_fallback().get("SPEECH_CLOUD_TIMEOUT_SEC", "").strip()
+    if raw:
+        try:
+            val = float(raw)
+            return max(2.0, min(25.0, val))
+        except ValueError:
+            pass
+    return default
+
+
 def split_pinyin_initial_final(clean_pinyin: str) -> Tuple[str, str]:
     """
     Splits a base Pinyin syllable (without tone marks/digits, e.g. 'qing', 'zhuang', 'ai')
@@ -355,12 +372,13 @@ def call_azure_pronunciation_api(
     target_text: str,
     api_key: str,
     region: str,
-    timeout_sec: float = 4.5
+    timeout_sec: Optional[float] = None
 ) -> Optional[Dict[str, Any]]:
     """
     Calls Microsoft Azure Cognitive Services Speech Pronunciation Assessment REST API (zh-CN).
     Returns parsed JSON dictionary on HTTP 200, or None on network/auth/quota failure to trigger fallback.
     """
+    effective_timeout = float(timeout_sec) if timeout_sec is not None else _get_cloud_timeout_sec()
     url = (
         f"https://{region}.stt.speech.microsoft.com/speech/recognition/"
         f"conversation/cognitiveservices/v1?language=zh-CN&format=detailed"
@@ -377,7 +395,7 @@ def call_azure_pronunciation_api(
 
     req = urllib.request.Request(url, data=wav_bytes, headers=headers, method="POST")
     try:
-        with urllib.request.urlopen(req, timeout=timeout_sec) as response:
+        with urllib.request.urlopen(req, timeout=effective_timeout) as response:
             status_code = response.getcode()
             raw_body = response.read().decode("utf-8", errors="replace")
             if status_code == 200 and raw_body:
@@ -443,12 +461,13 @@ def call_groq_whisper_pronunciation_api(
     target_text: str,
     evaluated_syllables: List[Dict[str, Any]],
     api_key: str,
-    timeout_sec: float = 4.5
+    timeout_sec: Optional[float] = None
 ) -> Optional[Dict[str, Any]]:
     """
     Calls Groq Cloud Whisper Large-v3 Turbo API and performs Mandarin Articulatory Phoneme Alignment
     (Initials & Finals GOP estimation), returning an Azure-compatible NBest assessment structure.
     """
+    effective_timeout = float(timeout_sec) if timeout_sec is not None else _get_cloud_timeout_sec()
     url = "https://api.groq.com/openai/v1/audio/transcriptions"
     boundary = f"----WebLearnBoundary{uuid.uuid4().hex}"
 
@@ -486,12 +505,21 @@ def call_groq_whisper_pronunciation_api(
 
     req = urllib.request.Request(url, data=body_bytes, headers=headers, method="POST")
     try:
-        with urllib.request.urlopen(req, timeout=timeout_sec) as response:
+        with urllib.request.urlopen(req, timeout=effective_timeout) as response:
             status_code = response.getcode()
             raw_body = response.read().decode("utf-8", errors="replace")
             if status_code != 200 or not raw_body:
+                logger.warning(f"Groq Whisper API returned non-200 status {status_code}: {raw_body[:200]}")
                 return None
             groq_json = json.loads(raw_body)
+    except urllib.error.HTTPError as http_err:
+        err_body = ""
+        try:
+            err_body = http_err.read().decode("utf-8", errors="replace")[:200]
+        except Exception:
+            pass
+        logger.warning(f"Groq Whisper API HTTPError {http_err.code} ({http_err.reason}): {err_body}")
+        return None
     except Exception as exc:
         logger.warning(f"Groq Whisper API call failed ({exc}); falling back to local DSP engine.")
         return None

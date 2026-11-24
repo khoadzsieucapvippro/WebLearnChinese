@@ -81,6 +81,20 @@ public class ReadingAssessmentServiceImpl implements ReadingAssessmentService {
                 status.put("provider", "speech-service-local");
                 status.put("tier", "open-source-offline");
                 status.put("model", "Chao-5-Scale Tone Sandhi Engine");
+
+                Map<String, Object> health = localSpeechServiceClient.getHealthDetails();
+                if (health != null && Boolean.TRUE.equals(health.get("azureAiConfigured"))) {
+                    status.put("tier", "hybrid-cloud-ai");
+                    status.put("azureAiConfigured", true);
+                    status.put("asr", Boolean.TRUE.equals(health.get("asr")));
+                    Object modelObj = health.get("model");
+                    status.put("model", modelObj != null && !String.valueOf(modelObj).isBlank()
+                            ? String.valueOf(modelObj)
+                            : "Azure Neural Speech AI + Chao-5-Scale Tone Sandhi Engine");
+                    if (health.get("engine") != null) {
+                        status.put("engine", health.get("engine"));
+                    }
+                }
             } else {
                 status.put("configured", true);
                 status.put("available", false);
