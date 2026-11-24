@@ -117,18 +117,28 @@
           </div>
 
           <!-- Lesson Search Toolbar Card -->
-          <div class="card-chinese p-3 mb-4" id="lessonToolbarCard">
+          <div class="creator-panel-card mb-4" id="lessonToolbarCard">
             <div class="row g-3 align-items-end">
               <div class="col-12 col-md-8">
                 <label for="lessonSearchInput" class="form-label small fw-semibold text-secondary mb-1">
                   Tìm kiếm bài học
                 </label>
                 <div class="input-group">
-                  <input type="text" id="lessonSearchInput" class="form-control" placeholder="Tìm theo tiêu đề hoặc ID bài học..." aria-label="Tìm kiếm theo tiêu đề hoặc ID bài học">
-                  <button type="button" id="btnLessonSearch" class="btn btn-chinese-primary">
-                    Tìm kiếm
-                  </button>
-                  <button type="button" id="btnLessonClearSearch" class="btn btn-outline-secondary" title="Xóa bộ lọc tìm kiếm">
+                  <input
+                    type="text"
+                    id="lessonSearchInput"
+                    class="form-control"
+                    placeholder="Tìm theo tiêu đề hoặc ID bài học..."
+                    aria-label="Tìm kiếm theo tiêu đề hoặc ID bài học"
+                    autocomplete="off"
+                  >
+                  <button
+                    type="button"
+                    id="btnLessonClearSearch"
+                    class="btn btn-outline-secondary"
+                    aria-label="Xóa từ khóa tìm kiếm"
+                    title="Xóa tìm kiếm"
+                  >
                     ✕
                   </button>
                 </div>

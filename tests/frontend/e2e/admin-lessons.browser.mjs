@@ -161,10 +161,11 @@ describe('Browser E2E: Admin Lesson Management UI', () => {
       // Verify old ↻ Làm mới is removed
       assert.strictEqual(await page.locator('#btnRefreshKpi').count(), 0);
 
-      // Verify search toolbar card exists
+      // Verify search toolbar card exists without separate search submit button
       assert.ok(await page.locator('#lessonToolbarCard').isVisible());
       assert.ok(await page.locator('#lessonSearchInput').isVisible());
-      assert.ok(await page.locator('#btnLessonSearch').isVisible());
+      assert.strictEqual(await page.locator('#btnLessonSearch').count(), 0);
+      assert.ok(await page.locator('#btnLessonClearSearch').isVisible());
 
       // Verify table structure has 5 columns (ID, Tên bài học, Số từ vựng, Cập nhật, Thao tác)
       const table = page.locator('#lessonTable');
@@ -290,10 +291,9 @@ describe('Browser E2E: Admin Lesson Management UI', () => {
       const rows = page.locator('#lessonTableBody tr');
       assert.strictEqual(await rows.count(), 4);
 
-      // Search for "Gia đình"
+      // Search for "Gia đình" via debounced live search (no submit button)
       await page.fill('#lessonSearchInput', 'Gia đình');
-      await page.click('#btnLessonSearch');
-      await page.waitForTimeout(300);
+      await page.waitForTimeout(450);
 
       // Table should now only show 1 lesson
       assert.strictEqual(await rows.count(), 1);

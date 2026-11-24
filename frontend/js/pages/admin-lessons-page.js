@@ -381,6 +381,7 @@ export class AdminLessonsPageController {
     this.editingLesson = null;
     this.formVocabularies = [];
     this.initialVocabIds = [];
+    this.searchDebounceTimer = null;
     this.vocabSearchDebounceTimer = null;
 
     // State for Delete Lesson Modal
@@ -451,7 +452,6 @@ export class AdminLessonsPageController {
 
       // Search Toolbar
       lessonSearchInput: document.getElementById('lessonSearchInput'),
-      btnLessonSearch: document.getElementById('btnLessonSearch'),
       btnLessonClearSearch: document.getElementById('btnLessonClearSearch'),
 
       // Table & State
@@ -521,20 +521,32 @@ export class AdminLessonsPageController {
    * Attaches event listeners to buttons and modals.
    */
   attachEventListeners() {
-    // Search Toolbar
-    if (this.elements.btnLessonSearch) {
-      this.elements.btnLessonSearch.addEventListener('click', () => this.handleSearch());
-    }
+    // Search Toolbar (debounced live search + Enter + clear button)
     if (this.elements.lessonSearchInput) {
+      this.elements.lessonSearchInput.addEventListener('input', (e) => {
+        const val = e.target.value;
+        if (this.elements.btnLessonClearSearch) {
+          this.elements.btnLessonClearSearch.classList.toggle('d-none', !val);
+        }
+        clearTimeout(this.searchDebounceTimer);
+        this.searchDebounceTimer = setTimeout(() => {
+          this.handleSearch();
+        }, 350);
+      });
+
       this.elements.lessonSearchInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
           e.preventDefault();
+          clearTimeout(this.searchDebounceTimer);
           this.handleSearch();
         }
       });
     }
     if (this.elements.btnLessonClearSearch) {
-      this.elements.btnLessonClearSearch.addEventListener('click', () => this.handleClearSearch());
+      this.elements.btnLessonClearSearch.addEventListener('click', () => {
+        clearTimeout(this.searchDebounceTimer);
+        this.handleClearSearch();
+      });
     }
 
     // Modal 1 Triggers & Actions
@@ -638,6 +650,10 @@ export class AdminLessonsPageController {
   handleClearSearch() {
     if (this.elements.lessonSearchInput) {
       this.elements.lessonSearchInput.value = '';
+      this.elements.lessonSearchInput.focus();
+    }
+    if (this.elements.btnLessonClearSearch) {
+      this.elements.btnLessonClearSearch.classList.add('d-none');
     }
     this.searchQuery = '';
     this.currentPage = 0;
