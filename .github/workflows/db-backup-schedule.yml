@@ -63,13 +63,19 @@ jobs:
 
           echo "Starting logical database backup for ${TIDB_DATABASE} on ${TIDB_HOST}:${TIDB_PORT}..."
           
-          # Detect whether mysqldump supports --set-gtid-purged (Oracle MySQL vs MariaDB)
+          # Detect optional Oracle MySQL 8.x flags not supported by MariaDB/older clients
           EXTRA_FLAGS=""
           if mysqldump --help 2>&1 | grep -q -- '--set-gtid-purged'; then
-            EXTRA_FLAGS="--set-gtid-purged=OFF"
+            EXTRA_FLAGS="${EXTRA_FLAGS} --set-gtid-purged=OFF"
+          fi
+          if mysqldump --help 2>&1 | grep -q -- '--column-statistics'; then
+            EXTRA_FLAGS="${EXTRA_FLAGS} --column-statistics=0"
           fi
 
-          # Execute mysqldump with TiDB Cloud Serverless best practices
+          # Execute mysqldump with TiDB Cloud Serverless compatibility:
+          # MySQL 8.4's --single-transaction emits SAVEPOINT sp / ROLLBACK TO SAVEPOINT sp per table,
+          # which TiDB Cloud Serverless rejects with error 1305 (SAVEPOINT sp does not exist).
+          # Use --skip-single-transaction --skip-lock-tables --quick for reliable logical dumps.
           mysqldump \
             -h "$TIDB_HOST" \
             -P "$TIDB_PORT" \
@@ -77,7 +83,8 @@ jobs:
             -p"$TIDB_PASSWORD" \
             --ssl-mode=REQUIRED \
             --default-character-set=utf8mb4 \
-            --single-transaction \
+            --quick \
+            --skip-single-transaction \
             --skip-lock-tables \
             $EXTRA_FLAGS \
             --databases "$TIDB_DATABASE" | gzip > "$BACKUP_FILE"
