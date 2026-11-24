@@ -1,5 +1,6 @@
 package com.elearning.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -12,11 +13,12 @@ import java.util.List;
 /**
  * Request DTO for reordering vocabulary items within a lesson (PUT /api/v1/creator/lessons/{id}/reorder).
  * Accepts either:
- * - A simple ordered list of vocab IDs (orderedVocabIds), or
+ * - A simple ordered list of vocab IDs (orderedVocabIds / orderedVocabularyIds), or
  * - A structured list of items (items with vocabId and orderIndex).
  */
 public class ReorderVocabRequest {
 
+    @JsonAlias({"orderedVocabularyIds", "vocabIds", "vocabularyIds"})
     private List<@NotNull(message = "ID từ vựng không được để trống") @Positive(message = "ID từ vựng phải là số nguyên dương") Long> orderedVocabIds;
 
     @Valid

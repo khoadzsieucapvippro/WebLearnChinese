@@ -7,6 +7,7 @@ import com.elearning.dto.response.CurriculumProgressResponse;
 import com.elearning.dto.response.DueCardResponse;
 import com.elearning.dto.response.LessonSrsStatsResponse;
 import com.elearning.dto.response.StudyStatsResponse;
+import com.elearning.dto.response.VocabularyReportResponse;
 import com.elearning.exception.BusinessException;
 import com.elearning.exception.GlobalExceptionHandler;
 import com.elearning.service.SrsService;
@@ -396,6 +397,61 @@ class SrsControllerTests {
                     .andExpect(jsonPath("$.data.chapterProgress.radicals50_chapter_0", is(10)));
 
             verify(srsService).getCurriculumProgress();
+        }
+    }
+
+    @Nested
+    @DisplayName("GET /api/v1/srs/vocabulary-report Tests")
+    class GetVocabularyReportEndpointTests {
+
+        @Test
+        @DisplayName("GET /api/v1/srs/vocabulary-report delegates params and returns buckets + summary")
+        void testGetVocabularyReport_success() throws Exception {
+            VocabularyReportResponse.VocabularyReportSummary summary =
+                    new VocabularyReportResponse.VocabularyReportSummary(5, 12, 30, 45, 22, 68, 80, 120, 1000);
+            VocabularyReportResponse.VocabularyReportBucket b1 =
+                    new VocabularyReportResponse.VocabularyReportBucket("2026-Q4", "Quý 4", "Quý 4/2026 (T10–T12)", 68, 80, 140, true);
+            VocabularyReportResponse mockReport = new VocabularyReportResponse(
+                    "quarter", "LISTENING", 2026, 14, "2026-11-24", 20, summary, List.of(b1), List.of(2026)
+            );
+
+            when(srsService.getVocabularyReport("quarter", 2026, 14, null, "LISTENING")).thenReturn(mockReport);
+
+            mockMvc.perform(get("/api/v1/srs/vocabulary-report")
+                            .param("period", "quarter")
+                            .param("year", "2026")
+                            .param("days", "14")
+                            .param("cardType", "LISTENING")
+                            .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code", is("SUCCESS")))
+                    .andExpect(jsonPath("$.data.period", is("quarter")))
+                    .andExpect(jsonPath("$.data.cardType", is("LISTENING")))
+                    .andExpect(jsonPath("$.data.year", is(2026)))
+                    .andExpect(jsonPath("$.data.dailyGoal", is(20)))
+                    .andExpect(jsonPath("$.data.summary.todayNewCount", is(5)))
+                    .andExpect(jsonPath("$.data.summary.monthNewCount", is(30)))
+                    .andExpect(jsonPath("$.data.summary.quarterNewCount", is(68)))
+                    .andExpect(jsonPath("$.data.summary.totalLearnedVocab", is(120)))
+                    .andExpect(jsonPath("$.data.buckets", hasSize(1)))
+                    .andExpect(jsonPath("$.data.buckets[0].key", is("2026-Q4")))
+                    .andExpect(jsonPath("$.data.buckets[0].newWordsCount", is(68)))
+                    .andExpect(jsonPath("$.data.buckets[0].reviewedWordsCount", is(80)));
+
+            verify(srsService).getVocabularyReport("quarter", 2026, 14, null, "LISTENING");
+        }
+
+        @Test
+        @DisplayName("GET /api/v1/srs/vocabulary-report rejects invalid period via GlobalExceptionHandler")
+        void testGetVocabularyReport_invalidPeriod_returns400() throws Exception {
+            when(srsService.getVocabularyReport("week", null, null, null, "ALL"))
+                    .thenThrow(new BusinessException(ErrorCode.VALIDATION_ERROR, "Chu kỳ thống kê không hợp lệ"));
+
+            mockMvc.perform(get("/api/v1/srs/vocabulary-report")
+                            .param("period", "week")
+                            .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code", is("VALIDATION_ERROR")));
         }
     }
 }

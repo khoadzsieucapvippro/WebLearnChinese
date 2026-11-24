@@ -315,6 +315,11 @@ export class CreatorImportController {
       return;
     }
 
+    const backLink = document.getElementById('backToLessonsLink');
+    if (backLink) {
+      backLink.href = authManager.hasRole('Admin') ? 'admin-lessons.html' : 'creator-lessons.html';
+    }
+
     this.bindEvents();
   }
 
@@ -616,7 +621,9 @@ export class CreatorImportController {
 
     try {
       const formData = buildPreviewFormData(this.state.file);
-      const response = await apiClient('/creator/lessons/import', {
+      const isAdmin = authManager.hasRole('Admin');
+      const previewEndpoint = isAdmin ? '/admin/lessons/import' : '/creator/lessons/import';
+      const response = await apiClient(previewEndpoint, {
         method: 'POST',
         body: formData
       });
@@ -1154,7 +1161,9 @@ export class CreatorImportController {
 
     try {
       const confirmFormData = buildConfirmFormData(titleCheck.sanitizedTitle, this.state.file);
-      const response = await apiClient('/creator/lessons/import/confirm', {
+      const isAdmin = authManager.hasRole('Admin');
+      const confirmEndpoint = isAdmin ? '/admin/lessons/import/confirm' : '/creator/lessons/import/confirm';
+      const response = await apiClient(confirmEndpoint, {
         method: 'POST',
         body: confirmFormData
       });
@@ -1166,17 +1175,20 @@ export class CreatorImportController {
         throw new Error('Máy chủ phản hồi thành công nhưng không trả về mã bài học hợp lệ.');
       }
 
+      const statusMsg = isAdmin ? 'và xuất bản trực tiếp thành công!' : 'ở trạng thái Draft.';
       showToast({
         type: 'success',
         title: 'Import thành công!',
-        message: `Đã tạo bài học '${lesson.title || titleCheck.sanitizedTitle}' (ID #${lessonId}) ở trạng thái Draft.`
+        message: `Đã tạo bài học '${lesson.title || titleCheck.sanitizedTitle}' (ID #${lessonId}) ${statusMsg}`
       });
 
       if (this.confirmStatusNotice) {
-        this.confirmStatusNotice.textContent = 'Import thành công! Đang chuyển hướng sang Creator Studio...';
+        this.confirmStatusNotice.textContent = isAdmin
+          ? 'Import thành công! Đang chuyển hướng sang phòng biên soạn...'
+          : 'Import thành công! Đang chuyển hướng sang Creator Studio...';
       }
 
-      // Navigate directly to the editor for the newly created Draft lesson
+      // Navigate directly to the editor for the newly created lesson
       setTimeout(() => {
         window.location.href = `creator-lesson-editor.html?id=${encodeURIComponent(lessonId)}`;
       }, 500);

@@ -321,30 +321,141 @@ def test_f0_voiced_gate():
     print("  [PASS] normalize_to_chao_scale returns zeros on insufficient voiced frames (< 3)")
 
 def test_async_endpoint():
-    print("Testing FastAPI evaluate_reading handler directly...")
+    print("Testing FastAPI evaluate_reading handler directly (Offline & Hybrid modes)...")
     import asyncio
     import json
+    import os
     from fastapi import UploadFile
     from app.main import evaluate_reading
 
     async def _run():
-        sr, dur = 16000, 0.8
-        t = np.linspace(0, dur, int(sr * dur), endpoint=False)
-        audio_pcm = (0.5 * np.sin(2 * np.pi * 220.0 * t) * np.hanning(int(sr * dur))).astype(np.float32)
-        buf = io.BytesIO()
-        sf.write(buf, audio_pcm, sr, format='WAV')
-        
-        upload = UploadFile(filename='test.wav', file=io.BytesIO(buf.getvalue()))
-        resp = await evaluate_reading(audio=upload, targetText='妈', expectedPinyin='mā')
-        data = json.loads(resp.body.decode('utf-8'))
-        assert data['status'] == 'assessed'
-        assert data['overallScore'] >= 80
-        assert data['syllables'][0]['detected_tone'] == 1
-        assert data.get('recognizedText') is None
-        assert 'initialsFeedback' not in data.get('components', {})
+        old_enabled = os.environ.get("AZURE_SPEECH_ENABLED")
+        try:
+            # 1. Test offline local DSP mode explicitly
+            os.environ["AZURE_SPEECH_ENABLED"] = "false"
+            sr, dur = 16000, 0.8
+            t = np.linspace(0, dur, int(sr * dur), endpoint=False)
+            audio_pcm = (0.5 * np.sin(2 * np.pi * 220.0 * t) * np.hanning(int(sr * dur))).astype(np.float32)
+            buf = io.BytesIO()
+            sf.write(buf, audio_pcm, sr, format='WAV')
+            
+            upload = UploadFile(filename='test.wav', file=io.BytesIO(buf.getvalue()))
+            resp = await evaluate_reading(audio=upload, targetText='妈', expectedPinyin='mā')
+            data = json.loads(resp.body.decode('utf-8'))
+            assert data['status'] == 'assessed'
+            assert data['overallScore'] >= 80
+            assert data['syllables'][0]['detected_tone'] == 1
+            assert data.get('recognizedText') is None
+            assert 'initialsFeedback' not in data.get('components', {})
+        finally:
+            if old_enabled is None:
+                os.environ.pop("AZURE_SPEECH_ENABLED", None)
+            else:
+                os.environ["AZURE_SPEECH_ENABLED"] = old_enabled
 
     asyncio.run(_run())
     print("  [PASS] FastAPI evaluate_reading handler passed end-to-end")
+
+def test_azure_hybrid_assessor():
+    print("Testing Azure Speech AI Hybrid Assessor & Phoneme Decomposition...")
+    import base64
+    import json
+    from app.core.azure_assessor import (
+        split_pinyin_initial_final,
+        build_pronunciation_assessment_header,
+        pcm_to_wav_16k_bytes,
+        merge_azure_and_local_assessment
+    )
+
+    # 1. Pinyin initial/final decomposition
+    assert split_pinyin_initial_final("zhuang") == ("zh", "uang")
+    assert split_pinyin_initial_final("qing") == ("q", "ing")
+    assert split_pinyin_initial_final("hao") == ("h", "ao")
+    assert split_pinyin_initial_final("ai") == ("", "ai")
+    print("  [PASS] Pinyin Initial/Final splitter handles digraphs, monographs, and zero-initials")
+
+    # 2. Base64 Pronunciation-Assessment header
+    b64_hdr = build_pronunciation_assessment_header("你好")
+    decoded_hdr = json.loads(base64.b64decode(b64_hdr).decode("utf-8"))
+    assert decoded_hdr["ReferenceText"] == "你好"
+    assert decoded_hdr["Granularity"] == "Phoneme"
+    assert decoded_hdr["GradingSystem"] == "HundredMark"
+    print("  [PASS] Azure Pronunciation-Assessment Base64 UTF-8 header verified")
+
+    # 3. In-memory WAV conversion
+    pcm_sample = np.zeros(8000, dtype=np.float32)
+    wav_bytes = pcm_to_wav_16k_bytes(pcm_sample, 16000)
+    assert wav_bytes[:4] == b"RIFF" and len(wav_bytes) > 16000
+    print("  [PASS] In-memory PCM to 16kHz 16-bit WAV conversion verified (Zero-Storage)")
+
+    # 4. Merge high-accuracy Azure response with local Chao 5-Scale syllables
+    syllables = parse_target_syllables("你好", "nǐ hǎo")
+    local_evaluated = [
+        {**syllables[0], "detected_tone": 2, "tone_correct": True, "score": 90, "feedback": "OK", "contour": [3.0]*20},
+        {**syllables[1], "detected_tone": 3, "tone_correct": True, "score": 88, "feedback": "OK", "contour": [2.0]*20}
+    ]
+    mock_azure_success = {
+        "RecognitionStatus": "Success",
+        "NBest": [{
+            "Confidence": 0.95,
+            "Display": "你好。",
+            "AccuracyScore": 93.0,
+            "FluencyScore": 96.0,
+            "CompletenessScore": 100.0,
+            "PronScore": 94.0,
+            "Words": [
+                {
+                    "Word": "你",
+                    "AccuracyScore": 95.0,
+                    "ErrorType": "None",
+                    "Phonemes": [
+                        {"Phoneme": "n", "AccuracyScore": 96.0},
+                        {"Phoneme": "i 3", "AccuracyScore": 94.0}
+                    ]
+                },
+                {
+                    "Word": "好",
+                    "AccuracyScore": 91.0,
+                    "ErrorType": "None",
+                    "Phonemes": [
+                        {"Phoneme": "h", "AccuracyScore": 92.0},
+                        {"Phoneme": "au 3", "AccuracyScore": 90.0}
+                    ]
+                }
+            ]
+        }]
+    }
+    merged = merge_azure_and_local_assessment("你好", "nǐ hǎo", local_evaluated, {"snr_db": 18.0}, mock_azure_success)
+    assert merged is not None
+    assert merged["status"] == "assessed"
+    assert merged["recognizedText"] == "你好"
+    assert merged["overallScore"] >= 85
+    assert merged["confidence"] == "HIGH"
+    assert "initialsFeedback" in merged["components"] and "94/100" in merged["components"]["initialsFeedback"]
+    assert "finalsFeedback" in merged["components"] and "92/100" in merged["components"]["finalsFeedback"]
+    assert "tonesFeedback" in merged["components"]
+    print("  [PASS] Hybrid Azure + Local Chao-5-Scale fusion populates recognizedText, initials, finals, and tones")
+
+    # 5. Mispronunciation guard (< 45 score -> SM-2 Rating 1 Requeue)
+    mock_azure_mispronounced = {
+        "RecognitionStatus": "Success",
+        "NBest": [{
+            "Confidence": 0.60,
+            "Display": "米号",
+            "AccuracyScore": 30.0,
+            "FluencyScore": 50.0,
+            "CompletenessScore": 0.0,
+            "PronScore": 32.0,
+            "Words": [
+                {"Word": "你", "AccuracyScore": 30.0, "ErrorType": "Mispronunciation", "Phonemes": []},
+                {"Word": "好", "AccuracyScore": 30.0, "ErrorType": "Mispronunciation", "Phonemes": []}
+            ]
+        }]
+    }
+    merged_low = merge_azure_and_local_assessment("你好", "nǐ hǎo", local_evaluated, {"snr_db": 15.0}, mock_azure_mispronounced)
+    assert merged_low is not None
+    assert merged_low["overallScore"] < 45, f"Expected < 45 for mispronounced word, got {merged_low['overallScore']}"
+    print("  [PASS] Mispronunciation guard caps score < 45 to trigger SM-2 Rating 1 (Requeue)")
 
 if __name__ == "__main__":
     test_sandhi_rules()
@@ -356,4 +467,5 @@ if __name__ == "__main__":
     test_unspaced_database_pinyin()
     test_f0_voiced_gate()
     test_async_endpoint()
+    test_azure_hybrid_assessor()
     print("\nALL SPEECH ENGINE TESTS PASSED SUCCESSFULLY! ✓")

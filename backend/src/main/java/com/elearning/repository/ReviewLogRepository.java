@@ -82,4 +82,127 @@ public interface ReviewLogRepository extends JpaRepository<ReviewLog, Long> {
      * @return true if review logs exist, false otherwise
      */
     boolean existsByItemTypeAndItemId(String itemType, Long itemId);
+
+    /**
+     * Finds the earliest review timestamp per distinct item ID for a user and item type.
+     * Used to determine when each vocabulary item was first learned without double-counting
+     * across subsequent review days, months, or quarters.
+     *
+     * @param user the user profile
+     * @param itemType polymorphic item type (e.g. "VOCABULARY")
+     * @return list of [itemId, firstReviewedAt] pairs
+     */
+    @Query("SELECT r.itemId, MIN(r.reviewedAt) FROM ReviewLog r " +
+           "WHERE r.user = :user AND r.itemType = :itemType " +
+           "GROUP BY r.itemId")
+    List<Object[]> findFirstReviewedAtByUserAndItemType(
+            @Param("user") UserProfile user,
+            @Param("itemType") String itemType);
+
+    /**
+     * Finds [itemId, reviewedAt] pairs for the user and item type within [start, end).
+     * Leverages idx_review_log_user_date (user_id, reviewed_at) for periodic aggregation.
+     *
+     * @param user the user profile
+     * @param itemType polymorphic item type (e.g. "VOCABULARY")
+     * @param start inclusive window start timestamp
+     * @param end exclusive window end timestamp
+     * @return list of [itemId, reviewedAt] pairs
+     */
+    @Query("SELECT r.itemId, r.reviewedAt, r.cardType FROM ReviewLog r " +
+           "WHERE r.user = :user AND r.itemType = :itemType " +
+           "  AND r.reviewedAt >= :start AND r.reviewedAt < :end")
+    List<Object[]> findItemReviewedAtInRange(
+            @Param("user") UserProfile user,
+            @Param("itemType") String itemType,
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end);
+
+    /**
+     * Finds the earliest review timestamp per distinct (itemType, itemId) across all study items
+     * (both VOCABULARY and RADICAL) for a user.
+     *
+     * @param user the user profile
+     * @return list of [itemType, itemId, firstReviewedAt] tuples
+     */
+    @Query("SELECT r.itemType, r.itemId, MIN(r.reviewedAt) FROM ReviewLog r " +
+           "WHERE r.user = :user " +
+           "GROUP BY r.itemType, r.itemId")
+    List<Object[]> findFirstReviewedAtByUser(@Param("user") UserProfile user);
+
+    /**
+     * Finds the earliest review timestamp per distinct (itemType, itemId) across all study items
+     * filtered by skill cardType.
+     *
+     * @param user the user profile
+     * @param cardType skill card type ("FLASHCARD", "READING", "LISTENING", "WRITING")
+     * @return list of [itemType, itemId, firstReviewedAt] tuples
+     */
+    @Query("SELECT r.itemType, r.itemId, MIN(r.reviewedAt) FROM ReviewLog r " +
+           "WHERE r.user = :user AND r.cardType = :cardType " +
+           "GROUP BY r.itemType, r.itemId")
+    List<Object[]> findFirstReviewedAtByUserAndCardType(
+            @Param("user") UserProfile user,
+            @Param("cardType") String cardType);
+
+    /**
+     * Finds [itemType, itemId, reviewedAt, cardType] tuples for the user within [start, end)
+     * across both VOCABULARY and RADICAL items.
+     */
+    @Query("SELECT r.itemType, r.itemId, r.reviewedAt, r.cardType FROM ReviewLog r " +
+           "WHERE r.user = :user " +
+           "  AND r.reviewedAt >= :start AND r.reviewedAt < :end")
+    List<Object[]> findActivityInRangeByUser(
+            @Param("user") UserProfile user,
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end);
+
+    /**
+     * Finds [itemType, itemId, reviewedAt, cardType] tuples for the user and skill cardType within [start, end).
+     */
+    @Query("SELECT r.itemType, r.itemId, r.reviewedAt, r.cardType FROM ReviewLog r " +
+           "WHERE r.user = :user AND r.cardType = :cardType " +
+           "  AND r.reviewedAt >= :start AND r.reviewedAt < :end")
+    List<Object[]> findActivityInRangeByUserAndCardType(
+            @Param("user") UserProfile user,
+            @Param("cardType") String cardType,
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end);
+
+    /**
+     * Finds the earliest review timestamp per distinct item ID for a specific skill cardType.
+     *
+     * @param user the user profile
+     * @param itemType polymorphic item type (e.g. "VOCABULARY")
+     * @param cardType skill card type ("FLASHCARD", "READING", "LISTENING", "WRITING")
+     * @return list of [itemId, firstReviewedAt] pairs
+     */
+    @Query("SELECT r.itemId, MIN(r.reviewedAt) FROM ReviewLog r " +
+           "WHERE r.user = :user AND r.itemType = :itemType AND r.cardType = :cardType " +
+           "GROUP BY r.itemId")
+    List<Object[]> findFirstReviewedAtByUserAndItemTypeAndCardType(
+            @Param("user") UserProfile user,
+            @Param("itemType") String itemType,
+            @Param("cardType") String cardType);
+
+    /**
+     * Finds [itemId, reviewedAt, cardType] pairs for the user, item type, and skill within [start, end).
+     * Leverages idx_review_log_user_skill_date (user_id, card_type, reviewed_at).
+     *
+     * @param user the user profile
+     * @param itemType polymorphic item type (e.g. "VOCABULARY")
+     * @param cardType skill card type ("FLASHCARD", "READING", "LISTENING", "WRITING")
+     * @param start inclusive window start timestamp
+     * @param end exclusive window end timestamp
+     * @return list of [itemId, reviewedAt, cardType] tuples
+     */
+    @Query("SELECT r.itemId, r.reviewedAt, r.cardType FROM ReviewLog r " +
+           "WHERE r.user = :user AND r.itemType = :itemType AND r.cardType = :cardType " +
+           "  AND r.reviewedAt >= :start AND r.reviewedAt < :end")
+    List<Object[]> findItemReviewedAtInRangeAndCardType(
+            @Param("user") UserProfile user,
+            @Param("itemType") String itemType,
+            @Param("cardType") String cardType,
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end);
 }

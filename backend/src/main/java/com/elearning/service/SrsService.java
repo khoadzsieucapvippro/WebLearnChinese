@@ -5,6 +5,7 @@ import com.elearning.dto.response.CurriculumProgressResponse;
 import com.elearning.dto.response.DueCardResponse;
 import com.elearning.dto.response.LessonSrsStatsResponse;
 import com.elearning.dto.response.StudyStatsResponse;
+import com.elearning.dto.response.VocabularyReportResponse;
 
 import java.util.List;
 
@@ -92,4 +93,29 @@ public interface SrsService {
      * @return {@link CurriculumProgressResponse} containing aggregated progress data
      */
     CurriculumProgressResponse getCurriculumProgress();
+
+    /**
+     * Retrieves vocabulary learning progress aggregated by day, month, or quarter
+     * for the authenticated learner.
+     *
+     * @param period  aggregation granularity ("day", "month", or "quarter")
+     * @param year    target calendar year for month/quarter views (defaults to current year)
+     * @param days    window size in days for day view (defaults to 14)
+     * @param endDate optional inclusive end date YYYY-MM-DD for day view (defaults to today)
+     * @return {@link VocabularyReportResponse} containing summary metrics and periodic buckets
+     */
+    VocabularyReportResponse getVocabularyReport(String period, Integer year, Integer days, String endDate);
+
+    /**
+     * Retrieves vocabulary learning progress aggregated by day, month, or quarter
+     * for the authenticated learner, optionally filtered by skill cardType.
+     *
+     * @param period   aggregation granularity ("day", "month", or "quarter")
+     * @param year     target calendar year for month/quarter views (defaults to current year)
+     * @param days     window size in days for day view (defaults to 14)
+     * @param endDate  optional inclusive end date YYYY-MM-DD for day view (defaults to today)
+     * @param cardType optional skill filter ("ALL", "FLASHCARD", "READING", "LISTENING", "WRITING")
+     * @return {@link VocabularyReportResponse} containing summary metrics and periodic buckets
+     */
+    VocabularyReportResponse getVocabularyReport(String period, Integer year, Integer days, String endDate, String cardType);
 }

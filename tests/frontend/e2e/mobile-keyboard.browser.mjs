@@ -50,69 +50,117 @@ function createMockRadicals() {
 }
 
 async function setupMockBackend(page, capturedReviews = []) {
-  await page.addInitScript(() => {
-    localStorage.setItem('access_token', 'test_mobile_learner_jwt');
+  const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');
+  const payload = Buffer.from(JSON.stringify({
+    sub: 'mobile_learner@example.com',
+    accountId: 3001,
+    roles: ['Learner'],
+    exp: Math.floor(Date.now() / 1000) + 3600
+  })).toString('base64url');
+  const validJwt = `${header}.${payload}.mockSignature`;
+
+  await page.addInitScript(({ token }) => {
+    localStorage.setItem('access_token', token);
     localStorage.setItem('user_info', JSON.stringify({
       accountId: 3001,
       emailOrPhone: 'mobile_learner@example.com',
       fullName: 'Học Viên Di Động',
       roles: ['Learner']
     }));
+  }, { token: validJwt });
+
+  await page.route(/cdn\.jsdelivr\.net/, async (route) => {
+    await route.abort('namenotresolved');
   });
 
-  await page.route('**/api/v1/radicals*', async (route) => {
+  // Single unified route handler for reliable dispatch
+  await page.route('**/api/v1/**', async (route) => {
     const url = route.request().url();
-    const match = url.match(/\/api\/v1\/radicals\/(\d+)/);
-    if (match) {
-      const id = parseInt(match[1], 10);
+    const method = route.request().method();
+
+    if (url.includes('/radicals/')) {
+      const match = url.match(/\/api\/v1\/radicals\/(\d+)/);
+      const id = match ? parseInt(match[1], 10) : 1;
       const found = createMockRadicals().find(r => r.radicalId === id) || createMockRadicals()[0];
-      await route.fulfill({
+      return route.fulfill({
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify({ code: 'SUCCESS', message: 'OK', data: found })
       });
-      return;
     }
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({
-        code: 'SUCCESS',
-        message: 'OK',
-        data: {
-          items: createMockRadicals(),
-          page: 0,
-          size: 50,
-          totalElements: 2,
-          totalPages: 1
-        }
-      })
-    });
-  });
 
-  await page.route('**/api/v1/srs/review*', async (route) => {
-    const postData = route.request().postDataJSON();
-    capturedReviews.push(postData);
-    await route.fulfill({
+    if (url.includes('/radicals')) {
+      return route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          code: 'SUCCESS',
+          message: 'OK',
+          data: {
+            items: createMockRadicals(),
+            page: 0,
+            size: 50,
+            totalElements: 2,
+            totalPages: 1
+          }
+        })
+      });
+    }
+
+    if (url.includes('/srs/review')) {
+      const postData = route.request().postDataJSON();
+      capturedReviews.push(postData);
+      return route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ code: 'SUCCESS', message: 'OK', data: {} })
+      });
+    }
+
+    if (url.includes('/srs/due')) {
+      return route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ code: 'SUCCESS', message: 'OK', data: [] })
+      });
+    }
+
+    if (url.includes('/notes')) {
+      return route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ code: 'SUCCESS', message: 'OK', data: { items: [], totalElements: 0 } })
+      });
+    }
+
+    if (url.includes('/srs/curriculum-progress')) {
+      return route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ code: 'SUCCESS', message: 'OK', data: { chapterProgress: {} } })
+      });
+    }
+
+    if (url.includes('/srs/settings')) {
+      return route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ code: 'SUCCESS', message: 'OK', data: { newCardsPerDay: 20 } })
+      });
+    }
+
+    if (url.includes('/lessons')) {
+      return route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ code: 'SUCCESS', message: 'OK', data: { items: [], totalElements: 0 } })
+      });
+    }
+
+    return route.fulfill({
       status: 200,
       contentType: 'application/json',
       body: JSON.stringify({ code: 'SUCCESS', message: 'OK', data: {} })
-    });
-  });
-
-  await page.route('**/api/v1/srs/due*', async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({ code: 'SUCCESS', message: 'OK', data: [] })
-    });
-  });
-
-  await page.route('**/api/v1/**/notes*', async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({ code: 'SUCCESS', message: 'OK', data: { items: [], totalElements: 0 } })
     });
   });
 }

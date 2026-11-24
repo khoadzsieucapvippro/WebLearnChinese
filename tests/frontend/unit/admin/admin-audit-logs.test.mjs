@@ -27,7 +27,8 @@ import {
   formatPayloadJson,
   buildQueryParams,
   calculatePagination,
-  generateAuditLogsCsv
+  generateAuditLogsCsv,
+  normalizeSingleActorRole
 } from '../../../../frontend/js/pages/admin-audit-logs-page.js';
 
 describe('Milestone M3 / Task 7.3 — Admin Audit Logs Pure Logic Unit Tests', () => {
@@ -291,6 +292,38 @@ describe('Milestone M3 / Task 7.3 — Admin Audit Logs Pure Logic Unit Tests', (
       const emptyLog = [{ logId: undefined, createdAt: null, actorEmail: null, actionType: null }];
       const csv = generateAuditLogsCsv(emptyLog);
       assert.ok(csv.includes('"—"'));
+    });
+  });
+
+  /* ---------------------------------------------------------------------------
+   * 9. normalizeSingleActorRole (Strict 1-Role Invariant & Unified Badge)
+   * --------------------------------------------------------------------------- */
+  describe('9. normalizeSingleActorRole', () => {
+    test('resolves multi-role Learner,Admin string to single authoritative Admin role', () => {
+      const res = normalizeSingleActorRole('Learner,Admin');
+      assert.strictEqual(res.role, 'Admin');
+      assert.strictEqual(res.label, 'Quản trị viên');
+      assert.strictEqual(res.badgeClass, 'badge-status badge-status-approved');
+    });
+
+    test('resolves array of roles ["Learner", "Admin"] to Admin', () => {
+      const res = normalizeSingleActorRole(['Learner', 'Admin']);
+      assert.strictEqual(res.role, 'Admin');
+      assert.strictEqual(res.label, 'Quản trị viên');
+    });
+
+    test('resolves Learner role correctly', () => {
+      const res = normalizeSingleActorRole('Learner');
+      assert.strictEqual(res.role, 'Learner');
+      assert.strictEqual(res.label, 'Học viên');
+      assert.strictEqual(res.badgeClass, 'badge-status badge-status-draft');
+    });
+
+    test('defaults to Admin gracefully for null or empty string', () => {
+      const res1 = normalizeSingleActorRole(null);
+      assert.strictEqual(res1.role, 'Admin');
+      const res2 = normalizeSingleActorRole('');
+      assert.strictEqual(res2.role, 'Admin');
     });
   });
 

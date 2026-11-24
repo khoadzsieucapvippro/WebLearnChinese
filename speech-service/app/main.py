@@ -11,6 +11,7 @@ from app.core.audio_gate import decode_audio_to_mono_16k, inspect_audio_quality
 from app.core.tone_sandhi import parse_target_syllables
 from app.core.pitch_tracker import extract_f0_contour, normalize_to_chao_scale, segment_and_interpolate_syllables
 from app.core.evaluator import score_syllable, generate_assessment_report
+from app.core.azure_assessor import assess_with_azure_hybrid, get_azure_config
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger("speech_service")
@@ -46,12 +47,15 @@ def verify_internal_token(x_internal_token: Optional[str] = Header(None, alias="
 
 @app.get("/health")
 def health_check():
+    _, azure_region, azure_configured = get_azure_config()
     return {
         "status": "READY",
-        "engine": "local-acoustic-f0-tone",
+        "engine": "hybrid-azure-neural-and-chao-5-scale" if azure_configured else "local-acoustic-f0-tone",
         "offline": True,
-        "model": "Chao-5-Scale Tone Sandhi Engine",
-        "asr": False,
+        "azureAiConfigured": azure_configured,
+        "azureRegion": azure_region if azure_configured else None,
+        "model": "Azure Neural Speech AI + Chao-5-Scale Tone Sandhi Engine" if azure_configured else "Chao-5-Scale Tone Sandhi Engine",
+        "asr": azure_configured,
         "version": "1.0.0"
     }
 
@@ -189,6 +193,17 @@ async def evaluate_reading(
         }
         evaluated_syllables.append(syl_data)
 
-    # 6. Assemble assessment report
+    # 6. Assemble assessment report (Hybrid Azure Neural AI + Local Chao 5-Scale Fallback)
+    hybrid_report = assess_with_azure_hybrid(
+        pcm=pcm,
+        sr=sr,
+        target_text=text,
+        target_pinyin=pinyin_str,
+        evaluated_syllables=evaluated_syllables,
+        audio_meta=quality
+    )
+    if hybrid_report is not None:
+        return JSONResponse(status_code=200, content=hybrid_report)
+
     report = generate_assessment_report(text, pinyin_str, evaluated_syllables, quality)
     return JSONResponse(status_code=200, content=report)

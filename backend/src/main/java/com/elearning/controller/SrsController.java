@@ -6,6 +6,7 @@ import com.elearning.dto.response.CurriculumProgressResponse;
 import com.elearning.dto.response.DueCardResponse;
 import com.elearning.dto.response.LessonSrsStatsResponse;
 import com.elearning.dto.response.StudyStatsResponse;
+import com.elearning.dto.response.VocabularyReportResponse;
 import com.elearning.service.SrsService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -207,5 +208,26 @@ public class SrsController {
     public ResponseEntity<ApiResponse<CurriculumProgressResponse>> getCurriculumProgress() {
         CurriculumProgressResponse progress = srsService.getCurriculumProgress();
         return ResponseEntity.ok(ApiResponse.success(progress));
+    }
+
+    /**
+     * Retrieves vocabulary learning report aggregated by day, month, or quarter
+     * for the authenticated learner.
+     *
+     * @param period  aggregation period ("day", "month", or "quarter")
+     * @param year    target year for month/quarter views
+     * @param days    number of days for day view (1..90)
+     * @param endDate optional inclusive end date (YYYY-MM-DD) for day view
+     * @return ApiResponse wrapping VocabularyReportResponse
+     */
+    @GetMapping("/vocabulary-report")
+    public ResponseEntity<ApiResponse<VocabularyReportResponse>> getVocabularyReport(
+            @RequestParam(name = "period", required = false, defaultValue = "day") String period,
+            @RequestParam(name = "year", required = false) Integer year,
+            @RequestParam(name = "days", required = false) Integer days,
+            @RequestParam(name = "endDate", required = false) String endDate,
+            @RequestParam(name = "cardType", required = false, defaultValue = "ALL") String cardType) {
+        VocabularyReportResponse report = srsService.getVocabularyReport(period, year, days, endDate, cardType);
+        return ResponseEntity.ok(ApiResponse.success(report));
     }
 }

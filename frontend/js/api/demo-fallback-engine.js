@@ -566,8 +566,9 @@ if (cleanPath === '/auth/logout' && method === 'POST') {
     }
 
     if (cleanPath === '/admin/radicals' && method === 'POST') {
+      const nextRadId = data.radicals.reduce((maxId, r) => Math.max(maxId, Number(r.radicalId) || 0), 0) + 1;
       const newRad = {
-        radicalId: data.radicals.length + 1,
+        radicalId: nextRadId,
         character: body.character || '',
         pinyin: body.pinyin || '',
         meaningHanViet: body.meaningHanViet || '',
@@ -632,7 +633,34 @@ if (cleanPath === '/auth/logout' && method === 'POST') {
       const totalElements = items.length;
       const totalPages = Math.ceil(totalElements / size) || 1;
       const start = page * size;
-      const paged = items.slice(start, start + size);
+      const paged = items.slice(start, start + size).map(v => {
+        if (Array.isArray(v.radicals) && v.radicals.length > 0) return v;
+        const rads = [];
+        const seen = new Set();
+        if (Array.isArray(v.radicalIds) && v.radicalIds.length > 0) {
+          for (const rid of v.radicalIds) {
+            const numId = Number(rid);
+            if (numId > 0 && !seen.has(numId)) {
+              seen.add(numId);
+              const rad = data.radicals.find(r => r.radicalId === numId);
+              if (rad) rads.push(rad);
+            }
+          }
+        } else if (v.hanzi && typeof v.hanzi === 'string') {
+          for (const ch of v.hanzi) {
+            const radIds = (typeof CHAR_TO_RADICALS_MAP !== 'undefined' && CHAR_TO_RADICALS_MAP[ch]) || (CHAR_TO_RADICAL_MAP && CHAR_TO_RADICAL_MAP[ch] ? [CHAR_TO_RADICAL_MAP[ch]] : []);
+            for (const rid of radIds) {
+              const numId = Number(rid);
+              if (numId > 0 && !seen.has(numId)) {
+                seen.add(numId);
+                const rad = data.radicals.find(r => r.radicalId === numId);
+                if (rad) rads.push(rad);
+              }
+            }
+          }
+        }
+        return { ...v, radicals: rads };
+      });
 
       return {
         items: paged,
@@ -722,8 +750,9 @@ if (cleanPath === '/auth/logout' && method === 'POST') {
     }
 
     if ((cleanPath === '/admin/vocabulary' || cleanPath === '/admin/vocabularies') && method === 'POST') {
+      const nextVocabId = data.vocabulary.reduce((maxId, v) => Math.max(maxId, Number(v.vocabId) || 0), 0) + 1;
       const newVocab = {
-        vocabId: data.vocabulary.length + 1,
+        vocabId: nextVocabId,
         hanzi: body.hanzi || '',
         pinyin: body.pinyin || '',
         pinyinRaw: body.pinyinRaw || '',
@@ -946,7 +975,7 @@ if (cleanPath === '/auth/logout' && method === 'POST') {
       return lesson;
     }
 
-    if (cleanPath === '/creator/lessons/import' && method === 'POST') {
+    if ((cleanPath === '/creator/lessons/import' || cleanPath === '/admin/lessons/import') && method === 'POST') {
       const samplePreview = data.vocabulary.slice(0, 5).map((v, idx) => ({
         ...v,
         rowNumber: idx + 2,
@@ -961,17 +990,17 @@ if (cleanPath === '/auth/logout' && method === 'POST') {
       };
     }
 
-    if (cleanPath === '/creator/lessons/import/confirm' && method === 'POST') {
+    if ((cleanPath === '/creator/lessons/import/confirm' || cleanPath === '/admin/lessons/import/confirm') && method === 'POST') {
       const newLesson = {
         lessonId: data.lessons.length + 101,
         title: body?.title || 'Bài học nhập từ Excel',
         description: body?.description || 'Bài học được tạo tự động từ tệp Excel.',
         level: 1,
-        status: 'Draft',
+        status: 'Approved',
         orderIndex: data.lessons.length + 1,
         vocabularyCount: 5,
-        creatorName: 'Tác Giả Khóa Học',
-        creatorEmail: 'creator@gmail.com',
+        creatorName: 'Quản Trị Viên',
+        creatorEmail: 'admin@gmail.com',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         vocabularies: data.vocabulary.slice(0, 5).map((v, i) => ({ ...v, orderIndex: i + 1 }))
@@ -1006,24 +1035,129 @@ if (cleanPath === '/auth/logout' && method === 'POST') {
       };
     }
 
+    if (cleanPath === '/admin/lessons' && method === 'POST') {
+      const nextLessonId = data.lessons.reduce((maxId, l) => Math.max(maxId, Number(l.lessonId) || 0), 100) + 1;
+      const initialVocabs = [];
+      if (Array.isArray(body?.vocabularyIds)) {
+        body.vocabularyIds.forEach((vid, idx) => {
+          const vocabItem = data.vocabulary.find(v => v.vocabId === Number(vid));
+          if (vocabItem && !initialVocabs.some(v => v.vocabId === vocabItem.vocabId)) {
+            initialVocabs.push({ ...vocabItem, orderIndex: idx + 1 });
+          }
+        });
+      }
+      const newLesson = {
+        lessonId: nextLessonId,
+        title: body?.title || 'Bài học mới',
+        description: body?.description || '',
+        level: body?.level ? parseInt(body.level, 10) : 1,
+        status: 'Approved',
+        orderIndex: data.lessons.length + 1,
+        vocabularyCount: initialVocabs.length,
+        creatorName: 'Quản Trị Viên',
+        creatorEmail: 'admin@gmail.com',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        vocabularies: initialVocabs
+      };
+      data.lessons.push(newLesson);
+      this.saveData();
+      return newLesson;
+    }
+
     // -------------------------------------------------------------------------
     const adminLessonDetailMatch = cleanPath.match(/^\/admin\/lessons\/(\d+)$/);
-    if (adminLessonDetailMatch && method === 'GET') {
+    if (adminLessonDetailMatch) {
       const id = parseInt(adminLessonDetailMatch[1], 10);
       const lesson = data.lessons.find(l => l.lessonId === id);
-      if (!lesson) throw new ApiError(`Không tìm thấy bài học ${id}`, 404, 'NOT_FOUND');
-      return {
-        lessonId: lesson.lessonId,
-        title: lesson.title,
-        status: lesson.status,
-        rejectionReason: lesson.rejectionReason || null,
-        vocabularyCount: lesson.vocabularies ? lesson.vocabularies.length : (lesson.vocabularyCount || 0),
-        vocabularies: lesson.vocabularies || [],
-        createdAt: lesson.createdAt || new Date().toISOString(),
-        updatedAt: lesson.updatedAt || new Date().toISOString(),
-        creatorId: lesson.creatorId || 2,
-        creatorName: lesson.creatorName || 'Tác Giả'
-      };
+      if (method === 'GET') {
+        if (!lesson) throw new ApiError(`Không tìm thấy bài học ${id}`, 404, 'NOT_FOUND');
+        return {
+          lessonId: lesson.lessonId,
+          title: lesson.title,
+          status: lesson.status,
+          rejectionReason: lesson.rejectionReason || null,
+          vocabularyCount: lesson.vocabularies ? lesson.vocabularies.length : (lesson.vocabularyCount || 0),
+          vocabularies: lesson.vocabularies || [],
+          createdAt: lesson.createdAt || new Date().toISOString(),
+          updatedAt: lesson.updatedAt || new Date().toISOString(),
+          creatorId: lesson.creatorId || 4,
+          creatorName: lesson.creatorName || 'Quản Trị Viên'
+        };
+      }
+      if (method === 'PUT') {
+        if (!lesson) throw new ApiError(`Không tìm thấy bài học ${id}`, 404, 'NOT_FOUND');
+        if (body?.title) lesson.title = body.title;
+        if (body?.description) lesson.description = body.description;
+        lesson.updatedAt = new Date().toISOString();
+        this.saveData();
+        return lesson;
+      }
+      if (method === 'DELETE') {
+        if (!lesson) throw new ApiError(`Không tìm thấy bài học ${id}`, 404, 'NOT_FOUND');
+        const idx = data.lessons.findIndex(l => l.lessonId === id);
+        if (idx >= 0) {
+          data.lessons.splice(idx, 1);
+          this.saveData();
+        }
+        return null;
+      }
+    }
+
+    const adminLessonVocabMatch = cleanPath.match(/^\/admin\/lessons\/(\d+)\/vocabularies\/(\d+)$/);
+    if (adminLessonVocabMatch) {
+      const lessonId = parseInt(adminLessonVocabMatch[1], 10);
+      const vocabId = parseInt(adminLessonVocabMatch[2], 10);
+      const lesson = data.lessons.find(l => l.lessonId === lessonId);
+      if (!lesson) throw new ApiError(`Không tìm thấy bài học ${lessonId}`, 404, 'NOT_FOUND');
+      if (!Array.isArray(lesson.vocabularies)) {
+        lesson.vocabularies = [];
+      }
+      if (method === 'POST') {
+        const vocabItem = data.vocabulary.find(v => v.vocabId === vocabId);
+        if (vocabItem && !lesson.vocabularies.some(v => v.vocabId === vocabId)) {
+          lesson.vocabularies.push({
+            ...vocabItem,
+            orderIndex: lesson.vocabularies.length + 1
+          });
+          lesson.vocabularyCount = lesson.vocabularies.length;
+          lesson.updatedAt = new Date().toISOString();
+          this.saveData();
+        }
+        return lesson;
+      }
+      if (method === 'DELETE') {
+        lesson.vocabularies = lesson.vocabularies.filter(v => v.vocabId !== vocabId);
+        lesson.vocabularies.forEach((v, idx) => { v.orderIndex = idx + 1; });
+        lesson.vocabularyCount = lesson.vocabularies.length;
+        lesson.updatedAt = new Date().toISOString();
+        this.saveData();
+        return lesson;
+      }
+    }
+
+    const adminReorderMatch = cleanPath.match(/^\/admin\/lessons\/(\d+)\/reorder$/);
+    if (adminReorderMatch && (method === 'PUT' || method === 'POST')) {
+      const lessonId = parseInt(adminReorderMatch[1], 10);
+      const lesson = data.lessons.find(l => l.lessonId === lessonId);
+      const ids = body?.orderedVocabularyIds || body?.orderedVocabIds;
+      if (lesson && Array.isArray(ids)) {
+        const idMap = new Map((lesson.vocabularies || []).map(v => [v.vocabId, v]));
+        const reordered = [];
+        ids.forEach((vid, idx) => {
+          const item = idMap.get(Number(vid));
+          if (item) {
+            item.orderIndex = idx + 1;
+            reordered.push(item);
+          }
+        });
+        lesson.vocabularies = reordered;
+        lesson.vocabularyCount = lesson.vocabularies.length;
+        lesson.updatedAt = new Date().toISOString();
+        this.saveData();
+        return lesson;
+      }
+      return lesson;
     }
 
     const adminRevokeMatch = cleanPath.match(/^\/admin\/lessons\/(\d+)\/revoke$/);
@@ -1368,6 +1502,235 @@ if (cleanPath === '/auth/logout' && method === 'POST') {
         totalLearnedRadicals: learnedRadicalIds.length,
         learnedVocabIds,
         learnedRadicalIds
+      };
+    }
+
+    if (cleanPath === '/srs/vocabulary-report' && method === 'GET') {
+      const now = new Date();
+      const pad2 = (n) => String(n).padStart(2, '0');
+      const toIsoDate = (d) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+      const period = ['day', 'month', 'quarter'].includes((query.period || '').toLowerCase())
+        ? query.period.toLowerCase()
+        : 'day';
+      const rawCardType = (query.cardType || 'ALL').toUpperCase();
+      const cardType = ['ALL', 'FLASHCARD', 'READING', 'LISTENING', 'WRITING'].includes(rawCardType)
+        ? rawCardType
+        : 'ALL';
+      const filterBySkill = cardType !== 'ALL';
+      const targetYear = Number.isInteger(Number(query.year)) && Number(query.year) >= 2000
+        ? Number(query.year)
+        : now.getFullYear();
+      const targetDays = Number.isInteger(Number(query.days)) && Number(query.days) >= 1 && Number(query.days) <= 90
+        ? Number(query.days)
+        : 14;
+
+      const todayStr = toIsoDate(now);
+      const currentMonth = now.getMonth() + 1;
+      const currentYear = now.getFullYear();
+      const currentQuarter = Math.floor((currentMonth - 1) / 3) + 1;
+      const prevMonthDate = new Date(currentYear, currentMonth - 2, 1);
+      const prevMonthKey = `${prevMonthDate.getFullYear()}-${pad2(prevMonthDate.getMonth() + 1)}`;
+      const currentMonthKey = `${currentYear}-${pad2(currentMonth)}`;
+      const currentQuarterKey = `${currentYear}-Q${currentQuarter}`;
+
+      const firstDateByItem = new Map();
+      const reviews = Array.isArray(data.srsReviews) ? data.srsReviews : [];
+      reviews.forEach((r) => {
+        if (!r) return;
+        const rType = (r.itemType || 'VOCABULARY').toUpperCase();
+        if (rType !== 'VOCABULARY' && rType !== 'RADICAL') return;
+        const rSkill = (r.cardType || 'FLASHCARD').toUpperCase();
+        if (filterBySkill && rSkill !== cardType) return;
+        const id = Number(r.itemId ?? r.vocabId ?? r.radicalId);
+        if (!id) return;
+        const compositeKey = `${rType}:${id}`;
+        const dt = r.reviewedAt ? new Date(r.reviewedAt) : now;
+        if (Number.isNaN(dt.getTime())) return;
+        const prev = firstDateByItem.get(compositeKey);
+        if (!prev || dt < prev) firstDateByItem.set(compositeKey, dt);
+      });
+
+      // Include already-learned seed cards that don't yet have explicit log entries
+      const seedCards = Array.isArray(data.srsCards) ? data.srsCards : [];
+      const fallbackSeedDate = new Date('2026-11-20T08:00:00.000Z');
+      seedCards.forEach((c) => {
+        if (!c) return;
+        const cType = (c.itemType || 'VOCABULARY').toUpperCase();
+        if (cType !== 'VOCABULARY' && cType !== 'RADICAL') return;
+        if (c.isNew && !(c.repetitions > 0)) return;
+        const cSkill = (c.cardType || 'FLASHCARD').toUpperCase();
+        if (filterBySkill && cSkill !== cardType) return;
+        const id = Number(c.vocabId ?? c.radicalId ?? c.itemId);
+        const compositeKey = `${cType}:${id}`;
+        if (id && !firstDateByItem.has(compositeKey)) {
+          const parsedDue = c.nextReviewAt ? new Date(c.nextReviewAt) : null;
+          const seedDt = (parsedDue && !Number.isNaN(parsedDue.getTime()) && parsedDue < now)
+            ? parsedDue
+            : fallbackSeedDate;
+          firstDateByItem.set(compositeKey, seedDt);
+        }
+      });
+
+      const dowNames = ['Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
+      const bucketMap = new Map();
+      if (period === 'day') {
+        for (let i = targetDays - 1; i >= 0; i--) {
+          const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+          const key = toIsoDate(d);
+          bucketMap.set(key, {
+            key,
+            label: `${pad2(d.getDate())}/${pad2(d.getMonth() + 1)}`,
+            fullLabel: `${dowNames[d.getDay()]}, ${pad2(d.getDate())}/${pad2(d.getMonth() + 1)}/${d.getFullYear()}`,
+            newWordsCount: 0,
+            reviewedSet: new Set(),
+            skillSets: {
+              FLASHCARD: new Set(),
+              READING: new Set(),
+              LISTENING: new Set(),
+              WRITING: new Set()
+            },
+            reviewActionsCount: 0,
+            current: key === todayStr
+          });
+        }
+      } else if (period === 'month') {
+        for (let m = 1; m <= 12; m++) {
+          const key = `${targetYear}-${pad2(m)}`;
+          bucketMap.set(key, {
+            key,
+            label: `T${m}`,
+            fullLabel: `Tháng ${m}/${targetYear}`,
+            newWordsCount: 0,
+            reviewedSet: new Set(),
+            skillSets: {
+              FLASHCARD: new Set(),
+              READING: new Set(),
+              LISTENING: new Set(),
+              WRITING: new Set()
+            },
+            reviewActionsCount: 0,
+            current: targetYear === currentYear && m === currentMonth
+          });
+        }
+      } else {
+        for (let q = 1; q <= 4; q++) {
+          const key = `${targetYear}-Q${q}`;
+          bucketMap.set(key, {
+            key,
+            label: `Quý ${q}`,
+            fullLabel: `Quý ${q}/${targetYear} (T${(q - 1) * 3 + 1}–T${q * 3})`,
+            newWordsCount: 0,
+            reviewedSet: new Set(),
+            skillSets: {
+              FLASHCARD: new Set(),
+              READING: new Set(),
+              LISTENING: new Set(),
+              WRITING: new Set()
+            },
+            reviewActionsCount: 0,
+            current: targetYear === currentYear && q === currentQuarter
+          });
+        }
+      }
+
+      const keyForDate = (d) => {
+        if (period === 'day') return toIsoDate(d);
+        if (d.getFullYear() !== targetYear) return null;
+        if (period === 'month') return `${targetYear}-${pad2(d.getMonth() + 1)}`;
+        return `${targetYear}-Q${Math.floor(d.getMonth() / 3) + 1}`;
+      };
+
+      let todayNewCount = 0;
+      let monthNewCount = 0;
+      let previousMonthNewCount = 0;
+      let quarterNewCount = 0;
+      const yearsSet = new Set([currentYear, targetYear]);
+
+      firstDateByItem.forEach((dt) => {
+        yearsSet.add(dt.getFullYear());
+        const dStr = toIsoDate(dt);
+        const mKey = `${dt.getFullYear()}-${pad2(dt.getMonth() + 1)}`;
+        const qKey = `${dt.getFullYear()}-Q${Math.floor(dt.getMonth() / 3) + 1}`;
+        if (dStr === todayStr) todayNewCount++;
+        if (mKey === currentMonthKey) monthNewCount++;
+        if (mKey === prevMonthKey) previousMonthNewCount++;
+        if (qKey === currentQuarterKey) quarterNewCount++;
+
+        const bKey = keyForDate(dt);
+        if (bKey && bucketMap.has(bKey)) {
+          bucketMap.get(bKey).newWordsCount++;
+        }
+      });
+
+      const todayReviewedSet = new Set();
+      const monthReviewedSet = new Set();
+      const quarterReviewedSet = new Set();
+      reviews.forEach((r) => {
+        if (!r) return;
+        const rType = (r.itemType || 'VOCABULARY').toUpperCase();
+        if (rType !== 'VOCABULARY' && rType !== 'RADICAL') return;
+        const rSkill = (r.cardType || 'FLASHCARD').toUpperCase();
+        if (filterBySkill && rSkill !== cardType) return;
+        const id = Number(r.itemId ?? r.vocabId ?? r.radicalId);
+        if (!id) return;
+        const compositeKey = `${rType}:${id}`;
+        const dt = r.reviewedAt ? new Date(r.reviewedAt) : now;
+        if (Number.isNaN(dt.getTime())) return;
+        const dStr = toIsoDate(dt);
+        const mKey = `${dt.getFullYear()}-${pad2(dt.getMonth() + 1)}`;
+        const qKey = `${dt.getFullYear()}-Q${Math.floor(dt.getMonth() / 3) + 1}`;
+        if (dStr === todayStr) todayReviewedSet.add(compositeKey);
+        if (mKey === currentMonthKey) monthReviewedSet.add(compositeKey);
+        if (qKey === currentQuarterKey) quarterReviewedSet.add(compositeKey);
+
+        const bKey = keyForDate(dt);
+        if (bKey && bucketMap.has(bKey)) {
+          const b = bucketMap.get(bKey);
+          b.reviewedSet.add(compositeKey);
+          b.reviewActionsCount++;
+          if (b.skillSets[rSkill]) {
+            b.skillSets[rSkill].add(compositeKey);
+          }
+        }
+      });
+
+      const buckets = Array.from(bucketMap.values()).map((b) => ({
+        key: b.key,
+        label: b.label,
+        fullLabel: b.fullLabel,
+        newWordsCount: b.newWordsCount,
+        reviewedWordsCount: b.reviewedSet.size,
+        reviewActionsCount: b.reviewActionsCount,
+        current: b.current,
+        skillReviewedCounts: {
+          FLASHCARD: b.skillSets.FLASHCARD.size,
+          READING: b.skillSets.READING.size,
+          LISTENING: b.skillSets.LISTENING.size,
+          WRITING: b.skillSets.WRITING.size
+        }
+      }));
+
+      return {
+        period,
+        cardType,
+        year: targetYear,
+        days: targetDays,
+        endDate: todayStr,
+        dailyGoal: data.srsSettings?.newCardsPerDay || 20,
+        summary: {
+          todayNewCount,
+          todayReviewedCount: todayReviewedSet.size,
+          monthNewCount,
+          monthReviewedCount: monthReviewedSet.size,
+          previousMonthNewCount,
+          quarterNewCount,
+          quarterReviewedCount: quarterReviewedSet.size,
+          totalLearnedVocab: firstDateByItem.size,
+          totalSystemVocab: (Array.isArray(data.vocabularies) ? data.vocabularies.length : 1000)
+            + (Array.isArray(data.radicals) ? data.radicals.length : 214)
+        },
+        buckets,
+        availableYears: Array.from(yearsSet).sort((a, b) => b - a)
       };
     }
 

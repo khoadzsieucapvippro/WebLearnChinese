@@ -273,7 +273,7 @@ public class SrsMultiSkillServiceTests {
     }
 
     @Test
-    @DisplayName("getStudyStats includes cardsDueReading alongside listening and writing counts")
+    @DisplayName("getStudyStats includes all skill counts across both VOCABULARY and RADICAL cards")
     void testGetStudyStats_includesCardsDueReading() {
         when(userProfileRepository.findByAccountEmailOrPhone("learner@test.com"))
                 .thenReturn(Optional.of(testUserProfile));
@@ -282,13 +282,15 @@ public class SrsMultiSkillServiceTests {
         when(userSrsSettingRepository.findByUser(testUserProfile)).thenReturn(Optional.of(setting));
 
         when(cardProgressRepository.countByUserAndNextReviewAtLessThanEqual(eq(testUserProfile), any(LocalDateTime.class)))
-                .thenReturn(15L);
-        when(cardProgressRepository.countByUserAndItemTypeAndCardTypeAndNextReviewAtLessThanEqual(eq(testUserProfile), eq("VOCABULARY"), eq("LISTENING"), any(LocalDateTime.class)))
+                .thenReturn(19L);
+        when(cardProgressRepository.countByUserAndCardTypeAndNextReviewAtLessThanEqual(eq(testUserProfile), eq("LISTENING"), any(LocalDateTime.class)))
                 .thenReturn(5L);
-        when(cardProgressRepository.countByUserAndItemTypeAndCardTypeAndNextReviewAtLessThanEqual(eq(testUserProfile), eq("VOCABULARY"), eq("WRITING"), any(LocalDateTime.class)))
+        when(cardProgressRepository.countByUserAndCardTypeAndNextReviewAtLessThanEqual(eq(testUserProfile), eq("WRITING"), any(LocalDateTime.class)))
                 .thenReturn(4L);
-        when(cardProgressRepository.countByUserAndItemTypeAndCardTypeAndNextReviewAtLessThanEqual(eq(testUserProfile), eq("VOCABULARY"), eq("READING"), any(LocalDateTime.class)))
+        when(cardProgressRepository.countByUserAndCardTypeAndNextReviewAtLessThanEqual(eq(testUserProfile), eq("READING"), any(LocalDateTime.class)))
                 .thenReturn(6L);
+        when(cardProgressRepository.countByUserAndCardTypeAndNextReviewAtLessThanEqual(eq(testUserProfile), eq("FLASHCARD"), any(LocalDateTime.class)))
+                .thenReturn(4L);
 
         when(reviewLogRepository.countByUserAndReviewedAtGreaterThanEqual(eq(testUserProfile), any(LocalDateTime.class)))
                 .thenReturn(10L);
@@ -297,10 +299,11 @@ public class SrsMultiSkillServiceTests {
 
         StudyStatsResponse stats = srsService.getStudyStats();
 
-        assertThat(stats.getCardsDue()).isEqualTo(15L);
+        assertThat(stats.getCardsDue()).isEqualTo(19L);
         assertThat(stats.getCardsDueListening()).isEqualTo(5L);
         assertThat(stats.getCardsDueWriting()).isEqualTo(4L);
         assertThat(stats.getCardsDueReading()).isEqualTo(6L);
+        assertThat(stats.getCardsDueFlashcard()).isEqualTo(4L);
         assertThat(stats.getReviewsToday()).isEqualTo(10L);
         assertThat(stats.getNewCardsLimit()).isEqualTo(20);
         assertThat(stats.getMaxReviewLimit()).isEqualTo(100);

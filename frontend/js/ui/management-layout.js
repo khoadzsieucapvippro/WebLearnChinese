@@ -89,23 +89,9 @@ export function getVisibleManagementSections(roles = []) {
  */
 export const MANAGEMENT_NAV_CONFIG = [
   {
-    id: 'overview',
-    title: 'Tổng Quan',
-    requiredRole: ['Admin', 'Creator', 'Moderator'],
-    items: [
-      {
-        id: 'navMgmtHub',
-        label: 'Trung tâm quản lý',
-        href: 'management.html',
-        icon: '🏠',
-        matchPages: ['management.html']
-      }
-    ]
-  },
-  {
     id: 'creator',
     title: 'Tác Giả (Creator Studio)',
-    requiredRole: ['Admin', 'Creator'],
+    requiredRole: ['Creator'],
     items: [
       {
         id: 'navMgmtCreatorLessons',
@@ -126,7 +112,7 @@ export const MANAGEMENT_NAV_CONFIG = [
   {
     id: 'moderation',
     title: 'Kiểm Duyệt (Moderation)',
-    requiredRole: ['Admin', 'Moderator'],
+    requiredRole: ['Moderator'],
     items: [
       {
         id: 'navMgmtModeratorQueue',
@@ -146,9 +132,23 @@ export const MANAGEMENT_NAV_CONFIG = [
   },
   {
     id: 'admin',
-    title: 'Quản Trị Hệ Thống',
+    title: '',
     requiredRole: ['Admin'],
     items: [
+      {
+        id: 'navMgmtAdminDashboard',
+        label: 'Tổng quan hệ thống',
+        href: 'management.html',
+        icon: '📊',
+        matchPages: ['management.html', 'admin-dashboard.html']
+      },
+      {
+        id: 'navMgmtAdminLessons',
+        label: 'Quản lý & Đẩy bài học',
+        href: 'admin-lessons.html',
+        icon: '📚',
+        matchPages: ['admin-lessons.html']
+      },
       {
         id: 'navMgmtAdminAccounts',
         label: 'Quản trị tài khoản',
@@ -162,13 +162,6 @@ export const MANAGEMENT_NAV_CONFIG = [
         href: 'admin-roles.html',
         icon: '🛡️',
         matchPages: ['admin-roles.html']
-      },
-      {
-        id: 'navMgmtAdminLessons',
-        label: 'Giám sát bài học',
-        href: 'admin-lessons.html',
-        icon: '📚',
-        matchPages: ['admin-lessons.html']
       },
       {
         id: 'navMgmtAdminRadicals',
@@ -191,13 +184,21 @@ export const MANAGEMENT_NAV_CONFIG = [
         icon: '📋',
         matchPages: ['admin-audit-logs.html']
       }
+      // Note: navMgmtAdminSettings ('⚙️ Cài đặt hệ thống', 'admin-settings.html') is temporarily hidden per user request:
+      // {
+      //   id: 'navMgmtAdminSettings',
+      //   label: 'Cài đặt hệ thống',
+      //   href: 'admin-settings.html',
+      //   icon: '⚙️',
+      //   matchPages: ['admin-settings.html']
+      // }
     ]
   }
 ];
 
 /**
  * Resolves current pathname to active management route, mapping detail sub-pages
- * (e.g. creator-lesson-editor.html, moderator-review.html) to their parent navigation item.
+ * (e.g. creator-lesson-editor.html, moderator-review.html, admin-dashboard.html, management.html) to their parent navigation item.
  * 
  * @param {string} [currentPath='']
  * @returns {string}
@@ -215,6 +216,9 @@ export function getActiveManagementRoute(currentPath = '') {
   }
   if (page === 'moderator-review.html') {
     return 'moderator-queue.html';
+  }
+  if (page === 'admin-dashboard.html' || page === 'management.html') {
+    return 'management.html';
   }
   return page;
 }
@@ -238,10 +242,9 @@ export function getVisibleManagementNavConfig(roles = []) {
   }
 
   return MANAGEMENT_NAV_CONFIG.filter(section => {
-    if (section.id === 'overview') return true;
-    if (section.id === 'creator') return isAdmin || isCreator;
-    if (section.id === 'moderation') return isAdmin || isModerator;
     if (section.id === 'admin') return isAdmin;
+    if (section.id === 'creator') return isCreator && !isAdmin;
+    if (section.id === 'moderation') return isModerator && !isAdmin;
     return false;
   });
 }
@@ -277,50 +280,58 @@ export function renderManagementSidebar(navContainer, roles = [], currentPath = 
 
   // Render navigation groups
   sections.forEach(sec => {
-    const groupEl = createSafeElement('div', {
-      className: 'management-nav-group mb-3',
-      attrs: { 'data-group-id': sec.id },
-      children: [
+    const groupChildren = [];
+    if (sec.title && sec.title.trim()) {
+      groupChildren.push(
         createSafeElement('div', {
           className: 'management-nav-heading text-uppercase small fw-bold px-3 py-1 text-secondary',
           text: sec.title
-        }),
-        createSafeElement('ul', {
-          className: 'management-nav-list list-unstyled mb-0',
-          children: sec.items.map(item => {
-            const isActive = item.matchPages.includes(effectiveRoute) || item.href === effectiveRoute;
-            const linkAttrs = {
-              href: item.href,
-              id: item.id,
-              className: `management-nav-link d-flex align-items-center gap-2 px-3 py-2 text-decoration-none rounded-2${isActive ? ' active' : ''}`
-            };
-            if (isActive) {
-              linkAttrs['aria-current'] = 'page';
-            }
-
-            return createSafeElement('li', {
-              className: 'management-nav-item mb-1',
-              children: [
-                createSafeElement('a', {
-                  className: linkAttrs.className,
-                  attrs: linkAttrs,
-                  children: [
-                    createSafeElement('span', {
-                      className: 'management-nav-icon',
-                      text: item.icon,
-                      attrs: { 'aria-hidden': 'true' }
-                    }),
-                    createSafeElement('span', {
-                      className: 'management-nav-text flex-grow-1',
-                      text: item.label
-                    })
-                  ]
-                })
-              ]
-            });
-          })
         })
-      ]
+      );
+    }
+
+    groupChildren.push(
+      createSafeElement('ul', {
+        className: 'management-nav-list list-unstyled mb-0',
+        children: sec.items.map(item => {
+          const isActive = item.matchPages.includes(effectiveRoute) || item.href === effectiveRoute;
+          const linkAttrs = {
+            href: item.href,
+            id: item.id,
+            className: `management-nav-link d-flex align-items-center gap-2 px-3 py-2 text-decoration-none rounded-2${isActive ? ' active' : ''}`
+          };
+          if (isActive) {
+            linkAttrs['aria-current'] = 'page';
+          }
+
+          return createSafeElement('li', {
+            className: 'management-nav-item mb-1',
+            children: [
+              createSafeElement('a', {
+                className: linkAttrs.className,
+                attrs: linkAttrs,
+                children: [
+                  createSafeElement('span', {
+                    className: 'management-nav-icon',
+                    text: item.icon,
+                    attrs: { 'aria-hidden': 'true' }
+                  }),
+                  createSafeElement('span', {
+                    className: 'management-nav-text flex-grow-1',
+                    text: item.label
+                  })
+                ]
+              })
+            ]
+          });
+        })
+      })
+    );
+
+    const groupEl = createSafeElement('div', {
+      className: 'management-nav-group mb-3',
+      attrs: { 'data-group-id': sec.id },
+      children: groupChildren
     });
 
     navContainer.appendChild(groupEl);

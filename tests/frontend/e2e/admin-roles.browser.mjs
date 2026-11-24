@@ -148,9 +148,9 @@ describe('Browser E2E: Admin Role Management & Assignment UI (Task 9F.2)', () =>
       const heading = page.getByRole('heading', { level: 1, name: /Quản Trị Phân Quyền Vai Trò/i });
       await heading.waitFor({ state: 'visible', timeout: 5000 });
 
-      // 2. Role catalog section
-      const catalogHeading = page.getByRole('heading', { level: 2, name: /Danh Mục Vai Trò Hệ Thống/i });
-      await catalogHeading.waitFor({ state: 'visible' });
+      // 2. Role catalog section removed per user requirement
+      const catalogCard = page.locator('#roleCatalogCard');
+      assert.strictEqual(await catalogCard.count(), 0);
 
       // 3. Wait for accounts table rows to render
       await page.waitForSelector('#accountsTableBody tr', { timeout: 5000 });
@@ -198,17 +198,9 @@ describe('Browser E2E: Admin Role Management & Assignment UI (Task 9F.2)', () =>
 
       await page.goto(`${baseUrl}/admin-roles.html`);
 
-      // Wait for catalog items to render
-      await page.waitForSelector('#roleCatalogContainer strong', { timeout: 5000 });
-
-      // Verify all 4 roles appear with their ID badges and titles
-      for (const r of roles) {
-        const roleCard = page.locator('#roleCatalogContainer').getByText(r.roleName, { exact: true });
-        await roleCard.waitFor({ state: 'visible' });
-
-        const idBadgeCount = await page.locator('#roleCatalogContainer').getByText(`#${r.roleId}`).count();
-        assert.strictEqual(idBadgeCount, 0, `#${r.roleId} badge must be removed from role catalog`);
-      }
+      // Role catalog overview card was removed per user requirement; verify absence
+      const catalogContainer = page.locator('#roleCatalogContainer');
+      assert.strictEqual(await catalogContainer.count(), 0);
 
       assert.deepStrictEqual(getRuntimeErrors(), []);
     } finally {

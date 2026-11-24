@@ -755,12 +755,12 @@ export class AdminRadicalsPageController {
     // Update Result Count Badge
     if (this.elements.resultCount) {
       if (this.activeSearchQuery.trim().length > 0) {
-        this.elements.resultCount.textContent = `Khớp ${totalFiltered} / ${totalAll} bộ thủ`;
+        this.elements.resultCount.textContent = `${totalFiltered} / ${totalAll} bộ thủ`;
         this.elements.resultCount.className = totalFiltered > 0
           ? 'badge-status badge-status-active text-nowrap'
           : 'badge-status badge-status-pending text-nowrap';
       } else {
-        this.elements.resultCount.textContent = `Tổng cộng: ${totalAll} bộ thủ`;
+        this.elements.resultCount.textContent = `${totalAll} bộ thủ`;
         this.elements.resultCount.className = 'badge-status badge-status-draft text-nowrap';
       }
     }

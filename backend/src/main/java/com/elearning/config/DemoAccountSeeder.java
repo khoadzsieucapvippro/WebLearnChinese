@@ -27,7 +27,7 @@ import java.util.Set;
 /**
  * Seeds and reconciles standard demo accounts for Cloud environments (Railway/Render)
  * when app.demo.seed-accounts=true.
- * Ensures Learner, Creator, Moderator, and Admin accounts and their aliases exist
+ * Ensures Learner and Admin accounts and their aliases exist
  * with encoded credentials, assigned roles, UserProfile, and default UserSrsSetting.
  */
 @Component

@@ -94,11 +94,11 @@ class AdminRoleServiceTests {
             when(accountRepository.findByIdForUpdate(5L)).thenReturn(Optional.of(testAccount));
             when(accountRepository.save(any(Account.class))).thenAnswer(i -> i.getArgument(0));
 
-            UpdateAccountRolesRequest request = new UpdateAccountRolesRequest(List.of("Learner", "Creator"));
+            UpdateAccountRolesRequest request = new UpdateAccountRolesRequest(List.of("Creator"));
             AccountResponse response = adminRoleService.updateAccountRoles(5L, request, "admin@example.com");
 
             assertThat(response).isNotNull();
-            assertThat(response.getRoles()).containsExactlyInAnyOrder("Learner", "Creator");
+            assertThat(response.getRoles()).containsExactly("Creator");
             assertThat(testAccount.getAuthorizationVersion()).isEqualTo(2L);
             verify(accountRepository).save(testAccount);
         }

@@ -18,13 +18,36 @@
 
 import { apiClient, ApiError } from '../api/api.js';
 import { authManager } from '../auth/auth-state.js';
-import { initNavbarAuth } from '../ui/nav.js';
+import { initNavbarAuth, getRoleLabel, getRoleBadgeClass, getPrimaryRole } from '../ui/nav.js';
 import { createSafeElement, clearContainer } from '../ui/security.js';
 import { setComponentState, showToast } from '../ui/ui.js';
 
 /* -----------------------------------------------------------------------------
  * 1. PURE LOGIC & UTILITY HELPERS (Exported for Unit Tests)
  * ----------------------------------------------------------------------------- */
+
+/**
+ * Normalizes raw actor roles into a single primary role object.
+ * Enforces strict single-role invariant, preventing messy multi-role labels like 'Learner,Admin'.
+ *
+ * @param {string|string[]|null|undefined} rawRoles
+ * @returns {{ role: string, label: string, badgeClass: string }}
+ */
+export function normalizeSingleActorRole(rawRoles) {
+  if (!rawRoles) {
+    return { role: 'Admin', label: 'Quản trị viên', badgeClass: 'badge-status badge-status-approved' };
+  }
+  let rolesArr = [];
+  if (Array.isArray(rawRoles)) {
+    rolesArr = rawRoles;
+  } else if (typeof rawRoles === 'string') {
+    rolesArr = rawRoles.split(/[,;\s]+/).map(r => r.trim()).filter(Boolean);
+  }
+  const primary = getPrimaryRole(rolesArr);
+  const label = primary === 'Admin' ? 'Quản trị viên' : getRoleLabel(primary);
+  const badgeClass = getRoleBadgeClass(primary);
+  return { role: primary, label, badgeClass };
+}
 
 /**
  * Checks whether the current user has administrative authority.
@@ -525,9 +548,10 @@ function renderAuditLogsTable(items) {
     actorStrong.textContent = item.actorUsername || 'SYSTEM';
     tdActor.appendChild(actorStrong);
     if (item.actorRoles) {
-      const roleSmall = createSafeElement('span', { class: 'text-muted small' });
-      roleSmall.textContent = item.actorRoles;
-      tdActor.appendChild(roleSmall);
+      const singleRole = normalizeSingleActorRole(item.actorRoles);
+      const roleBadge = createSafeElement('span', { class: `${singleRole.badgeClass} small` });
+      roleBadge.textContent = singleRole.label;
+      tdActor.appendChild(roleBadge);
     }
     tr.appendChild(tdActor);
 
@@ -600,7 +624,16 @@ export async function openDetailModal(logId) {
 
     setFieldText('detailLogId', data.logId);
     setFieldText('detailActorUsername', data.actorUsername || 'SYSTEM');
-    setFieldText('detailActorRoles', data.actorRoles || '—');
+
+    const actorRolesEl = document.getElementById('detailActorRoles');
+    if (actorRolesEl) {
+      clearContainer(actorRolesEl);
+      const singleRole = normalizeSingleActorRole(data.actorRoles);
+      const roleBadge = createSafeElement('span', { class: `${singleRole.badgeClass} small` });
+      roleBadge.textContent = singleRole.label;
+      actorRolesEl.appendChild(roleBadge);
+    }
+
     setFieldText('detailActionType', data.actionType || '—');
     setFieldText('detailResourceInfo', `${data.resourceType || '—'} (ID: ${data.resourceId || '—'})`);
     setFieldText('detailStatus', data.status || 'SUCCESS');

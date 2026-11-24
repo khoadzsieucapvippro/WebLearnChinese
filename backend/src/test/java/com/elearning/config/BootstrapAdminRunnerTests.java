@@ -61,7 +61,6 @@ class BootstrapAdminRunnerTests {
 
     private void mockStandardRoles() {
         when(roleRepository.findById(4)).thenReturn(Optional.of(adminRole));
-        when(roleRepository.findById(1)).thenReturn(Optional.of(learnerRole));
     }
 
     @Nested
@@ -128,7 +127,7 @@ class BootstrapAdminRunnerTests {
             assertThat(saved.getAuthorizationVersion()).isEqualTo(1L);
 
             Set<String> roleNames = saved.getRoles().stream().map(Role::getRoleName).collect(Collectors.toSet());
-            assertThat(roleNames).containsExactlyInAnyOrder("Admin", "Learner");
+            assertThat(roleNames).containsExactly("Admin");
 
             ArgumentCaptor<UserProfile> profileCaptor = ArgumentCaptor.forClass(UserProfile.class);
             verify(userProfileRepository).save(profileCaptor.capture());
@@ -207,7 +206,7 @@ class BootstrapAdminRunnerTests {
             assertThat(existingAccount.getStatus()).isEqualTo("Active");
             assertThat(existingAccount.getPasswordHash()).isEqualTo("$2a$10$newRebootHash");
             Set<String> roles = existingAccount.getRoles().stream().map(Role::getRoleName).collect(Collectors.toSet());
-            assertThat(roles).containsExactlyInAnyOrder("Admin", "Learner");
+            assertThat(roles).containsExactly("Admin");
 
             // SRS setting was already present, so save should not be called
             verify(userSrsSettingRepository, never()).save(any(UserSrsSetting.class));
@@ -221,12 +220,11 @@ class BootstrapAdminRunnerTests {
     class RoleProvisioningTests {
 
         @Test
-        @DisplayName("GIVEN roles not in DB WHEN runner executes THEN creates missing Admin and Learner roles")
+        @DisplayName("GIVEN roles not in DB WHEN runner executes THEN creates missing Admin role")
         void testRun_missingRoles_createsRoles() {
             when(accountRepository.countActiveAdmins()).thenReturn(0L);
             when(roleRepository.findById(anyInt())).thenReturn(Optional.empty());
             when(roleRepository.findByRoleName("Admin")).thenReturn(Optional.empty());
-            when(roleRepository.findByRoleName("Learner")).thenReturn(Optional.empty());
             when(roleRepository.save(any(Role.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
             when(passwordEncoder.encode(anyString())).thenReturn("$2a$10$encoded");
@@ -240,9 +238,8 @@ class BootstrapAdminRunnerTests {
             bootstrapAdminRunner.run(null);
 
             ArgumentCaptor<Role> roleCaptor = ArgumentCaptor.forClass(Role.class);
-            verify(roleRepository, times(2)).save(roleCaptor.capture());
-            assertThat(roleCaptor.getAllValues().stream().map(Role::getRoleName).toList())
-                    .containsExactly("Admin", "Learner");
+            verify(roleRepository, times(1)).save(roleCaptor.capture());
+            assertThat(roleCaptor.getValue().getRoleName()).isEqualTo("Admin");
         }
     }
 }

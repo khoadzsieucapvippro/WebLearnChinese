@@ -121,9 +121,10 @@ describe('Management Workspace Layout & Navigation Isolation', () => {
 
   describe('1. Route Resolution: getActiveManagementRoute', () => {
 
-    test('resolves management.html as root hub', () => {
+    test('resolves management.html, admin-dashboard.html and empty path to management.html', () => {
       assert.strictEqual(getActiveManagementRoute('management.html'), 'management.html');
       assert.strictEqual(getActiveManagementRoute('/management.html'), 'management.html');
+      assert.strictEqual(getActiveManagementRoute('admin-dashboard.html'), 'management.html');
       assert.strictEqual(getActiveManagementRoute(''), 'management.html');
     });
 
@@ -148,7 +149,8 @@ describe('Management Workspace Layout & Navigation Isolation', () => {
         'admin-lessons.html',
         'admin-radicals.html',
         'admin-vocabulary.html',
-        'admin-audit-logs.html'
+        'admin-audit-logs.html',
+        'admin-settings.html'
       ];
 
       for (const route of directRoutes) {
@@ -160,28 +162,43 @@ describe('Management Workspace Layout & Navigation Isolation', () => {
 
   describe('2. Role-Gated Navigation Visibility: getVisibleManagementNavConfig', () => {
 
-    test('Admin role receives all 4 domain groups: Overview, Creator, Moderation, Admin', () => {
+    test('Admin role receives Admin group with 7 items (settings temporarily hidden)', () => {
       const sections = getVisibleManagementNavConfig(['Admin']);
       const sectionIds = sections.map(s => s.id);
-      assert.deepStrictEqual(sectionIds, ['overview', 'creator', 'moderation', 'admin']);
+      assert.deepStrictEqual(sectionIds, ['admin']);
+      assert.strictEqual(sections[0].items.length, 7);
+
+      const expectedItemIds = [
+        'navMgmtAdminDashboard',
+        'navMgmtAdminLessons',
+        'navMgmtAdminAccounts',
+        'navMgmtAdminRoles',
+        'navMgmtAdminRadicals',
+        'navMgmtAdminVocabulary',
+        'navMgmtAdminAuditLogs'
+      ];
+      assert.deepStrictEqual(sections[0].items.map(i => i.id), expectedItemIds);
+      assert.strictEqual(sections[0].items.some(i => i.id === 'navMgmtAdminSettings'), false);
     });
 
-    test('Creator role receives only Overview and Creator groups', () => {
+    test('Admin with secondary roles (Admin + Creator) receives strictly the 7 admin items', () => {
+      const sections = getVisibleManagementNavConfig(['Admin', 'Creator']);
+      const sectionIds = sections.map(s => s.id);
+      assert.deepStrictEqual(sectionIds, ['admin']);
+      assert.strictEqual(sections[0].items.length, 7);
+      assert.strictEqual(sections[0].items.some(i => i.id === 'navMgmtAdminSettings'), false);
+    });
+
+    test('Creator role receives Creator group', () => {
       const sections = getVisibleManagementNavConfig(['Creator']);
       const sectionIds = sections.map(s => s.id);
-      assert.deepStrictEqual(sectionIds, ['overview', 'creator']);
+      assert.deepStrictEqual(sectionIds, ['creator']);
     });
 
-    test('Moderator role receives only Overview and Moderation groups', () => {
+    test('Moderator role receives Moderation group', () => {
       const sections = getVisibleManagementNavConfig(['Moderator']);
       const sectionIds = sections.map(s => s.id);
-      assert.deepStrictEqual(sectionIds, ['overview', 'moderation']);
-    });
-
-    test('Dual Creator + Moderator receives Overview, Creator, and Moderation (no Admin)', () => {
-      const sections = getVisibleManagementNavConfig(['Creator', 'Moderator']);
-      const sectionIds = sections.map(s => s.id);
-      assert.deepStrictEqual(sectionIds, ['overview', 'creator', 'moderation']);
+      assert.deepStrictEqual(sectionIds, ['moderation']);
     });
 
     test('Learner role receives empty navigation configuration', () => {
@@ -245,28 +262,68 @@ describe('Management Workspace Layout & Navigation Isolation', () => {
       globalThis.Node = originalNode;
     });
 
+    test('renders role-gated sidebar and assigns active state on management.html (Overview item active, Lessons NOT active)', () => {
+      const container = new MockElement('div');
+      renderManagementSidebar(container, ['Admin'], 'management.html');
+
+      const allLinks = container.querySelectorAll('a');
+      assert.strictEqual(allLinks.length, 7, 'Admin sidebar must render exactly 7 items');
+      assert.strictEqual(container.querySelector('#navMgmtAdminSettings'), null);
+
+      const dashboardLink = container.querySelector('#navMgmtAdminDashboard');
+      assert.ok(dashboardLink, 'Admin Dashboard/Overview link must exist');
+      assert.strictEqual(dashboardLink.getAttribute('aria-current'), 'page');
+      assert.ok(dashboardLink.classList.contains('active'));
+
+      const lessonsLink = container.querySelector('#navMgmtAdminLessons');
+      assert.ok(lessonsLink, 'Admin Lessons link must exist');
+      assert.strictEqual(lessonsLink.getAttribute('aria-current'), null);
+      assert.strictEqual(lessonsLink.classList.contains('active'), false);
+    });
+
+    test('renders role-gated sidebar and assigns active state on admin-lessons.html', () => {
+      const container = new MockElement('div');
+      renderManagementSidebar(container, ['Admin'], 'admin-lessons.html');
+
+      const allLinks = container.querySelectorAll('a');
+      assert.strictEqual(allLinks.length, 7, 'Admin sidebar must render exactly 7 items');
+      assert.strictEqual(container.querySelector('#navMgmtAdminSettings'), null);
+
+      const lessonsLink = container.querySelector('#navMgmtAdminLessons');
+      assert.ok(lessonsLink, 'Admin Lessons link must exist');
+      assert.strictEqual(lessonsLink.getAttribute('aria-current'), 'page');
+      assert.ok(lessonsLink.classList.contains('active'));
+
+      const dashboardLink = container.querySelector('#navMgmtAdminDashboard');
+      assert.ok(dashboardLink, 'Admin Dashboard link must exist');
+      assert.strictEqual(dashboardLink.getAttribute('aria-current'), null);
+      assert.strictEqual(dashboardLink.classList.contains('active'), false);
+    });
+
+    test('confirms admin-settings.html is temporarily hidden from active admin sidebar', () => {
+      const container = new MockElement('div');
+      renderManagementSidebar(container, ['Admin'], 'admin-settings.html');
+
+      const settingsLink = container.querySelector('#navMgmtAdminSettings');
+      assert.strictEqual(settingsLink, null, 'Admin Settings link should be temporarily hidden');
+
+      const allLinks = container.querySelectorAll('a');
+      assert.strictEqual(allLinks.length, 7, 'Admin sidebar must still render the remaining 7 active items');
+      const activeLinks = allLinks.filter(a => a.getAttribute('aria-current') === 'page');
+      assert.strictEqual(activeLinks.length, 0, 'No links should have aria-current on unlisted settings page');
+    });
+
     test('renders role-gated sidebar and assigns active state on creator-lessons.html', () => {
       const container = new MockElement('div');
       renderManagementSidebar(container, ['Creator'], 'creator-lessons.html');
 
-      // Check Creator Lessons item is active
       const creatorLink = container.querySelector('#navMgmtCreatorLessons');
       assert.ok(creatorLink, 'Creator Lessons link must exist');
       assert.strictEqual(creatorLink.getAttribute('aria-current'), 'page');
       assert.ok(creatorLink.classList.contains('active'));
 
-      // Check Hub item is NOT active
-      const hubLink = container.querySelector('#navMgmtHub');
-      assert.ok(hubLink, 'Hub link must exist');
-      assert.strictEqual(hubLink.getAttribute('aria-current'), null);
-
-      // Check Admin section does not exist for Creator
       const adminLink = container.querySelector('#navMgmtAdminAccounts');
       assert.strictEqual(adminLink, null, 'Admin links must not exist for Creator session');
-
-      // Invariant: Learner space shortcut must NOT leak into management sidebar
-      const exitLink = container.querySelector('#navMgmtLearnerShortcut');
-      assert.strictEqual(exitLink, null, 'Shortcut to learner space must NOT exist in management sidebar');
     });
 
     test('detail page creator-lesson-editor.html activates parent creator-lessons.html nav item', () => {

@@ -103,21 +103,13 @@
               Xem danh sách, tìm kiếm theo email/SĐT/họ tên, lọc và cập nhật trạng thái hoạt động của người dùng trong hệ thống.
             </p>
           </div>
-
-          <!-- Controls: Result Count -->
-          <div class="d-flex align-items-center flex-wrap gap-2">
-            <span id="accountResultCountBadge" class="badge-status badge-status-draft text-nowrap" aria-live="polite">
-              Đang tải...
-            </span>
-          </div>
         </div>
 
         <!-- Filter & Search Toolbar Card -->
         <div class="card-chinese p-3 mb-4" id="accountToolbarCard">
           <div class="row g-3 align-items-end">
-            <!-- Search Query Input -->
             <!-- Search Input -->
-            <div class="col-12 col-md-6 col-lg-6">
+            <div class="col-12 col-md-5 col-lg-5">
               <label for="accountSearchInput" class="form-label small fw-semibold text-secondary mb-1">
                 Tìm kiếm tài khoản
               </label>
@@ -133,7 +125,7 @@
             </div>
 
             <!-- Status Filter Select -->
-            <div class="col-12 col-md-6 col-lg-6">
+            <div class="col-12 col-md-4 col-lg-4">
               <label for="statusFilterSelect" class="form-label small fw-semibold text-secondary mb-1">
                 Lọc trạng thái
               </label>
@@ -143,6 +135,13 @@
                 <option value="Inactive">Tạm khóa (Inactive)</option>
                 <option value="Banned">Bị cấm (Banned)</option>
               </select>
+            </div>
+
+            <!-- Controls: Result Count -->
+            <div class="col-12 col-md-3 col-lg-3 text-md-end">
+              <span id="accountResultCountBadge" class="badge-status badge-status-draft text-nowrap d-inline-block" aria-live="polite">
+                Đang tải...
+              </span>
             </div>
           </div>
         </div>

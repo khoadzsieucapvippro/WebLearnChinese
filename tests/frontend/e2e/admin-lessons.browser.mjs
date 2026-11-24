@@ -1,17 +1,20 @@
 /**
  * =============================================================================
- * BROWSER E2E TEST SUITE: ADMIN LESSON OVERSIGHT UI (TASK 9F.5)
+ * BROWSER E2E TEST SUITE: ADMIN LESSON MANAGEMENT UI
  * File: tests/frontend/e2e/admin-lessons.browser.mjs
  *
  * Scenarios:
- * - AL-01: Admin opens the page and sees overview, 5 KPI cards, filter buttons, and semantic table.
- * - AL-02: Lesson list loads using GET /api/v1/admin/lessons and renders semantic table rows.
- * - AL-03: Status filter changes the request (GET ?status=...&page=0) and updates displayed list.
- * - AL-04: Global status counts reflect server totalElements, NOT current-page row count.
- * - AL-05: Supported detail status (Approved -> /lessons/{id}) opens read-only detail modal.
- * - AL-06: Unsupported status (Draft/Rejected) displays truthful backend contract limitation.
- * - AL-07: Non-Admin access is blocked by role guard.
- * - AL-08: Zero lesson mutation requests issued by the page (Strict Read-Only Verification).
+ * - AL-01: Admin opens the page and sees header with badge "61 bài học" on top right,
+ *          buttons "📊 Nhập từ Excel" & "＋ Tạo bài học mới", and 5-column semantic table.
+ * - AL-02: Lesson list loads via GET /api/v1/admin/lessons and renders 5 columns with Sửa/Xóa.
+ * - AL-03: Search toolbar filters lessons by title or ID and clears search.
+ * - AL-04: Header badge reflects total lessons count and is styled with badge-status-draft.
+ * - AL-05: Clicking "Sửa" opens unified #lessonFormModal in edit mode, loads details & vocabs.
+ * - AL-06: Clicking "＋ Tạo bài học mới" opens #lessonFormModal in create mode and submits.
+ * - AL-07: Non-Admin session (Learner) is blocked by role guard.
+ * - AL-08: Clicking "📊 Nhập từ Excel" opens #importExcelModal.
+ * - AL-09: Clicking "Xóa" opens #deleteLessonModal and confirms deletion via DELETE.
+ * - AL-10: Verifies clean layout (no breadcrumbs, no tabs, no pageSizeSelect dropdown).
  * =============================================================================
  */
 
@@ -81,7 +84,7 @@ async function setupLearnerSession(page) {
   `);
 }
 
-describe('Browser E2E: Admin Lesson Oversight UI (Task 9F.5)', () => {
+describe('Browser E2E: Admin Lesson Management UI', () => {
   let serverHandle;
   let browser;
   let baseUrl;
@@ -98,9 +101,9 @@ describe('Browser E2E: Admin Lesson Oversight UI (Task 9F.5)', () => {
   });
 
   /* ---------------------------------------------------------------------------
-   * AL-01: Admin opens page and sees overview / table / KPI cards
+   * AL-01: Admin opens page and sees header with badge on top right, buttons, and 5-column table
    * --------------------------------------------------------------------------- */
-  test('AL-01: Admin opens admin-lessons.html and sees complete overview shell', async () => {
+  test('AL-01: Admin opens admin-lessons.html and sees header buttons, badge and 5-column table', async () => {
     const { page, context, getRuntimeErrors } = await createMonitoredPage(browser, {
       viewportWidth: 1280,
       viewportHeight: 720
@@ -110,37 +113,6 @@ describe('Browser E2E: Admin Lesson Oversight UI (Task 9F.5)', () => {
       await setupAdminSession(page);
 
       await page.route(/\/api\/v1\/admin\/lessons(\?.*)?$/, async (route) => {
-        const url = new URL(route.request().url());
-        const status = url.searchParams.get('status');
-        const size = parseInt(url.searchParams.get('size') || '20', 10);
-
-        if (size === 1) {
-          let total = 42;
-          if (status === 'Draft') total = 5;
-          else if (status === 'Pending') total = 8;
-          else if (status === 'Approved') total = 24;
-          else if (status === 'Rejected') total = 5;
-
-          return route.fulfill({
-            status: 200,
-            contentType: 'application/json',
-            body: JSON.stringify({
-              code: 'SUCCESS',
-              status: 'SUCCESS',
-              message: 'OK',
-              data: {
-                items: [],
-                page: 0,
-                size: 1,
-                totalElements: total,
-                totalPages: total,
-                first: true,
-                last: false
-              }
-            })
-          });
-        }
-
         return route.fulfill({
           status: 200,
           contentType: 'application/json',
@@ -167,30 +139,38 @@ describe('Browser E2E: Admin Lesson Oversight UI (Task 9F.5)', () => {
       const h1 = page.locator('h1');
       await h1.waitFor({ state: 'visible', timeout: 5000 });
       assert.strictEqual(await h1.count(), 1);
-      assert.ok((await h1.textContent()).includes('Giám Sát Bài Học'));
+      assert.ok((await h1.textContent()).includes('Bài Học Hệ Thống'));
 
-      // Verify clean layout (no repeated tabs per clean UI spec)
+      // Verify clean layout (no repeated tabs)
       assert.strictEqual(await page.locator('.moderator-nav-tabs').count(), 0);
 
-      // Verify 5 KPI summary cards exist
-      assert.ok(await page.locator('#kpiCountTotal').isVisible());
-      assert.ok(await page.locator('#kpiCountDraft').isVisible());
-      assert.ok(await page.locator('#kpiCountPending').isVisible());
-      assert.ok(await page.locator('#kpiCountApproved').isVisible());
-      assert.ok(await page.locator('#kpiCountRejected').isVisible());
+      // Verify header count badge exists and is styled with badge-status-draft
+      const badge = page.locator('#lessonResultCount');
+      await badge.waitFor({ state: 'visible', timeout: 5000 });
+      assert.ok(await badge.isVisible());
 
-      // Verify filter group
-      assert.ok(await page.locator('#filterStatusAll').isVisible());
-      assert.ok(await page.locator('#filterStatusDraft').isVisible());
-      assert.ok(await page.locator('#filterStatusPending').isVisible());
-      assert.ok(await page.locator('#filterStatusApproved').isVisible());
-      assert.ok(await page.locator('#filterStatusRejected').isVisible());
+      // Verify header action buttons: "📊 Nhập từ Excel" and "＋ Tạo bài học mới"
+      const btnImport = page.locator('#btnOpenImportLessonModal');
+      await btnImport.waitFor({ state: 'visible', timeout: 5000 });
+      assert.ok(await btnImport.isVisible());
 
-      // Verify table structure
+      const btnCreate = page.locator('#btnOpenCreateLessonModal');
+      await btnCreate.waitFor({ state: 'visible', timeout: 5000 });
+      assert.ok(await btnCreate.isVisible());
+
+      // Verify old ↻ Làm mới is removed
+      assert.strictEqual(await page.locator('#btnRefreshKpi').count(), 0);
+
+      // Verify search toolbar card exists
+      assert.ok(await page.locator('#lessonToolbarCard').isVisible());
+      assert.ok(await page.locator('#lessonSearchInput').isVisible());
+      assert.ok(await page.locator('#btnLessonSearch').isVisible());
+
+      // Verify table structure has 5 columns (ID, Tên bài học, Số từ vựng, Cập nhật, Thao tác)
       const table = page.locator('#lessonTable');
       await table.waitFor({ state: 'visible', timeout: 5000 });
       assert.strictEqual(await table.locator('caption').count(), 1);
-      assert.strictEqual(await table.locator('thead th[scope="col"]').count(), 6);
+      assert.strictEqual(await table.locator('thead th[scope="col"]').count(), 5);
 
       // Verify table rows rendered
       const rows = page.locator('#lessonTableBody tr');
@@ -205,9 +185,9 @@ describe('Browser E2E: Admin Lesson Oversight UI (Task 9F.5)', () => {
   });
 
   /* ---------------------------------------------------------------------------
-   * AL-02: Lesson list loads using GET /api/v1/admin/lessons
+   * AL-02: Lesson list loads using GET /api/v1/admin/lessons and renders semantic rows
    * --------------------------------------------------------------------------- */
-  test('AL-02: Lesson list loads via GET /api/v1/admin/lessons and renders semantic rows', async () => {
+  test('AL-02: Lesson list loads via GET /api/v1/admin/lessons and renders 5 columns with Sửa and Xóa buttons', async () => {
     const { page, context, getRuntimeErrors } = await createMonitoredPage(browser, {
       viewportWidth: 1280,
       viewportHeight: 720
@@ -218,12 +198,7 @@ describe('Browser E2E: Admin Lesson Oversight UI (Task 9F.5)', () => {
       let listRequestedUrl = '';
 
       await page.route(/\/api\/v1\/admin\/lessons(\?.*)?$/, async (route) => {
-        const url = new URL(route.request().url());
-        const size = url.searchParams.get('size');
-        if (size !== '1') {
-          listRequestedUrl = route.request().url();
-        }
-
+        listRequestedUrl = route.request().url();
         return route.fulfill({
           status: 200,
           contentType: 'application/json',
@@ -253,15 +228,19 @@ describe('Browser E2E: Admin Lesson Oversight UI (Task 9F.5)', () => {
 
       // Verify first row content
       const firstRow = rows.first();
-      assert.ok((await firstRow.textContent()).includes('Bài 1: Chào hỏi cơ bản'));
-      assert.ok((await firstRow.textContent()).includes('Đã duyệt'));
-      assert.ok((await firstRow.textContent()).includes('15 từ'));
+      const firstRowText = await firstRow.textContent();
+      assert.ok(firstRowText.includes('#101'));
+      assert.ok(firstRowText.includes('Bài 1: Chào hỏi cơ bản'));
+      assert.ok(firstRowText.includes('15 từ'));
+      assert.ok(firstRowText.includes('Sửa'));
+      assert.ok(firstRowText.includes('Xóa'));
+
+      // Verify action buttons exist in btn-group
+      assert.ok(await firstRow.locator('.btn-edit-lesson').isVisible());
+      assert.ok(await firstRow.locator('.btn-delete-lesson').isVisible());
 
       // Verify URL did not include fake creatorId or search parameter
       assert.ok(listRequestedUrl.includes('/api/v1/admin/lessons'));
-      assert.strictEqual(listRequestedUrl.includes('creatorId'), false);
-      assert.strictEqual(listRequestedUrl.includes('keyword'), false);
-      assert.strictEqual(listRequestedUrl.includes('search'), false);
 
       const errors = getRuntimeErrors();
       assert.strictEqual(errors.length, 0, `Runtime errors: ${JSON.stringify(errors)}`);
@@ -271,9 +250,9 @@ describe('Browser E2E: Admin Lesson Oversight UI (Task 9F.5)', () => {
   });
 
   /* ---------------------------------------------------------------------------
-   * AL-03: Status filter changes the request and displayed list
+   * AL-03: Search toolbar filters lessons by title and ID
    * --------------------------------------------------------------------------- */
-  test('AL-03: Status filter changes request query and resets page to 0', async () => {
+  test('AL-03: Search toolbar filters lessons by title or ID and clears search', async () => {
     const { page, context, getRuntimeErrors } = await createMonitoredPage(browser, {
       viewportWidth: 1280,
       viewportHeight: 720
@@ -281,21 +260,9 @@ describe('Browser E2E: Admin Lesson Oversight UI (Task 9F.5)', () => {
 
     try {
       await setupAdminSession(page);
-      const capturedStatusQueries = [];
+      const mockLessons = createMockLessons();
 
       await page.route(/\/api\/v1\/admin\/lessons(\?.*)?$/, async (route) => {
-        const url = new URL(route.request().url());
-        const statusParam = url.searchParams.get('status');
-        const size = url.searchParams.get('size');
-
-        if (size !== '1') {
-          capturedStatusQueries.push(statusParam);
-        }
-
-        const mockData = statusParam === 'Pending'
-          ? [createMockLessons()[1]]
-          : createMockLessons();
-
         return route.fulfill({
           status: 200,
           contentType: 'application/json',
@@ -304,10 +271,10 @@ describe('Browser E2E: Admin Lesson Oversight UI (Task 9F.5)', () => {
             status: 'SUCCESS',
             message: 'OK',
             data: {
-              items: mockData,
+              items: mockLessons,
               page: 0,
               size: 20,
-              totalElements: mockData.length,
+              totalElements: mockLessons.length,
               totalPages: 1,
               first: true,
               last: true
@@ -319,34 +286,25 @@ describe('Browser E2E: Admin Lesson Oversight UI (Task 9F.5)', () => {
       await page.goto(`${baseUrl}/admin-lessons.html`, { waitUntil: 'domcontentloaded' });
       await page.locator('#lessonTableBody tr').first().waitFor({ state: 'visible', timeout: 5000 });
 
-      // Click 'Chờ duyệt' filter button
-      const btnPending = page.locator('#filterStatusPending');
-      const [responsePending] = await Promise.all([
-        page.waitForResponse(resp => resp.url().includes('/api/v1/admin/lessons') && resp.url().includes('status=Pending')),
-        btnPending.click()
-      ]);
-      assert.ok(responsePending.ok());
-
-      // Verify pending filter was requested
-      assert.ok(capturedStatusQueries.includes('Pending'));
-
-      // Verify table now shows only the Pending row
+      // Verify all 4 mock lessons initially rendered
       const rows = page.locator('#lessonTableBody tr');
-      await rows.first().waitFor({ state: 'visible', timeout: 5000 });
+      assert.strictEqual(await rows.count(), 4);
+
+      // Search for "Gia đình"
+      await page.fill('#lessonSearchInput', 'Gia đình');
+      await page.click('#btnLessonSearch');
+      await page.waitForTimeout(300);
+
+      // Table should now only show 1 lesson
       assert.strictEqual(await rows.count(), 1);
-      assert.ok((await rows.first().textContent()).includes('Bài 2: Gia đình và Nghề nghiệp'));
-      assert.ok((await rows.first().textContent()).includes('Chờ duyệt'));
+      assert.ok((await rows.first().textContent()).includes('Gia đình'));
 
-      // Click 'Tất cả' filter button
-      const btnAll = page.locator('#filterStatusAll');
-      const [responseAll] = await Promise.all([
-        page.waitForResponse(resp => resp.url().includes('/api/v1/admin/lessons') && !resp.url().includes('status=')),
-        btnAll.click()
-      ]);
-      assert.ok(responseAll.ok());
+      // Clear search
+      await page.click('#btnLessonClearSearch');
+      await page.waitForTimeout(300);
 
-      // Verify status was omitted for 'All'
-      assert.ok(capturedStatusQueries.includes(null));
+      // All 4 lessons should be restored
+      assert.strictEqual(await rows.count(), 4);
 
       const errors = getRuntimeErrors();
       assert.strictEqual(errors.length, 0, `Runtime errors: ${JSON.stringify(errors)}`);
@@ -356,9 +314,9 @@ describe('Browser E2E: Admin Lesson Oversight UI (Task 9F.5)', () => {
   });
 
   /* ---------------------------------------------------------------------------
-   * AL-04: Global status counts reflect server totalElements, NOT current page
+   * AL-04: Header badge reflects total lessons count and is styled with badge-status-draft
    * --------------------------------------------------------------------------- */
-  test('AL-04: Global status counts reflect server totalElements and are not derived from row count', async () => {
+  test('AL-04: Header badge reflects total lessons count and is styled with badge-status-draft', async () => {
     const { page, context, getRuntimeErrors } = await createMonitoredPage(browser, {
       viewportWidth: 1280,
       viewportHeight: 720
@@ -366,41 +324,9 @@ describe('Browser E2E: Admin Lesson Oversight UI (Task 9F.5)', () => {
 
     try {
       await setupAdminSession(page);
+      const mockLessons = createMockLessons();
 
       await page.route(/\/api\/v1\/admin\/lessons(\?.*)?$/, async (route) => {
-        const url = new URL(route.request().url());
-        const status = url.searchParams.get('status');
-        const size = url.searchParams.get('size');
-
-        // Server returns small slice (1 item on page), but server totalElements is much larger!
-        if (size === '1') {
-          let totalElements = 150;
-          if (status === 'Draft') totalElements = 20;
-          else if (status === 'Pending') totalElements = 15;
-          else if (status === 'Approved') totalElements = 100;
-          else if (status === 'Rejected') totalElements = 15;
-
-          return route.fulfill({
-            status: 200,
-            contentType: 'application/json',
-            body: JSON.stringify({
-              code: 'SUCCESS',
-              status: 'SUCCESS',
-              message: 'OK',
-              data: {
-                items: [],
-                page: 0,
-                size: 1,
-                totalElements,
-                totalPages: totalElements,
-                first: true,
-                last: false
-              }
-            })
-          });
-        }
-
-        // Normal table query returns only 1 item
         return route.fulfill({
           status: 200,
           contentType: 'application/json',
@@ -409,13 +335,13 @@ describe('Browser E2E: Admin Lesson Oversight UI (Task 9F.5)', () => {
             status: 'SUCCESS',
             message: 'OK',
             data: {
-              items: [createMockLessons()[0]],
+              items: mockLessons,
               page: 0,
               size: 20,
-              totalElements: 1,
-              totalPages: 1,
+              totalElements: 61,
+              totalPages: 4,
               first: true,
-              last: true
+              last: false
             }
           })
         });
@@ -424,30 +350,15 @@ describe('Browser E2E: Admin Lesson Oversight UI (Task 9F.5)', () => {
       await page.goto(`${baseUrl}/admin-lessons.html`, { waitUntil: 'domcontentloaded' });
       await page.locator('#lessonTableBody tr').first().waitFor({ state: 'visible', timeout: 5000 });
 
-      // Wait until KPI counts finish loading (spinner disappears, text contains numbers)
-      await page.waitForFunction(() => {
-        const el = document.getElementById('kpiCountTotal');
-        return el && el.textContent.includes('150');
-      }, { timeout: 5000 });
+      // Header count badge verification
+      const badge = page.locator('#lessonResultCount');
+      await badge.waitFor({ state: 'visible', timeout: 5000 });
+      const badgeText = await badge.textContent();
+      assert.ok(badgeText.includes('61 bài học'), `Expected badge to contain "61 bài học", got "${badgeText}"`);
 
-      // Check KPI counts: MUST reflect server totals (150, 20, 15, 100, 15), NOT current table count (1)
-      const totalCountText = await page.locator('#kpiCountTotal').textContent();
-      assert.strictEqual(totalCountText.trim(), '150');
-
-      const draftCountText = await page.locator('#kpiCountDraft').textContent();
-      assert.strictEqual(draftCountText.trim(), '20');
-
-      const pendingCountText = await page.locator('#kpiCountPending').textContent();
-      assert.strictEqual(pendingCountText.trim(), '15');
-
-      const approvedCountText = await page.locator('#kpiCountApproved').textContent();
-      assert.strictEqual(approvedCountText.trim(), '100');
-
-      const rejectedCountText = await page.locator('#kpiCountRejected').textContent();
-      assert.strictEqual(rejectedCountText.trim(), '15');
-
-      // Table rows: exactly 1 row
-      assert.strictEqual(await page.locator('#lessonTableBody tr').count(), 1);
+      // Verify grey styling class badge-status-draft
+      const badgeClass = await badge.getAttribute('class');
+      assert.ok(badgeClass.includes('badge-status-draft'), `Expected class to include badge-status-draft, got "${badgeClass}"`);
 
       const errors = getRuntimeErrors();
       assert.strictEqual(errors.length, 0, `Runtime errors: ${JSON.stringify(errors)}`);
@@ -457,9 +368,9 @@ describe('Browser E2E: Admin Lesson Oversight UI (Task 9F.5)', () => {
   });
 
   /* ---------------------------------------------------------------------------
-   * AL-05: Supported detail status opens read-only detail view
+   * AL-05: Clicking "Sửa" opens unified #lessonFormModal in edit mode
    * --------------------------------------------------------------------------- */
-  test('AL-05: Supported Approved detail calls GET /api/v1/lessons/{id} and renders read-only vocabulary list', async () => {
+  test('AL-05: Clicking "Sửa" opens unified #lessonFormModal and loads lesson details with vocabs', async () => {
     const { page, context, getRuntimeErrors } = await createMonitoredPage(browser, {
       viewportWidth: 1280,
       viewportHeight: 720
@@ -478,7 +389,7 @@ describe('Browser E2E: Admin Lesson Oversight UI (Task 9F.5)', () => {
             status: 'SUCCESS',
             message: 'OK',
             data: {
-              items: [createMockLessons()[0]], // Approved lesson #101
+              items: [createMockLessons()[0]], // Lesson #101
               page: 0,
               size: 20,
               totalElements: 1,
@@ -490,7 +401,7 @@ describe('Browser E2E: Admin Lesson Oversight UI (Task 9F.5)', () => {
         });
       });
 
-      await page.route(/\/api\/v1\/lessons\/101$/, async (route) => {
+      await page.route(/\/api\/v1\/admin\/lessons\/101$/, async (route) => {
         detailFetched = true;
         return route.fulfill({
           status: 200,
@@ -529,30 +440,30 @@ describe('Browser E2E: Admin Lesson Oversight UI (Task 9F.5)', () => {
       await page.goto(`${baseUrl}/admin-lessons.html`, { waitUntil: 'domcontentloaded' });
       await page.locator('#lessonTableBody tr').first().waitFor({ state: 'visible', timeout: 5000 });
 
-      // Click "Xem chi tiết" on row 101
-      const viewBtn = page.locator('#btnDetailLesson-101');
-      await viewBtn.click();
+      // Click "Sửa" button on row 101
+      const editBtn = page.locator('#btnEditLesson-101');
+      await editBtn.click();
 
-      // Verify modal is open
-      const modal = page.locator('#lessonDetailModal');
+      // Verify unified modal is open
+      const modal = page.locator('#lessonFormModal');
       await modal.waitFor({ state: 'visible', timeout: 3000 });
       assert.ok(await modal.isVisible());
 
-      // Verify endpoint was called
+      // Verify title is filled
+      const titleInput = page.locator('#lessonFormTitleInput');
+      assert.strictEqual(await titleInput.inputValue(), 'Bài 1: Chào hỏi cơ bản');
+
+      // Verify endpoint was called to load vocabs
       assert.strictEqual(detailFetched, true);
 
-      // Verify modal metadata
-      assert.strictEqual(await page.locator('#detailLessonId').textContent(), '#101');
-      assert.ok((await page.locator('#detailLessonTitle').textContent()).includes('Bài 1: Chào hỏi cơ bản'));
-
-      // Verify vocabulary list in modal rendered 2 items
-      await page.locator('#detailVocabList .list-group-item').first().waitFor({ state: 'visible', timeout: 5000 });
-      const vocabRows = page.locator('#detailVocabList .list-group-item');
+      // Verify vocabulary items rendered in form table
+      await page.locator('#formVocabTbody tr').first().waitFor({ state: 'visible', timeout: 3000 });
+      const vocabRows = page.locator('#formVocabTbody tr');
       assert.strictEqual(await vocabRows.count(), 2);
       assert.ok((await vocabRows.first().textContent()).includes('你好'));
 
       // Close modal
-      await page.locator('#btnCancelDetailModal').click();
+      await page.locator('#btnCancelLessonForm').click();
       await modal.waitFor({ state: 'hidden', timeout: 3000 });
       assert.strictEqual(await modal.isVisible(), false);
 
@@ -564,9 +475,9 @@ describe('Browser E2E: Admin Lesson Oversight UI (Task 9F.5)', () => {
   });
 
   /* ---------------------------------------------------------------------------
-   * AL-06: Unsupported status (Draft/Rejected) displays truthful contract limitation
+   * AL-06: Clicking "＋ Tạo bài học mới" opens #lessonFormModal in create mode
    * --------------------------------------------------------------------------- */
-  test('AL-06: Unsupported Draft status displays truthful contract limitation without claiming "Không có nội dung"', async () => {
+  test('AL-06: Clicking "＋ Tạo bài học mới" opens #lessonFormModal in create mode', async () => {
     const { page, context, getRuntimeErrors } = await createMonitoredPage(browser, {
       viewportWidth: 1280,
       viewportHeight: 720
@@ -584,11 +495,11 @@ describe('Browser E2E: Admin Lesson Oversight UI (Task 9F.5)', () => {
             status: 'SUCCESS',
             message: 'OK',
             data: {
-              items: [createMockLessons()[2]], // Draft lesson #103
+              items: [],
               page: 0,
               size: 20,
-              totalElements: 1,
-              totalPages: 1,
+              totalElements: 0,
+              totalPages: 0,
               first: true,
               last: true
             }
@@ -597,28 +508,26 @@ describe('Browser E2E: Admin Lesson Oversight UI (Task 9F.5)', () => {
       });
 
       await page.goto(`${baseUrl}/admin-lessons.html`, { waitUntil: 'domcontentloaded' });
-      await page.locator('#lessonTableBody tr').first().waitFor({ state: 'visible', timeout: 5000 });
 
-      // Click "Xem chi tiết" for Draft lesson
-      await page.locator('#btnDetailLesson-103').click();
+      // Click "＋ Tạo bài học mới"
+      await page.locator('#btnOpenCreateLessonModal').click();
 
       // Verify modal is open
-      const modal = page.locator('#lessonDetailModal');
+      const modal = page.locator('#lessonFormModal');
       await modal.waitFor({ state: 'visible', timeout: 3000 });
       assert.ok(await modal.isVisible());
 
-      // Verify truthful contract limitation alert is displayed
-      const limitationAlert = page.locator('#detailContractLimitationAlert');
-      assert.ok(await limitationAlert.isVisible());
+      // Verify modal title is "Thêm Bài Học Mới"
+      const modalTitle = await page.locator('#lessonFormModalTitle').textContent();
+      assert.ok(modalTitle.includes('Thêm Bài Học Mới'));
 
-      const noticeText = await page.locator('#detailContractLimitationMessage').textContent();
-      // Must truthfully mention backend endpoint absence
-      assert.ok(noticeText.includes('chưa có endpoint quản trị'));
-      // Must NOT falsely claim "Không có nội dung"
-      assert.strictEqual(noticeText.includes('Không có nội dung'), false);
+      // Verify title input is empty
+      const titleInput = page.locator('#lessonFormTitleInput');
+      assert.strictEqual(await titleInput.inputValue(), '');
 
-      // Verify vocabulary list section is NOT rendered
-      assert.strictEqual(await page.locator('#detailVocabSection').isVisible(), false);
+      // Close modal
+      await page.locator('#btnCancelLessonForm').click();
+      await modal.waitFor({ state: 'hidden', timeout: 3000 });
 
       const errors = getRuntimeErrors();
       assert.strictEqual(errors.length, 0, `Runtime errors: ${JSON.stringify(errors)}`);
@@ -658,9 +567,9 @@ describe('Browser E2E: Admin Lesson Oversight UI (Task 9F.5)', () => {
   });
 
   /* ---------------------------------------------------------------------------
-   * AL-08: Zero lesson mutation requests issued by the page
+   * AL-08: Excel Import Modal verification
    * --------------------------------------------------------------------------- */
-  test('AL-08: Page is strictly read-only and issues ZERO mutation requests (POST/PUT/PATCH/DELETE)', async () => {
+  test('AL-08: Clicking "📊 Nhập từ Excel" opens #importExcelModal', async () => {
     const { page, context, getRuntimeErrors } = await createMonitoredPage(browser, {
       viewportWidth: 1280,
       viewportHeight: 720
@@ -668,14 +577,8 @@ describe('Browser E2E: Admin Lesson Oversight UI (Task 9F.5)', () => {
 
     try {
       await setupAdminSession(page);
-      const mutationMethods = [];
 
-      await page.route(/\/api\/v1\/.*/, async (route) => {
-        const method = route.request().method();
-        if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
-          mutationMethods.push({ method, url: route.request().url() });
-        }
-
+      await page.route(/\/api\/v1\/admin\/lessons(\?.*)?$/, async (route) => {
         return route.fulfill({
           status: 200,
           contentType: 'application/json',
@@ -697,30 +600,96 @@ describe('Browser E2E: Admin Lesson Oversight UI (Task 9F.5)', () => {
       });
 
       await page.goto(`${baseUrl}/admin-lessons.html`, { waitUntil: 'domcontentloaded' });
+
+      // Click "📊 Nhập từ Excel"
+      await page.locator('#btnOpenImportLessonModal').click();
+
+      // Verify modal is open
+      const modal = page.locator('#importExcelModal');
+      await modal.waitFor({ state: 'visible', timeout: 3000 });
+      assert.ok(await modal.isVisible());
+
+      // Verify title input and file input exist
+      assert.ok(await page.locator('#importExcelFileInput').isVisible());
+      assert.ok(await page.locator('#importExcelTitleInput').isVisible());
+
+      // Close modal
+      await page.locator('#btnCancelImportExcel').click();
+      await modal.waitFor({ state: 'hidden', timeout: 3000 });
+
+      const errors = getRuntimeErrors();
+      assert.strictEqual(errors.length, 0, `Runtime errors: ${JSON.stringify(errors)}`);
+    } finally {
+      await context.close();
+    }
+  });
+
+  /* ---------------------------------------------------------------------------
+   * AL-09: Delete confirmation modal verification
+   * --------------------------------------------------------------------------- */
+  test('AL-09: Clicking "Xóa" opens #deleteLessonModal and confirms deletion', async () => {
+    const { page, context, getRuntimeErrors } = await createMonitoredPage(browser, {
+      viewportWidth: 1280,
+      viewportHeight: 720
+    });
+
+    try {
+      await setupAdminSession(page);
+      let deleteCalled = false;
+
+      await page.route(/\/api\/v1\/admin\/lessons(\?.*)?$/, async (route) => {
+        return route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            code: 'SUCCESS',
+            status: 'SUCCESS',
+            message: 'OK',
+            data: {
+              items: [createMockLessons()[0]], // Lesson #101
+              page: 0,
+              size: 20,
+              totalElements: 1,
+              totalPages: 1,
+              first: true,
+              last: true
+            }
+          })
+        });
+      });
+
+      await page.route(/\/api\/v1\/admin\/lessons\/101$/, async (route) => {
+        if (route.request().method() === 'DELETE') {
+          deleteCalled = true;
+          return route.fulfill({
+            status: 204,
+            body: ''
+          });
+        }
+        return route.continue();
+      });
+
+      await page.goto(`${baseUrl}/admin-lessons.html`, { waitUntil: 'domcontentloaded' });
       await page.locator('#lessonTableBody tr').first().waitFor({ state: 'visible', timeout: 5000 });
 
-      // Interact with filters
-      await page.locator('#filterStatusDraft').click();
-      await page.locator('#filterStatusApproved').click();
+      // Click "Xóa"
+      await page.locator('#btnDeleteLesson-101').click();
 
-      // Change page size
-      const pageSizeSelect = page.locator('#pageSizeSelect');
-      if (await pageSizeSelect.count() > 0) {
-        await pageSizeSelect.selectOption('50');
-      }
+      // Delete Modal should open
+      const deleteModal = page.locator('#deleteLessonModal');
+      await deleteModal.waitFor({ state: 'visible', timeout: 3000 });
+      assert.ok(await deleteModal.isVisible());
 
-      // Click refresh counts
-      await page.locator('#btnRefreshKpi').click();
+      // Target lesson title should match
+      const targetTitle = await page.locator('#deleteLessonTargetTitle').textContent();
+      assert.ok(targetTitle.includes('Bài 1: Chào hỏi cơ bản'));
 
-      // Inspect detail
-      const detailBtn = page.locator('#btnDetailLesson-101');
-      if (await detailBtn.isVisible()) {
-        await detailBtn.click();
-        await page.locator('#btnCancelDetailModal').click();
-      }
+      // Confirm delete
+      await page.locator('#btnConfirmDeleteLesson').click();
 
-      // STRICT INVARIANT CHECK: Zero mutation requests
-      assert.strictEqual(mutationMethods.length, 0, `Detected forbidden mutation calls: ${JSON.stringify(mutationMethods)}`);
+      // Modal closes and delete API was invoked
+      await deleteModal.waitFor({ state: 'hidden', timeout: 3000 });
+      assert.strictEqual(deleteCalled, true);
 
       const errors = getRuntimeErrors();
       assert.strictEqual(errors.length, 0, `Runtime errors: ${JSON.stringify(errors)}`);
@@ -730,173 +699,9 @@ describe('Browser E2E: Admin Lesson Oversight UI (Task 9F.5)', () => {
   });
 
   /* ---------------------------------------------------------------------------
-   * AL-09: Emergency Lesson Revocation (TASK-7.2)
+   * AL-10: Clean Layout Verification
    * --------------------------------------------------------------------------- */
-  test('AL-09: Admin can revoke an Approved lesson with a reason via POST /admin/lessons/:id/revoke', async () => {
-    const { page, context, getRuntimeErrors } = await createMonitoredPage(browser, {
-      viewportWidth: 1280,
-      viewportHeight: 720
-    });
-
-    try {
-      await setupAdminSession(page);
-      let revokeCalled = false;
-      let revokePayload = null;
-
-      await page.route(/\/api\/v1\/admin\/lessons(\?.*)?$/, async (route) => {
-        return route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify({
-            code: 'SUCCESS',
-            status: 'SUCCESS',
-            message: 'OK',
-            data: {
-              items: [createMockLessons()[0]], // Approved lesson #101
-              page: 0,
-              size: 20,
-              totalElements: 1,
-              totalPages: 1,
-              first: true,
-              last: true
-            }
-          })
-        });
-      });
-
-      await page.route(/\/api\/v1\/admin\/lessons\/101\/revoke$/, async (route) => {
-        revokeCalled = true;
-        revokePayload = JSON.parse(route.request().postData());
-        return route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify({
-            code: 'SUCCESS',
-            status: 'SUCCESS',
-            message: 'Thu hồi bài học thành công',
-            data: {
-              lessonId: 101,
-              title: 'Bài 1: Chào hỏi cơ bản',
-              status: 'Rejected',
-              rejectionReason: revokePayload.reason
-            }
-          })
-        });
-      });
-
-      await page.goto(`${baseUrl}/admin-lessons.html`, { waitUntil: 'domcontentloaded' });
-      await page.locator('#btnRevokeLesson-101').waitFor({ state: 'visible', timeout: 5000 });
-
-      // Click "🚨 Gỡ bài"
-      await page.locator('#btnRevokeLesson-101').click();
-
-      // Revoke Modal should open
-      const revokeModal = page.locator('#revokeLessonModal');
-      await revokeModal.waitFor({ state: 'visible', timeout: 3000 });
-      assert.ok(await revokeModal.isVisible());
-
-      // Fill reason and submit
-      await page.locator('#revokeReasonInput').fill('Vi phạm bản quyền giáo trình HSK');
-      await page.locator('#btnConfirmRevoke').click();
-
-      // Modal closes
-      await revokeModal.waitFor({ state: 'hidden', timeout: 3000 });
-      assert.strictEqual(revokeCalled, true);
-      assert.strictEqual(revokePayload.reason, 'Vi phạm bản quyền giáo trình HSK');
-
-      const errors = getRuntimeErrors();
-      assert.strictEqual(errors.length, 0, `Runtime errors: ${JSON.stringify(errors)}`);
-    } finally {
-      await context.close();
-    }
-  });
-
-  /* ---------------------------------------------------------------------------
-   * AL-10: Supervisory Arbiter Approval (TASK-7.2)
-   * --------------------------------------------------------------------------- */
-  test('AL-10: Admin can approve a Pending/Rejected lesson via POST /admin/lessons/:id/approve', async () => {
-    const { page, context, getRuntimeErrors } = await createMonitoredPage(browser, {
-      viewportWidth: 1280,
-      viewportHeight: 720
-    });
-
-    try {
-      await setupAdminSession(page);
-      let approveCalled = false;
-      let approvePayload = null;
-
-      await page.route(/\/api\/v1\/admin\/lessons(\?.*)?$/, async (route) => {
-        return route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify({
-            code: 'SUCCESS',
-            status: 'SUCCESS',
-            message: 'OK',
-            data: {
-              items: [createMockLessons()[1]], // Pending lesson #102
-              page: 0,
-              size: 20,
-              totalElements: 1,
-              totalPages: 1,
-              first: true,
-              last: true
-            }
-          })
-        });
-      });
-
-      await page.route(/\/api\/v1\/admin\/lessons\/102\/approve$/, async (route) => {
-        approveCalled = true;
-        const postData = route.request().postData();
-        approvePayload = postData ? JSON.parse(postData) : {};
-        return route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify({
-            code: 'SUCCESS',
-            status: 'SUCCESS',
-            message: 'Phê duyệt trọng tài bài học thành công',
-            data: {
-              lessonId: 102,
-              title: 'Bài 2: Gia đình và Nghề nghiệp',
-              status: 'Approved'
-            }
-          })
-        });
-      });
-
-      await page.goto(`${baseUrl}/admin-lessons.html`, { waitUntil: 'domcontentloaded' });
-      await page.locator('#btnApproveLesson-102').waitFor({ state: 'visible', timeout: 5000 });
-
-      // Click "⚖️ Duyệt trọng tài"
-      await page.locator('#btnApproveLesson-102').click();
-
-      // Arbiter Modal opens
-      const arbiterModal = page.locator('#arbiterApproveModal');
-      await arbiterModal.waitFor({ state: 'visible', timeout: 3000 });
-      assert.ok(await arbiterModal.isVisible());
-
-      // Fill note and confirm
-      await page.locator('#arbiterNoteInput').fill('Trọng tài duyệt sau khi giải quyết tranh chấp');
-      await page.locator('#btnConfirmArbiter').click();
-
-      // Modal closes
-      await arbiterModal.waitFor({ state: 'hidden', timeout: 3000 });
-      assert.strictEqual(approveCalled, true);
-      assert.strictEqual(approvePayload.note, 'Trọng tài duyệt sau khi giải quyết tranh chấp');
-
-      const errors = getRuntimeErrors();
-      assert.strictEqual(errors.length, 0, `Runtime errors: ${JSON.stringify(errors)}`);
-    } finally {
-      await context.close();
-    }
-  });
-
-  /* ---------------------------------------------------------------------------
-   * AL-11: Clean Layout Verification (TASK-7.2)
-   * --------------------------------------------------------------------------- */
-  test('AL-11: Verifies clean layout (no breadcrumbs, no tabs, no pageSizeSelect dropdown)', async () => {
+  test('AL-10: Verifies clean layout (no breadcrumbs, no tabs, no pageSizeSelect dropdown)', async () => {
     const { page, context, getRuntimeErrors } = await createMonitoredPage(browser, {
       viewportWidth: 1280,
       viewportHeight: 720

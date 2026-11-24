@@ -879,7 +879,7 @@ export class AdminVocabularyPageController {
       this.elements.resultCountBadge.className = 'badge-status badge-status-draft text-nowrap';
     } else {
       this.elements.resultCountBadge.textContent = `${this.totalElements.toLocaleString('vi-VN')} từ vựng`;
-      this.elements.resultCountBadge.className = 'badge-status badge-status-published text-nowrap';
+      this.elements.resultCountBadge.className = 'badge-status badge-status-draft text-nowrap';
     }
   }
 

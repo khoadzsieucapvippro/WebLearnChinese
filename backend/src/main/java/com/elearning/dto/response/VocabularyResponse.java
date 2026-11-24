@@ -3,6 +3,12 @@ package com.elearning.dto.response;
 import com.elearning.entity.Vocabulary;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
+
 /**
  * Summary Response DTO for Vocabulary catalog listing and search results.
  * Conforms to .agents/API.md section 2.2 and zero-entity-leak rules.
@@ -20,6 +26,7 @@ public class VocabularyResponse {
     private String videoWritingUrl;
     private String exampleSentence;
     private String exampleTranslation;
+    private List<RadicalResponse> radicals = new ArrayList<>();
     private Integer hskLevel;
     private String hskStandard;
     private Integer hskSourceId;
@@ -30,6 +37,7 @@ public class VocabularyResponse {
     private Integer sourcePdfPage;
 
     public VocabularyResponse() {
+        this.radicals = new ArrayList<>();
     }
 
     public VocabularyResponse(Long vocabId, String hanzi, String pinyin, String pinyinRaw,
@@ -45,6 +53,7 @@ public class VocabularyResponse {
         this.videoWritingUrl = videoWritingUrl;
         this.exampleSentence = exampleSentence;
         this.exampleTranslation = exampleTranslation;
+        this.radicals = new ArrayList<>();
     }
 
     public VocabularyResponse(Long vocabId, String hanzi, String pinyin, String pinyinRaw,
@@ -68,6 +77,34 @@ public class VocabularyResponse {
                 vocabulary.getExampleSentence(),
                 vocabulary.getExampleTranslation()
         );
+        List<RadicalResponse> radicalResponses = Collections.emptyList();
+        try {
+            if (vocabulary.getVocabRadicals() != null && !vocabulary.getVocabRadicals().isEmpty()) {
+                radicalResponses = vocabulary.getVocabRadicals().stream()
+                        .map(vr -> {
+                            RadicalResponse rr = RadicalResponse.fromEntity(vr.getRadical());
+                            if (rr != null) {
+                                rr.setHanziChar(vr.getHanziChar());
+                                rr.setComponentType(vr.getComponentType());
+                                rr.setVerificationStatus(vr.getVerificationStatus());
+                            }
+                            return rr;
+                        })
+                        .filter(Objects::nonNull)
+                        .sorted(Comparator.comparing(RadicalResponse::getRadicalId)
+                                .thenComparing(rr -> rr.getHanziChar() != null ? rr.getHanziChar() : ""))
+                        .toList();
+            } else if (vocabulary.getRadicals() != null && !vocabulary.getRadicals().isEmpty()) {
+                radicalResponses = vocabulary.getRadicals().stream()
+                        .map(RadicalResponse::fromEntity)
+                        .filter(Objects::nonNull)
+                        .sorted(Comparator.comparing(RadicalResponse::getRadicalId))
+                        .toList();
+            }
+        } catch (Exception ignored) {
+            // Lazy initialization fallback if outside transaction
+        }
+        response.setRadicals(radicalResponses);
         response.setHskLevel(vocabulary.getHskLevel());
         response.setHskStandard(vocabulary.getHskStandard());
         response.setHskSourceId(vocabulary.getHskSourceId());
@@ -157,6 +194,14 @@ public class VocabularyResponse {
 
     public void setExampleTranslation(String exampleTranslation) {
         this.exampleTranslation = exampleTranslation;
+    }
+
+    public List<RadicalResponse> getRadicals() {
+        return radicals;
+    }
+
+    public void setRadicals(List<RadicalResponse> radicals) {
+        this.radicals = (radicals != null) ? radicals : new ArrayList<>();
     }
 
     public Integer getHskLevel() {

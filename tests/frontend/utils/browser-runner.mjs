@@ -90,6 +90,11 @@ export async function createMonitoredPage(browser, { viewportWidth = 1280, viewp
     acceptDownloads: true
   });
 
+  // Intercept external CDN requests at context level to prevent 30s DNS timeouts in offline/sandboxed test environments
+  await context.route(/cdn\.jsdelivr\.net/, async (route) => {
+    await route.abort('namenotresolved');
+  });
+
   const page = await context.newPage();
   const runtimeErrors = [];
 

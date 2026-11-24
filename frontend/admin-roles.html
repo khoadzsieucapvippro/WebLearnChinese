@@ -14,7 +14,7 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>字</text></svg>">
 
   <!-- Core Design Tokens & Styles -->
-  <link rel="stylesheet" href="css/style.css?v=20261029_03">
+  <link rel="stylesheet" href="css/style.css?v=20261105_06">
 
   <!-- Runtime Environment Configuration -->
   <script src="js/config.js"></script>
@@ -97,33 +97,8 @@
           <div>
             <h1 id="rolesHeading" class="h3 fw-bold text-dark mb-1">Quản Trị Phân Quyền Vai Trò</h1>
             <p class="text-secondary small mb-0" id="rolesSubHeading">
-              Khám phá danh mục vai trò hệ thống, gán hoặc thu hồi vai trò cho người dùng với cơ chế bảo vệ tự thân (POL-8D-02).
+              Gán hoặc thu hồi vai trò cho người dùng trong hệ thống với cơ chế bảo vệ tự thân (POL-8D-02).
             </p>
-          </div>
-
-          <!-- Quick Controls: Result Count & Refresh Button -->
-          <div class="d-flex align-items-center gap-2">
-            <button type="button" id="btnRefreshRoleCatalog" class="btn btn-chinese-secondary btn-sm" title="Tải lại danh mục vai trò từ máy chủ">
-              <span aria-hidden="true">&#8635;</span> Tải lại vai trò
-            </button>
-            <span id="accountResultCountBadge" class="badge bg-secondary py-2 px-3 fw-normal" aria-live="polite">
-              Đang tải...
-            </span>
-          </div>
-        </div>
-
-        <!-- 1. System Role Catalog Overview Card -->
-        <div class="creator-panel-card mb-4" id="roleCatalogCard">
-          <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
-            <h2 class="h6 fw-bold text-dark mb-0 d-flex align-items-center gap-2">
-              <span aria-hidden="true">🏷️</span> Danh Mục Vai Trò Hệ Thống (Role Catalog)
-            </h2>
-            </div>
-          <div id="roleCatalogContainer" class="row g-3" aria-live="polite">
-            <!-- Rendered dynamically by JavaScript -->
-            <div class="col-12 text-center text-muted py-3 small">
-              Đang nạp danh mục vai trò từ máy chủ...
-            </div>
           </div>
         </div>
 
@@ -131,7 +106,7 @@
         <div class="creator-panel-card mb-4" id="accountToolbarCard">
           <div class="row g-3 align-items-end">
             <!-- Search Input -->
-            <div class="col-12">
+            <div class="col-12 col-md-8">
               <label for="accountSearchInput" class="form-label small fw-semibold text-secondary mb-1">
                 Tìm kiếm tài khoản
               </label>
@@ -144,6 +119,13 @@
                   ✕
                 </button>
               </div>
+            </div>
+
+            <!-- Result Count -->
+            <div class="col-12 col-md-4 text-md-end">
+              <span id="accountResultCountBadge" class="badge-status badge-status-draft text-nowrap d-inline-block" aria-live="polite">
+                Đang tải...
+              </span>
             </div>
           </div>
         </div>
@@ -286,9 +268,9 @@
   </footer>
 
   <!-- Management Workspace Layout & Sidebar Component -->
-  <script type="module" src="js/ui/management-layout.js?v=20261029_03"></script>
+  <script type="module" src="js/ui/management-layout.js?v=20261105_06"></script>
 
   <!-- Page Initialization Entrypoint -->
-  <script type="module" src="js/pages/admin-roles-page.js?v=20261029_03"></script>
+  <script type="module" src="js/pages/admin-roles-page.js?v=20261105_06"></script>
 </body>
 </html>

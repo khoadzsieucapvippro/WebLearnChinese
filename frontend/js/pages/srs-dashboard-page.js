@@ -222,9 +222,9 @@ export class SrsDashboardController {
     if (!stats) return;
 
     const cardsDue = stats.cardsDue ?? 0;
-    const cardsDueFlashcard = (stats.cardsDueFlashcard != null && stats.cardsDueFlashcard > 0)
+    const cardsDueFlashcard = stats.cardsDueFlashcard != null
       ? stats.cardsDueFlashcard
-      : (stats.cardsDueReading || 0);
+      : (stats.cardsDueReading ?? 0);
     const cardsDueReading = stats.cardsDueReading ?? 0;
     const cardsDueListening = stats.cardsDueListening ?? 0;
     const cardsDueWriting = stats.cardsDueWriting ?? 0;
@@ -236,17 +236,21 @@ export class SrsDashboardController {
     if (this.statCardsDue) {
       this.statCardsDue.textContent = String(cardsDue);
     }
-    if (this.statCardsDueFlashcard) {
-      this.statCardsDueFlashcard.textContent = String(cardsDueFlashcard);
-    }
-    if (this.statCardsDueReading) {
-      this.statCardsDueReading.textContent = String(cardsDueReading);
-    }
-    if (this.statCardsDueListening) {
-      this.statCardsDueListening.textContent = String(cardsDueListening);
-    }
-    if (this.statCardsDueWriting) {
-      this.statCardsDueWriting.textContent = String(cardsDueWriting);
+
+    const skillMappings = [
+      { el: this.statCardsDueFlashcard, count: cardsDueFlashcard },
+      { el: this.statCardsDueReading, count: cardsDueReading },
+      { el: this.statCardsDueListening, count: cardsDueListening },
+      { el: this.statCardsDueWriting, count: cardsDueWriting }
+    ];
+    for (const { el, count } of skillMappings) {
+      if (!el) continue;
+      el.textContent = String(count);
+      const cardEl = typeof el.closest === 'function' ? el.closest('.srs-skill-due-card') : null;
+      if (cardEl && cardEl.classList) {
+        cardEl.classList.toggle('is-empty-due', Number(count) <= 0);
+        cardEl.classList.toggle('is-has-due', Number(count) > 0);
+      }
     }
 
     // 2. Reviews Today (No quota text / progress bar - review quota removed)

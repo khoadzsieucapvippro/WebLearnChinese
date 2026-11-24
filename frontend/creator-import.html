@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' https://cdn.jsdelivr.net; style-src-elem 'self' https://cdn.jsdelivr.net; style-src-attr 'unsafe-inline'; font-src 'self'; img-src 'self' data: https:; media-src 'self' blob: https:; connect-src 'self' https://cdn.jsdelivr.net http://localhost:8080 http://127.0.0.1:8080 https://*.up.railway.app https://*.onrender.com https://*.koyeb.app; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'self' https://www.youtube-nocookie.com">
-  <title>Nhập Bài Học Từ Excel — Creator Studio | Hán Ngữ &amp; Bộ Thủ</title>
+  <title>Nhập Bài Học Từ Excel | Quản Lý Bài Học Hệ Thống</title>
   <meta name="description" content="Nhập bài học và từ vựng từ tệp Excel (.xlsx) theo quy trình 2 bước: Xem trước kiểm tra lỗi (Preview) và Xác nhận lưu nguyên tử (Confirm).">
 
   <!-- Verified Bootstrap 5.3.3 CSS via CDN with Authenticated Subresource Integrity (SRI) -->
@@ -87,9 +87,9 @@
       <div id="creatorAuthGuardContainer" class="d-none mb-4" role="alert">
         <div class="creator-panel-card text-center py-5">
           <div class="state-error-icon mx-auto mb-3" aria-hidden="true">&#9888;</div>
-          <h2 class="h5 fw-bold text-dark mb-2">Yêu Cầu Quyền Tác Giả (Creator)</h2>
+          <h2 class="h5 fw-bold text-dark mb-2">Yêu Cầu Quyền Quản Trị Viên (Admin) hoặc Tác Giả (Creator)</h2>
           <p class="text-secondary small mb-4" id="creatorAuthGuardMessage">
-            Bạn cần đăng nhập với vai trò Tác giả (Creator) hoặc Quản trị viên (Admin) để sử dụng chức năng nhập bài học.
+            Bạn cần đăng nhập với vai trò Quản trị viên (Admin) hoặc Tác giả (Creator) để sử dụng chức năng nhập bài học.
           </p>
           <a href="login.html" class="btn-chinese-primary">Đăng nhập tài khoản</a>
         </div>
@@ -106,7 +106,7 @@
               Quy trình 2 bước chuẩn: <strong>Bước 1</strong> Xem trước &amp; Kiểm tra dữ liệu &rarr; <strong>Bước 2</strong> Đặt tên &amp; Lưu nguyên tử vào hệ thống.
             </p>
           </div>
-          <a href="creator-lessons.html" class="btn-chinese-secondary btn-sm text-decoration-none flex-shrink-0">
+          <a href="admin-lessons.html" id="backToLessonsLink" class="btn-chinese-secondary btn-sm text-decoration-none flex-shrink-0">
             &larr; Về danh mục bài học
           </a>
         </div>
@@ -345,8 +345,8 @@
             </div>
 
             <!-- Atomic Transaction Notice -->
-            <div class="alert alert-success py-2 px-3 small mb-4" role="note">
-              <strong>Cơ chế lưu nguyên tử (Atomic Transaction):</strong> Khi nhấn Xác nhận, máy chủ sẽ tải lại tệp Excel gốc để kiểm duyệt lại và tạo mới bài học ở trạng thái <code>Draft</code>, lưu từ vựng mới và liên kết thứ tự từ vựng cùng lúc trong 1 giao dịch an toàn.
+            <div class="alert alert-success py-2 px-3 small mb-4" role="note" id="atomicTransactionNotice">
+              <strong>Cơ chế lưu nguyên tử (Atomic Transaction):</strong> Khi nhấn Xác nhận, máy chủ sẽ tải lại tệp Excel gốc để kiểm duyệt lại và lưu từ vựng cùng bài học trong 1 giao dịch an toàn. Đối với Quản trị viên (Admin), bài học sẽ được <strong>xuất bản trực tiếp (Approved)</strong> ngay lập tức.
             </div>
 
             <!-- Step 2 Actions -->

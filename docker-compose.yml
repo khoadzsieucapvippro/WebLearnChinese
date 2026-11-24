@@ -24,6 +24,9 @@ services:
     environment:
       - SPEECH_HOST=0.0.0.0
       - SPEECH_PORT=8000
+      - AZURE_SPEECH_ENABLED=${AZURE_SPEECH_ENABLED:-true}
+      - AZURE_SPEECH_KEY=${AZURE_SPEECH_KEY:-}
+      - AZURE_SPEECH_REGION=${AZURE_SPEECH_REGION:-southeastasia}
 
   backend:
     build:

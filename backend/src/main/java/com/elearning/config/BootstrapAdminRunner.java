@@ -72,7 +72,6 @@ public class BootstrapAdminRunner implements ApplicationRunner {
         log.warn("CRITICAL: Zero active administrators detected in database! Initiating secure bootstrap admin setup...");
 
         Role adminRole = getOrCreateRole(4, "Admin");
-        Role learnerRole = getOrCreateRole(1, "Learner");
 
         String rawPassword = bootstrapPassword;
         boolean isGenerated = false;
@@ -96,7 +95,7 @@ public class BootstrapAdminRunner implements ApplicationRunner {
         adminAccount.setPasswordHash(passwordEncoder.encode(rawPassword));
         adminAccount.setStatus("Active");
         adminAccount.setAuthorizationVersion(1L);
-        adminAccount.setRoles(Set.of(adminRole, learnerRole));
+        adminAccount.setRoles(Set.of(adminRole));
 
         Account saved = accountRepository.save(adminAccount);
 

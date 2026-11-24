@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' https://cdn.jsdelivr.net; style-src-elem 'self' https://cdn.jsdelivr.net; style-src-attr 'unsafe-inline'; font-src 'self'; img-src 'self' data: https:; media-src 'self' blob: https:; connect-src 'self' https://cdn.jsdelivr.net http://localhost:8080 http://127.0.0.1:8080 https://*.up.railway.app https://*.onrender.com https://*.koyeb.app; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'self' https://www.youtube-nocookie.com">
+  <title>Cài Đặt Hệ Thống &amp; Tham Số Vận Hành | Hán Ngữ Học Đường</title>
+  <meta name="description" content="Trung tâm cấu hình tham số vận hành, thuật toán học tập SRS và thông tin hệ sinh thái dành cho Quản trị viên (Admin).">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>设</text></svg>">
+
+  <!-- Bootstrap 5.3.3 CSS via CDN with Subresource Integrity -->
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+        crossorigin="anonymous">
+
+  <!-- Custom Core Design System CSS -->
+  <link rel="stylesheet" href="css/style.css?v=20261105_06">
+
+  <!-- Runtime Environment Configuration -->
+  <script src="js/config.js"></script>
+</head>
+<body class="bg-chinese-cream d-flex flex-column min-vh-100">
+
+  <!-- Accessible Skip Link Landmark -->
+  <a href="#mainContent" class="skip-link">Chuyển đến nội dung chính</a>
+
+  <!-- Global Management Workspace Header Landmark -->
+  <header class="management-header sticky-top">
+    <div class="container-fluid px-3 px-lg-4">
+      <div class="d-flex align-items-center justify-content-between py-2">
+        <!-- Brand & Mobile Toggle Cluster -->
+        <div class="d-flex align-items-center gap-2 gap-lg-3">
+          <!-- Mobile Sidebar Toggle -->
+          <button class="btn btn-sm btn-chinese-outline d-lg-none" type="button" id="managementSidebarToggle" aria-label="Mở danh mục quản lý" aria-expanded="false" aria-controls="managementSidebar">
+            <span class="navbar-toggler-icon d-inline-block" style="width: 1.25em; height: 1.25em; vertical-align: middle;"></span>
+          </button>
+
+          <!-- Management Brand Identity -->
+          <a class="management-brand d-flex align-items-center gap-2 text-decoration-none" href="management.html">
+            <span class="chinese-seal-icon" aria-hidden="true">管</span>
+            <div class="d-flex flex-column">
+              <span class="fw-bold fs-5 text-chinese-red lh-1">Hán Ngữ</span>
+              <span class="fs-7 text-secondary tracking-wide">QUẢN LÝ &amp; TÁC NGHIỆP</span>
+            </div>
+          </a>
+        </div>
+
+        <!-- Management User & Learner Gateway Cluster -->
+        <div class="d-flex align-items-center gap-2">
+          <!-- Session State Container -->
+          <div id="navAuthContainer" class="d-flex align-items-center gap-2">
+            <a href="login.html" class="btn-chinese-secondary py-2 px-3 text-decoration-none">
+              Đăng nhập
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Management Workspace Outer Layout Wrapper -->
+  <div class="management-layout">
+    <!-- Management Sidebar Landmark -->
+    <aside id="managementSidebar" class="management-sidebar" aria-label="Điều hướng quản lý">
+      <div class="d-flex align-items-center justify-content-between p-3 border-bottom d-lg-none">
+        <span class="fw-bold small text-secondary">DANH MỤC QUẢN LÝ</span>
+        <button type="button" class="btn-close" id="managementSidebarClose" aria-label="Đóng menu quản lý"></button>
+      </div>
+      <nav class="management-sidebar-inner" aria-label="Danh mục chức năng quản lý">
+        <div id="managementSidebarNav">
+          <!-- Populated authoritatively by management-layout.js based on authenticated role -->
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Mobile Drawer Backdrop -->
+    <div id="managementSidebarBackdrop" class="management-sidebar-backdrop" aria-hidden="true"></div>
+
+    <!-- Main Content Landmark -->
+    <main id="mainContent" class="management-main-content">
+      <div class="container-xl creator-studio-wrapper py-3">
+
+        <!-- Sub-navigation Breadcrumb -->
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+          <nav aria-label="Đường dẫn điều hướng">
+            <ol class="breadcrumb mb-0 small">
+              <li class="breadcrumb-item"><a href="management.html" class="text-decoration-none text-secondary">Tổng quan</a></li>
+              <li class="breadcrumb-item active" aria-current="page">Cài đặt hệ thống</li>
+            </ol>
+          </nav>
+        </div>
+
+        <!-- Role Guard Message Container (Shown if unauthorized) -->
+        <div id="adminAuthGuardContainer" class="d-none mb-4" role="alert">
+          <div class="creator-panel-card text-center py-5">
+            <div class="state-error-icon mx-auto mb-3" aria-hidden="true">&#9888;</div>
+            <h2 class="h5 fw-bold text-dark mb-2">Quyền Truy Cập Bị Giới Hạn</h2>
+            <p class="text-secondary small mb-4" id="adminAuthGuardMessage">
+              Bạn cần đăng nhập với vai trò Quản trị viên (Admin) để cấu hình cài đặt hệ thống.
+            </p>
+            <div class="d-flex justify-content-center gap-2">
+              <a href="login.html?redirect=admin-settings.html" class="btn-chinese-primary py-2 px-4 text-decoration-none">
+                Đăng nhập tài khoản
+              </a>
+              <a href="index.html" class="btn-chinese-outline py-2 px-4 text-decoration-none">
+                Về trang chủ
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Settings Form Container -->
+        <div id="adminSettingsFormContainer">
+
+          <!-- Page Header & Overview Banner -->
+          <div class="creator-panel-card mb-4">
+            <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+              <div>
+                <div class="d-flex align-items-center gap-2 mb-1">
+                  <span class="chinese-seal-icon small" aria-hidden="true">设</span>
+                  <span class="badge bg-secondary-subtle text-secondary border small">Quản Trị Hệ Thống</span>
+                </div>
+                <h1 class="h3 fw-bold text-chinese-red mb-1">
+                  Cài Đặt Hệ Thống &amp; Tham Số Vận Hành
+                </h1>
+                <p class="text-secondary small mb-0">
+                  Cấu hình thuật toán học tập SRS, thông tin hệ sinh thái và chế độ vận hành toàn sàn dành cho Quản trị viên.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Settings Form -->
+          <form id="adminSettingsForm" novalidate>
+
+            <div class="row g-4">
+              <!-- KHỐI 1: CÀI ĐẶT HỌC TẬP & THUẬT TOÁN SRS -->
+              <div class="col-12 col-lg-6">
+                <div class="creator-panel-card h-100 p-4 border" id="cardSrsSettings">
+                  <div class="d-flex align-items-center gap-2 mb-3 pb-2 border-bottom">
+                    <span class="fs-4" aria-hidden="true">🧠</span>
+                    <div>
+                      <h2 class="h5 fw-bold text-dark mb-0">Học Tập &amp; Thuật Toán SRS</h2>
+                      <div class="text-secondary small">Tham số giãn cách lặp lại Spaced Repetition System</div>
+                    </div>
+                  </div>
+
+                  <!-- Field 1: newCardsPerDay -->
+                  <div class="mb-3">
+                    <label for="settingNewCardsPerDay" class="form-label fw-semibold text-dark">
+                      Số thẻ học mới tối đa mỗi ngày
+                    </label>
+                    <div class="input-group">
+                      <input type="number"
+                             id="settingNewCardsPerDay"
+                             name="newCardsPerDay"
+                             class="form-control"
+                             min="1"
+                             max="100"
+                             step="1"
+                             value="20"
+                             required
+                             aria-describedby="settingNewCardsHelp settingNewCardsError">
+                      <span class="input-group-text bg-light text-secondary">thẻ/ngày</span>
+                    </div>
+                    <div id="settingNewCardsHelp" class="form-text text-secondary small">
+                      Giới hạn số thẻ từ vựng hoặc bộ thủ mới cấp phát trong một ngày học (từ 1 đến 100 thẻ).
+                    </div>
+                    <div id="settingNewCardsError" class="text-danger small mt-1 d-none" role="alert"></div>
+                  </div>
+
+                  <!-- Field 2: autoPlayAudio -->
+                  <div class="mb-3 pt-2 border-top">
+                    <div class="form-check form-switch">
+                      <input class="form-check-input"
+                             type="checkbox"
+                             role="switch"
+                             id="settingAutoPlayAudio"
+                             name="autoPlayAudio"
+                             checked
+                             aria-describedby="settingAutoPlayHelp">
+                      <label class="form-check-label fw-semibold text-dark" for="settingAutoPlayAudio">
+                        Tự động phát âm thanh khi lật thẻ
+                      </label>
+                    </div>
+                    <div id="settingAutoPlayHelp" class="form-text text-secondary small ps-1">
+                      Tự động phát âm mẫu chuẩn Pinyin khi học viên lật thẻ kiểm tra hoặc ôn tập SRS.
+                    </div>
+                  </div>
+
+                  <!-- Field 3: checkWriting -->
+                  <div class="mb-2 pt-2 border-top">
+                    <div class="form-check form-switch">
+                      <input class="form-check-input"
+                             type="checkbox"
+                             role="switch"
+                             id="settingCheckWriting"
+                             name="checkWriting"
+                             checked
+                             aria-describedby="settingCheckWritingHelp">
+                      <label class="form-check-label fw-semibold text-dark" for="settingCheckWriting">
+                        Kiểm tra thứ tự nét vẽ chữ Hán
+                      </label>
+                    </div>
+                    <div id="settingCheckWritingHelp" class="form-text text-secondary small ps-1">
+                      Yêu cầu học viên viết đúng quy tắc bút thuận từng nét chữ trước khi cho phép lật đáp án.
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- KHỐI 2: THÔNG TIN CHUNG HỆ SINH THÁI -->
+              <div class="col-12 col-lg-6">
+                <div class="creator-panel-card h-100 p-4 border" id="cardEcosystemSettings">
+                  <div class="d-flex align-items-center gap-2 mb-3 pb-2 border-bottom">
+                    <span class="fs-4" aria-hidden="true">🌐</span>
+                    <div>
+                      <h2 class="h5 fw-bold text-dark mb-0">Thông Tin Hệ Sinh Thái</h2>
+                      <div class="text-secondary small">Thông tin nền tảng và chế độ vận hành chung</div>
+                    </div>
+                  </div>
+
+                  <!-- Field 4: platformName -->
+                  <div class="mb-3">
+                    <label for="settingPlatformName" class="form-label fw-semibold text-dark">
+                      Tên nền tảng học tập
+                    </label>
+                    <input type="text"
+                           id="settingPlatformName"
+                           name="platformName"
+                           class="form-control"
+                           value="Hán Ngữ Học"
+                           required
+                           aria-describedby="settingPlatformNameHelp settingPlatformNameError">
+                    <div id="settingPlatformNameHelp" class="form-text text-secondary small">
+                      Tên thương hiệu hiển thị trên thanh điều hướng và thông báo hệ thống.
+                    </div>
+                    <div id="settingPlatformNameError" class="text-danger small mt-1 d-none" role="alert"></div>
+                  </div>
+
+                  <!-- Field 5: supportEmail -->
+                  <div class="mb-3">
+                    <label for="settingSupportEmail" class="form-label fw-semibold text-dark">
+                      Email hỗ trợ học viên
+                    </label>
+                    <input type="email"
+                           id="settingSupportEmail"
+                           name="supportEmail"
+                           class="form-control"
+                           value="support@hannguhoc.edu.vn"
+                           required
+                           aria-describedby="settingSupportEmailHelp settingSupportEmailError">
+                    <div id="settingSupportEmailHelp" class="form-text text-secondary small">
+                      Hộp thư tiếp nhận phản hồi, khiếu nại và hỗ trợ kỹ thuật cho học viên.
+                    </div>
+                    <div id="settingSupportEmailError" class="text-danger small mt-1 d-none" role="alert"></div>
+                  </div>
+
+                  <!-- Field 6: maintenanceMode -->
+                  <div class="mb-2 pt-2 border-top">
+                    <div class="form-check form-switch">
+                      <input class="form-check-input"
+                             type="checkbox"
+                             role="switch"
+                             id="settingMaintenanceMode"
+                             name="maintenanceMode"
+                             aria-describedby="settingMaintenanceHelp">
+                      <label class="form-check-label fw-semibold text-dark" for="settingMaintenanceMode">
+                        Chế độ bảo trì hệ thống (Maintenance Mode)
+                      </label>
+                    </div>
+                    <div id="settingMaintenanceHelp" class="form-text text-secondary small ps-1">
+                      Khi bật, chỉ Quản trị viên mới được thao tác; toàn bộ học viên sẽ được thông báo tạm dừng bảo trì.
+                    </div>
+                    <div id="maintenanceStatusBadge" class="mt-2" aria-live="polite">
+                      <span class="badge bg-success-subtle text-success border border-success-subtle">
+                        Hệ thống đang hoạt động bình thường
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Nút Hành Động (Action Buttons) -->
+            <div class="creator-panel-card mt-4 p-3 border d-flex flex-wrap align-items-center justify-content-between gap-3">
+              <div class="text-secondary small">
+                Thay đổi cấu hình sẽ được lưu vào hệ thống và có hiệu lực ngay lập tức.
+              </div>
+              <div class="d-flex align-items-center gap-2">
+                <button type="button" id="btnResetSettings" class="btn btn-chinese-outline py-2 px-3">
+                  <span>Hoàn tác thay đổi</span>
+                </button>
+                <button type="submit" id="btnSaveSettings" class="btn btn-chinese-primary py-2 px-4 d-inline-flex align-items-center gap-2">
+                  <span aria-hidden="true">💾</span>
+                  <span>Lưu cấu hình</span>
+                </button>
+              </div>
+            </div>
+
+          </form>
+
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- Global Toast Notification Container -->
+  <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- Global Semantic Footer Landmark -->
+  <footer class="site-footer">
+    <div class="container-xl">
+      <div class="row align-items-center g-3">
+        <div class="col-md-6 text-center text-md-start">
+          <div class="fw-semibold text-dark mb-1">Hệ Thống Học Bộ Thủ &amp; Từ Vựng Tiếng Trung</div>
+          <div class="small">Xây dựng trên nền tảng HTML5 ngữ nghĩa, CSS Tokens và Vanilla JS chuẩn mực.</div>
+        </div>
+        <div class="col-md-6 text-center text-md-end">
+          <div class="small">Tuân thủ tiêu chuẩn tiếp cận W3C WCAG 2.2 Level AA &bull; Zero-Build Architecture</div>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Verified Bootstrap 5.3.3 JS Bundle with Authenticated SRI -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+          crossorigin="anonymous"></script>
+
+  <!-- Management Workspace Layout & Sidebar Component -->
+  <script type="module" src="js/ui/management-layout.js"></script>
+
+  <!-- Admin Settings Page Controller -->
+  <script type="module" src="js/pages/admin-settings-page.js?v=20261105_06"></script>
+</body>
+</html>

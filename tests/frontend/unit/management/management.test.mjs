@@ -1,13 +1,13 @@
 /**
  * =============================================================================
- * UNIT TEST SUITE: MANAGEMENT HUB & ROLE ACCESS (TASK R1 / FEATURE F14)
+ * UNIT TEST SUITE: MANAGEMENT HUB & ROLE ACCESS (2-ROLE SIMPLIFIED MODEL)
  * File: tests/frontend/unit/management/management.test.mjs
  * 
  * Scope:
  * - hasManagementAccess pure function across single and multi-role states.
  * - getVisibleManagementSections visibility matrix computation per RBAC rules.
- * - Invariant: Learner NEVER has management access.
- * - Invariant: Admin has access to all 3 sections (Creator, Moderator, Admin).
+ * - Invariant: Only Admin has management access.
+ * - Invariant: Learner, deprecated Creator, and Moderator NEVER have management access.
  * =============================================================================
  */
 
@@ -15,7 +15,11 @@ import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   hasManagementAccess,
-  getVisibleManagementSections
+  getVisibleManagementSections,
+  formatTimestamp,
+  getActionBadgeClass,
+  getStatusBadgeClass,
+  FALLBACK_AUDIT_LOGS
 } from '../../../../frontend/js/pages/management-page.js';
 
 describe('Management Hub Logic & RBAC Invariants', () => {
@@ -74,6 +78,8 @@ describe('Management Hub Logic & RBAC Invariants', () => {
 
     test('supports session object with roles array', () => {
       assert.strictEqual(hasManagementAccess({ roles: ['Admin'] }), true);
+      assert.strictEqual(hasManagementAccess({ roles: ['Creator'] }), true);
+      assert.strictEqual(hasManagementAccess({ roles: ['Moderator'] }), true);
       assert.strictEqual(hasManagementAccess({ roles: ['Learner'] }), false);
     });
 
@@ -137,6 +143,42 @@ describe('Management Hub Logic & RBAC Invariants', () => {
         moderator: false,
         admin: false
       });
+    });
+
+  });
+
+  describe('3. Dashboard Helpers & Formatting', () => {
+
+    test('formatTimestamp correctly formats ISO date or falls back gracefully', () => {
+      assert.strictEqual(formatTimestamp(null), '—');
+      assert.strictEqual(formatTimestamp(''), '—');
+      assert.strictEqual(formatTimestamp(undefined), '—');
+
+      const formatted = formatTimestamp('2026-11-05T12:30:45Z');
+      assert.ok(formatted.includes('2026'), 'Formatted timestamp must contain the year');
+      assert.ok(formatted.includes(':'), 'Formatted timestamp must contain time colons');
+    });
+
+    test('getActionBadgeClass assigns semantic badge classes', () => {
+      assert.ok(getActionBadgeClass('ROLE_ASSIGN').includes('badge'));
+      assert.ok(getActionBadgeClass('ACCOUNT_LOCK').includes('warning'));
+      assert.ok(getActionBadgeClass('LESSON_APPROVE').includes('success'));
+      assert.ok(getActionBadgeClass('LESSON_REJECT').includes('danger'));
+    });
+
+    test('getStatusBadgeClass assigns success vs danger badges', () => {
+      assert.ok(getStatusBadgeClass('SUCCESS').includes('bg-success'));
+      assert.ok(getStatusBadgeClass('FAILURE').includes('bg-danger'));
+      assert.ok(getStatusBadgeClass(null).includes('bg-secondary'));
+    });
+
+    test('FALLBACK_AUDIT_LOGS contains exactly 5 authoritative entries', () => {
+      assert.strictEqual(FALLBACK_AUDIT_LOGS.length, 5);
+      for (const log of FALLBACK_AUDIT_LOGS) {
+        assert.ok(log.actorUsername);
+        assert.ok(log.actionType);
+        assert.strictEqual(log.status, 'SUCCESS');
+      }
     });
 
   });

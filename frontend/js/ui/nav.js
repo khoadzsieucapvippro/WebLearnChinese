@@ -21,6 +21,7 @@ import { apiClient, isDemoFallbackActive, isGitHubPagesEnvironment, isApiConfigu
 
 export const MANAGEMENT_PAGE_SET = new Set([
   'management.html',
+  'admin-dashboard.html',
   'creator-lessons.html',
   'creator-lesson-editor.html',
   'creator-import.html',
@@ -33,6 +34,7 @@ export const MANAGEMENT_PAGE_SET = new Set([
   'admin-radicals.html',
   'admin-vocabulary.html',
   'admin-audit-logs.html',
+  'admin-settings.html',
   'ui-verification.html'
 ]);
 
@@ -259,6 +261,7 @@ export function renderNavbarAuth(container) {
       const isProtectedPage = typeof window !== 'undefined' && 
         (window.location.pathname.endsWith('profile.html') ||
          window.location.pathname.endsWith('srs-dashboard.html') ||
+         window.location.pathname.endsWith('srs-report.html') ||
          window.location.pathname.endsWith('srs-review.html') ||
          window.location.pathname.endsWith('creator-lessons.html') ||
          window.location.pathname.endsWith('creator-lesson-editor.html') ||
@@ -340,6 +343,19 @@ export function renderNavbarAuth(container) {
             href: 'srs-dashboard.html',
             id: 'navLearningProgressBtn',
             'aria-label': 'Theo dõi tiến độ học tập và cài đặt SRS'
+          }
+        })
+      );
+
+      // Study Report link (Báo cáo ôn tập - ngay dưới Tiến độ học tập)
+      dropdownLinks.push(
+        createSafeElement('a', {
+          className: 'nav-dropdown-item py-2 px-3 text-decoration-none d-flex align-items-center gap-2',
+          text: 'Báo cáo ôn tập',
+          attrs: {
+            href: 'srs-report.html',
+            id: 'navVocabularyReportBtn',
+            'aria-label': 'Xem biểu đồ cột thống kê số lượng từ đã học và ôn tập theo ngày, tháng, quý'
           }
         })
       );
@@ -531,6 +547,7 @@ export function renderNavbarAuth(container) {
 export const REVIEW_HUB_SUBPAGES = new Set([
   'srs-review.html',
   'srs-dashboard.html',
+  'srs-report.html',
   'srs-settings.html'
 ]);
 

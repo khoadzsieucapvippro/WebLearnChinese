@@ -102,78 +102,83 @@
 
           <!-- Controls: Result Count Badge -->
           <div class="d-flex align-items-center flex-wrap gap-2">
-            <span id="auditLogCountBadge" class="badge bg-secondary">0 bản ghi</span>
+            <span id="auditLogCountBadge" class="badge-status badge-status-draft text-nowrap">0 bản ghi</span>
           </div>
         </div>
 
         <!-- Filter Toolbar Panel Card -->
         <div class="creator-panel-card mb-4 p-3">
           <div class="row g-3">
-            <div class="col-12 col-sm-6 col-md-3">
-              <label for="actionTypeFilter" class="form-label small fw-semibold text-dark mb-1">Loại hành vi</label>
+            <div class="col-12 col-md-3">
+              <label for="actionTypeFilter" class="form-label small fw-semibold text-secondary mb-1">Loại hành vi</label>
               <select id="actionTypeFilter" class="form-select form-select-sm">
                 <option value="">-- Tất cả hành vi --</option>
-                <option value="USER_ROLE_UPDATE">Phân quyền vai trò (USER_ROLE_UPDATE)</option>
-                <option value="ACCOUNT_STATUS_UPDATE">Trạng thái tài khoản (ACCOUNT_STATUS_UPDATE)</option>
-                <option value="LESSON_APPROVE">Duyệt bài học (LESSON_APPROVE)</option>
-                <option value="LESSON_REJECT">Từ chối bài học (LESSON_REJECT)</option>
-                <option value="VOCABULARY_CREATE">Thêm từ vựng (VOCABULARY_CREATE)</option>
-                <option value="VOCABULARY_UPDATE">Sửa từ vựng (VOCABULARY_UPDATE)</option>
-                <option value="VOCABULARY_DELETE">Xóa từ vựng (VOCABULARY_DELETE)</option>
-                <option value="RADICAL_CREATE">Thêm bộ thủ (RADICAL_CREATE)</option>
-                <option value="RADICAL_UPDATE">Sửa bộ thủ (RADICAL_UPDATE)</option>
-                <option value="RADICAL_DELETE">Xóa bộ thủ (RADICAL_DELETE)</option>
+                <option value="USER_ROLE_UPDATE">Phân quyền vai trò</option>
+                <option value="ACCOUNT_STATUS_UPDATE">Trạng thái tài khoản</option>
+                <option value="LESSON_APPROVE">Duyệt bài học</option>
+                <option value="LESSON_REJECT">Từ chối bài học</option>
+                <option value="LESSON_REVOKE">Thu hồi bài học</option>
+                <option value="VOCABULARY_CREATE">Thêm từ vựng</option>
+                <option value="VOCABULARY_UPDATE">Sửa từ vựng</option>
+                <option value="VOCABULARY_DELETE">Xóa từ vựng</option>
+                <option value="RADICAL_CREATE">Thêm bộ thủ</option>
+                <option value="RADICAL_UPDATE">Sửa bộ thủ</option>
+                <option value="RADICAL_DELETE">Xóa bộ thủ</option>
               </select>
             </div>
 
-            <div class="col-12 col-sm-6 col-md-2">
-              <label for="resourceTypeFilter" class="form-label small fw-semibold text-dark mb-1">Loại tài nguyên</label>
+            <div class="col-12 col-md-3">
+              <label for="resourceTypeFilter" class="form-label small fw-semibold text-secondary mb-1">Loại tài nguyên</label>
               <select id="resourceTypeFilter" class="form-select form-select-sm">
-                <option value="">-- Tất cả --</option>
-                <option value="USER">Người dùng (USER)</option>
-                <option value="ROLE">Vai trò (ROLE)</option>
-                <option value="LESSON">Bài học (LESSON)</option>
-                <option value="VOCABULARY">Từ vựng (VOCABULARY)</option>
-                <option value="RADICAL">Bộ thủ (RADICAL)</option>
+                <option value="">-- Tất cả tài nguyên --</option>
+                <option value="USER">Người dùng</option>
+                <option value="ROLE">Vai trò</option>
+                <option value="LESSON">Bài học</option>
+                <option value="VOCABULARY">Từ vựng</option>
+                <option value="RADICAL">Bộ thủ</option>
                 <option value="SYSTEM_SETTING">Cài đặt hệ thống</option>
               </select>
             </div>
 
-            <div class="col-12 col-sm-6 col-md-2">
-              <label for="statusFilter" class="form-label small fw-semibold text-dark mb-1">Kết quả</label>
+            <div class="col-12 col-md-3">
+              <label for="statusFilter" class="form-label small fw-semibold text-secondary mb-1">Kết quả</label>
               <select id="statusFilter" class="form-select form-select-sm">
-                <option value="">-- Tất cả --</option>
-                <option value="SUCCESS">Thành công (SUCCESS)</option>
-                <option value="FAILED">Thất bại (FAILED)</option>
+                <option value="">-- Tất cả kết quả --</option>
+                <option value="SUCCESS">Thành công</option>
+                <option value="FAILED">Thất bại</option>
               </select>
             </div>
 
-            <div class="col-12 col-sm-6 col-md-3">
-              <label for="actorSearchInput" class="form-label small fw-semibold text-dark mb-1">Người thực hiện</label>
-              <input type="text" id="actorSearchInput" class="form-control form-control-sm" placeholder="Email, SĐT hoặc ID...">
-            </div>
-
-            <div class="col-12 col-sm-6 col-md-4 d-flex align-items-end gap-2">
-              <button type="button" id="btnApplyFilter" class="btn-chinese-primary btn-sm flex-fill">
-                Lọc dữ liệu
-              </button>
-              <button type="button" id="btnResetFilter" class="btn-chinese-secondary btn-sm" title="Đặt lại bộ lọc">
-                Đặt lại
-              </button>
-              <button type="button" id="btnExportCsv" class="btn btn-outline-success btn-sm d-flex align-items-center gap-1 text-nowrap" title="Xuất dữ liệu nhật ký kiểm toán ra tệp CSV (RFC 4180)">
-                <span>📥 Xuất CSV</span>
-              </button>
+            <div class="col-12 col-md-3">
+              <label for="actorSearchInput" class="form-label small fw-semibold text-secondary mb-1">Người thực hiện</label>
+              <input type="text" id="actorSearchInput" class="form-control form-control-sm" placeholder="Tìm theo Email, SĐT hoặc ID...">
             </div>
           </div>
 
-          <div class="row g-3 mt-1">
-            <div class="col-12 col-sm-6 col-md-3">
-              <label for="startDateInput" class="form-label small fw-semibold text-dark mb-1">Từ ngày</label>
-              <input type="date" id="startDateInput" class="form-control form-control-sm">
+          <div class="row g-3 mt-1 align-items-end">
+            <div class="col-12 col-md-6">
+              <div class="row g-2">
+                <div class="col-6">
+                  <label for="startDateInput" class="form-label small fw-semibold text-secondary mb-1">Từ ngày</label>
+                  <input type="date" id="startDateInput" class="form-control form-control-sm">
+                </div>
+                <div class="col-6">
+                  <label for="endDateInput" class="form-label small fw-semibold text-secondary mb-1">Đến ngày</label>
+                  <input type="date" id="endDateInput" class="form-control form-control-sm">
+                </div>
+              </div>
             </div>
-            <div class="col-12 col-sm-6 col-md-3">
-              <label for="endDateInput" class="form-label small fw-semibold text-dark mb-1">Đến ngày</label>
-              <input type="date" id="endDateInput" class="form-control form-control-sm">
+
+            <div class="col-12 col-md-6 d-flex justify-content-md-end gap-2">
+              <button type="button" id="btnApplyFilter" class="btn-chinese-primary btn-sm px-3">
+                Lọc dữ liệu
+              </button>
+              <button type="button" id="btnResetFilter" class="btn-chinese-secondary btn-sm px-3" title="Đặt lại bộ lọc">
+                Đặt lại
+              </button>
+              <button type="button" id="btnExportCsv" class="btn btn-outline-success btn-sm d-flex align-items-center gap-1 text-nowrap px-3" title="Xuất dữ liệu nhật ký kiểm toán ra tệp CSV (RFC 4180)">
+                <span>📥 Xuất CSV</span>
+              </button>
             </div>
           </div>
         </div>

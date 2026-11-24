@@ -6,6 +6,7 @@ import com.elearning.dto.response.CurriculumProgressResponse;
 import com.elearning.dto.response.DueCardResponse;
 import com.elearning.dto.response.LessonSrsStatsResponse;
 import com.elearning.dto.response.StudyStatsResponse;
+import com.elearning.dto.response.VocabularyReportResponse;
 import com.elearning.entity.CardProgress;
 import com.elearning.entity.Radical;
 import com.elearning.entity.ReviewLog;
@@ -38,17 +39,24 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.Clock;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -698,10 +706,10 @@ public class SrsServiceImpl implements SrsService {
 
         LocalDateTime now = LocalDateTime.now(businessClock);
         long cardsDue = cardProgressRepository.countByUserAndNextReviewAtLessThanEqual(user, now);
-        long cardsDueListening = cardProgressRepository.countByUserAndItemTypeAndCardTypeAndNextReviewAtLessThanEqual(user, "VOCABULARY", "LISTENING", now);
-        long cardsDueWriting = cardProgressRepository.countByUserAndItemTypeAndCardTypeAndNextReviewAtLessThanEqual(user, "VOCABULARY", "WRITING", now);
-        long cardsDueReading = cardProgressRepository.countByUserAndItemTypeAndCardTypeAndNextReviewAtLessThanEqual(user, "VOCABULARY", "READING", now);
-        long cardsDueFlashcard = cardProgressRepository.countByUserAndItemTypeAndCardTypeAndNextReviewAtLessThanEqual(user, "VOCABULARY", "FLASHCARD", now);
+        long cardsDueListening = cardProgressRepository.countByUserAndCardTypeAndNextReviewAtLessThanEqual(user, "LISTENING", now);
+        long cardsDueWriting = cardProgressRepository.countByUserAndCardTypeAndNextReviewAtLessThanEqual(user, "WRITING", now);
+        long cardsDueReading = cardProgressRepository.countByUserAndCardTypeAndNextReviewAtLessThanEqual(user, "READING", now);
+        long cardsDueFlashcard = cardProgressRepository.countByUserAndCardTypeAndNextReviewAtLessThanEqual(user, "FLASHCARD", now);
 
         LocalDateTime startOfDay = LocalDate.now(businessClock).atStartOfDay();
         long reviewsToday = reviewLogRepository.countByUserAndReviewedAtGreaterThanEqual(user, startOfDay);
@@ -834,6 +842,340 @@ public class SrsServiceImpl implements SrsService {
                 learnedVocabIds,
                 learnedRadicalIds
         );
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public VocabularyReportResponse getVocabularyReport(String period, Integer year, Integer days, String endDate) {
+        return getVocabularyReport(period, year, days, endDate, "ALL");
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public VocabularyReportResponse getVocabularyReport(String period, Integer year, Integer days, String endDate, String cardType) {
+        UserProfile user = resolveCurrentUserProfile();
+        LocalDate today = LocalDate.now(businessClock);
+
+        String normalizedPeriod = (period == null || period.trim().isEmpty())
+                ? "day"
+                : period.trim().toLowerCase(Locale.ROOT);
+        if (!"day".equals(normalizedPeriod) && !"month".equals(normalizedPeriod) && !"quarter".equals(normalizedPeriod)) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR,
+                    "Chu kỳ thống kê không hợp lệ (chỉ hỗ trợ day, month, quarter)");
+        }
+
+        String normalizedCardType = (cardType == null || cardType.trim().isEmpty())
+                ? "ALL"
+                : cardType.trim().toUpperCase(Locale.ROOT);
+        if (!"ALL".equals(normalizedCardType)
+                && !"FLASHCARD".equals(normalizedCardType)
+                && !"READING".equals(normalizedCardType)
+                && !"LISTENING".equals(normalizedCardType)
+                && !"WRITING".equals(normalizedCardType)) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR,
+                    "Loại kỹ năng không hợp lệ (chỉ hỗ trợ ALL, FLASHCARD, READING, LISTENING, WRITING)");
+        }
+        boolean filterBySkill = !"ALL".equals(normalizedCardType);
+
+        int effectiveYear = year != null ? year : today.getYear();
+        if (effectiveYear < 2000 || effectiveYear > 2100) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Năm thống kê không hợp lệ");
+        }
+
+        int effectiveDays = days != null ? days : 14;
+        if (effectiveDays < 1 || effectiveDays > 90) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR,
+                    "Số ngày thống kê phải nằm trong khoảng từ 1 đến 90");
+        }
+
+        LocalDate effectiveEndDate = today;
+        if (endDate != null && !endDate.trim().isEmpty()) {
+            try {
+                LocalDate parsed = LocalDate.parse(endDate.trim(), DateTimeFormatter.ISO_LOCAL_DATE);
+                effectiveEndDate = parsed.isAfter(today) ? today : parsed;
+            } catch (DateTimeParseException ex) {
+                throw new BusinessException(ErrorCode.VALIDATION_ERROR,
+                        "Ngày kết thúc không đúng định dạng YYYY-MM-DD");
+            }
+        }
+
+        UserSrsSetting setting = userSrsSettingRepository != null
+                ? userSrsSettingRepository.findByUser(user).orElse(null)
+                : null;
+        int dailyGoal = setting != null ? setting.getNewCardsPerDay() : 20;
+
+        // 1. Fetch earliest review timestamp per distinct (itemType, itemId) across VOCABULARY and RADICAL
+        List<Object[]> firstRows = Collections.emptyList();
+        if (reviewLogRepository != null) {
+            firstRows = filterBySkill
+                    ? reviewLogRepository.findFirstReviewedAtByUserAndCardType(user, normalizedCardType)
+                    : reviewLogRepository.findFirstReviewedAtByUser(user);
+        }
+        if (firstRows == null) {
+            firstRows = Collections.emptyList();
+        }
+
+        Map<String, LocalDate> firstLearnedDates = new HashMap<>();
+        TreeSet<Integer> yearsSet = new TreeSet<>(Collections.reverseOrder());
+        yearsSet.add(today.getYear());
+        yearsSet.add(effectiveYear);
+
+        for (Object[] row : firstRows) {
+            if (row == null || row.length < 3 || row[0] == null || row[1] == null || row[2] == null) {
+                continue;
+            }
+            String itemTypeVal = String.valueOf(row[0]).trim().toUpperCase(Locale.ROOT);
+            Long itemId = ((Number) row[1]).longValue();
+            LocalDateTime firstAt = (LocalDateTime) row[2];
+            LocalDate firstDate = firstAt.toLocalDate();
+            firstLearnedDates.put(itemTypeVal + ":" + itemId, firstDate);
+            yearsSet.add(firstDate.getYear());
+        }
+
+        // 2. Determine window boundaries for selected period & summary cards
+        LocalDate periodStartDate;
+        LocalDate periodEndExclusiveDate;
+        if ("day".equals(normalizedPeriod)) {
+            periodStartDate = effectiveEndDate.minusDays(effectiveDays - 1L);
+            periodEndExclusiveDate = effectiveEndDate.plusDays(1L);
+        } else {
+            periodStartDate = LocalDate.of(effectiveYear, 1, 1);
+            periodEndExclusiveDate = LocalDate.of(effectiveYear + 1, 1, 1);
+        }
+
+        int currentQuarter = (today.getMonthValue() - 1) / 3 + 1;
+        LocalDate currentMonthStart = today.withDayOfMonth(1);
+        LocalDate nextMonthStart = currentMonthStart.plusMonths(1);
+        LocalDate previousMonthStart = currentMonthStart.minusMonths(1);
+        LocalDate currentQuarterStart = LocalDate.of(today.getYear(), (currentQuarter - 1) * 3 + 1, 1);
+        LocalDate nextQuarterStart = currentQuarterStart.plusMonths(3);
+
+        LocalDate queryStartDate = periodStartDate;
+        if (previousMonthStart.isBefore(queryStartDate)) {
+            queryStartDate = previousMonthStart;
+        }
+        if (currentQuarterStart.isBefore(queryStartDate)) {
+            queryStartDate = currentQuarterStart;
+        }
+        LocalDate queryEndExclusiveDate = periodEndExclusiveDate;
+        LocalDate tomorrow = today.plusDays(1L);
+        if (tomorrow.isAfter(queryEndExclusiveDate)) {
+            queryEndExclusiveDate = tomorrow;
+        }
+
+        List<Object[]> activityRows = Collections.emptyList();
+        if (reviewLogRepository != null) {
+            activityRows = filterBySkill
+                    ? reviewLogRepository.findActivityInRangeByUserAndCardType(
+                            user,
+                            normalizedCardType,
+                            queryStartDate.atStartOfDay(),
+                            queryEndExclusiveDate.atStartOfDay())
+                    : reviewLogRepository.findActivityInRangeByUser(
+                            user,
+                            queryStartDate.atStartOfDay(),
+                            queryEndExclusiveDate.atStartOfDay());
+        }
+        if (activityRows == null) {
+            activityRows = Collections.emptyList();
+        }
+
+        // 3. Build chronological buckets
+        Map<String, BucketAccumulator> bucketMap = new LinkedHashMap<>();
+        if ("day".equals(normalizedPeriod)) {
+            DateTimeFormatter keyFmt = DateTimeFormatter.ISO_LOCAL_DATE;
+            DateTimeFormatter labelFmt = DateTimeFormatter.ofPattern("dd/MM");
+            DateTimeFormatter fullDateFmt = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            for (int i = 0; i < effectiveDays; i++) {
+                LocalDate d = periodStartDate.plusDays(i);
+                String key = d.format(keyFmt);
+                String label = d.format(labelFmt);
+                String fullLabel = formatVietnameseDayLabel(d, fullDateFmt);
+                bucketMap.put(key, new BucketAccumulator(key, label, fullLabel, d.equals(today)));
+            }
+        } else if ("month".equals(normalizedPeriod)) {
+            for (int m = 1; m <= 12; m++) {
+                String key = String.format("%04d-%02d", effectiveYear, m);
+                String label = "T" + m;
+                String fullLabel = "Tháng " + m + "/" + effectiveYear;
+                boolean isCurrent = effectiveYear == today.getYear() && m == today.getMonthValue();
+                bucketMap.put(key, new BucketAccumulator(key, label, fullLabel, isCurrent));
+            }
+        } else {
+            for (int q = 1; q <= 4; q++) {
+                int startMonth = (q - 1) * 3 + 1;
+                int endMonth = q * 3;
+                String key = String.format("%04d-Q%d", effectiveYear, q);
+                String label = "Quý " + q;
+                String fullLabel = String.format("Quý %d/%d (T%d–T%d)", q, effectiveYear, startMonth, endMonth);
+                boolean isCurrent = effectiveYear == today.getYear() && q == currentQuarter;
+                bucketMap.put(key, new BucketAccumulator(key, label, fullLabel, isCurrent));
+            }
+        }
+
+        // 4. Aggregate first-learned counts into buckets and summary cards
+        long todayNewCount = 0L;
+        long monthNewCount = 0L;
+        long previousMonthNewCount = 0L;
+        long quarterNewCount = 0L;
+
+        for (LocalDate firstDate : firstLearnedDates.values()) {
+            if (firstDate.equals(today)) {
+                todayNewCount++;
+            }
+            if (!firstDate.isBefore(currentMonthStart) && firstDate.isBefore(nextMonthStart)) {
+                monthNewCount++;
+            }
+            if (!firstDate.isBefore(previousMonthStart) && firstDate.isBefore(currentMonthStart)) {
+                previousMonthNewCount++;
+            }
+            if (!firstDate.isBefore(currentQuarterStart) && firstDate.isBefore(nextQuarterStart)) {
+                quarterNewCount++;
+            }
+
+            String bucketKey = resolveBucketKey(normalizedPeriod, firstDate, effectiveYear);
+            if (bucketKey != null) {
+                BucketAccumulator acc = bucketMap.get(bucketKey);
+                if (acc != null) {
+                    acc.newWordsCount++;
+                }
+            }
+        }
+
+        // 5. Aggregate unique reviewed items (VOCABULARY + RADICAL) & review actions into buckets and summary cards
+        Set<String> todayReviewedItems = new HashSet<>();
+        Set<String> monthReviewedItems = new HashSet<>();
+        Set<String> quarterReviewedItems = new HashSet<>();
+
+        for (Object[] row : activityRows) {
+            if (row == null || row.length < 3 || row[0] == null || row[1] == null || row[2] == null) {
+                continue;
+            }
+            String itemTypeVal = String.valueOf(row[0]).trim().toUpperCase(Locale.ROOT);
+            Long itemId = ((Number) row[1]).longValue();
+            String compositeKey = itemTypeVal + ":" + itemId;
+            LocalDate reviewDate = ((LocalDateTime) row[2]).toLocalDate();
+            String rowSkill = (row.length >= 4 && row[3] != null)
+                    ? String.valueOf(row[3]).trim().toUpperCase(Locale.ROOT)
+                    : null;
+
+            if (reviewDate.equals(today)) {
+                todayReviewedItems.add(compositeKey);
+            }
+            if (!reviewDate.isBefore(currentMonthStart) && reviewDate.isBefore(nextMonthStart)) {
+                monthReviewedItems.add(compositeKey);
+            }
+            if (!reviewDate.isBefore(currentQuarterStart) && reviewDate.isBefore(nextQuarterStart)) {
+                quarterReviewedItems.add(compositeKey);
+            }
+
+            String bucketKey = resolveBucketKey(normalizedPeriod, reviewDate, effectiveYear);
+            if (bucketKey != null) {
+                BucketAccumulator acc = bucketMap.get(bucketKey);
+                if (acc != null) {
+                    acc.reviewedItems.add(compositeKey);
+                    acc.reviewActionsCount++;
+                    if (rowSkill != null) {
+                        acc.skillItems
+                                .computeIfAbsent(rowSkill, k -> new HashSet<>())
+                                .add(compositeKey);
+                    }
+                }
+            }
+        }
+
+        List<VocabularyReportResponse.VocabularyReportBucket> buckets = new ArrayList<>(bucketMap.size());
+        for (BucketAccumulator acc : bucketMap.values()) {
+            Map<String, Long> skillCounts = new LinkedHashMap<>();
+            skillCounts.put("FLASHCARD", (long) acc.skillItems.getOrDefault("FLASHCARD", Collections.emptySet()).size());
+            skillCounts.put("READING", (long) acc.skillItems.getOrDefault("READING", Collections.emptySet()).size());
+            skillCounts.put("LISTENING", (long) acc.skillItems.getOrDefault("LISTENING", Collections.emptySet()).size());
+            skillCounts.put("WRITING", (long) acc.skillItems.getOrDefault("WRITING", Collections.emptySet()).size());
+
+            buckets.add(new VocabularyReportResponse.VocabularyReportBucket(
+                    acc.key,
+                    acc.label,
+                    acc.fullLabel,
+                    acc.newWordsCount,
+                    acc.reviewedItems.size(),
+                    acc.reviewActionsCount,
+                    acc.current,
+                    skillCounts
+            ));
+        }
+
+        long totalSystemVocab = (vocabularyRepository != null ? vocabularyRepository.count() : 0L)
+                + (radicalRepository != null ? radicalRepository.count() : 0L);
+        VocabularyReportResponse.VocabularyReportSummary summary =
+                new VocabularyReportResponse.VocabularyReportSummary(
+                        todayNewCount,
+                        todayReviewedItems.size(),
+                        monthNewCount,
+                        monthReviewedItems.size(),
+                        previousMonthNewCount,
+                        quarterNewCount,
+                        quarterReviewedItems.size(),
+                        firstLearnedDates.size(),
+                        totalSystemVocab
+                );
+
+        return new VocabularyReportResponse(
+                normalizedPeriod,
+                normalizedCardType,
+                effectiveYear,
+                effectiveDays,
+                effectiveEndDate.format(DateTimeFormatter.ISO_LOCAL_DATE),
+                dailyGoal,
+                summary,
+                buckets,
+                new ArrayList<>(yearsSet)
+        );
+    }
+
+    private String resolveBucketKey(String period, LocalDate date, int targetYear) {
+        if ("day".equals(period)) {
+            return date.format(DateTimeFormatter.ISO_LOCAL_DATE);
+        }
+        if (date.getYear() != targetYear) {
+            return null;
+        }
+        if ("month".equals(period)) {
+            return String.format("%04d-%02d", targetYear, date.getMonthValue());
+        }
+        int quarter = (date.getMonthValue() - 1) / 3 + 1;
+        return String.format("%04d-Q%d", targetYear, quarter);
+    }
+
+    private String formatVietnameseDayLabel(LocalDate date, DateTimeFormatter fullDateFmt) {
+        DayOfWeek dow = date.getDayOfWeek();
+        String dowText = switch (dow) {
+            case MONDAY -> "Thứ 2";
+            case TUESDAY -> "Thứ 3";
+            case WEDNESDAY -> "Thứ 4";
+            case THURSDAY -> "Thứ 5";
+            case FRIDAY -> "Thứ 6";
+            case SATURDAY -> "Thứ 7";
+            case SUNDAY -> "Chủ nhật";
+        };
+        return dowText + ", " + date.format(fullDateFmt);
+    }
+
+    private static final class BucketAccumulator {
+        final String key;
+        final String label;
+        final String fullLabel;
+        final boolean current;
+        long newWordsCount;
+        long reviewActionsCount;
+        final Set<String> reviewedItems = new HashSet<>();
+        final Map<String, Set<String>> skillItems = new HashMap<>();
+
+        BucketAccumulator(String key, String label, String fullLabel, boolean current) {
+            this.key = key;
+            this.label = label;
+            this.fullLabel = fullLabel;
+            this.current = current;
+        }
     }
 
     private UserProfile resolveCurrentUserProfile() {

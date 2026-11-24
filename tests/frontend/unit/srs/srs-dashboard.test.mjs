@@ -305,7 +305,7 @@ describe('SRS Dashboard Unit Tests (Task 9C.4)', () => {
       });
     });
 
-    test('renderStatistics correctly falls back to cardsDueReading when cardsDueFlashcard is 0', () => {
+    test('renderStatistics preserves explicit 0 cardsDueFlashcard and falls back only when nullish', () => {
       const mockContext = {
         statCardsDue: { textContent: '' },
         statCardsDueFlashcard: { textContent: '' },
@@ -319,19 +319,27 @@ describe('SRS Dashboard Unit Tests (Task 9C.4)', () => {
         statNewCardsLimit: { textContent: '' }
       };
 
-      // Legacy account with cardsDueFlashcard: 0 and cardsDueReading: 15
+      // Authoritative 0 flashcard due with positive reading due must not duplicate reading count
       SrsDashboardController.prototype.renderStatistics.call(mockContext, {
         cardsDue: 15,
         cardsDueFlashcard: 0,
         cardsDueReading: 15
       });
 
-      assert.strictEqual(mockContext.statCardsDueFlashcard.textContent, '15');
+      assert.strictEqual(mockContext.statCardsDueFlashcard.textContent, '0');
       assert.strictEqual(mockContext.statCardsDueReading.textContent, '15');
+
+      // Legacy payload omitting cardsDueFlashcard falls back to cardsDueReading
+      SrsDashboardController.prototype.renderStatistics.call(mockContext, {
+        cardsDue: 15,
+        cardsDueReading: 15
+      });
+
+      assert.strictEqual(mockContext.statCardsDueFlashcard.textContent, '15');
 
       // Account with positive cardsDueFlashcard: 8 and cardsDueReading: 15
       SrsDashboardController.prototype.renderStatistics.call(mockContext, {
-        cardsDue: 15,
+        cardsDue: 23,
         cardsDueFlashcard: 8,
         cardsDueReading: 15
       });

@@ -61,7 +61,10 @@ export function validateLessonId(idParam) {
  * @param {string} status 
  * @returns {boolean}
  */
-export function isLessonEditable(status) {
+export function isLessonEditable(status, authInstance = authManager) {
+  if (authInstance && typeof authInstance.hasRole === 'function' && authInstance.hasRole('Admin')) {
+    return true;
+  }
   if (!status || typeof status !== 'string') return false;
   const s = status.trim().toLowerCase();
   return s === 'draft' || s === 'rejected';
@@ -281,6 +284,10 @@ export class CreatorLessonEditorController {
       return;
     }
 
+    if (this.elements.editorBackLink) {
+      this.elements.editorBackLink.href = authManager.hasRole('Admin') ? 'admin-lessons.html' : 'creator-lessons.html';
+    }
+
     // 2. Validate URL parameter
     const urlParams = new URLSearchParams(window.location.search);
     const idParam = urlParams.get('id');
@@ -297,6 +304,7 @@ export class CreatorLessonEditorController {
 
   bindDomElements() {
     this.elements = {
+      editorBackLink: document.getElementById('editorBackLink'),
       breadcrumbTitle: document.getElementById('editorBreadcrumbTitle'),
       stateContainer: document.getElementById('editorStateContainer'),
       workspace: document.getElementById('editorWorkspace'),
@@ -451,7 +459,9 @@ export class CreatorLessonEditorController {
     if (this.elements.workspace) this.elements.workspace.classList.add('d-none');
 
     try {
-      const response = await apiClient(`/creator/lessons/${this.lessonId}`);
+      const isAdmin = authManager.hasRole('Admin');
+      const endpoint = isAdmin ? `/admin/lessons/${this.lessonId}` : `/creator/lessons/${this.lessonId}`;
+      const response = await apiClient(endpoint);
       const detail = parseLessonDetail(response);
 
       if (!detail) {
@@ -536,8 +546,18 @@ export class CreatorLessonEditorController {
     }
 
     // 4. Locked Banner Presentation
+    const isAdmin = authManager.hasRole('Admin');
     if (this.elements.lockedBanner) {
-      if (!editable) {
+      if (isAdmin && status === 'Approved') {
+        this.elements.lockedBanner.classList.remove('d-none');
+        this.elements.lockedBanner.className = 'creator-locked-banner alert alert-info mb-3';
+        if (this.elements.lockedBannerTitle) {
+          this.elements.lockedBannerTitle.textContent = 'Chế độ Quản trị viên (Admin): Xuất bản trực tiếp.';
+        }
+        if (this.elements.lockedBannerDesc) {
+          this.elements.lockedBannerDesc.textContent = 'Bài học đang phát hành trên toàn hệ thống. Mọi thay đổi về tiêu đề, thêm/xóa hoặc đổi thứ tự từ vựng được cập nhật trực tiếp đến học viên.';
+        }
+      } else if (!editable) {
         this.elements.lockedBanner.classList.remove('d-none');
         if (status === 'Approved') {
           this.elements.lockedBanner.className = 'creator-locked-banner creator-locked-banner-approved';
@@ -617,7 +637,9 @@ export class CreatorLessonEditorController {
 
     // 8. Submit for Moderation Button
     if (this.elements.btnSubmitForModeration) {
-      if (editable) {
+      if (isAdmin) {
+        this.elements.btnSubmitForModeration.classList.add('d-none');
+      } else if (editable) {
         this.elements.btnSubmitForModeration.classList.remove('d-none');
         const isRejected = status === 'Rejected';
         this.elements.btnSubmitForModeration.textContent = isRejected ? 'Nộp lại bài học' : 'Nộp kiểm duyệt';
@@ -940,7 +962,9 @@ export class CreatorLessonEditorController {
     }
 
     try {
-      const response = await apiClient(`/creator/lessons/${this.lessonId}`, {
+      const isAdmin = authManager.hasRole('Admin');
+      const endpoint = isAdmin ? `/admin/lessons/${this.lessonId}` : `/creator/lessons/${this.lessonId}`;
+      const response = await apiClient(endpoint, {
         method: 'PUT',
         body: {
           title: validation.sanitizedTitle
@@ -950,7 +974,6 @@ export class CreatorLessonEditorController {
       const updated = parseLessonDetail(response);
       if (updated) {
         this.currentLesson = updated;
-        this.renderLessonState();
       }
 
       showToast({
@@ -967,6 +990,7 @@ export class CreatorLessonEditorController {
       showToast({ type: 'danger', title: 'Lỗi cập nhật', message: errMsg });
     } finally {
       this.isMutating = false;
+      this.renderLessonState();
       if (this.elements.btnSaveTitle) {
         this.elements.btnSaveTitle.disabled = !isLessonEditable(this.currentLesson?.status);
         this.elements.btnSaveTitle.textContent = 'Lưu tiêu đề';
@@ -1125,7 +1149,11 @@ export class CreatorLessonEditorController {
     this.isMutating = true;
 
     try {
-      const response = await apiClient(`/creator/lessons/${this.lessonId}/vocabularies/${vocabItem.vocabId}`, {
+      const isAdmin = authManager.hasRole('Admin');
+      const endpoint = isAdmin
+        ? `/admin/lessons/${this.lessonId}/vocabularies/${vocabItem.vocabId}`
+        : `/creator/lessons/${this.lessonId}/vocabularies/${vocabItem.vocabId}`;
+      const response = await apiClient(endpoint, {
         method: 'POST'
       });
 
@@ -1170,7 +1198,11 @@ export class CreatorLessonEditorController {
     this.isMutating = true;
 
     try {
-      const response = await apiClient(`/creator/lessons/${this.lessonId}/vocabularies/${vocabItem.vocabId}`, {
+      const isAdmin = authManager.hasRole('Admin');
+      const endpoint = isAdmin
+        ? `/admin/lessons/${this.lessonId}/vocabularies/${vocabItem.vocabId}`
+        : `/creator/lessons/${this.lessonId}/vocabularies/${vocabItem.vocabId}`;
+      const response = await apiClient(endpoint, {
         method: 'DELETE'
       });
 
@@ -1214,7 +1246,11 @@ export class CreatorLessonEditorController {
     this.disableReorderButtons();
 
     try {
-      const response = await apiClient(`/creator/lessons/${this.lessonId}/reorder`, {
+      const isAdmin = authManager.hasRole('Admin');
+      const endpoint = isAdmin
+        ? `/admin/lessons/${this.lessonId}/reorder`
+        : `/creator/lessons/${this.lessonId}/reorder`;
+      const response = await apiClient(endpoint, {
         method: 'PUT',
         body: payload
       });

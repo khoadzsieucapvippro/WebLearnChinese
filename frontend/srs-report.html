@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' https://cdn.jsdelivr.net; style-src-elem 'self' https://cdn.jsdelivr.net; style-src-attr 'unsafe-inline'; font-src 'self'; img-src 'self' data: https:; media-src 'self' blob: https:; connect-src 'self' https://cdn.jsdelivr.net http://localhost:8080 http://127.0.0.1:8080 https://*.up.railway.app https://*.onrender.com https://*.koyeb.app; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'self' https://www.youtube-nocookie.com">
+  <title>Báo Cáo Ôn Tập — eLEARNING | Hán Ngữ &amp; Bộ Thủ</title>
+  <meta name="description" content="Biểu đồ cột thống kê số lượng từ đã học và ôn tập theo ngày, tháng, quý của học viên.">
+
+  <!-- Verified Bootstrap 5.3.3 CSS via CDN with Authenticated Subresource Integrity (SRI) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+
+  <!-- Scholarly Brand Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>策</text></svg>">
+
+  <!-- Core Design Tokens & Custom Stylesheet -->
+  <link rel="stylesheet" href="css/style.css?v=20261124_01">
+
+  <!-- Runtime Environment Configuration -->
+  <script src="js/config.js"></script>
+</head>
+<body>
+
+  <!-- Accessible Skip Link (WCAG 2.2 SC 2.4.1) -->
+  <a href="#mainContent" class="skip-link">Chuyển đến nội dung chính</a>
+
+  <!-- Global Header & Navigation Landmark -->
+  <header class="site-header">
+    <div class="container-xl">
+      <nav class="navbar navbar-expand-lg py-2" aria-label="Điều hướng chính của trang">
+        <!-- Brand identity -->
+        <a class="navbar-brand-custom" href="index.html">
+          <span class="brand-seal-mark" aria-hidden="true">字</span>
+          <span>Hán Ngữ &amp; Bộ Thủ</span>
+        </a>
+
+        <!-- Mobile Navigation Toggle -->
+        <button class="navbar-toggler border-0 p-2" type="button" data-bs-toggle="collapse" data-bs-target="#primaryNavMenu" aria-controls="primaryNavMenu" aria-expanded="false" aria-label="Mở menu điều hướng">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- Navigation Links -->
+        <div class="collapse navbar-collapse" id="primaryNavMenu">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-3 gap-1">
+            <li class="nav-item">
+              <a class="nav-link-custom" href="index.html">Trang chủ</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link-custom" href="radicals.html">Bộ thủ</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link-custom" href="vocabulary.html">Từ vựng</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link-custom" href="lessons.html">Bài học</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link-custom active" href="srs-review.html" aria-current="page">Ôn tập</a>
+            </li>
+          </ul>
+
+          <!-- User Session / Navigation Actions (Authoritatively rendered by nav.js) -->
+          <div id="navAuthContainer" class="d-flex align-items-center gap-2 mt-3 mt-lg-0">
+            <a href="login.html" class="btn-chinese-secondary py-2 px-3 text-decoration-none">
+              Đăng nhập
+            </a>
+            <a href="register.html" class="btn-chinese-primary py-2 px-3 text-decoration-none">
+              Đăng ký
+            </a>
+          </div>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Content Landmark -->
+  <main id="mainContent" class="main-content-wrapper py-4 py-md-5">
+    <div class="container-xl srs-dashboard-wrapper">
+
+      <!-- Page Header & Action Bar -->
+      <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3 mb-4 pb-3 border-bottom">
+        <div>
+          <div class="d-inline-flex align-items-center gap-2 mb-1">
+            <span class="brand-seal-mark" aria-hidden="true" style="width: 28px; height: 28px; font-size: 0.95rem;">策</span>
+            <span class="text-secondary small fw-semibold text-uppercase" style="letter-spacing: 0.05em;">Trung Tâm Ôn Tập &bull; Báo Cáo Ôn Tập</span>
+          </div>
+          <h1 class="h2 fw-bold text-dark mb-1" id="srsReportHeading">Báo Cáo Ôn Tập</h1>
+          <p class="text-secondary mb-0">
+            Biểu đồ cột thống kê số lượng từ mới đã học và từ đã ôn tập theo ngày, tháng, quý (bao gồm từ vựng và bộ thủ).
+          </p>
+        </div>
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+          <a href="srs-dashboard.html" id="btnGoToDashboard" class="btn-chinese-secondary py-2 px-3 text-decoration-none d-inline-flex align-items-center gap-2">
+            <span>Tiến độ hôm nay</span>
+          </a>
+          <a href="srs-review.html" id="btnGoToReview" class="btn-chinese-primary py-2 px-3 text-decoration-none d-inline-flex align-items-center gap-2">
+            <span>&larr; Vào phòng ôn tập</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- State 1: Loading State -->
+      <section id="reportLoadingState" class="state-container py-5 text-center" role="status" aria-live="polite">
+        <div class="state-spinner" aria-hidden="true"></div>
+        <p class="state-loading-text mt-3 text-secondary">Đang tổng hợp báo cáo ôn tập...</p>
+      </section>
+
+      <!-- State 2: Unauthenticated State -->
+      <section id="reportAuthState" class="d-none text-center py-5">
+        <div class="p-4 p-md-5 rounded-3 border bg-surface mx-auto" style="max-width: 500px;">
+          <div class="display-5 mb-3" aria-hidden="true">🔒</div>
+          <h2 class="h4 fw-bold text-dark mb-2">Yêu cầu đăng nhập</h2>
+          <p class="text-secondary mb-4">
+            Báo cáo số lượng từ đã học gắn liền với tài khoản học viên cá nhân. Vui lòng đăng nhập để xem thống kê chi tiết.
+          </p>
+          <a href="login.html?redirect=srs-report.html" id="btnReportLoginRedirect" class="btn-chinese-primary py-2 px-4 text-decoration-none">
+            Đăng nhập ngay
+          </a>
+        </div>
+      </section>
+
+      <!-- State 3: Error State -->
+      <section id="reportErrorState" class="d-none text-center py-5" role="alert">
+        <div class="p-4 rounded-3 border border-danger-subtle bg-danger-subtle mx-auto" style="max-width: 500px;">
+          <div class="h3 text-danger mb-2" aria-hidden="true">⚠️</div>
+          <h2 class="h5 fw-bold text-danger mb-2">Không thể tải báo cáo ôn tập</h2>
+          <p id="reportErrorMessage" class="text-secondary small mb-3">Đã xảy ra lỗi khi nạp dữ liệu từ máy chủ.</p>
+          <button type="button" id="btnReportRetry" class="btn btn-outline-danger btn-sm px-3">
+            Thử lại
+          </button>
+        </div>
+      </section>
+
+      <!-- State 4: Loaded Report Content Section -->
+      <section id="reportContentSection" class="d-none">
+
+        <!-- Summary KPI Cards -->
+        <section class="mb-4" aria-labelledby="reportSummaryHeading">
+          <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+            <h2 id="reportSummaryHeading" class="h5 fw-bold mb-0">Tổng quan tích lũy học tập</h2>
+            <button type="button" id="btnRefreshReport" class="btn btn-sm btn-outline-secondary py-1 px-3 d-inline-flex align-items-center gap-1" title="Tải lại báo cáo mới nhất từ máy chủ">
+              <span aria-hidden="true">🔄</span>
+              <span>Làm mới số liệu</span>
+            </button>
+          </div>
+
+          <div class="srs-metric-grid">
+            <!-- 1. Today -->
+            <div class="srs-metric-card srs-metric-new" id="cardReportToday">
+              <div class="srs-metric-header">
+                <span class="srs-metric-title">Đã học hôm nay</span>
+                <span class="srs-metric-icon" aria-hidden="true">🌱</span>
+              </div>
+              <div class="srs-metric-value" id="statTodayLearned">-</div>
+              <div class="srs-metric-meta" id="statTodayMeta">Từ mới &amp; ôn tập trong ngày</div>
+            </div>
+
+            <!-- 2. This Month -->
+            <div class="srs-metric-card srs-metric-reviewed" id="cardReportMonth">
+              <div class="srs-metric-header">
+                <span class="srs-metric-title">Tháng này</span>
+                <span class="srs-metric-icon" aria-hidden="true">📅</span>
+              </div>
+              <div class="srs-metric-value" id="statMonthNew">-</div>
+              <div class="srs-metric-meta" id="statMonthMeta">So với tháng trước</div>
+            </div>
+
+            <!-- 3. This Quarter -->
+            <div class="srs-metric-card srs-metric-limit-new" id="cardReportQuarter">
+              <div class="srs-metric-header">
+                <span class="srs-metric-title">Quý này</span>
+                <span class="srs-metric-icon" aria-hidden="true">📊</span>
+              </div>
+              <div class="srs-metric-value" id="statQuarterNew">-</div>
+              <div class="srs-metric-meta" id="statQuarterMeta">Từ mới trong quý</div>
+            </div>
+
+            <!-- 4. Cumulative Learned -->
+            <div class="srs-metric-card srs-metric-limit-review" id="cardReportTotal">
+              <div class="srs-metric-header">
+                <span class="srs-metric-title">Tổng đã học</span>
+                <span class="srs-metric-icon" aria-hidden="true">📚</span>
+              </div>
+              <div class="srs-metric-value" id="statTotalLearned">-</div>
+              <div class="srs-metric-meta d-flex justify-content-between align-items-center">
+                <span>Tiến độ giáo trình:</span>
+                <span class="fw-semibold" id="statTotalQuotaText">- / -</span>
+              </div>
+              <div class="srs-progress-track" aria-hidden="true">
+                <div class="srs-progress-fill" id="statTotalProgressBar" style="width: 0%;"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Column Chart Card -->
+        <section class="srs-report-card" id="reportChartCard" aria-labelledby="chartSectionHeading">
+          <div class="srs-report-toolbar">
+            <div>
+              <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
+                <h2 id="chartSectionHeading" class="h5 fw-bold text-dark mb-0">Biểu đồ cột số từ đã ôn tập</h2>
+                <span id="reportChartLoadingBadge" class="srs-report-loading-pill d-none" role="status" aria-live="polite">Đang cập nhật...</span>
+              </div>
+              <p class="text-secondary small mb-0">
+                Hiển thị cả từ mới học lần đầu và số từ khác nhau đã học/ôn tập trong mỗi kỳ.
+              </p>
+            </div>
+
+            <div class="srs-report-controls">
+              <!-- Day window selector -->
+              <div id="dayWindowGroup" class="d-flex align-items-center gap-2">
+                <label for="reportDaysSelect" class="small text-secondary fw-semibold mb-0">Khoảng:</label>
+                <select id="reportDaysSelect" class="form-select form-select-sm" style="width: auto;">
+                  <option value="7">7 ngày gần nhất</option>
+                  <option value="14" selected>14 ngày gần nhất</option>
+                  <option value="30">30 ngày gần nhất</option>
+                </select>
+              </div>
+
+              <!-- Year stepper for Month / Quarter -->
+              <div id="yearStepperGroup" class="srs-year-stepper d-none" role="group" aria-label="Chọn năm thống kê">
+                <button type="button" class="srs-year-stepper-btn" id="btnPrevYear" aria-label="Năm trước">&lsaquo;</button>
+                <span class="srs-year-stepper-label" id="reportYearLabel">2026</span>
+                <button type="button" class="srs-year-stepper-btn" id="btnNextYear" aria-label="Năm sau">&rsaquo;</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Granularity Tabs -->
+          <div class="srs-report-tablist mb-3" role="tablist" aria-label="Chọn chu kỳ biểu đồ">
+            <button type="button" class="srs-report-tab" role="tab" id="tabPeriodDay" aria-selected="true" data-period="day">
+              Theo ngày
+            </button>
+            <button type="button" class="srs-report-tab" role="tab" id="tabPeriodMonth" aria-selected="false" data-period="month">
+              Theo tháng
+            </button>
+            <button type="button" class="srs-report-tab" role="tab" id="tabPeriodQuarter" aria-selected="false" data-period="quarter">
+              Theo quý
+            </button>
+          </div>
+
+          <!-- 4-Skill Filter Bar -->
+          <div class="srs-skill-filter-bar">
+            <span class="srs-skill-filter-label" id="skillFilterLabel">Kỹ năng ôn tập:</span>
+            <div class="srs-skill-filter-group" role="group" aria-labelledby="skillFilterLabel">
+              <button type="button" class="srs-skill-pill" id="btnSkillAll" data-card-type="ALL" aria-pressed="true">Tất cả</button>
+              <button type="button" class="srs-skill-pill" id="btnSkillFlashcard" data-card-type="FLASHCARD" aria-pressed="false">Flashcard</button>
+              <button type="button" class="srs-skill-pill" id="btnSkillReading" data-card-type="READING" aria-pressed="false">Đọc</button>
+              <button type="button" class="srs-skill-pill" id="btnSkillListening" data-card-type="LISTENING" aria-pressed="false">Nghe</button>
+              <button type="button" class="srs-skill-pill" id="btnSkillWriting" data-card-type="WRITING" aria-pressed="false">Viết</button>
+            </div>
+          </div>
+
+          <!-- Legend & Series Toggle -->
+          <div class="srs-chart-legend">
+            <div class="srs-legend-items">
+              <span class="srs-legend-item">
+                <span class="srs-legend-swatch srs-legend-swatch-new" aria-hidden="true"></span>
+                <span>Từ mới đã học</span>
+              </span>
+              <span class="srs-legend-item">
+                <span class="srs-legend-swatch srs-legend-swatch-current" aria-hidden="true"></span>
+                <span>Kỳ hiện tại</span>
+              </span>
+              <span class="srs-legend-item" id="legendReviewedItem">
+                <span class="srs-legend-swatch srs-legend-swatch-reviewed" aria-hidden="true"></span>
+                <span>Từ đã học/ôn trong kỳ</span>
+              </span>
+              <span class="srs-legend-item" id="legendGoalItem">
+                <span class="srs-legend-swatch srs-legend-swatch-goal" aria-hidden="true"></span>
+                <span id="legendGoalText">Mục tiêu/ngày</span>
+              </span>
+            </div>
+
+            <div class="form-check form-switch mb-0">
+              <input class="form-check-input" type="checkbox" role="switch" id="chkIncludeReviewed" checked>
+              <label class="form-check-label small fw-semibold text-dark" for="chkIncludeReviewed">
+                Hiện cột từ đã học/ôn
+              </label>
+            </div>
+          </div>
+
+          <!-- Column Chart Frame -->
+          <div class="srs-chart-frame" id="reportChartContainer">
+            <div class="srs-chart-yaxis" id="reportChartYAxis" aria-hidden="true">
+              <span>20</span>
+              <span>15</span>
+              <span>10</span>
+              <span>5</span>
+              <span>0</span>
+            </div>
+
+            <div class="srs-chart-scroll" id="reportChartScroll">
+              <div class="srs-chart-plot" id="reportChartPlot">
+                <div class="srs-chart-gridlines" aria-hidden="true">
+                  <div class="srs-chart-gridline"></div>
+                  <div class="srs-chart-gridline"></div>
+                  <div class="srs-chart-gridline"></div>
+                  <div class="srs-chart-gridline"></div>
+                  <div class="srs-chart-gridline srs-chart-gridline-base"></div>
+                </div>
+
+                <div class="srs-chart-goal-line d-none" id="reportGoalLine" aria-hidden="true">
+                  <span class="srs-chart-goal-tag" id="reportGoalTag">Mục tiêu: 20</span>
+                </div>
+
+                <div class="srs-chart-columns" id="reportChartColumns" role="list" aria-label="Các cột thống kê ôn tập"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Selected Column Detail Readout -->
+          <div class="srs-report-detail-banner" id="reportSelectedDetail" role="status" aria-live="polite">
+            <span>Chọn một cột trên biểu đồ để xem chi tiết số liệu.</span>
+          </div>
+
+          <!-- Accessible Table Fallback Toggle -->
+          <div class="mt-3 d-flex justify-content-end">
+            <button type="button" class="btn btn-sm btn-outline-secondary" id="btnToggleReportTable" aria-expanded="false" aria-controls="reportTableContainer">
+              Xem bảng số liệu chi tiết
+            </button>
+          </div>
+
+          <div id="reportTableContainer" class="srs-report-table-wrap d-none" tabindex="0" role="region" aria-labelledby="reportTableCaption">
+            <table class="table table-sm table-hover align-middle">
+              <caption id="reportTableCaption" class="visually-hidden">Bảng chi tiết số lượng từ đã học và ôn tập theo chu kỳ</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Thời gian</th>
+                  <th scope="col" class="text-end">Từ mới học</th>
+                  <th scope="col" class="text-end">Từ đã ôn tập</th>
+                  <th scope="col" class="text-end">Tổng lượt ôn</th>
+                </tr>
+              </thead>
+              <tbody id="reportTableBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Global Footer Landmark -->
+  <footer class="site-footer mt-auto py-4 border-top">
+    <div class="container-xl">
+      <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+        <div class="d-flex align-items-center gap-2">
+          <span class="brand-seal-mark" aria-hidden="true" style="width: 24px; height: 24px; font-size: 0.85rem;">字</span>
+          <span class="fw-semibold text-dark">Hán Ngữ &amp; Bộ Thủ</span>
+          <span class="text-muted small">&copy; 2026 E-learning Platform</span>
+        </div>
+        <ul class="list-inline mb-0 small text-secondary">
+          <li class="list-inline-item"><a href="index.html" class="text-decoration-none text-secondary">Trang chủ</a></li>
+          <li class="list-inline-item">&bull;</li>
+          <li class="list-inline-item"><a href="radicals.html" class="text-decoration-none text-secondary">Bộ thủ</a></li>
+          <li class="list-inline-item">&bull;</li>
+          <li class="list-inline-item"><a href="vocabulary.html" class="text-decoration-none text-secondary">Từ vựng</a></li>
+          <li class="list-inline-item">&bull;</li>
+          <li class="list-inline-item"><a href="lessons.html" class="text-decoration-none text-secondary">Bài học</a></li>
+          <li class="list-inline-item">&bull;</li>
+          <li class="list-inline-item"><a href="srs-review.html" class="text-decoration-none text-secondary">Ôn tập</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Bootstrap 5.3.3 JavaScript Bundle with Authenticated SRI -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+  <!-- SRS Vocabulary Report Page Module Entrypoint -->
+  <script type="module" src="js/pages/srs-report-page.js?v=20261124_01"></script>
+</body>
+</html>

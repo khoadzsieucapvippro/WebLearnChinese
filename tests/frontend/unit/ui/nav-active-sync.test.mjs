@@ -147,11 +147,12 @@ describe('Unit: Navbar Active Link Synchronization & Tab Decoupling', () => {
       assert.strictEqual(LESSON_HUB_SUBPAGES.size, 2);
     });
 
-    test('REVIEW_HUB_SUBPAGES strictly contains srs-review.html, srs-dashboard.html, and srs-settings.html', () => {
+    test('REVIEW_HUB_SUBPAGES strictly contains srs-review.html, srs-dashboard.html, srs-report.html, and srs-settings.html', () => {
       assert.strictEqual(REVIEW_HUB_SUBPAGES.has('srs-review.html'), true);
       assert.strictEqual(REVIEW_HUB_SUBPAGES.has('srs-dashboard.html'), true);
+      assert.strictEqual(REVIEW_HUB_SUBPAGES.has('srs-report.html'), true);
       assert.strictEqual(REVIEW_HUB_SUBPAGES.has('srs-settings.html'), true);
-      assert.strictEqual(REVIEW_HUB_SUBPAGES.size, 3);
+      assert.strictEqual(REVIEW_HUB_SUBPAGES.size, 4);
     });
 
     test('Zero overlap between LESSON_HUB_SUBPAGES and REVIEW_HUB_SUBPAGES (2 distinct modules)', () => {

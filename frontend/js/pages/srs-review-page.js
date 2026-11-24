@@ -13679,7 +13679,7 @@ export class SrsReviewController {
       if (chars.length > 1) {
         const charLabel = document.createElement('span');
         charLabel.className = 'small fw-bold text-secondary mb-1';
-        charLabel.textContent = `Chữ ${i + 1}: ${char}`;
+        charLabel.textContent = `Chữ ${i + 1}`;
         boxWrapper.appendChild(charLabel);
       }
 
@@ -14901,9 +14901,10 @@ export class SrsReviewController {
         this.dom.readingRecognizedText.textContent = response.recognizedText || '';
       }
 
-      // Summary Vi
+      // Summary Vi (Populated for contract compatibility, hidden from UI per user request)
       if (this.dom.readingResultSummary) {
         this.dom.readingResultSummary.textContent = response.summaryVi || 'Phát âm của bạn đã được ghi nhận.';
+        this.dom.readingResultSummary.classList.add('d-none');
       }
 
       // Components (Initials, Finals, Tones)

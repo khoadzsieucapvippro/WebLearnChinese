@@ -17,14 +17,7 @@
         crossorigin="anonymous">
 
   <!-- Custom Core Design System CSS -->
-  <link rel="stylesheet" href="css/style.css?v=20261030_05">
-  <style>
-    /* Ẩn hoàn toàn tính năng duyệt trọng tài theo yêu cầu */
-    [id^="btnApproveLesson-"],
-    #arbiterApproveModal {
-      display: none !important;
-    }
-  </style>
+  <link rel="stylesheet" href="css/style.css?v=20261105_06">
 </head>
 <body class="bg-chinese-cream">
 
@@ -105,100 +98,43 @@
           <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
             <div>
               <h1 class="h3 fw-bold text-dark mb-1">
-                Giám Sát Bài Học Hệ Thống
+                Quản Lý &amp; Đẩy Bài Học Hệ Thống
               </h1>
               <p class="text-secondary small mb-0">
-                Theo dõi tập trung toàn bộ bài học qua các trạng thái vòng đời (Bản nháp, Chờ duyệt, Đã duyệt, Bị từ chối). Thực hiện quyền thu hồi vi phạm khẩn cấp và phê duyệt trọng tài khi có tranh chấp.
+                Biên soạn, nhập từ Excel và phát hành trực tiếp bài học đến học viên.
               </p>
             </div>
-            <div class="d-flex align-items-center gap-2 flex-shrink-0">
-              <button type="button" class="btn btn-chinese-secondary btn-sm d-flex align-items-center gap-1" id="btnRefreshKpi" title="Làm mới chỉ số thống kê">
-                <span id="refreshKpiSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
-                <span>↻ Làm mới thống kê</span>
+            <div class="d-flex align-items-center gap-2 ms-auto flex-shrink-0">
+              <button type="button" class="btn btn-chinese-secondary d-flex align-items-center gap-2" id="btnOpenImportLessonModal" title="Nhập bài học từ tệp bảng tính Excel">
+                <span aria-hidden="true">📊</span>
+                <span>Nhập từ Excel</span>
+              </button>
+              <button type="button" class="btn btn-chinese-primary d-flex align-items-center gap-2" id="btnOpenCreateLessonModal" title="Tạo bài học mới">
+                <span aria-hidden="true" class="fw-bold fs-5 leading-none">＋</span>
+                <span>Tạo bài học mới</span>
               </button>
             </div>
           </div>
 
-          <!-- Global Status Counts Dashboard (KPI Cards) -->
-          <div class="row g-3 mb-4" id="statusCountsContainer">
-            <!-- Total Lessons -->
-            <div class="col-6 col-md-4 col-lg">
-              <div class="card border-0 shadow-xs h-100 p-3 bg-white text-center cursor-pointer hover-shadow transition" id="kpiCardTotal" data-status="">
-                <div class="text-muted small fw-semibold mb-1">Tổng số bài học</div>
-                <div class="fs-3 fw-bold text-dark" id="kpiCountTotal">
-                  <span class="spinner-border spinner-border-sm text-secondary" role="status" aria-hidden="true"></span>
+          <!-- Lesson Search Toolbar Card -->
+          <div class="card-chinese p-3 mb-4" id="lessonToolbarCard">
+            <div class="row g-3 align-items-end">
+              <div class="col-12 col-md-8">
+                <label for="lessonSearchInput" class="form-label small fw-semibold text-secondary mb-1">
+                  Tìm kiếm bài học
+                </label>
+                <div class="input-group">
+                  <input type="text" id="lessonSearchInput" class="form-control" placeholder="Tìm theo tiêu đề hoặc ID bài học..." aria-label="Tìm kiếm theo tiêu đề hoặc ID bài học">
+                  <button type="button" id="btnLessonSearch" class="btn btn-chinese-primary">
+                    Tìm kiếm
+                  </button>
+                  <button type="button" id="btnLessonClearSearch" class="btn btn-outline-secondary" title="Xóa bộ lọc tìm kiếm">
+                    ✕
+                  </button>
                 </div>
-                <div class="small text-secondary mt-1">Toàn bộ hệ thống</div>
               </div>
-            </div>
-            <!-- Draft Lessons -->
-            <div class="col-6 col-md-4 col-lg">
-              <div class="card border-0 shadow-xs h-100 p-3 bg-white text-center cursor-pointer hover-shadow transition" id="kpiCardDraft" data-status="Draft">
-                <div class="text-muted small fw-semibold mb-1">Bản nháp (Draft)</div>
-                <div class="fs-3 fw-bold text-secondary" id="kpiCountDraft">
-                  <span class="spinner-border spinner-border-sm text-secondary" role="status" aria-hidden="true"></span>
-                </div>
-                <div class="small text-secondary mt-1">Đang biên soạn</div>
-              </div>
-            </div>
-            <!-- Pending Lessons -->
-            <div class="col-6 col-md-4 col-lg">
-              <div class="card border-0 shadow-xs h-100 p-3 bg-white text-center cursor-pointer hover-shadow transition" id="kpiCardPending" data-status="Pending">
-                <div class="text-muted small fw-semibold mb-1">Chờ duyệt (Pending)</div>
-                <div class="fs-3 fw-bold text-warning" id="kpiCountPending">
-                  <span class="spinner-border spinner-border-sm text-secondary" role="status" aria-hidden="true"></span>
-                </div>
-                <div class="small text-secondary mt-1">Hàng đợi duyệt</div>
-              </div>
-            </div>
-            <!-- Approved Lessons -->
-            <div class="col-6 col-md-4 col-lg">
-              <div class="card border-0 shadow-xs h-100 p-3 bg-white text-center cursor-pointer hover-shadow transition" id="kpiCardApproved" data-status="Approved">
-                <div class="text-muted small fw-semibold mb-1">Đã duyệt (Approved)</div>
-                <div class="fs-3 fw-bold text-success" id="kpiCountApproved">
-                  <span class="spinner-border spinner-border-sm text-secondary" role="status" aria-hidden="true"></span>
-                </div>
-                <div class="small text-secondary mt-1">Đang phát hành</div>
-              </div>
-            </div>
-            <!-- Rejected Lessons -->
-            <div class="col-6 col-md-4 col-lg">
-              <div class="card border-0 shadow-xs h-100 p-3 bg-white text-center cursor-pointer hover-shadow transition" id="kpiCardRejected" data-status="Rejected">
-                <div class="text-muted small fw-semibold mb-1">Bị từ chối (Rejected)</div>
-                <div class="fs-3 fw-bold text-danger" id="kpiCountRejected">
-                  <span class="spinner-border spinner-border-sm text-secondary" role="status" aria-hidden="true"></span>
-                </div>
-                <div class="small text-secondary mt-1">Cần sửa đổi</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Filter & Table Controls Card -->
-          <div class="creator-panel-card mb-4">
-            <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
-              <!-- Status Filter Button Group -->
-              <div class="d-flex flex-wrap align-items-center gap-1" role="group" aria-label="Bộ lọc trạng thái bài học">
-                <span class="text-secondary small fw-semibold me-2 d-none d-sm-inline">Trạng thái:</span>
-                <button type="button" class="btn btn-sm btn-chinese-primary active" id="filterStatusAll" data-status="">
-                  Tất cả
-                </button>
-                <button type="button" class="btn btn-sm btn-outline-secondary" id="filterStatusDraft" data-status="Draft">
-                  Bản nháp
-                </button>
-                <button type="button" class="btn btn-sm btn-outline-secondary" id="filterStatusPending" data-status="Pending">
-                  Chờ duyệt
-                </button>
-                <button type="button" class="btn btn-sm btn-outline-secondary" id="filterStatusApproved" data-status="Approved">
-                  Đã duyệt
-                </button>
-                <button type="button" class="btn btn-sm btn-outline-secondary" id="filterStatusRejected" data-status="Rejected">
-                  Bị từ chối
-                </button>
-              </div>
-
-              <!-- Result Count Badge -->
-              <div class="d-flex align-items-center gap-2 flex-shrink-0">
-                <span class="badge-status badge-status-published text-nowrap" id="lessonResultCount" aria-live="polite">
+              <div class="col-12 col-md-4 text-md-end">
+                <span id="lessonResultCount" class="badge-status badge-status-draft text-nowrap d-inline-block" aria-live="polite">
                   Đang tải...
                 </span>
               </div>
@@ -217,10 +153,9 @@
                   <tr>
                     <th scope="col" class="text-center py-3 ps-3" style="width: 70px;">ID</th>
                     <th scope="col" class="py-3">Tên bài học</th>
-                    <th scope="col" class="text-center py-3" style="width: 140px;">Trạng thái</th>
                     <th scope="col" class="text-center py-3" style="width: 120px;">Số từ vựng</th>
                     <th scope="col" class="py-3" style="width: 160px;">Cập nhật</th>
-                    <th scope="col" class="text-end py-3 pe-3" style="min-width: 210px; width: 210px;">Thao tác</th>
+                    <th scope="col" class="text-end py-3 pe-3" style="min-width: 140px; width: 140px;">Thao tác</th>
                   </tr>
                 </thead>
                 <tbody id="lessonTableBody" class="border-top-0">
@@ -243,202 +178,262 @@
   </div>
 
   <!-- ========================================================================= -->
-  <!-- 1. LESSON DETAIL MODAL (Native HTML5 <dialog>)                            -->
+  <!-- MODAL 1: UNIFIED LESSON FORM MODAL (CREATE / EDIT)                        -->
   <!-- ========================================================================= -->
-  <dialog id="lessonDetailModal" class="dialog-chinese p-0 rounded-3 shadow-lg border-0" aria-labelledby="modalDetailTitle" aria-describedby="modalDetailDesc" aria-modal="true">
-    <div class="dialog-content p-4" style="max-width: 680px; width: 100%; max-height: 90vh; overflow-y: auto;">
-
-      <!-- Modal Header -->
+  <dialog id="lessonFormModal" class="dialog-chinese p-0 rounded-3 shadow-lg border-0" aria-labelledby="lessonFormModalTitle" aria-modal="true">
+    <div class="dialog-content p-4" style="max-width: 800px; width: 100%; max-height: 90vh; overflow-y: auto;">
+      <!-- Header -->
       <div class="d-flex align-items-center justify-content-between pb-3 mb-3 border-bottom">
         <div class="d-flex align-items-center gap-2">
           <span class="chinese-seal-icon small" aria-hidden="true">课</span>
           <div>
-            <h2 class="h5 fw-bold text-chinese-red mb-0" id="modalDetailTitle">
-              Chi Tiết Bài Học
+            <h2 class="h5 fw-bold text-chinese-red mb-0" id="lessonFormModalTitle">
+              Thêm Bài Học Mới
             </h2>
-            <p class="text-secondary small mb-0" id="modalDetailDesc">
-              Thông tin tổng quan và danh sách từ vựng cấu thành bài học.
+            <p class="text-secondary small mb-0" id="lessonFormModalSubtitle">
+              Thiết lập tiêu đề bài học và thêm các từ vựng cấu thành vào giáo trình.
             </p>
           </div>
         </div>
-        <button type="button" class="btn-close" id="modalDetailCloseBtn" aria-label="Đóng hộp thoại chi tiết bài học"></button>
+        <button type="button" class="btn-close" id="lessonFormModalCloseBtn" aria-label="Đóng"></button>
       </div>
 
-      <!-- Modal Body -->
-      <div id="modalDetailBody">
+      <form id="lessonForm" novalidate>
+        <!-- Section 1: Lesson Title -->
+        <div class="mb-3">
+          <label for="lessonFormTitleInput" class="form-label small fw-semibold text-dark mb-1">
+            Tiêu đề bài học <span class="text-danger">*</span>
+          </label>
+          <input
+            type="text"
+            id="lessonFormTitleInput"
+            class="form-control form-control-chinese"
+            placeholder="Ví dụ: Bài 01 - Chào hỏi cơ bản"
+            maxlength="200"
+            required
+            autocomplete="off"
+          >
+          <div class="form-text small text-secondary">Tiêu đề bài học tối đa 200 ký tự.</div>
+        </div>
 
-        <!-- Lesson Overview Metadata Card -->
-        <div class="bg-light rounded p-3 mb-3 border">
-          <div class="row g-2">
-            <div class="col-sm-6">
-              <span class="text-muted small d-block">Tên bài học:</span>
-              <strong class="fs-6 text-dark" id="detailLessonTitle">—</strong>
-            </div>
-            <div class="col-sm-6 text-sm-end">
-              <span class="text-muted small d-block">Trạng thái vòng đời:</span>
-              <span id="detailLessonStatusBadge" class="badge bg-secondary">—</span>
-            </div>
-            <div class="col-sm-6">
-              <span class="text-muted small d-block">Mã định danh (ID):</span>
-              <code id="detailLessonId" class="text-secondary">#—</code>
-            </div>
-            <div class="col-sm-6 text-sm-end">
-              <span class="text-muted small d-block">Thời gian cập nhật:</span>
-              <span id="detailLessonTimestamp" class="small text-secondary">—</span>
-            </div>
+        <!-- Section 2: Vocab Search & Add -->
+        <div class="card p-3 bg-light border-0 rounded-2 mb-3">
+          <label for="lessonFormVocabSearch" class="form-label small fw-semibold text-dark mb-1">
+            Thêm từ vựng vào bài học
+          </label>
+          <div class="input-group">
+            <input
+              type="text"
+              id="lessonFormVocabSearch"
+              class="form-control form-control-chinese"
+              placeholder="Nhập chữ Hán, Pinyin, nghĩa hoặc ID từ vựng..."
+              autocomplete="off"
+            >
+            <button type="button" id="btnAddVocabToForm" class="btn btn-chinese-primary d-flex align-items-center gap-1">
+              <span aria-hidden="true">＋</span>
+              <span>Thêm vào bài</span>
+            </button>
+          </div>
+          <!-- Auto-suggestion / search results container -->
+          <div id="lessonFormVocabSearchResults" class="list-group mt-2 d-none" style="max-height: 200px; overflow-y: auto;"></div>
+          <div class="form-text small text-muted">
+            Tìm kiếm từ kho từ điển để thêm vào bài học. Tối đa 20 từ vựng cho mỗi bài học.
           </div>
         </div>
 
-        <!-- Contract Limitation Notice Banner (Shown when detail is unsupported) -->
-        <div id="detailContractLimitationAlert" class="alert alert-info border d-none" role="status">
-          <div class="d-flex align-items-start gap-2">
-            <span class="fs-5 lh-1" aria-hidden="true">ℹ</span>
-            <div>
-              <strong class="d-block mb-1">Giới hạn hợp đồng máy chủ hiện hành</strong>
-              <p class="small mb-0" id="detailContractLimitationMessage">
-                Nội dung chi tiết của bài học ở trạng thái này chưa có endpoint quản trị trong backend hiện tại.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Rejection / Revocation Reason Alert (Shown if Rejected) -->
-        <div id="detailRejectionAlert" class="alert alert-danger border d-none" role="status">
-          <div class="d-flex align-items-start gap-2">
-            <span class="fs-5 lh-1" aria-hidden="true">&#9888;</span>
-            <div>
-              <strong class="d-block mb-1">Lý do từ chối / thu hồi:</strong>
-              <p class="small mb-0" id="detailRejectionMessage">—</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Loading Indicator for Vocabularies -->
-        <div id="detailVocabLoadingPrompt" class="text-center py-4 d-none">
-          <span class="spinner-border spinner-border-sm text-chinese-red me-2" role="status" aria-hidden="true"></span>
-          <span class="text-secondary small">Đang nạp nội dung từ vựng bài học...</span>
-        </div>
-
-        <!-- Error Alert for Detail Fetch Failure -->
-        <div id="detailErrorAlert" class="alert alert-danger border d-none" role="alert">
-          <span id="detailErrorMessage">Không thể nạp thông tin chi tiết bài học.</span>
-        </div>
-
-        <!-- Vocabulary Section -->
-        <div id="detailVocabSection" class="d-none">
+        <!-- Section 3: Vocabularies List in Lesson -->
+        <div class="mb-3">
           <div class="d-flex align-items-center justify-content-between mb-2">
-            <h3 class="h6 fw-bold text-chinese-red mb-0">
-              Danh Sách Từ Vựng Cấu Thành (<span id="detailVocabCount">0</span>)
-            </h3>
-            <span class="text-muted small fst-italic">Bảo toàn thứ tự tuần tự chuẩn</span>
+            <span class="small fw-semibold text-dark">
+              Danh sách từ vựng trong bài (<span id="lessonFormVocabCount">0</span>/20)
+            </span>
           </div>
 
-          <!-- Empty Vocabularies Prompt -->
-          <div id="detailVocabEmptyPrompt" class="text-center py-3 text-muted small border rounded bg-white d-none">
-            Bài học này chưa có từ vựng nào.
-          </div>
-
-          <!-- Ordered Vocabulary Items List -->
-          <div class="list-group list-group-flush border rounded overflow-hidden" id="detailVocabList">
-            <!-- Dynamically constructed using safe DOM in admin-lessons-page.js -->
+          <div class="table-responsive border rounded-2" style="max-height: 280px; overflow-y: auto;">
+            <table class="table table-hover align-middle mb-0" id="formVocabTable">
+              <thead class="table-light small">
+                <tr>
+                  <th scope="col" class="text-center" style="width: 50px;">STT</th>
+                  <th scope="col" style="width: 100px;">Chữ Hán</th>
+                  <th scope="col" style="width: 120px;">Pinyin</th>
+                  <th scope="col">Nghĩa tiếng Việt</th>
+                  <th scope="col" class="text-end pe-3" style="width: 140px;">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody id="formVocabTbody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
           </div>
         </div>
 
-      </div>
+        <!-- Error Feedback Area -->
+        <div id="lessonFormModalError" class="alert alert-danger py-2 px-3 small mb-3 d-none" role="alert"></div>
 
-      <!-- Modal Footer -->
-      <div class="d-flex justify-content-end gap-2 pt-3 mt-3 border-top">
-        <button type="button" class="btn btn-chinese-secondary px-4" id="btnCancelDetailModal">
-          Đóng
-        </button>
-      </div>
-
+        <!-- Actions Footer -->
+        <div class="d-flex align-items-center justify-content-end gap-2 pt-3 border-top">
+          <button type="button" id="btnCancelLessonForm" class="btn-chinese-secondary">
+            Hủy bỏ
+          </button>
+          <button type="button" id="btnSaveLessonForm" class="btn-chinese-primary">
+            <span id="saveLessonFormSpinner" class="spinner-border spinner-border-sm me-1 d-none" role="status" aria-hidden="true"></span>
+            <span id="saveLessonFormText">Lưu bài học</span>
+          </button>
+        </div>
+      </form>
     </div>
   </dialog>
 
   <!-- ========================================================================= -->
-  <!-- 2. EMERGENCY LESSON REVOCATION MODAL (<dialog>) (TASK-7.2)                -->
+  <!-- MODAL 2: IMPORT LESSON FROM EXCEL MODAL                                   -->
   <!-- ========================================================================= -->
-  <dialog id="revokeLessonModal" class="dialog-chinese p-0 rounded-3 shadow-lg border-0" aria-labelledby="modalRevokeTitle" aria-describedby="modalRevokeDesc" aria-modal="true">
-    <div class="dialog-content p-4" style="max-width: 580px; width: 100%; max-height: 90vh; overflow-y: auto;">
-      <!-- Modal Header -->
+  <dialog id="importExcelModal" class="dialog-chinese p-0 rounded-3 shadow-lg border-0" aria-labelledby="importExcelModalTitle" aria-modal="true">
+    <div class="dialog-content p-4" style="max-width: 680px; width: 100%; max-height: 90vh; overflow-y: auto;">
+      <!-- Header -->
       <div class="d-flex align-items-center justify-content-between pb-3 mb-3 border-bottom">
         <div class="d-flex align-items-center gap-2">
-          <span class="chinese-seal-icon small text-danger" aria-hidden="true">撤</span>
+          <span class="chinese-seal-icon small" aria-hidden="true">📊</span>
           <div>
-            <h2 class="h5 fw-bold text-danger mb-0" id="modalRevokeTitle">
-              Thu Hồi Bài Học Vi Phạm Khẩn Cấp
+            <h2 class="h5 fw-bold text-chinese-red mb-0" id="importExcelModalTitle">
+              Nhập Bài Học Từ Excel
             </h2>
-            <p class="text-secondary small mb-0" id="modalRevokeDesc">
-              Gỡ bài học đã xuất bản về trạng thái Bị từ chối và ẩn khỏi học viên.
+            <p class="text-secondary small mb-0">
+              Tải lên tệp bảng tính (.xlsx) để tự động khởi tạo bài học và từ vựng.
             </p>
           </div>
         </div>
-        <button type="button" class="btn-close" id="btnCancelRevokeClose" aria-label="Đóng"></button>
+        <button type="button" class="btn-close" id="importExcelModalCloseBtn" aria-label="Đóng"></button>
       </div>
 
-      <div class="alert alert-warning small mb-3">
-        <strong>Cảnh báo khẩn cấp:</strong> Bài học <strong id="revokeLessonTitleText">—</strong> sẽ lập tức bị gỡ khỏi toàn bộ danh mục khám phá của học viên.
-      </div>
+      <!-- File Picker -->
       <div class="mb-3">
-        <label for="revokeReasonInput" class="form-label small fw-semibold text-dark">
-          Lý do vi phạm / thu hồi <span class="text-danger">*</span>
+        <label for="importExcelFileInput" class="form-label small fw-semibold text-dark mb-1">
+          Chọn tệp bảng tính Excel (.xlsx) <span class="text-danger">*</span>
         </label>
-        <textarea class="form-control" id="revokeReasonInput" rows="3" placeholder="Nhập chi tiết lý do gỡ bài (vi phạm bản quyền, nội dung không phù hợp...)" maxlength="500" required></textarea>
-        <div class="form-text small">Tối đa 500 ký tự. Hành động này sẽ được ghi vào nhật ký kiểm toán bất biến.</div>
+        <div class="input-group">
+          <input
+            type="file"
+            id="importExcelFileInput"
+            class="form-control"
+            accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+          >
+          <button type="button" id="btnPreviewImportExcel" class="btn btn-chinese-secondary d-flex align-items-center gap-1">
+            <span id="previewImportSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+            <span>Xem trước</span>
+          </button>
+        </div>
+        <div class="form-text small text-secondary">
+          Hỗ trợ tệp định dạng .xlsx tiêu chuẩn, kích thước tối đa 10 MB.
+        </div>
       </div>
-      <div id="revokeModalError" class="alert alert-danger py-2 px-3 small d-none" role="alert"></div>
+
+      <!-- Lesson Title Input -->
+      <div class="mb-3">
+        <label for="importExcelTitleInput" class="form-label small fw-semibold text-dark mb-1">
+          Tiêu đề bài học <span class="text-danger">*</span>
+        </label>
+        <input
+          type="text"
+          id="importExcelTitleInput"
+          class="form-control form-control-chinese"
+          placeholder="Nhập tiêu đề cho bài học nhập từ Excel..."
+          maxlength="200"
+          required
+          autocomplete="off"
+        >
+      </div>
+
+      <!-- Preview Report Box -->
+      <div id="importExcelPreviewArea" class="p-3 bg-light rounded border mb-3 d-none">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <strong class="small text-dark">Kết quả kiểm tra trước:</strong>
+          <span id="importPreviewBadge" class="badge bg-success">Hợp lệ</span>
+        </div>
+        <div class="row g-2 text-center small mb-2">
+          <div class="col-4">
+            <div class="p-2 bg-white rounded border">
+              <span class="text-muted d-block">Tổng dòng</span>
+              <strong id="importTotalRows" class="fs-6 text-dark">0</strong>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="p-2 bg-white rounded border">
+              <span class="text-muted d-block">Từ hợp lệ</span>
+              <strong id="importValidRows" class="fs-6 text-success">0</strong>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="p-2 bg-white rounded border">
+              <span class="text-muted d-block">Dòng lỗi</span>
+              <strong id="importInvalidRows" class="fs-6 text-danger">0</strong>
+            </div>
+          </div>
+        </div>
+        <div id="importPreviewSampleContainer" class="small text-secondary" style="max-height: 120px; overflow-y: auto;"></div>
+      </div>
+
+      <!-- Error Feedback Area -->
+      <div id="importExcelModalError" class="alert alert-danger py-2 px-3 small mb-3 d-none" role="alert"></div>
 
       <!-- Actions Footer -->
-      <div class="d-flex justify-content-end gap-2 pt-3 border-top">
-        <button type="button" class="btn btn-chinese-secondary px-3" id="btnCancelRevoke">Hủy bỏ</button>
-        <button type="button" class="btn btn-danger px-3 d-flex align-items-center gap-1" id="btnConfirmRevoke">
-          <span id="revokeSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
-          <span>🚨 Xác nhận thu hồi</span>
+      <div class="d-flex align-items-center justify-content-end gap-2 pt-3 border-top">
+        <button type="button" id="btnCancelImportExcel" class="btn-chinese-secondary">
+          Hủy bỏ
+        </button>
+        <button type="button" id="btnConfirmImportExcel" class="btn-chinese-primary">
+          <span id="confirmImportSpinner" class="spinner-border spinner-border-sm me-1 d-none" role="status" aria-hidden="true"></span>
+          <span id="confirmImportText">Xác nhận nhập vào hệ thống</span>
         </button>
       </div>
     </div>
   </dialog>
 
   <!-- ========================================================================= -->
-  <!-- 3. SUPERVISORY ARBITER APPROVAL MODAL (<dialog>) (TASK-7.2)               -->
+  <!-- MODAL 3: DELETE LESSON CONFIRMATION MODAL                                 -->
   <!-- ========================================================================= -->
-  <dialog id="arbiterApproveModal" class="dialog-chinese p-0 rounded-3 shadow-lg border-0" aria-labelledby="modalArbiterTitle" aria-describedby="modalArbiterDesc" aria-modal="true">
-    <div class="dialog-content p-4" style="max-width: 580px; width: 100%; max-height: 90vh; overflow-y: auto;">
-      <!-- Modal Header -->
+  <dialog id="deleteLessonModal" class="dialog-chinese p-0 rounded-3 shadow-lg border-0" aria-labelledby="deleteLessonModalTitle" aria-modal="true">
+    <div class="dialog-content p-4" style="max-width: 480px; width: 100%;">
+      <!-- Header -->
       <div class="d-flex align-items-center justify-content-between pb-3 mb-3 border-bottom">
-        <div class="d-flex align-items-center gap-2">
-          <span class="chinese-seal-icon small text-success" aria-hidden="true">审</span>
+        <h2 id="deleteLessonModalTitle" class="h5 fw-bold text-danger mb-0">
+          Xác Nhận Xóa Bài Học
+        </h2>
+        <button type="button" id="deleteLessonModalCloseBtn" class="btn-close" aria-label="Đóng hộp thoại"></button>
+      </div>
+
+      <!-- Warning Note -->
+      <div class="alert alert-warning py-2 px-3 small mb-3" role="note">
+        <div class="d-flex align-items-start gap-2">
+          <span aria-hidden="true" class="fs-5">&#9888;</span>
           <div>
-            <h2 class="h5 fw-bold text-chinese-red mb-0" id="modalArbiterTitle">
-              Phê Duyệt Trọng Tài Tối Cao
-            </h2>
-            <p class="text-secondary small mb-0" id="modalArbiterDesc">
-              Giải quyết khiếu nại hoặc tranh chấp kiểm duyệt để phát hành bài học.
-            </p>
+            <strong>Hành động mang tính vĩnh viễn:</strong>
+            <span>Bài học bị xóa sẽ không thể hoàn tác. Các từ vựng trong bài học vẫn được giữ nguyên trong từ điển hệ thống.</span>
           </div>
         </div>
-        <button type="button" class="btn-close" id="btnCancelArbiterClose" aria-label="Đóng"></button>
       </div>
 
-      <div class="alert alert-info small mb-3">
-        Phê duyệt trọng tài cho bài học: <strong id="arbiterLessonTitleText">—</strong>
+      <!-- Target Info Card -->
+      <div class="p-3 bg-light rounded-2 border mb-3 text-center">
+        <div class="text-muted small mb-1">Bài học mục tiêu:</div>
+        <div id="deleteLessonTargetTitle" class="fw-bold fs-5 text-chinese-red mb-1">
+          —
+        </div>
+        <div class="text-secondary small">
+          Mã định danh ID: <code id="deleteLessonTargetId" class="fw-bold">#—</code> &bull; <span id="deleteLessonTargetVocabCount">0</span> từ vựng
+        </div>
       </div>
-      <div class="mb-3">
-        <label for="arbiterNoteInput" class="form-label small fw-semibold text-dark">
-          Ghi chú phân giải trọng tài (tùy chọn)
-        </label>
-        <textarea class="form-control" id="arbiterNoteInput" rows="3" placeholder="Nhập căn cứ phê duyệt trọng tài (ví dụ: đã kiểm tra lại tài liệu bản quyền hợp lệ...)" maxlength="500"></textarea>
-        <div class="form-text small">Tối đa 500 ký tự. Ghi nhận minh bạch trong lịch sử kiểm duyệt.</div>
-      </div>
-      <div id="arbiterModalError" class="alert alert-danger py-2 px-3 small d-none" role="alert"></div>
+
+      <!-- Error Feedback Area -->
+      <div id="deleteLessonModalError" class="alert alert-danger py-2 px-3 small mb-3 d-none" role="alert"></div>
 
       <!-- Actions Footer -->
-      <div class="d-flex justify-content-end gap-2 pt-3 border-top">
-        <button type="button" class="btn btn-chinese-secondary px-3" id="btnCancelArbiter">Hủy bỏ</button>
-        <button type="button" class="btn btn-chinese-primary px-3 d-flex align-items-center gap-1" id="btnConfirmArbiter">
-          <span id="arbiterSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
-          <span>⚖️ Phê duyệt trọng tài</span>
+      <div class="d-flex align-items-center justify-content-end gap-2 pt-3 border-top">
+        <button type="button" id="btnCancelDeleteLesson" class="btn-chinese-secondary">
+          Hủy bỏ
+        </button>
+        <button type="button" id="btnConfirmDeleteLesson" class="btn btn-danger">
+          <span id="deleteLessonBtnSpinner" class="spinner-border spinner-border-sm me-1 d-none" role="status" aria-hidden="true"></span>
+          <span id="deleteLessonBtnText">Xác nhận xóa vĩnh viễn</span>
         </button>
       </div>
     </div>
@@ -468,10 +463,10 @@
           crossorigin="anonymous"></script>
 
   <!-- Application Configuration & Page Script -->
-  <script type="module" src="js/config.js?v=20261030_05"></script>
+  <script type="module" src="js/config.js?v=20261105_06"></script>
   <!-- Management Workspace Layout & Sidebar Component -->
-  <script type="module" src="js/ui/management-layout.js?v=20261030_05"></script>
+  <script type="module" src="js/ui/management-layout.js?v=20261105_06"></script>
 
-  <script type="module" src="js/pages/admin-lessons-page.js?v=20261030_05"></script>
+  <script type="module" src="js/pages/admin-lessons-page.js?v=20261106_02"></script>
 </body>
 </html>

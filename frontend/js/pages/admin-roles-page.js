@@ -676,45 +676,49 @@ export class AdminRolesController {
    * Fetches the server-authoritative role catalog from GET /api/v1/admin/roles.
    */
   async loadRoleCatalog() {
-    if (!this.dom.roleCatalogContainer) return;
-
-    clearContainer(this.dom.roleCatalogContainer);
-    const loadingCol = createSafeElement('div', {
-      className: 'col-12 text-center text-muted py-3 small',
-      children: [
-        createSafeElement('span', { className: 'spinner-border spinner-border-sm me-2', attrs: { 'aria-hidden': 'true' } }),
-        document.createTextNode('Đang nạp danh mục vai trò từ máy chủ...')
-      ]
-    });
-    this.dom.roleCatalogContainer.appendChild(loadingCol);
+    if (this.dom.roleCatalogContainer) {
+      clearContainer(this.dom.roleCatalogContainer);
+      const loadingCol = createSafeElement('div', {
+        className: 'col-12 text-center text-muted py-3 small',
+        children: [
+          createSafeElement('span', { className: 'spinner-border spinner-border-sm me-2', attrs: { 'aria-hidden': 'true' } }),
+          document.createTextNode('Đang nạp danh mục vai trò từ máy chủ...')
+        ]
+      });
+      this.dom.roleCatalogContainer.appendChild(loadingCol);
+    }
 
     try {
       const response = await apiClient('/admin/roles');
       const rawList = Array.isArray(response) ? response : (Array.isArray(response?.data) ? response.data : []);
       this.roleCatalog = rawList.map(parseRoleResponse);
-      this.renderRoleCatalog();
+      if (this.dom.roleCatalogContainer) {
+        this.renderRoleCatalog();
+      }
     } catch (err) {
-      clearContainer(this.dom.roleCatalogContainer);
-      const btnRetry = createSafeElement('button', {
-        className: 'btn btn-sm btn-outline-danger',
-        attrs: { type: 'button' },
-        text: 'Thử lại'
-      });
-      btnRetry.addEventListener('click', () => this.loadRoleCatalog());
+      if (this.dom.roleCatalogContainer) {
+        clearContainer(this.dom.roleCatalogContainer);
+        const btnRetry = createSafeElement('button', {
+          className: 'btn btn-sm btn-outline-danger',
+          attrs: { type: 'button' },
+          text: 'Thử lại'
+        });
+        btnRetry.addEventListener('click', () => this.loadRoleCatalog());
 
-      const alert = createSafeElement('div', {
-        className: 'alert alert-danger mb-0 small d-flex align-items-center justify-content-between',
-        children: [
-          createSafeElement('span', { text: `Không thể tải danh mục vai trò: ${err.message || 'Lỗi kết nối máy chủ.'}` }),
-          btnRetry
-        ]
-      });
+        const alert = createSafeElement('div', {
+          className: 'alert alert-danger mb-0 small d-flex align-items-center justify-content-between',
+          children: [
+            createSafeElement('span', { text: `Không thể tải danh mục vai trò: ${err.message || 'Lỗi kết nối máy chủ.'}` }),
+            btnRetry
+          ]
+        });
 
-      const errCol = createSafeElement('div', {
-        className: 'col-12 py-3',
-        children: [alert]
-      });
-      this.dom.roleCatalogContainer.appendChild(errCol);
+        const errCol = createSafeElement('div', {
+          className: 'col-12 py-3',
+          children: [alert]
+        });
+        this.dom.roleCatalogContainer.appendChild(errCol);
+      }
     }
   }
 
