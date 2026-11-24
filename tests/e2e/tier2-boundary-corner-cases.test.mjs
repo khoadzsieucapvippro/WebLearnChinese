@@ -353,21 +353,21 @@ describe('Tier 2: Boundary & Corner Cases Test Suite', () => {
     });
 
     test('TC-T2-D4-03: Case-insensitive and prefix role variants are handled consistently', () => {
-      assert.strictEqual(evaluateNavManagementEntry(['creator']).showManagementLink, true);
-      assert.strictEqual(evaluateNavManagementEntry(['ROLE_MODERATOR']).showManagementLink, true);
+      assert.strictEqual(evaluateNavManagementEntry(['creator']).showManagementLink, false);
+      assert.strictEqual(evaluateNavManagementEntry(['ROLE_MODERATOR']).showManagementLink, false);
       assert.strictEqual(evaluateNavManagementEntry(['admin']).showManagementLink, true);
       assert.strictEqual(evaluateNavManagementEntry(['ROLE_ADMIN']).showManagementLink, true);
     });
 
-    test('TC-T2-D4-04: Management hub role section isolation: Moderator cannot see Admin section', () => {
+    test('TC-T2-D4-04: Management hub role isolation: deprecated Moderator has zero sections', () => {
       const hub = evaluateManagementHubStructure('<div><a href="index.html">Quay lại học</a></div>', ['Moderator']);
-      assert.ok(hub.visibleSections.includes('MODERATOR'));
+      assert.deepStrictEqual(hub.visibleSections, []);
       assert.strictEqual(hub.visibleSections.includes('ADMIN'), false);
     });
 
-    test('TC-T2-D4-05: Management hub role section isolation: Creator cannot see Moderator or Admin section', () => {
+    test('TC-T2-D4-05: Management hub role isolation: deprecated Creator has zero sections', () => {
       const hub = evaluateManagementHubStructure('<div><a href="index.html">Quay lại học</a></div>', ['Creator']);
-      assert.deepStrictEqual(hub.visibleSections, ['CREATOR']);
+      assert.deepStrictEqual(hub.visibleSections, []);
     });
   });
 

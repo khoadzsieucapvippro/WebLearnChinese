@@ -66,10 +66,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/radicals/**", "/api/v1/vocabulary/**", "/api/v1/vocabularies/**", "/api/v1/lessons/**").permitAll()
                         // Allow Spring Boot error endpoint
                         .requestMatchers("/error").permitAll()
-                        // Role-based authorization boundaries
+                        // Role-based authorization boundaries (Single-Admin + Learner model)
                         .requestMatchers("/api/v1/admin/**").hasAnyRole("Admin", "ADMIN")
-                        .requestMatchers("/api/v1/moderator/**").hasAnyRole("Moderator", "Admin", "MODERATOR", "ADMIN")
-                        .requestMatchers("/api/v1/creator/**").hasAnyRole("Creator", "Admin", "CREATOR", "ADMIN")
+                        .requestMatchers("/api/v1/moderator/**", "/api/v1/creator/**").denyAll()
                         // All other endpoints require authentication
                         .anyRequest().authenticated()
                 )

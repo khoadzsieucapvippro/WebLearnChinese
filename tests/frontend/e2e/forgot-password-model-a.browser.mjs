@@ -198,10 +198,10 @@ describe('E2E: Self-Service Password Reset (Model A) & Admin Zero-Knowledge', ()
                 },
                 {
                   accountId: 3,
-                  emailOrPhone: 'creator1@example.com',
-                  fullName: 'Tác Giả Một',
+                  emailOrPhone: 'learner2@example.com',
+                  fullName: 'Học Viên Hai',
                   status: 'Inactive',
-                  roles: ['Creator'],
+                  roles: ['Learner'],
                   createdAt: '2026-09-10T14:15:00Z',
                   updatedAt: '2026-09-10T14:15:00Z'
                 }

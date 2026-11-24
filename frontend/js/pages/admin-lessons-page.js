@@ -162,11 +162,11 @@ export function determineDetailStrategy(status, lessonId = null) {
     };
   }
 
-  if (normalized === 'Pending') {
+  if (id) {
     return {
-      strategy: 'PENDING',
+      strategy: normalized === 'Pending' ? 'PENDING' : 'ADMIN',
       canFetchDetail: true,
-      endpoint: id ? `/moderator/lessons/${id}` : null,
+      endpoint: `/admin/lessons/${id}`,
       limitationNotice: null
     };
   }
@@ -175,7 +175,7 @@ export function determineDetailStrategy(status, lessonId = null) {
     strategy: 'UNSUPPORTED',
     canFetchDetail: false,
     endpoint: null,
-    limitationNotice: 'Backend hiện tại chưa có endpoint quản trị để xem chi tiết đầy đủ nội dung bài học ở trạng thái này.'
+    limitationNotice: 'Chưa có ID bài học hợp lệ để tải chi tiết nội dung.'
   };
 }
 

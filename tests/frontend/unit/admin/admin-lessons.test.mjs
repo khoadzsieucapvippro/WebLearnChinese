@@ -292,37 +292,28 @@ describe('Task 9F.5 — Admin Lesson Oversight Pure Logic Unit Tests', () => {
       assert.strictEqual(res.limitationNotice, null);
     });
 
-    test('selects moderator_detail strategy for Pending lessons (Admin authorized)', () => {
+    test('selects admin_detail strategy for Pending and non-Approved lessons (Admin authorized)', () => {
       const res = determineDetailStrategy('Pending', 77);
       assert.strictEqual(res.strategy, 'PENDING');
-      assert.strictEqual(res.endpoint, '/moderator/lessons/77');
+      assert.strictEqual(res.endpoint, '/admin/lessons/77');
       assert.strictEqual(res.canFetchDetail, true);
       assert.strictEqual(res.limitationNotice, null);
+
+      const resDraft = determineDetailStrategy('Draft', 12);
+      assert.strictEqual(resDraft.strategy, 'ADMIN');
+      assert.strictEqual(resDraft.endpoint, '/admin/lessons/12');
+      assert.strictEqual(resDraft.canFetchDetail, true);
+      assert.strictEqual(resDraft.limitationNotice, null);
+
+      const resRejected = determineDetailStrategy('Rejected', 18);
+      assert.strictEqual(resRejected.strategy, 'ADMIN');
+      assert.strictEqual(resRejected.endpoint, '/admin/lessons/18');
+      assert.strictEqual(resRejected.canFetchDetail, true);
+      assert.strictEqual(resRejected.limitationNotice, null);
     });
 
-    test('selects unsupported_admin_detail for Draft lessons with truthful limitation notice', () => {
-      const res = determineDetailStrategy('Draft', 12);
-      assert.strictEqual(res.strategy, 'UNSUPPORTED');
-      assert.strictEqual(res.endpoint, null);
-      assert.strictEqual(res.canFetchDetail, false);
-      assert.ok(res.limitationNotice);
-      // Verify truthful contract limitation: mentions absence of admin endpoint, NOT "không có nội dung"
-      assert.ok(res.limitationNotice.includes('chưa có endpoint quản trị'));
-      assert.strictEqual(res.limitationNotice.includes('Không có nội dung'), false);
-    });
-
-    test('selects unsupported_admin_detail for Rejected lessons with truthful limitation notice', () => {
-      const res = determineDetailStrategy('Rejected', 18);
-      assert.strictEqual(res.strategy, 'UNSUPPORTED');
-      assert.strictEqual(res.endpoint, null);
-      assert.strictEqual(res.canFetchDetail, false);
-      assert.ok(res.limitationNotice);
-      assert.ok(res.limitationNotice.includes('chưa có endpoint quản trị'));
-      assert.strictEqual(res.limitationNotice.includes('Không có nội dung'), false);
-    });
-
-    test('handles unknown status with truthful limitation notice', () => {
-      const res = determineDetailStrategy('Archived', 99);
+    test('handles missing lessonId safely', () => {
+      const res = determineDetailStrategy('Archived', null);
       assert.strictEqual(res.strategy, 'UNSUPPORTED');
       assert.strictEqual(res.endpoint, null);
       assert.strictEqual(res.canFetchDetail, false);

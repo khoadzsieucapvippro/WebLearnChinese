@@ -7,18 +7,16 @@
  * 1. Zero Broken Links: Provides client-side in-memory + localStorage persistence
  *    for all frontend REST endpoints when running on GitHub Pages (*.github.io)
  *    or when the cloud backend is unavailable/cold-starting.
- * 2. Standard RBAC Accounts: Pre-configures 4 authoritative test accounts:
+ * 2. Standard RBAC Accounts: Pre-configures 2 authoritative test accounts (Single-Admin + Learner):
  *    - Learner: learner@gmail.com / learner@elearning.local (Password: Password@123 / Password123!)
- *    - Creator: creator@gmail.com / creator@elearning.local (Password: Password@123 / Password123!)
- *    - Moderator: moderator@gmail.com / moderator@elearning.local (Password: Password@123 / Password123!)
  *    - Admin: admin@gmail.com / admin@elearning.local (Password: Password@123 / Password123!)
  * 3. Authoritative Datasets:
  *    - 214 Kangxi radicals (with 50 common radicals rank 1..50, pinyin, hanViet, meaningVi, strokeCount).
  *    - 499 HSK 1-3 vocabulary records with search and pagination.
- *    - Structured multi-status lessons (Approved, Pending, Draft).
+ *    - Structured lessons (Approved).
  *    - Full SM-2 spaced repetition engine (/srs/stats, /srs/settings, /srs/due, /srs/review).
  *    - Contextual personal notes (/vocabularies/{id}/notes, /notes/{id}).
- *    - Creator studio, Moderator queue, and Admin account/role management.
+ *    - Unified Admin lesson CRUD and account/role management.
  * 4. LocalStorage State Persistence: All mutations are written to 'ELEARNING_DEMO_DATA'
  *    so user actions persist reliably across multi-page navigation on GitHub Pages.
  * 5. Envelope Integrity: Emits standard Spring Boot ApiResponse format (code: 'SUCCESS', data: ...).
@@ -40,7 +38,7 @@ import { authManager } from '../auth/auth-state.js';
 import { ApiError } from './api.js';
 
 const STORAGE_KEY = 'ELEARNING_DEMO_DATA';
-const CURRENT_DATASET_VERSION = 13;
+const CURRENT_DATASET_VERSION = 14;
 
 /**
  * Encodes string or object into Base64URL string compliant with JWT standards.
@@ -139,8 +137,6 @@ class DemoFallbackEngine {
           function normalizeSingleRole(roles) {
             if (!Array.isArray(roles) || roles.length === 0) return ['Learner'];
             if (roles.includes('Admin')) return ['Admin'];
-            if (roles.includes('Creator')) return ['Creator'];
-            if (roles.includes('Moderator')) return ['Moderator'];
             return ['Learner'];
           }
           if (saved && Array.isArray(saved.accounts) && saved.accounts.length > 0) {
@@ -161,19 +157,7 @@ class DemoFallbackEngine {
         srsSettings: (saved && saved.srsSettings) ? { ...SEED_SRS_SETTINGS, ...saved.srsSettings } : { ...SEED_SRS_SETTINGS },
         srsCards: preservedCards,
         srsReviews: preservedReviews,
-        notes: preservedNotes,
-        moderationHistory: [
-          {
-            historyId: 1,
-            lessonId: 1,
-            lessonTitle: 'Bài 1: Chào hỏi & Làm quen',
-            decision: 'Approved',
-            moderatorName: 'Kiểm Duyệt Viên',
-            moderatorEmail: 'moderator@gmail.com',
-            reviewedAt: '2026-08-02T10:30:00Z',
-            note: 'Bài học biên soạn chuẩn xác, từ vựng chuẩn HSK 3.0.'
-          }
-        ]
+        notes: preservedNotes
       };
       this.saveData();
     }
@@ -262,8 +246,6 @@ class DemoFallbackEngine {
         a.email.toLowerCase() === emailOrPhone ||
         (Array.isArray(a.aliases) && a.aliases.some(alias => alias.toLowerCase() === emailOrPhone)) ||
         (emailOrPhone.includes('admin') && a.roles.includes('Admin')) ||
-        (emailOrPhone.includes('creator') && a.roles.includes('Creator')) ||
-        (emailOrPhone.includes('moderator') && a.roles.includes('Moderator')) ||
         (emailOrPhone.includes('learner') && a.roles.includes('Learner'))
       );
 
@@ -274,12 +256,6 @@ class DemoFallbackEngine {
         if (emailOrPhone.includes('admin')) {
           assignedRoles = ['Admin'];
           roleName = 'Quản Trị Viên Demo';
-        } else if (emailOrPhone.includes('creator')) {
-          assignedRoles = ['Creator'];
-          roleName = 'Biên Soạn Demo';
-        } else if (emailOrPhone.includes('moderator')) {
-          assignedRoles = ['Moderator'];
-          roleName = 'Kiểm Duyệt Demo';
         }
 
         account = {
@@ -828,154 +804,11 @@ if (cleanPath === '/auth/logout' && method === 'POST') {
       return lesson;
     }
 
-    if (cleanPath === '/creator/lessons' && method === 'GET') {
-      const page = parseInt(query.page || 0, 10);
-      const size = parseInt(query.size || 20, 10);
-      const status = query.status;
-
-      let items = [...data.lessons];
-      if (status) {
-        items = items.filter(l => l.status.toLowerCase() === status.toLowerCase());
-      }
-
-      const totalElements = items.length;
-      const totalPages = Math.ceil(totalElements / size) || 1;
-      const start = page * size;
-      const paged = items.slice(start, start + size);
-
-      return {
-        items: paged,
-        page,
-        size,
-        totalElements,
-        totalPages,
-        last: page >= totalPages - 1
-      };
+    if (cleanPath.startsWith('/creator/') || cleanPath === '/creator') {
+      throw new ApiError('Vai trò Creator đã được loại bỏ khỏi hệ thống. Vui lòng sử dụng khu vực quản trị Admin.', 403, 'FORBIDDEN');
     }
 
-    if (cleanPath === '/creator/lessons' && method === 'POST') {
-      if (Array.isArray(body?.vocabularyIds) && body.vocabularyIds.length > 20) {
-        throw new ApiError('Bài học không được vượt quá 20 từ vựng theo quy chuẩn giáo trình', 400, 'BAD_REQUEST');
-      }
-      const newLesson = {
-        lessonId: data.lessons.length + 101,
-        title: body.title || 'Bài học mới',
-        description: body.description || '',
-        level: body.level ? parseInt(body.level, 10) : 1,
-        status: 'Draft',
-        orderIndex: data.lessons.length + 1,
-        vocabularyCount: 0,
-        creatorName: 'Tác Giả Khóa Học',
-        creatorEmail: 'creator@gmail.com',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        vocabularies: []
-      };
-      data.lessons.push(newLesson);
-      this.saveData();
-      return newLesson;
-    }
-
-    const creatorLessonDetailMatch = cleanPath.match(/^\/creator\/lessons\/(\d+)$/);
-    if (creatorLessonDetailMatch) {
-      const id = parseInt(creatorLessonDetailMatch[1], 10);
-      const lesson = data.lessons.find(l => l.lessonId === id);
-      if (method === 'GET') {
-        if (!lesson) throw new ApiError(`Không tìm thấy bài học ${id}`, 404, 'NOT_FOUND');
-        return lesson;
-      }
-      if (method === 'PUT') {
-        if (!lesson) throw new ApiError(`Không tìm thấy bài học ${id}`, 404, 'NOT_FOUND');
-        if (body.title) lesson.title = body.title;
-        if (body.description) lesson.description = body.description;
-        if (body.level) lesson.level = parseInt(body.level, 10);
-        lesson.updatedAt = new Date().toISOString();
-        this.saveData();
-        return lesson;
-      }
-      if (method === 'DELETE') {
-        if (!lesson) throw new ApiError('Không tìm thấy bài học ' + id, 404, 'NOT_FOUND');
-        if (lesson.status !== 'Draft' && lesson.status !== 'Rejected') {
-          throw new ApiError('Chỉ có thể xóa bài học ở trạng thái bản nháp hoặc bị từ chối', 400, 'BAD_REQUEST');
-        }
-        const idx = data.lessons.findIndex(l => l.lessonId === id);
-        if (idx >= 0) {
-          data.lessons.splice(idx, 1);
-          this.saveData();
-        }
-        return null;
-      }
-    }
-
-    const creatorSubmitMatch = cleanPath.match(/^\/creator\/lessons\/(\d+)\/submit$/);
-    if (creatorSubmitMatch && method === 'POST') {
-      const id = parseInt(creatorSubmitMatch[1], 10);
-      const lesson = data.lessons.find(l => l.lessonId === id);
-      if (lesson) {
-        lesson.status = 'Pending';
-        lesson.updatedAt = new Date().toISOString();
-        this.saveData();
-        return lesson;
-      }
-      throw new ApiError(`Không tìm thấy bài học ${id}`, 404, 'NOT_FOUND');
-    }
-
-    const creatorVocabMatch = cleanPath.match(/^\/creator\/lessons\/(\d+)\/vocabularies\/(\d+)$/);
-    if (creatorVocabMatch) {
-      const lessonId = parseInt(creatorVocabMatch[1], 10);
-      const vocabId = parseInt(creatorVocabMatch[2], 10);
-      const lesson = data.lessons.find(l => l.lessonId === lessonId);
-      if (!lesson) throw new ApiError(`Không tìm thấy bài học ${lessonId}`, 404, 'NOT_FOUND');
-
-      if (method === 'POST') {
-        if (lesson.vocabularies.length >= 20) {
-          throw new ApiError('Bài học đã đạt giới hạn tối đa 20 từ vựng theo quy chuẩn giáo trình', 400, 'BAD_REQUEST');
-        }
-        const vocabItem = data.vocabulary.find(v => v.vocabId === vocabId);
-        if (vocabItem && !lesson.vocabularies.some(v => v.vocabId === vocabId)) {
-          lesson.vocabularies.push({
-            ...vocabItem,
-            orderIndex: lesson.vocabularies.length + 1
-          });
-          lesson.vocabularyCount = lesson.vocabularies.length;
-          lesson.updatedAt = new Date().toISOString();
-          this.saveData();
-        }
-        return lesson;
-      }
-      if (method === 'DELETE') {
-        lesson.vocabularies = lesson.vocabularies.filter(v => v.vocabId !== vocabId);
-        lesson.vocabularies.forEach((v, idx) => { v.orderIndex = idx + 1; });
-        lesson.vocabularyCount = lesson.vocabularies.length;
-        lesson.updatedAt = new Date().toISOString();
-        this.saveData();
-        return lesson;
-      }
-    }
-
-    const creatorReorderMatch = cleanPath.match(/^\/creator\/lessons\/(\d+)\/reorder$/);
-    if (creatorReorderMatch && method === 'PUT') {
-      const lessonId = parseInt(creatorReorderMatch[1], 10);
-      const lesson = data.lessons.find(l => l.lessonId === lessonId);
-      if (lesson && Array.isArray(body?.orderedVocabIds)) {
-        const idMap = new Map(lesson.vocabularies.map(v => [v.vocabId, v]));
-        const reordered = [];
-        body.orderedVocabIds.forEach((vid, idx) => {
-          const item = idMap.get(Number(vid));
-          if (item) {
-            item.orderIndex = idx + 1;
-            reordered.push(item);
-          }
-        });
-        lesson.vocabularies = reordered;
-        lesson.updatedAt = new Date().toISOString();
-        this.saveData();
-        return lesson;
-      }
-      return lesson;
-    }
-
-    if ((cleanPath === '/creator/lessons/import' || cleanPath === '/admin/lessons/import') && method === 'POST') {
+    if (cleanPath === '/admin/lessons/import' && method === 'POST') {
       const samplePreview = data.vocabulary.slice(0, 5).map((v, idx) => ({
         ...v,
         rowNumber: idx + 2,
@@ -990,7 +823,7 @@ if (cleanPath === '/auth/logout' && method === 'POST') {
       };
     }
 
-    if ((cleanPath === '/creator/lessons/import/confirm' || cleanPath === '/admin/lessons/import/confirm') && method === 'POST') {
+    if (cleanPath === '/admin/lessons/import/confirm' && method === 'POST') {
       const newLesson = {
         lessonId: data.lessons.length + 101,
         title: body?.title || 'Bài học nhập từ Excel',
@@ -1281,132 +1114,8 @@ if (cleanPath === '/auth/logout' && method === 'POST') {
       };
     }
 
-    // 5. MODERATOR QUEUE & REVIEWS
-    // -------------------------------------------------------------------------
-    if (cleanPath === '/moderator/lessons/pending' && method === 'GET') {
-      const page = parseInt(query.page || 0, 10);
-      const size = parseInt(query.size || 20, 10);
-
-      const pending = data.lessons.filter(l => l.status === 'Pending');
-      const totalElements = pending.length;
-      const totalPages = Math.ceil(totalElements / size) || 1;
-      const start = page * size;
-      const paged = pending.slice(start, start + size).map(l => ({
-        lessonId: l.lessonId,
-        title: l.title,
-        status: l.status,
-        vocabularyCount: l.vocabularyCount || l.vocabularies?.length || 0,
-        creatorName: l.creatorName || 'Tác Giả Khóa Học',
-        creatorEmail: l.creatorEmail || 'creator@gmail.com',
-        updatedAt: l.updatedAt || l.createdAt
-      }));
-
-      return {
-        items: paged,
-        page,
-        size,
-        totalElements,
-        totalPages,
-        last: page >= totalPages - 1
-      };
-    }
-
-    const modLessonDetailMatch = cleanPath.match(/^\/moderator\/lessons\/(\d+)$/);
-    if (modLessonDetailMatch && method === 'GET') {
-      const id = parseInt(modLessonDetailMatch[1], 10);
-      const lesson = data.lessons.find(l => l.lessonId === id);
-      if (!lesson) throw new ApiError(`Không tìm thấy bài học ${id}`, 404, 'NOT_FOUND');
-      return {
-        ...lesson,
-        creatorId: lesson.creatorId || 2,
-        creatorEmail: lesson.creatorEmail || 'creator@gmail.com'
-      };
-    }
-
-    const modApproveMatch = cleanPath.match(/^\/moderator\/lessons\/(\d+)\/approve$/);
-    if (modApproveMatch && method === 'POST') {
-      const id = parseInt(modApproveMatch[1], 10);
-      const lesson = data.lessons.find(l => l.lessonId === id);
-      if (!lesson) throw new ApiError(`Không tìm thấy bài học ${id}`, 404, 'NOT_FOUND');
-
-      // Self-Review Invariant: Moderator cannot approve their own lesson
-      const currentEmail = authManager.getUser()?.emailOrPhone || '';
-      const currentId = authManager.getUser()?.accountId;
-      if ((lesson.creatorId && currentId && lesson.creatorId === currentId) ||
-          (lesson.creatorEmail && currentEmail && lesson.creatorEmail.toLowerCase() === currentEmail.toLowerCase())) {
-        throw new ApiError('Bạn không thể tự kiểm duyệt nội dung do chính mình tạo ra', 403, 'FORBIDDEN');
-      }
-
-      lesson.status = 'Approved';
-      lesson.updatedAt = new Date().toISOString();
-      data.moderationHistory.unshift({
-        historyId: Date.now(),
-        lessonId: lesson.lessonId,
-        lessonTitle: lesson.title,
-        decision: 'Approved',
-        moderatorName: 'Kiểm Duyệt Viên',
-        moderatorEmail: 'moderator@gmail.com',
-        reviewedAt: new Date().toISOString(),
-        note: body?.note || 'Phê duyệt xuất bản bài học.'
-      });
-      this.saveData();
-      return lesson;
-    }
-
-    const modRejectMatch = cleanPath.match(/^\/moderator\/lessons\/(\d+)\/reject$/);
-    if (modRejectMatch && method === 'POST') {
-      const id = parseInt(modRejectMatch[1], 10);
-      const lesson = data.lessons.find(l => l.lessonId === id);
-      if (!lesson) throw new ApiError(`Không tìm thấy bài học ${id}`, 404, 'NOT_FOUND');
-
-      // Self-Review Invariant: Moderator cannot reject their own lesson
-      const currentEmail = authManager.getUser()?.emailOrPhone || '';
-      const currentId = authManager.getUser()?.accountId;
-      if ((lesson.creatorId && currentId && lesson.creatorId === currentId) ||
-          (lesson.creatorEmail && currentEmail && lesson.creatorEmail.toLowerCase() === currentEmail.toLowerCase())) {
-        throw new ApiError('Bạn không thể tự kiểm duyệt nội dung do chính mình tạo ra', 403, 'FORBIDDEN');
-      }
-
-      const resolvedReason = body?.rejectionReason || body?.reason || 'Cần bổ sung thêm ví dụ minh họa.';
-      const resolvedFlags = body?.flaggedFields || null;
-      lesson.status = 'Rejected';
-      lesson.rejectionReason = resolvedReason;
-      lesson.flaggedFields = resolvedFlags;
-      lesson.updatedAt = new Date().toISOString();
-      data.moderationHistory.unshift({
-        historyId: Date.now(),
-        lessonId: lesson.lessonId,
-        lessonTitle: lesson.title,
-        decision: 'Rejected',
-        moderatorName: 'Kiểm Duyệt Viên',
-        moderatorEmail: 'moderator@gmail.com',
-        reviewedAt: new Date().toISOString(),
-        reason: resolvedReason,
-        rejectionReason: resolvedReason,
-        flaggedFields: resolvedFlags
-      });
-      this.saveData();
-      return lesson;
-    }
-
-    if (cleanPath === '/moderator/history' && method === 'GET') {
-      const page = parseInt(query.page || 0, 10);
-      const size = parseInt(query.size || 20, 10);
-
-      const items = data.moderationHistory;
-      const totalElements = items.length;
-      const totalPages = Math.ceil(totalElements / size) || 1;
-      const start = page * size;
-      const paged = items.slice(start, start + size);
-
-      return {
-        items: paged,
-        page,
-        size,
-        totalElements,
-        totalPages,
-        last: page >= totalPages - 1
-      };
+    if (cleanPath.startsWith('/moderator/') || cleanPath === '/moderator') {
+      throw new ApiError('Vai trò Moderator đã được loại bỏ khỏi hệ thống. Vui lòng sử dụng khu vực quản trị Admin.', 403, 'FORBIDDEN');
     }
 
     // -------------------------------------------------------------------------
@@ -2135,13 +1844,13 @@ const currentAccount = this.getCurrentAccount();
       const id = parseInt(accountRolesMatch[1], 10);
       const acc = data.accounts.find(a => a.accountId === id);
       if (acc && Array.isArray(body?.roles)) {
-        const roles = body.roles.map(r => String(r).replace(/^ROLE_/i, ''));
-        const hasCreator = roles.some(r => r.toLowerCase() === 'creator');
-        const hasModerator = roles.some(r => r.toLowerCase() === 'moderator');
-        if (hasCreator && hasModerator) {
-          throw new ApiError('Vai trò Người sáng tạo (Creator) và Kiểm duyệt viên (Moderator) loại trừ lẫn nhau tuyệt đối. Một tài khoản không thể đồng thời giữ cả hai vai trò.', 400, 'BAD_REQUEST');
+        const roles = body.roles.map(r => String(r).replace(/^ROLE_/i, '').trim());
+        const unsupported = roles.find(r => !['admin', 'learner'].includes(r.toLowerCase()));
+        if (unsupported) {
+          throw new ApiError(`Vai trò không hợp lệ: ${unsupported}`, 400, 'BAD_REQUEST');
         }
-        acc.roles = [...body.roles];
+        const isAdminRole = roles.some(r => r.toLowerCase() === 'admin');
+        acc.roles = [isAdminRole ? 'Admin' : 'Learner'];
         this.saveData();
         return acc;
       }
@@ -2151,8 +1860,6 @@ const currentAccount = this.getCurrentAccount();
     if (cleanPath === '/admin/roles' && method === 'GET') {
       return [
         { roleId: 1, roleName: 'Learner' },
-        { roleId: 2, roleName: 'Creator' },
-        { roleId: 3, roleName: 'Moderator' },
         { roleId: 4, roleName: 'Admin' }
       ];
     }

@@ -25,7 +25,7 @@ import com.elearning.repository.UserProfileRepository;
 import com.elearning.repository.UserSrsSettingRepository;
 import com.elearning.repository.VocabularyRepository;
 import com.elearning.security.JwtUtil;
-import com.elearning.service.CreatorLessonService;
+import com.elearning.service.LessonService;
 import com.elearning.service.PersonalNoteService;
 import com.elearning.service.SrsService;
 import com.elearning.service.VocabularyService;
@@ -98,7 +98,7 @@ public class VocabularyLifecycleIntegrationTests {
     private PersonalNoteService personalNoteService;
 
     @Autowired
-    private CreatorLessonService creatorLessonService;
+    private LessonService lessonService;
 
     @Autowired
     private VocabularyRepository vocabularyRepository;
@@ -160,9 +160,8 @@ public class VocabularyLifecycleIntegrationTests {
     @BeforeEach
     void setUp() {
         Role learnerRole = roleRepository.findByRoleName("Learner").orElse(null);
-        Role creatorRole = roleRepository.findByRoleName("Creator").orElse(null);
+
         Role adminRole = roleRepository.findByRoleName("Admin").orElse(null);
-        Role moderatorRole = roleRepository.findByRoleName("Moderator").orElse(null);
 
         String uniqueSuffix = UUID.randomUUID().toString().substring(0, 8);
         learnerEmail = "learner_vc_" + uniqueSuffix + "@test.com";
@@ -189,7 +188,7 @@ public class VocabularyLifecycleIntegrationTests {
         testCreatorAccount.setEmailOrPhone(creatorEmail);
         testCreatorAccount.setPasswordHash("passHash");
         testCreatorAccount.setStatus("Active");
-        if (creatorRole != null) testCreatorAccount.getRoles().add(creatorRole);
+        if (learnerRole != null) testCreatorAccount.getRoles().add(learnerRole);
         testCreatorAccount = accountRepository.save(testCreatorAccount);
 
         UserProfile cProfile = new UserProfile();
@@ -215,7 +214,7 @@ public class VocabularyLifecycleIntegrationTests {
         testModeratorAccount.setEmailOrPhone(moderatorEmail);
         testModeratorAccount.setPasswordHash("passHash");
         testModeratorAccount.setStatus("Active");
-        if (moderatorRole != null) testModeratorAccount.getRoles().add(moderatorRole);
+        if (learnerRole != null) testModeratorAccount.getRoles().add(learnerRole);
         testModeratorAccount = accountRepository.save(testModeratorAccount);
 
         UserProfile mProfile = new UserProfile();
@@ -901,7 +900,7 @@ public class VocabularyLifecycleIntegrationTests {
         }
 
         @Test
-        @DisplayName("Scenario K: Concurrent Delete vs Lesson Association (Creator addVocabularyToLesson vs Admin delete)")
+        @DisplayName("Scenario K: Concurrent Delete vs Lesson Association (Admin addVocabularyToAdminLesson vs Admin delete)")
         void testConcurrentLessonLinkVsDelete() throws Exception {
             Vocabulary vocab = createVocabulary("Lian", "lian", "Lien");
             Long vocabId = vocab.getVocabId();
@@ -918,15 +917,15 @@ public class VocabularyLifecycleIntegrationTests {
             AtomicInteger linkNotFound = new AtomicInteger(0);
             AtomicInteger unexpectedErrors = new AtomicInteger(0);
 
-            // Thread 1: Creator adds vocabulary to lesson
+            // Thread 1: Admin adds vocabulary to lesson
             Callable<Void> linkTask = () -> {
                 SecurityContextHolder.getContext().setAuthentication(
-                        new UsernamePasswordAuthenticationToken(testCreatorAccount.getEmailOrPhone(), "N/A", List.of(new SimpleGrantedAuthority("ROLE_Creator")))
+                        new UsernamePasswordAuthenticationToken(testAdminAccount.getEmailOrPhone(), "N/A", List.of(new SimpleGrantedAuthority("ROLE_Admin")))
                 );
                 readyLatch.countDown();
                 try {
                     startLatch.await(5, TimeUnit.SECONDS);
-                    creatorLessonService.addVocabularyToLesson(lessonId, vocabId);
+                    lessonService.addVocabularyToAdminLesson(lessonId, vocabId);
                     linkSuccess.incrementAndGet();
                 } catch (BusinessException be) {
                     if (be.getErrorCode() == ErrorCode.NOT_FOUND) {

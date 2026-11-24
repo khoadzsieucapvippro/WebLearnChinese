@@ -41,10 +41,10 @@ function createMockAccounts() {
     },
     {
       accountId: 3,
-      emailOrPhone: 'creator1@example.com',
-      fullName: 'Tác Giả Một',
+      emailOrPhone: 'learner2@example.com',
+      fullName: 'Học Viên Hai',
       status: 'Inactive',
-      roles: ['Creator'],
+      roles: ['Learner'],
       createdAt: '2026-09-10T14:15:00Z',
       updatedAt: '2026-09-10T14:15:00Z'
     },
@@ -221,17 +221,17 @@ describe('Browser E2E: Admin Accounts Lifecycle UI (Task 9F.1)', () => {
       assert.ok(lastCapturedUrl.includes('status=Inactive'), `Expected status=Inactive in URL: ${lastCapturedUrl}`);
       const filteredRows = page.locator('#accountsTableBody tr');
       assert.strictEqual(await filteredRows.count(), 1);
-      assert.match(await filteredRows.first().textContent(), /creator1@example\.com/);
+      assert.match(await filteredRows.first().textContent(), /learner2@example\.com/);
 
-      // 2. Test Search: search for "learner"
+      // 2. Test Search: search for "learner1"
       const searchInput = page.locator('#accountSearchInput');
-      await searchInput.fill('learner');
+      await searchInput.fill('learner1');
       await statusSelect.selectOption(''); // All statuses
       const searchBtn = page.locator('#btnAccountSearch');
       await searchBtn.click();
       await page.waitForTimeout(300);
 
-      assert.ok(lastCapturedUrl.includes('search=learner'), `Expected search=learner in URL: ${lastCapturedUrl}`);
+      assert.ok(lastCapturedUrl.includes('search=learner1'), `Expected search=learner1 in URL: ${lastCapturedUrl}`);
       assert.strictEqual(await filteredRows.count(), 1);
       assert.match(await filteredRows.first().textContent(), /learner1@example\.com/);
 

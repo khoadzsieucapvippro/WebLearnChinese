@@ -204,46 +204,6 @@ pm.test("Returns Bearer JWT with Learner role", function () {
 `
     }),
     buildRequest({
-      name: 'Login Creator (200 OK + Creator Role)',
-      method: 'POST',
-      urlPath: '/api/v1/auth/login',
-      body: {
-        emailOrPhone: '{{creatorEmail}}',
-        password: '{{creatorPassword}}'
-      },
-      testScript: `
-pm.test("Status code is 200 OK", function () {
-    pm.response.to.have.status(200);
-});
-pm.test("Returns Creator token with Creator role", function () {
-    var json = pm.response.json();
-    pm.expect(json.code).to.eql("SUCCESS");
-    pm.expect(json.data.roles).to.be.an("array").that.includes("Creator");
-    pm.environment.set("creatorToken", json.data.token);
-});
-`
-    }),
-    buildRequest({
-      name: 'Login Moderator (200 OK + Moderator Role)',
-      method: 'POST',
-      urlPath: '/api/v1/auth/login',
-      body: {
-        emailOrPhone: '{{moderatorEmail}}',
-        password: '{{moderatorPassword}}'
-      },
-      testScript: `
-pm.test("Status code is 200 OK", function () {
-    pm.response.to.have.status(200);
-});
-pm.test("Returns Moderator token with Moderator role", function () {
-    var json = pm.response.json();
-    pm.expect(json.code).to.eql("SUCCESS");
-    pm.expect(json.data.roles).to.be.an("array").that.includes("Moderator");
-    pm.environment.set("moderatorToken", json.data.token);
-});
-`
-    }),
-    buildRequest({
       name: 'Login Admin (200 OK + Admin Role)',
       method: 'POST',
       urlPath: '/api/v1/auth/login',
@@ -924,53 +884,52 @@ pm.test("Study stats contain cardsDue, reviewsToday, limits", function () {
   ]
 };
 
-const folder08Creator = {
-  name: '08. Creator Studio & Curriculum Authoring',
-  description: 'Creator lesson authoring, vocabulary composition, moderation submission, and RBAC guardrails',
+const folder08AdminLessons = {
+  name: '08. Admin Direct Curriculum & Lesson Management',
+  description: 'Single-Admin lesson authoring, auto-publish, vocabulary composition, and legacy Creator/Moderator denyAll defense',
   item: [
     buildRequest({
-      name: 'Create Draft Lesson (Creator Bearer 201 Created)',
+      name: 'Create & Publish Lesson (Admin Bearer 201 Created)',
       method: 'POST',
-      urlPath: '/api/v1/creator/lessons',
+      urlPath: '/api/v1/admin/lessons',
       headers: [
-        { key: 'Authorization', value: 'Bearer {{creatorToken}}' }
+        { key: 'Authorization', value: 'Bearer {{adminToken}}' }
       ],
       preRequestScript: `
 var uniqueSuffix = Date.now().toString().slice(-5);
-pm.environment.set("creatorLessonTitle", "Bài học Creator Postman #" + uniqueSuffix);
+pm.environment.set("adminLessonTitle", "Bài học Admin Postman #" + uniqueSuffix);
 `,
       body: {
-        title: '{{creatorLessonTitle}}'
+        title: '{{adminLessonTitle}}'
       },
       testScript: `
 pm.test("Status code is 201 Created", function () {
     pm.response.to.have.status(201);
 });
-pm.test("Lesson created in 'Draft' status and saves ID", function () {
+pm.test("Created lesson defaults to 'Approved' status (Single Authority)", function () {
     var json = pm.response.json();
     pm.expect(json.code).to.eql("SUCCESS");
-    pm.expect(json.data.status).to.eql("Draft");
-    pm.expect(json.data).to.have.property("lessonId");
+    pm.expect(json.data.status).to.eql("Approved");
     pm.environment.set("createdLessonId", String(json.data.lessonId));
 });
 `
     }),
     buildRequest({
-      name: 'List My Authored Lessons (Creator Bearer 200 OK)',
+      name: 'List Global Lessons (Admin Bearer 200 OK)',
       method: 'GET',
-      urlPath: '/api/v1/creator/lessons',
+      urlPath: '/api/v1/admin/lessons',
       headers: [
-        { key: 'Authorization', value: 'Bearer {{creatorToken}}' }
+        { key: 'Authorization', value: 'Bearer {{adminToken}}' }
       ],
       query: [
         { key: 'page', value: '0' },
-        { key: 'size', value: '20' }
+        { key: 'size', value: '50' }
       ],
       testScript: `
 pm.test("Status code is 200 OK", function () {
     pm.response.to.have.status(200);
 });
-pm.test("Creator lessons list returned", function () {
+pm.test("Admin lessons list returned", function () {
     var json = pm.response.json();
     pm.expect(json.code).to.eql("SUCCESS");
     pm.expect(json.data.items).to.be.an("array");
@@ -978,152 +937,40 @@ pm.test("Creator lessons list returned", function () {
 `
     }),
     buildRequest({
-      name: 'Get My Lesson Detail (Creator Bearer 200 OK)',
+      name: 'Get Lesson Detail (Admin Bearer 200 OK)',
       method: 'GET',
-      urlPath: '/api/v1/creator/lessons/{{createdLessonId}}',
+      urlPath: '/api/v1/admin/lessons/{{createdLessonId}}',
       headers: [
-        { key: 'Authorization', value: 'Bearer {{creatorToken}}' }
+        { key: 'Authorization', value: 'Bearer {{adminToken}}' }
       ],
       testScript: `
 pm.test("Status code is 200 OK", function () {
     pm.response.to.have.status(200);
 });
-pm.test("Detail returns correct lessonId and Draft status", function () {
+pm.test("Returns requested lesson details", function () {
     var json = pm.response.json();
     pm.expect(json.code).to.eql("SUCCESS");
     pm.expect(String(json.data.lessonId)).to.eql(pm.environment.get("createdLessonId"));
-    pm.expect(json.data.status).to.eql("Draft");
 });
 `
     }),
     buildRequest({
-      name: 'Update My Lesson Metadata (Creator Bearer 200 OK)',
-      method: 'PUT',
-      urlPath: '/api/v1/creator/lessons/{{createdLessonId}}',
-      headers: [
-        { key: 'Authorization', value: 'Bearer {{creatorToken}}' }
-      ],
-      body: {
-        title: '{{creatorLessonTitle}} (Đã sửa đổi)'
-      },
-      testScript: `
-pm.test("Status code is 200 OK", function () {
-    pm.response.to.have.status(200);
-});
-pm.test("Title updated successfully", function () {
-    var json = pm.response.json();
-    pm.expect(json.code).to.eql("SUCCESS");
-    pm.expect(json.data.title).to.include("(Đã sửa đổi)");
-});
-`
-    }),
-    buildRequest({
-      name: 'Add Vocabulary 1 to Lesson (Creator Bearer 200 OK)',
-      method: 'POST',
-      urlPath: '/api/v1/creator/lessons/{{createdLessonId}}/vocabularies/{{existingVocabId}}',
-      headers: [
-        { key: 'Authorization', value: 'Bearer {{creatorToken}}' }
-      ],
-      testScript: `
-pm.test("Status code is 200 OK", function () {
-    pm.response.to.have.status(200);
-});
-pm.test("Vocabulary 1 added into lesson vocabularies list", function () {
-    var json = pm.response.json();
-    pm.expect(json.code).to.eql("SUCCESS");
-    var targetId = Number(pm.environment.get("existingVocabId"));
-    pm.expect(json.data.vocabularies.some(v => v.vocabId === targetId)).to.be.true;
-});
-`
-    }),
-    buildRequest({
-      name: 'Add Vocabulary 2 to Lesson (Creator Bearer 200 OK)',
-      method: 'POST',
-      urlPath: '/api/v1/creator/lessons/{{createdLessonId}}/vocabularies/{{existingVocabId2}}',
-      headers: [
-        { key: 'Authorization', value: 'Bearer {{creatorToken}}' }
-      ],
-      testScript: `
-pm.test("Status code is 200 OK", function () {
-    pm.response.to.have.status(200);
-});
-pm.test("Vocabulary 2 added, total count is at least 2", function () {
-    var json = pm.response.json();
-    pm.expect(json.code).to.eql("SUCCESS");
-    pm.expect(json.data.vocabularies.length).to.be.at.least(2);
-});
-`
-    }),
-    buildRequest({
-      name: 'Reorder Vocabularies within Lesson (Creator Bearer 200 OK)',
-      method: 'PUT',
-      urlPath: '/api/v1/creator/lessons/{{createdLessonId}}/reorder',
-      headers: [
-        { key: 'Authorization', value: 'Bearer {{creatorToken}}' }
-      ],
-      preRequestScript: `
-var id1 = Number(pm.environment.get("existingVocabId"));
-var id2 = Number(pm.environment.get("existingVocabId2"));
-pm.environment.set("reorderPayload", JSON.stringify({ orderedVocabIds: [id2, id1] }));
-`,
-      body: '{{reorderPayload}}',
-      testScript: `
-pm.test("Status code is 200 OK", function () {
-    pm.response.to.have.status(200);
-});
-pm.test("Reordered items orderIndex updated", function () {
-    var json = pm.response.json();
-    pm.expect(json.code).to.eql("SUCCESS");
-    var vocabs = json.data.vocabularies;
-    var id1 = Number(pm.environment.get("existingVocabId"));
-    var id2 = Number(pm.environment.get("existingVocabId2"));
-    pm.expect(vocabs[0].vocabId).to.eql(id2);
-    pm.expect(vocabs[1].vocabId).to.eql(id1);
-});
-`
-    }),
-    buildRequest({
-      name: 'Remove Vocabulary 2 from Lesson (Creator Bearer 200 OK)',
+      name: 'Delete Created Lesson (Admin Bearer 204 No Content)',
       method: 'DELETE',
-      urlPath: '/api/v1/creator/lessons/{{createdLessonId}}/vocabularies/{{existingVocabId2}}',
+      urlPath: '/api/v1/admin/lessons/{{createdLessonId}}',
       headers: [
-        { key: 'Authorization', value: 'Bearer {{creatorToken}}' }
+        { key: 'Authorization', value: 'Bearer {{adminToken}}' }
       ],
       testScript: `
-pm.test("Status code is 200 OK", function () {
-    pm.response.to.have.status(200);
-});
-pm.test("Vocabulary 2 removed from lesson, Vocab 1 remains (count=1)", function () {
-    var json = pm.response.json();
-    pm.expect(json.code).to.eql("SUCCESS");
-    var id2 = Number(pm.environment.get("existingVocabId2"));
-    pm.expect(json.data.vocabularies.some(v => v.vocabId === id2)).to.be.false;
-    pm.expect(json.data.vocabularies.length).to.be.at.least(1);
+pm.test("Status code is 204 No Content", function () {
+    pm.response.to.have.status(204);
 });
 `
     }),
     buildRequest({
-      name: 'Submit Lesson For Moderation (Creator Bearer 200 OK)',
+      name: 'RBAC Negative - Learner Forbidden on Admin Lessons (403 Forbidden)',
       method: 'POST',
-      urlPath: '/api/v1/creator/lessons/{{createdLessonId}}/submit',
-      headers: [
-        { key: 'Authorization', value: 'Bearer {{creatorToken}}' }
-      ],
-      testScript: `
-pm.test("Status code is 200 OK", function () {
-    pm.response.to.have.status(200);
-});
-pm.test("Lesson transitions from 'Draft' to 'Pending' status", function () {
-    var json = pm.response.json();
-    pm.expect(json.code).to.eql("SUCCESS");
-    pm.expect(json.data.status).to.eql("Pending");
-});
-`
-    }),
-    buildRequest({
-      name: 'RBAC Negative - Learner Forbidden on Creator Endpoint (403 Forbidden)',
-      method: 'POST',
-      urlPath: '/api/v1/creator/lessons',
+      urlPath: '/api/v1/admin/lessons',
       headers: [
         { key: 'Authorization', value: 'Bearer {{learnerToken}}' }
       ],
@@ -1141,412 +988,28 @@ pm.test("Response code is FORBIDDEN", function () {
 `
     }),
     buildRequest({
-      name: 'Excel Import Preview (Creator Bearer 200 OK)',
-      method: 'POST',
-      urlPath: '/api/v1/creator/lessons/import',
-      headers: [
-        { key: 'Authorization', value: 'Bearer {{creatorToken}}' }
-      ],
-      formdata: [
-        { key: 'file', type: 'file', src: 'tests/postman/fixtures/sample-curriculum-valid.xlsx' }
-      ],
-      testScript: `
-pm.test("Status code is 200 OK", function () {
-    pm.response.to.have.status(200);
-});
-pm.test("Report validation isValid is true with 5 rows parsed", function () {
-    var json = pm.response.json();
-    pm.expect(json.code).to.eql("SUCCESS");
-    pm.expect(json.data.isValid).to.be.true;
-    pm.expect(json.data.fileStatus).to.eql("VALID");
-    pm.expect(json.data.totalRows).to.eql(5);
-    pm.expect(json.data.rows).to.be.an("array");
-});
-`
-    }),
-    buildRequest({
-      name: 'Excel Import Preview Negative - Bad Headers (Creator Bearer 200 OK with INVALID status)',
-      method: 'POST',
-      urlPath: '/api/v1/creator/lessons/import',
-      headers: [
-        { key: 'Authorization', value: 'Bearer {{creatorToken}}' }
-      ],
-      formdata: [
-        { key: 'file', type: 'file', src: 'tests/postman/fixtures/sample-curriculum-bad-headers.xlsx' }
-      ],
-      testScript: `
-pm.test("Status code is 200 OK", function () {
-    pm.response.to.have.status(200);
-});
-pm.test("Report indicates file is invalid with HEADER_ERROR status", function () {
-    var json = pm.response.json();
-    pm.expect(json.code).to.eql("SUCCESS");
-    pm.expect(json.data.isValid).to.be.false;
-    pm.expect(json.data.fileStatus).to.be.oneOf(["HEADER_ERROR", "INVALID"]);
-});
-`
-    }),
-    buildRequest({
-      name: 'Excel Import Preview Negative - Unauthenticated (401 Unauthorized)',
-      method: 'POST',
-      urlPath: '/api/v1/creator/lessons/import',
-      formdata: [
-        { key: 'file', type: 'file', src: 'tests/postman/fixtures/sample-curriculum-valid.xlsx' }
-      ],
-      testScript: `
-pm.test("Status code is 401 Unauthorized", function () {
-    pm.response.to.have.status(401);
-});
-pm.test("Response code is UNAUTHORIZED", function () {
-    var json = pm.response.json();
-    pm.expect(json.code).to.eql("UNAUTHORIZED");
-});
-`
-    }),
-    buildRequest({
-      name: 'Confirm Excel Curriculum Import (Creator Bearer 201 Created)',
-      method: 'POST',
-      urlPath: '/api/v1/creator/lessons/import/confirm',
-      headers: [
-        { key: 'Authorization', value: 'Bearer {{creatorToken}}' }
-      ],
-      formdata: [
-        { key: 'title', type: 'text', value: 'Bài học Tạo từ Excel Tự Động' },
-        { key: 'file', type: 'file', src: 'tests/postman/fixtures/sample-curriculum-valid.xlsx' }
-      ],
-      testScript: `
-pm.test("Status code is 201 Created", function () {
-    pm.response.to.have.status(201);
-});
-pm.test("Import creates draft lesson with constituent vocabularies", function () {
-    var json = pm.response.json();
-    pm.expect(json.code).to.eql("SUCCESS");
-    pm.expect(json.data.status).to.eql("Draft");
-    pm.expect(json.data.vocabularies).to.be.an("array");
-    pm.expect(json.data.vocabularies.length).to.eql(5);
-    pm.environment.set("importedLessonId", String(json.data.lessonId));
-});
-`
-    }),
-    buildRequest({
-      name: 'Confirm Import Negative - Blank Title (Creator Bearer 400 Bad Request)',
-      method: 'POST',
-      urlPath: '/api/v1/creator/lessons/import/confirm',
-      headers: [
-        { key: 'Authorization', value: 'Bearer {{creatorToken}}' }
-      ],
-      formdata: [
-        { key: 'title', type: 'text', value: '   ' },
-        { key: 'file', type: 'file', src: 'tests/postman/fixtures/sample-curriculum-valid.xlsx' }
-      ],
-      testScript: `
-pm.test("Status code is 400 Bad Request", function () {
-    pm.response.to.have.status(400);
-});
-pm.test("Response code is BAD_REQUEST", function () {
-    var json = pm.response.json();
-    pm.expect(json.code).to.eql("BAD_REQUEST");
-});
-`
-    }),
-    buildRequest({
-      name: 'Confirm Import Negative - Invalid File (Creator Bearer 422 Unprocessable Entity)',
-      method: 'POST',
-      urlPath: '/api/v1/creator/lessons/import/confirm',
-      headers: [
-        { key: 'Authorization', value: 'Bearer {{creatorToken}}' }
-      ],
-      formdata: [
-        { key: 'title', type: 'text', value: 'Bài học Thất Bại' },
-        { key: 'file', type: 'file', src: 'tests/postman/fixtures/sample-curriculum-bad-headers.xlsx' }
-      ],
-      testScript: `
-pm.test("Status code is 422 Unprocessable Entity", function () {
-    pm.response.to.have.status(422);
-});
-pm.test("Response code is UNPROCESSABLE_ENTITY", function () {
-    var json = pm.response.json();
-    pm.expect(json.code).to.eql("UNPROCESSABLE_ENTITY");
-});
-`
-    }),
-    buildRequest({
-      name: 'Delete Imported Draft Lesson (Creator Bearer 204 No Content)',
-      method: 'DELETE',
-      urlPath: '/api/v1/creator/lessons/{{importedLessonId}}',
-      headers: [
-        { key: 'Authorization', value: 'Bearer {{creatorToken}}' }
-      ],
-      testScript: `
-pm.test("Status code is 204 No Content", function () {
-    pm.response.to.have.status(204);
-});
-`
-    }),
-    buildRequest({
-      name: 'Create Draft Lesson For Deletion Test (Creator Bearer 201 Created)',
-      method: 'POST',
+      name: 'Security Negative - Legacy Creator Endpoint Permanently Denied (403)',
+      method: 'GET',
       urlPath: '/api/v1/creator/lessons',
       headers: [
-        { key: 'Authorization', value: 'Bearer {{creatorToken}}' }
-      ],
-      body: {
-        title: 'Bài học Nháp Dành Cho Test Xóa'
-      },
-      testScript: `
-pm.test("Status code is 201 Created", function () {
-    pm.response.to.have.status(201);
-});
-pm.test("Saves lessonToDeleteId", function () {
-    var json = pm.response.json();
-    pm.expect(json.code).to.eql("SUCCESS");
-    pm.environment.set("lessonToDeleteId", String(json.data.lessonId));
-});
-`
-    }),
-    buildRequest({
-      name: 'Delete Draft Lesson (Creator Bearer 204 No Content)',
-      method: 'DELETE',
-      urlPath: '/api/v1/creator/lessons/{{lessonToDeleteId}}',
-      headers: [
-        { key: 'Authorization', value: 'Bearer {{creatorToken}}' }
-      ],
-      testScript: `
-pm.test("Status code is 204 No Content", function () {
-    pm.response.to.have.status(204);
-});
-`
-    }),
-    buildRequest({
-      name: 'Verify Deleted Lesson Not Found (Creator Bearer 404 Not Found)',
-      method: 'GET',
-      urlPath: '/api/v1/creator/lessons/{{lessonToDeleteId}}',
-      headers: [
-        { key: 'Authorization', value: 'Bearer {{creatorToken}}' }
-      ],
-      testScript: `
-pm.test("Status code is 404 Not Found", function () {
-    pm.response.to.have.status(404);
-});
-pm.test("Response code is NOT_FOUND", function () {
-    var json = pm.response.json();
-    pm.expect(json.code).to.eql("NOT_FOUND");
-});
-`
-    }),
-    buildRequest({
-      name: 'Delete Lesson Negative - Non-Existent ID (Creator Bearer 404 Not Found)',
-      method: 'DELETE',
-      urlPath: '/api/v1/creator/lessons/999999',
-      headers: [
-        { key: 'Authorization', value: 'Bearer {{creatorToken}}' }
-      ],
-      testScript: `
-pm.test("Status code is 404 Not Found", function () {
-    pm.response.to.have.status(404);
-});
-pm.test("Response code is NOT_FOUND", function () {
-    var json = pm.response.json();
-    pm.expect(json.code).to.eql("NOT_FOUND");
-});
-`
-    }),
-    buildRequest({
-      name: 'Delete Lesson Negative - Learner Forbidden (403 Forbidden)',
-      method: 'DELETE',
-      urlPath: '/api/v1/creator/lessons/{{approvedLessonId}}',
-      headers: [
-        { key: 'Authorization', value: 'Bearer {{learnerToken}}' }
+        { key: 'Authorization', value: 'Bearer {{adminToken}}' }
       ],
       testScript: `
 pm.test("Status code is 403 Forbidden", function () {
     pm.response.to.have.status(403);
 });
-pm.test("Response code is FORBIDDEN", function () {
-    var json = pm.response.json();
-    pm.expect(json.code).to.eql("FORBIDDEN");
-});
 `
-    })
-  ]
-};
-
-const folder09Moderator = {
-  name: '09. Content Moderation & Quality Review',
-  description: 'Moderator queue review, approval/rejection state machine, and RBAC defense',
-  item: [
+    }),
     buildRequest({
-      name: 'Get Pending Lessons Queue (Moderator Bearer 200 OK)',
+      name: 'Security Negative - Legacy Moderator Endpoint Permanently Denied (403)',
       method: 'GET',
       urlPath: '/api/v1/moderator/lessons/pending',
       headers: [
-        { key: 'Authorization', value: 'Bearer {{moderatorToken}}' }
-      ],
-      query: [
-        { key: 'page', value: '0' },
-        { key: 'size', value: '20' }
-      ],
-      testScript: `
-pm.test("Status code is 200 OK", function () {
-    pm.response.to.have.status(200);
-});
-pm.test("Queue returns pending lessons array", function () {
-    var json = pm.response.json();
-    pm.expect(json.code).to.eql("SUCCESS");
-    pm.expect(json.data.items).to.be.an("array");
-});
-`
-    }),
-    buildRequest({
-      name: 'Get Pending Lesson Detail (Moderator Bearer 200 OK)',
-      method: 'GET',
-      urlPath: '/api/v1/moderator/lessons/{{createdLessonId}}',
-      headers: [
-        { key: 'Authorization', value: 'Bearer {{moderatorToken}}' }
-      ],
-      testScript: `
-pm.test("Status code is 200 OK", function () {
-    pm.response.to.have.status(200);
-});
-pm.test("Moderator views pending lesson detail", function () {
-    var json = pm.response.json();
-    pm.expect(json.code).to.eql("SUCCESS");
-    pm.expect(String(json.data.lessonId)).to.eql(pm.environment.get("createdLessonId"));
-    pm.expect(json.data.status).to.eql("Pending");
-});
-`
-    }),
-    buildRequest({
-      name: 'Reject Pending Lesson with Reason & Flags (Moderator Bearer 200 OK)',
-      method: 'POST',
-      urlPath: '/api/v1/moderator/lessons/{{createdLessonId}}/reject',
-      headers: [
-        { key: 'Authorization', value: 'Bearer {{moderatorToken}}' }
-      ],
-      body: {
-        rejectionReason: 'Cần bổ sung thêm ví dụ ngữ cảnh cho các từ vựng theo chuẩn sư phạm',
-        flaggedFields: '{"vocabularies":"examples needed"}'
-      },
-      testScript: `
-pm.test("Status code is 200 OK", function () {
-    pm.response.to.have.status(200);
-});
-pm.test("Lesson transitioned to 'Rejected' status", function () {
-    var json = pm.response.json();
-    pm.expect(json.code).to.eql("SUCCESS");
-    pm.expect(json.data.status).to.eql("Rejected");
-});
-`
-    }),
-    buildRequest({
-      name: 'Creator Re-submits Rejected Lesson (Creator Bearer 200 OK)',
-      method: 'POST',
-      urlPath: '/api/v1/creator/lessons/{{createdLessonId}}/submit',
-      headers: [
-        { key: 'Authorization', value: 'Bearer {{creatorToken}}' }
-      ],
-      testScript: `
-pm.test("Status code is 200 OK", function () {
-    pm.response.to.have.status(200);
-});
-pm.test("Lesson successfully re-submitted to 'Pending'", function () {
-    var json = pm.response.json();
-    pm.expect(json.code).to.eql("SUCCESS");
-    pm.expect(json.data.status).to.eql("Pending");
-});
-`
-    }),
-    buildRequest({
-      name: 'Approve Pending Lesson with Note (Moderator Bearer 200 OK)',
-      method: 'POST',
-      urlPath: '/api/v1/moderator/lessons/{{createdLessonId}}/approve',
-      headers: [
-        { key: 'Authorization', value: 'Bearer {{moderatorToken}}' }
-      ],
-      body: {
-        note: 'Bài học đã được chỉnh sửa đạt chuẩn chất lượng HSK 1'
-      },
-      testScript: `
-pm.test("Status code is 200 OK", function () {
-    pm.response.to.have.status(200);
-});
-pm.test("Lesson transitioned to 'Approved' status", function () {
-    var json = pm.response.json();
-    pm.expect(json.code).to.eql("SUCCESS");
-    pm.expect(json.data.status).to.eql("Approved");
-});
-`
-    }),
-    buildRequest({
-      name: 'Delete Lesson Negative - Creator Cannot Delete Approved Lesson (409 Conflict)',
-      method: 'DELETE',
-      urlPath: '/api/v1/creator/lessons/{{createdLessonId}}',
-      headers: [
-        { key: 'Authorization', value: 'Bearer {{creatorToken}}' }
-      ],
-      testScript: `
-pm.test("Status code is 409 Conflict", function () {
-    pm.response.to.have.status(409);
-});
-pm.test("Response code is CONFLICT", function () {
-    var json = pm.response.json();
-    pm.expect(json.code).to.eql("CONFLICT");
-});
-`
-    }),
-    buildRequest({
-      name: 'Get Moderator Audit History (Moderator Bearer 200 OK)',
-      method: 'GET',
-      urlPath: '/api/v1/moderator/history',
-      headers: [
-        { key: 'Authorization', value: 'Bearer {{moderatorToken}}' }
-      ],
-      query: [
-        { key: 'page', value: '0' },
-        { key: 'size', value: '20' }
-      ],
-      testScript: `
-pm.test("Status code is 200 OK", function () {
-    pm.response.to.have.status(200);
-});
-pm.test("History returns moderation log entries with audit details", function () {
-    var json = pm.response.json();
-    pm.expect(json.code).to.eql("SUCCESS");
-    pm.expect(json.data.items).to.be.an("array");
-});
-`
-    }),
-    buildRequest({
-      name: 'RBAC Negative - Learner Forbidden on Moderator Queue (403 Forbidden)',
-      method: 'GET',
-      urlPath: '/api/v1/moderator/lessons/pending',
-      headers: [
-        { key: 'Authorization', value: 'Bearer {{learnerToken}}' }
+        { key: 'Authorization', value: 'Bearer {{adminToken}}' }
       ],
       testScript: `
 pm.test("Status code is 403 Forbidden", function () {
     pm.response.to.have.status(403);
-});
-pm.test("Response code is FORBIDDEN", function () {
-    var json = pm.response.json();
-    pm.expect(json.code).to.eql("FORBIDDEN");
-});
-`
-    }),
-    buildRequest({
-      name: 'RBAC Negative - Creator Forbidden on Moderator Queue (403 Forbidden)',
-      method: 'GET',
-      urlPath: '/api/v1/moderator/lessons/pending',
-      headers: [
-        { key: 'Authorization', value: 'Bearer {{creatorToken}}' }
-      ],
-      testScript: `
-pm.test("Status code is 403 Forbidden", function () {
-    pm.response.to.have.status(403);
-});
-pm.test("Response code is FORBIDDEN", function () {
-    var json = pm.response.json();
-    pm.expect(json.code).to.eql("FORBIDDEN");
 });
 `
     })
@@ -1594,12 +1057,12 @@ pm.test("Accounts list returned with account metadata", function () {
 pm.test("Status code is 200 OK", function () {
     pm.response.to.have.status(200);
 });
-pm.test("Returns 4 system roles (Learner, Creator, Moderator, Admin)", function () {
+pm.test("Returns 2 system roles (Learner, Admin)", function () {
     var json = pm.response.json();
     pm.expect(json.code).to.eql("SUCCESS");
-    pm.expect(json.data).to.be.an("array").and.have.lengthOf(4);
+    pm.expect(json.data).to.be.an("array").and.have.lengthOf(2);
     var roleNames = json.data.map(r => r.roleName);
-    pm.expect(roleNames).to.include.members(["Learner", "Creator", "Moderator", "Admin"]);
+    pm.expect(roleNames).to.include.members(["Learner", "Admin"]);
 });
 `
     }),
@@ -1833,11 +1296,11 @@ pm.test("Response code is FORBIDDEN", function () {
 `
     }),
     buildRequest({
-      name: 'RBAC Negative - Creator Forbidden on Admin Roles (403 Forbidden)',
+      name: 'RBAC Negative - Learner Forbidden on Admin Roles (403 Forbidden)',
       method: 'GET',
       urlPath: '/api/v1/admin/roles',
       headers: [
-        { key: 'Authorization', value: 'Bearer {{creatorToken}}' }
+        { key: 'Authorization', value: 'Bearer {{learnerToken}}' }
       ],
       testScript: `
 pm.test("Status code is 403 Forbidden", function () {
@@ -1850,11 +1313,11 @@ pm.test("Response code is FORBIDDEN", function () {
 `
     }),
     buildRequest({
-      name: 'RBAC Negative - Moderator Forbidden on Admin Lessons (403 Forbidden)',
+      name: 'RBAC Negative - Learner Forbidden on Admin Lessons (403 Forbidden)',
       method: 'GET',
       urlPath: '/api/v1/admin/lessons',
       headers: [
-        { key: 'Authorization', value: 'Bearer {{moderatorToken}}' }
+        { key: 'Authorization', value: 'Bearer {{learnerToken}}' }
       ],
       testScript: `
 pm.test("Status code is 403 Forbidden", function () {
@@ -1877,7 +1340,7 @@ const postmanCollection = {
   info: {
     name: 'E-Learning Kangxi & SRS Platform REST API',
     _postman_id: 'c827b591-6284-482a-9cb8-b11894d8cb19',
-    description: 'Comprehensive, automated REST API test collection for E-Learning Platform: Kangxi Radicals, Chinese Vocabulary, SM-2 Spaced Repetition System (SRS), Multi-role RBAC (Learner, Creator, Moderator, Admin), and Content Governance.',
+    description: 'Comprehensive, automated REST API test collection for E-Learning Platform: Kangxi Radicals, Chinese Vocabulary, SM-2 Spaced Repetition System (SRS), Single-Admin + Learner RBAC (Learner, Admin), and Direct Content Governance.',
     schema: 'https://schema.getpostman.com/json/collection/v2.1.0/collection.json'
   },
   item: [
@@ -1889,8 +1352,7 @@ const postmanCollection = {
     folder05ProfileAndSettings,
     folder06PersonalNotes,
     folder07Srs,
-    folder08Creator,
-    folder09Moderator,
+    folder08AdminLessons,
     folder10Admin
   ]
 };
@@ -1906,13 +1368,7 @@ const postmanEnvironment = {
     { key: 'baseUrl', value: 'http://localhost:8080', type: 'default', enabled: true },
     { key: 'adminEmail', value: 'admin@test.com', type: 'default', enabled: true },
     { key: 'adminPassword', value: 'Password123!', type: 'secret', enabled: true },
-    { key: 'creatorEmail', value: 'creator@test.com', type: 'default', enabled: true },
-    { key: 'creatorPassword', value: 'Password123!', type: 'secret', enabled: true },
-    { key: 'moderatorEmail', value: 'moderator@test.com', type: 'default', enabled: true },
-    { key: 'moderatorPassword', value: 'Password123!', type: 'secret', enabled: true },
     { key: 'learnerToken', value: '', type: 'secret', enabled: true },
-    { key: 'creatorToken', value: '', type: 'secret', enabled: true },
-    { key: 'moderatorToken', value: '', type: 'secret', enabled: true },
     { key: 'adminToken', value: '', type: 'secret', enabled: true },
     { key: 'learnerAccountId', value: '', type: 'default', enabled: true },
     { key: 'learnerEmail', value: 'learner@test.com', type: 'default', enabled: true },

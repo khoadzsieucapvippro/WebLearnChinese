@@ -134,40 +134,11 @@ describe('Tier 1: Feature Coverage Test Suite (F1 - F20)', () => {
   // ===========================================================================
   describe('Domain 2: Management Business Invariants & SRS Constraints', () => {
 
-    test('TC-T1-D2-01 [F4]: Creator cannot approve their own lesson (Self-Review Prohibition)', () => {
-      const result = evaluateSelfReviewInvariant({
-        lessonCreatorId: 202,
-        reviewerAccountId: 202,
-        action: 'Approve'
-      });
-
-      assert.strictEqual(result.allowed, false);
-      assert.strictEqual(result.status, 403);
-      assert.strictEqual(result.errorCode, 'FORBIDDEN');
-      assert.strictEqual(result.message, 'Bạn không thể tự kiểm duyệt nội dung do chính mình tạo ra');
-    });
-
-    test('TC-T1-D2-02 [F4]: Creator cannot reject their own lesson (Self-Review Prohibition)', () => {
-      const result = evaluateSelfReviewInvariant({
-        lessonCreatorId: 202,
-        reviewerAccountId: 202,
-        action: 'Reject'
-      });
-
-      assert.strictEqual(result.allowed, false);
-      assert.strictEqual(result.status, 403);
-      assert.strictEqual(result.errorCode, 'FORBIDDEN');
-    });
-
-    test('TC-T1-D2-03 [F4]: Independent Moderator can review creator lesson successfully', () => {
-      const result = evaluateSelfReviewInvariant({
-        lessonCreatorId: 202,
-        reviewerAccountId: 303,
-        action: 'Approve'
-      });
-
-      assert.strictEqual(result.allowed, true);
-      assert.strictEqual(result.status, 200);
+    test('TC-T1-D2-01 [F4]: Single-Admin lesson governance restricts non-Admin and deprecated Creator/Moderator roles', () => {
+      assert.strictEqual(evaluateNavManagementEntry(['Admin']).showManagementLink, true);
+      assert.strictEqual(evaluateNavManagementEntry(['Creator']).showManagementLink, false);
+      assert.strictEqual(evaluateNavManagementEntry(['Moderator']).showManagementLink, false);
+      assert.strictEqual(evaluateNavManagementEntry(['Learner']).showManagementLink, false);
     });
 
     test('TC-T1-D2-04 [F5]: System blocks demoting the last active Admin account', async () => {
@@ -312,22 +283,22 @@ describe('Tier 1: Feature Coverage Test Suite (F1 - F20)', () => {
         resourceId: 101,
         status: 'SUCCESS',
         beforeState: { roles: ['Learner'] },
-        afterState: { roles: ['Learner', 'Creator'] },
-        detailsSummary: 'Promoted user 101 to Creator'
+        afterState: { roles: ['Admin'] },
+        detailsSummary: 'Promoted user 101 to Admin'
       });
 
       const res = store.queryLogs({ userRoles: ['Admin'], actionType: 'ROLE_CHANGE' });
       assert.strictEqual(res.status, 200);
       assert.strictEqual(res.data.totalElements, 1);
-      assert.strictEqual(res.data.content[0].detailsSummary, 'Promoted user 101 to Creator');
+      assert.strictEqual(res.data.content[0].detailsSummary, 'Promoted user 101 to Admin');
     });
 
-    test('TC-T1-D3-05 [F11]: Audit logging hooks record content moderation decisions', () => {
+    test('TC-T1-D3-05 [F11]: Audit logging hooks record Admin lesson publication decisions', () => {
       const store = new AuditLogMockStore();
       store.recordEvent({
-        actorId: 303,
-        actorUsername: 'moderator_morgan',
-        actionType: 'LESSON_MODERATE',
+        actorId: 505,
+        actorUsername: 'admin_sys',
+        actionType: 'LESSON_ADMIN_PUBLISH',
         resourceType: 'LESSON',
         resourceId: 77,
         status: 'SUCCESS',
@@ -417,26 +388,25 @@ describe('Tier 1: Feature Coverage Test Suite (F1 - F20)', () => {
         <header>
           <a id="btnBackToLearning" href="vocabulary.html">Quay lại học</a>
         </header>
-        <section id="creatorManagementSection"></section>
-        <section id="moderatorManagementSection"></section>
         <section id="adminManagementSection"></section>
       `;
 
       const evalRes = evaluateManagementHubStructure(sampleHubHtml, ['Admin']);
       assert.strictEqual(evalRes.hasBackToLearning, true);
-      assert.deepStrictEqual(evalRes.visibleSections, ['CREATOR', 'MODERATOR', 'ADMIN']);
+      assert.deepStrictEqual(evalRes.visibleSections, ['ADMIN']);
     });
 
-    test('TC-T1-D4-02 [F15]: Unified navigation renders "Khu vực quản lý" for Creator, Moderator, Admin', () => {
+    test('TC-T1-D4-02 [F15]: Unified navigation renders "Khu vực quản lý" ONLY for Admin', () => {
       const creatorNav = evaluateNavManagementEntry(['Creator']);
-      assert.strictEqual(creatorNav.showManagementLink, true);
-      assert.strictEqual(creatorNav.targetHref, 'management.html');
+      assert.strictEqual(creatorNav.showManagementLink, false);
+      assert.strictEqual(creatorNav.targetHref, '');
 
       const modNav = evaluateNavManagementEntry(['Moderator']);
-      assert.strictEqual(modNav.showManagementLink, true);
+      assert.strictEqual(modNav.showManagementLink, false);
 
       const adminNav = evaluateNavManagementEntry(['Admin']);
       assert.strictEqual(adminNav.showManagementLink, true);
+      assert.strictEqual(adminNav.targetHref, 'management.html');
     });
 
     test('TC-T1-D4-03 [F15]: Unified navigation strictly hides "Khu vực quản lý" for Learner-only role', () => {
@@ -572,8 +542,8 @@ describe('Tier 1: Feature Coverage Test Suite (F1 - F20)', () => {
     test('TC-T1-D5-06 [F20]: Regression test verifies navigation contracts across all roles', () => {
       const rolesToTest = [
         { roles: ['Learner'], expectMgmt: false },
-        { roles: ['Creator'], expectMgmt: true },
-        { roles: ['Moderator'], expectMgmt: true },
+        { roles: ['Creator'], expectMgmt: false },
+        { roles: ['Moderator'], expectMgmt: false },
         { roles: ['Admin'], expectMgmt: true }
       ];
 

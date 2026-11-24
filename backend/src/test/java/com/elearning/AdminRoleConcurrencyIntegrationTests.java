@@ -72,8 +72,8 @@ class AdminRoleConcurrencyIntegrationTests {
                 try {
                     // Alternate role payloads to ensure effective role changes
                     List<String> roles = (index % 2 == 0)
-                            ? List.of("Learner", "Creator")
-                            : List.of("Learner", "Moderator");
+                            ? List.of("Admin")
+                            : List.of("Learner");
 
                     UpdateAccountRolesRequest request = new UpdateAccountRolesRequest(roles);
                     adminRoleService.updateAccountRoles(targetAccountId, request, "admin@example.com");

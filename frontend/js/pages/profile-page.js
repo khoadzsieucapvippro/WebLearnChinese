@@ -934,7 +934,7 @@ export function initProfileTabs() {
   tabSettings.addEventListener('click', () => {
     activateSettingsTab();
     const roles = authManager.getRoles();
-    const isStaff = roles.includes('Admin') || roles.includes('Creator') || roles.includes('Moderator');
+    const isStaff = roles.includes('Admin');
     if (!isStaff) {
       loadSrsSettings();
       initDisplayAndAudioSettings();
@@ -949,7 +949,7 @@ export function initProfileTabs() {
     if (hash === '#srs-settings' || hash === '#settings' || hash === '#security') {
       activateSettingsTab();
       const roles = authManager.getRoles();
-      const isStaff = roles.includes('Admin') || roles.includes('Creator') || roles.includes('Moderator');
+      const isStaff = roles.includes('Admin');
       if (!isStaff) {
         loadSrsSettings();
         initDisplayAndAudioSettings();
@@ -1476,7 +1476,7 @@ export function adaptHeaderForManagement() {
  */
 export function applyProfileContext() {
   const roles = authManager.getRoles();
-  const hasManagementRole = roles.includes('Admin') || roles.includes('Creator') || roles.includes('Moderator');
+  const hasManagementRole = roles.includes('Admin');
 
   if (hasManagementRole) {
     adaptHeaderForManagement();

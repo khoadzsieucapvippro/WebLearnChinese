@@ -41,18 +41,13 @@ const ALL_22_PAGES = [
   'lesson-detail.html?id=1',
   'srs-review.html',
   'srs-dashboard.html',
-  'creator-lessons.html',
-  'creator-lesson-editor.html?id=1',
-  'creator-import.html',
-  'moderator-queue.html',
-  'moderator-review.html?id=1',
-  'moderator-history.html',
   'admin-accounts.html',
   'admin-roles.html',
   'admin-radicals.html',
   'admin-vocabulary.html',
   'admin-lessons.html',
   'admin-audit-logs.html',
+  'admin-dashboard.html',
   'management.html',
   'ui-verification.html'
 ];
@@ -90,17 +85,21 @@ describe('Responsive & Multi-Viewport Layout Verification (Task 9G.5)', () => {
    */
   async function setupMockSession(page) {
     await page.addInitScript(() => {
-      const isAuthPage = window.location.pathname.includes('login.html') || window.location.pathname.includes('register.html');
-      if (isAuthPage) {
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('user_info');
-      } else {
-        localStorage.setItem('access_token', 'mock_jwt_responsive_testing');
-        localStorage.setItem('user_info', JSON.stringify({
+      const pathName = window.location.pathname;
+      const isAuthPage = pathName.includes('login.html') || pathName.includes('register.html');
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('user_info');
+      sessionStorage.removeItem('access_token');
+      sessionStorage.removeItem('user_info');
+      if (!isAuthPage) {
+        const isAdminPage = pathName.includes('admin-') || pathName.includes('management.html');
+        const storage = isAdminPage ? sessionStorage : localStorage;
+        storage.setItem('access_token', 'mock_jwt_responsive_testing');
+        storage.setItem('user_info', JSON.stringify({
           accountId: 1,
-          emailOrPhone: 'admin@example.com',
-          fullName: 'Quản Trị Viên Hệ Thống',
-          roles: ['Admin', 'Creator', 'Moderator', 'Learner']
+          emailOrPhone: isAdminPage ? 'admin@example.com' : 'learner@example.com',
+          fullName: isAdminPage ? 'Quản Trị Viên Hệ Thống' : 'Học Viên Hệ Thống',
+          roles: isAdminPage ? ['Admin'] : ['Learner']
         }));
       }
     });
@@ -349,18 +348,15 @@ describe('Responsive & Multi-Viewport Layout Verification (Task 9G.5)', () => {
     }
   });
 
-  // TEST 4: Dense Administrative & Moderation Table Localized Scroll Containment
-  test('Test 4: Dense tables in Admin, Moderator, and Creator pages are wrapped in localized scroll containers (.table-responsive)', async () => {
+  // TEST 4: Dense Administrative Table Localized Scroll Containment
+  test('Test 4: Dense tables in Admin pages are wrapped in localized scroll containers (.table-responsive)', async () => {
     const tablePages = [
       'admin-accounts.html',
       'admin-roles.html',
       'admin-radicals.html',
       'admin-vocabulary.html',
       'admin-lessons.html',
-      'creator-lessons.html',
-      'creator-import.html',
-      'moderator-queue.html',
-      'moderator-history.html'
+      'admin-audit-logs.html'
     ];
 
     const { page, context, getRuntimeErrors } = await createMonitoredPage(browser, {
@@ -492,36 +488,6 @@ describe('Responsive & Multi-Viewport Layout Verification (Task 9G.5)', () => {
     }
   });
 
-  // TEST 6: Creator Excel Import 2-Step Responsive Workflow
-  test('Test 6: Creator Excel Import 2-step workflow renders responsively on mobile and desktop without layout breakage', async () => {
-    const { page, context, getRuntimeErrors } = await createMonitoredPage(browser, {
-      viewportWidth: 375,
-      viewportHeight: 667
-    });
-
-    try {
-      await setupMockSession(page);
-      await page.goto(`${baseUrl}/creator-import.html`, { waitUntil: 'domcontentloaded' });
-
-      // 1. Dropzone container fits inside viewport
-      const dropzone = page.locator('#fileDropZone');
-      await dropzone.waitFor({ state: 'visible' });
-      const dropBox = await dropzone.boundingBox();
-      assert.ok(dropBox.width <= 375, `Dropzone width (${dropBox.width}) must fit inside 375px viewport`);
-
-      // 2. Step 2 Preview table container maintains localized horizontal scrolling
-      const tableWrapper = page.locator('#previewTableSection .table-responsive');
-      assert.ok(await tableWrapper.count() > 0, 'Preview table must be wrapped inside .table-responsive container');
-      const hasTableResponsive = await tableWrapper.evaluate(el => el.classList.contains('table-responsive'));
-      assert.strictEqual(hasTableResponsive, true, 'Import preview table container must have table-responsive class');
-
-      const errors = getRuntimeErrors();
-      assert.strictEqual(errors.length, 0, `Runtime errors during creator import responsive audit:\n${errors.join('\n')}`);
-    } finally {
-      await context.close();
-    }
-  });
-
   // TEST 7: Responsive Navigation & Hamburger Toggle
   test('Test 7: Shared navigation toggler collapses into accessible hamburger on mobile and expands on desktop', async () => {
     // 1. Mobile (375px)
@@ -649,17 +615,16 @@ describe('Responsive & Multi-Viewport Layout Verification (Task 9G.5)', () => {
     }
   });
 
-  // TEST 10: Visual Screenshot Capture for 9 Representative Pages
-  test('Test 10: Capture visual screenshot artifacts for 9 representative pages across Mobile (375px), Tablet (768px), and Desktop (1200px)', async () => {
+  // TEST 10: Visual Screenshot Capture for Representative Pages
+  test('Test 10: Capture visual screenshot artifacts for representative pages across Mobile (375px), Tablet (768px), and Desktop (1200px)', async () => {
     const representativePages = [
       { name: 'index', path: 'index.html' },
       { name: 'vocabulary', path: 'vocabulary.html' },
       { name: 'lesson-detail', path: 'lesson-detail.html?id=1' },
       { name: 'srs-review', path: 'srs-review.html' },
-      { name: 'creator-import', path: 'creator-import.html' },
       { name: 'admin-accounts', path: 'admin-accounts.html' },
       { name: 'admin-lessons', path: 'admin-lessons.html' },
-      { name: 'moderator-queue', path: 'moderator-queue.html' },
+      { name: 'admin-dashboard', path: 'admin-dashboard.html' },
       { name: 'profile', path: 'profile.html' }
     ];
 

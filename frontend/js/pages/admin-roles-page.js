@@ -1,5 +1,5 @@
 /**
- * Resolves single exclusive role prioritizing higher privileges (Admin > Creator > Moderator > Learner).
+ * Resolves single exclusive role prioritizing higher privileges (Admin > Learner).
  * Enforces Single-Role Exclusivity: An account cannot simultaneously be Admin and Learner.
  *
  * @param {string[]} roles
@@ -8,8 +8,6 @@
 export function resolvePrimarySingleRole(roles) {
   if (!Array.isArray(roles) || roles.length === 0) return 'Learner';
   if (roles.includes('Admin')) return 'Admin';
-  if (roles.includes('Creator')) return 'Creator';
-  if (roles.includes('Moderator')) return 'Moderator';
   return 'Learner';
 }
 
@@ -122,22 +120,8 @@ export function getRoleMetadata(roleName) {
       return {
         label: 'Quản trị viên',
         badgeClass: 'badge-status badge-status-approved',
-        description: 'Toàn quyền quản trị hệ thống, tài khoản người dùng và phân quyền vai trò.',
+        description: 'Toàn quyền quản trị hệ thống, biên soạn bài học, quản lý tài khoản và phân quyền vai trò.',
         icon: '🛡️'
-      };
-    case 'Creator':
-      return {
-        label: 'Người sáng tạo',
-        badgeClass: 'badge-status badge-status-pending',
-        description: 'Biên soạn nội dung bài học, cấu trúc từ vựng và câu hỏi ôn tập.',
-        icon: '✍️'
-      };
-    case 'Moderator':
-      return {
-        label: 'Kiểm duyệt viên',
-        badgeClass: 'badge-status badge-status-active',
-        description: 'Kiểm duyệt chất lượng nội dung bài học trước khi phát hành đến học viên.',
-        icon: '🔍'
       };
     case 'Learner':
       return {
@@ -216,15 +200,6 @@ export function validateRoleSelection(selectedRoles, availableCatalogRoleNames, 
     return {
       valid: false,
       error: 'Không thể tự tước quyền Quản trị viên (Admin) của chính mình (POL-8D-02).'
-    };
-  }
-
-  // Separation of Duties (SoD): Creator and Moderator are mutually exclusive
-  const normalizedRoles = selectedRoles.map(r => String(r).replace(/^ROLE_/i, '').trim().toLowerCase());
-  if (normalizedRoles.includes('creator') && normalizedRoles.includes('moderator')) {
-    return {
-      valid: false,
-      error: 'Vai trò Người sáng tạo (Creator) và Kiểm duyệt viên (Moderator) loại trừ lẫn nhau tuyệt đối. Một tài khoản không thể đồng thời giữ cả hai vai trò.'
     };
   }
 
@@ -691,7 +666,9 @@ export class AdminRolesController {
     try {
       const response = await apiClient('/admin/roles');
       const rawList = Array.isArray(response) ? response : (Array.isArray(response?.data) ? response.data : []);
-      this.roleCatalog = rawList.map(parseRoleResponse);
+      this.roleCatalog = rawList
+        .map(parseRoleResponse)
+        .filter(r => r.roleName === 'Admin' || r.roleName === 'Learner');
       if (this.dom.roleCatalogContainer) {
         this.renderRoleCatalog();
       }
@@ -1239,75 +1216,9 @@ export class AdminRolesController {
   }
 
   /**
-   * Enforces Separation of Duties (SoD) between Creator and Moderator in the UI.
-   * If Creator is selected, Moderator is unchecked and disabled.
-   * If Moderator is selected, Creator is unchecked and disabled.
-   * 
-   * @param {string} [lastToggledRole]
+   * Legacy SoD hook retained as no-op under Single-Admin + Learner model.
    */
-  syncRoleExclusivityUi(lastToggledRole) {
-    const creatorBox = document.getElementById('roleCheckbox_Creator');
-    const moderatorBox = document.getElementById('roleCheckbox_Moderator');
-    if (!creatorBox || !moderatorBox) return;
-
-    if (lastToggledRole === 'Creator') {
-      if (this.pendingRoles.has('Creator')) {
-        this.pendingRoles.delete('Moderator');
-        moderatorBox.checked = false;
-        moderatorBox.disabled = true;
-        moderatorBox.title = 'Không thể chọn Kiểm duyệt viên khi đang chọn Người sáng tạo (Nguyên tắc SoD).';
-        creatorBox.disabled = false;
-        creatorBox.title = '';
-      } else {
-        moderatorBox.disabled = false;
-        moderatorBox.title = '';
-      }
-      return;
-    }
-
-    if (lastToggledRole === 'Moderator') {
-      if (this.pendingRoles.has('Moderator')) {
-        this.pendingRoles.delete('Creator');
-        creatorBox.checked = false;
-        creatorBox.disabled = true;
-        creatorBox.title = 'Không thể chọn Người sáng tạo khi đang chọn Kiểm duyệt viên (Nguyên tắc SoD).';
-        moderatorBox.disabled = false;
-        moderatorBox.title = '';
-      } else {
-        creatorBox.disabled = false;
-        creatorBox.title = '';
-      }
-      return;
-    }
-
-    const hasCreator = this.pendingRoles.has('Creator');
-    const hasModerator = this.pendingRoles.has('Moderator');
-
-    if (hasCreator && !hasModerator) {
-      moderatorBox.checked = false;
-      moderatorBox.disabled = true;
-      moderatorBox.title = 'Không thể chọn Kiểm duyệt viên khi đang chọn Người sáng tạo (Nguyên tắc SoD).';
-      creatorBox.disabled = false;
-      creatorBox.title = '';
-    } else if (hasModerator && !hasCreator) {
-      creatorBox.checked = false;
-      creatorBox.disabled = true;
-      creatorBox.title = 'Không thể chọn Người sáng tạo khi đang chọn Kiểm duyệt viên (Nguyên tắc SoD).';
-      moderatorBox.disabled = false;
-      moderatorBox.title = '';
-    } else if (hasCreator && hasModerator) {
-      // Legacy edge-case: account has both in DB. Keep both enabled so admin can uncheck one to resolve SoD
-      creatorBox.disabled = false;
-      moderatorBox.disabled = false;
-      creatorBox.title = 'Tài khoản đang có cả 2 vai trò loại trừ lẫn nhau. Vui lòng bỏ chọn 1 trong 2.';
-      moderatorBox.title = 'Tài khoản đang có cả 2 vai trò loại trừ lẫn nhau. Vui lòng bỏ chọn 1 trong 2.';
-    } else {
-      creatorBox.disabled = false;
-      moderatorBox.disabled = false;
-      creatorBox.title = '';
-      moderatorBox.title = '';
-    }
-  }
+  syncRoleExclusivityUi() {}
 
   /**
    * Invoked whenever any role checkbox changes state.

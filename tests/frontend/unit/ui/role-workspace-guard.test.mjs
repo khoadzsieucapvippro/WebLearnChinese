@@ -98,23 +98,14 @@ describe('Strict Reverse Role Guard & Workspace Isolation (Phương án A)', () 
   describe('1. Staff Landing Page Resolution', () => {
     test('Admin resolves to management.html', () => {
       assert.strictEqual(resolveStaffLandingPage(['Admin']), 'management.html');
-      assert.strictEqual(resolveStaffLandingPage(['Admin', 'Creator']), 'management.html');
-      assert.strictEqual(resolveStaffLandingPage(['Admin', 'Moderator']), 'management.html');
+      assert.strictEqual(resolveStaffLandingPage(['Admin', 'Learner']), 'management.html');
     });
 
-    test('Creator resolves to creator-lessons.html', () => {
-      assert.strictEqual(resolveStaffLandingPage(['Creator']), 'creator-lessons.html');
-      assert.strictEqual(resolveStaffLandingPage(['Creator', 'Learner']), 'creator-lessons.html');
-    });
-
-    test('Moderator resolves to moderator-queue.html', () => {
-      assert.strictEqual(resolveStaffLandingPage(['Moderator']), 'moderator-queue.html');
-      assert.strictEqual(resolveStaffLandingPage(['Moderator', 'Learner']), 'moderator-queue.html');
-    });
-
-    test('Fallback for empty or unprivileged roles defaults to management.html', () => {
+    test('Non-Admin roles (including deprecated Creator/Moderator) resolve to index.html', () => {
+      assert.strictEqual(resolveStaffLandingPage(['Creator']), 'index.html');
+      assert.strictEqual(resolveStaffLandingPage(['Moderator']), 'index.html');
+      assert.strictEqual(resolveStaffLandingPage(['Learner']), 'index.html');
       assert.strictEqual(resolveStaffLandingPage([]), 'management.html');
-      assert.strictEqual(resolveStaffLandingPage(['Learner']), 'management.html');
     });
   });
 
@@ -193,7 +184,7 @@ describe('Strict Reverse Role Guard & Workspace Isolation (Phương án A)', () 
       assert.strictEqual(redirectedTo, 'management.html');
     });
 
-    test('Creator on lessons.html is forcibly redirected to creator-lessons.html', () => {
+    test('Deprecated Creator and Moderator roles are NOT treated as staff and NOT redirected to management studios', () => {
       authManager.setSession({
         token: 'creator-token',
         accountId: 2,
@@ -201,51 +192,9 @@ describe('Strict Reverse Role Guard & Workspace Isolation (Phương án A)', () 
         roles: ['Creator']
       });
       globalThis.window.location = new MockLocation('/lessons.html');
-      const didRedirect = enforceRoleWorkspaceGuard();
-      assert.strictEqual(didRedirect, true);
-      assert.strictEqual(redirectedTo, 'creator-lessons.html');
-    });
+      assert.strictEqual(enforceRoleWorkspaceGuard(), false);
+      assert.strictEqual(redirectedTo, null);
 
-    test('Creator on vocabulary.html is forcibly redirected to creator-lessons.html', () => {
-      authManager.setSession({
-        token: 'creator-token',
-        accountId: 2,
-        emailOrPhone: 'creator@example.com',
-        roles: ['Creator']
-      });
-      globalThis.window.location = new MockLocation('/vocabulary.html');
-      const didRedirect = enforceRoleWorkspaceGuard();
-      assert.strictEqual(didRedirect, true);
-      assert.strictEqual(redirectedTo, 'creator-lessons.html');
-    });
-
-    test('Creator on srs-review.html is forcibly redirected to creator-lessons.html', () => {
-      authManager.setSession({
-        token: 'creator-token',
-        accountId: 2,
-        emailOrPhone: 'creator@example.com',
-        roles: ['Creator']
-      });
-      globalThis.window.location = new MockLocation('/srs-review.html');
-      const didRedirect = enforceRoleWorkspaceGuard();
-      assert.strictEqual(didRedirect, true);
-      assert.strictEqual(redirectedTo, 'creator-lessons.html');
-    });
-
-    test('Moderator on lessons.html is forcibly redirected to moderator-queue.html', () => {
-      authManager.setSession({
-        token: 'mod-token',
-        accountId: 3,
-        emailOrPhone: 'mod@example.com',
-        roles: ['Moderator']
-      });
-      globalThis.window.location = new MockLocation('/lessons.html');
-      const didRedirect = enforceRoleWorkspaceGuard();
-      assert.strictEqual(didRedirect, true);
-      assert.strictEqual(redirectedTo, 'moderator-queue.html');
-    });
-
-    test('Moderator on radicals.html is forcibly redirected to moderator-queue.html', () => {
       authManager.setSession({
         token: 'mod-token',
         accountId: 3,
@@ -253,9 +202,8 @@ describe('Strict Reverse Role Guard & Workspace Isolation (Phương án A)', () 
         roles: ['Moderator']
       });
       globalThis.window.location = new MockLocation('/radicals.html');
-      const didRedirect = enforceRoleWorkspaceGuard();
-      assert.strictEqual(didRedirect, true);
-      assert.strictEqual(redirectedTo, 'moderator-queue.html');
+      assert.strictEqual(enforceRoleWorkspaceGuard(), false);
+      assert.strictEqual(redirectedTo, null);
     });
   });
 
@@ -272,47 +220,23 @@ describe('Strict Reverse Role Guard & Workspace Isolation (Phương án A)', () 
       assert.strictEqual(redirectedTo, null);
     });
 
-    test('Creator on creator-lessons.html is NOT redirected', () => {
+    test('Admin on admin-lessons.html is NOT redirected', () => {
       authManager.setSession({
-        token: 'creator-token',
-        accountId: 2,
-        roles: ['Creator']
+        token: 'admin-token',
+        accountId: 1,
+        roles: ['Admin']
       });
-      globalThis.window.location = new MockLocation('/creator-lessons.html');
+      globalThis.window.location = new MockLocation('/admin-lessons.html');
       const didRedirect = enforceRoleWorkspaceGuard();
       assert.strictEqual(didRedirect, false);
       assert.strictEqual(redirectedTo, null);
     });
 
-    test('Creator on creator-import.html is NOT redirected', () => {
+    test('Admin on profile.html is NOT redirected (account profile permitted)', () => {
       authManager.setSession({
-        token: 'creator-token',
-        accountId: 2,
-        roles: ['Creator']
-      });
-      globalThis.window.location = new MockLocation('/creator-import.html');
-      const didRedirect = enforceRoleWorkspaceGuard();
-      assert.strictEqual(didRedirect, false);
-      assert.strictEqual(redirectedTo, null);
-    });
-
-    test('Moderator on moderator-queue.html is NOT redirected', () => {
-      authManager.setSession({
-        token: 'mod-token',
-        accountId: 3,
-        roles: ['Moderator']
-      });
-      globalThis.window.location = new MockLocation('/moderator-queue.html');
-      const didRedirect = enforceRoleWorkspaceGuard();
-      assert.strictEqual(didRedirect, false);
-      assert.strictEqual(redirectedTo, null);
-    });
-
-    test('Staff on profile.html is NOT redirected (account profile permitted for all)', () => {
-      authManager.setSession({
-        token: 'creator-token',
-        accountId: 2,
-        roles: ['Creator']
+        token: 'admin-token',
+        accountId: 1,
+        roles: ['Admin']
       });
       globalThis.window.location = new MockLocation('/profile.html');
       const didRedirect = enforceRoleWorkspaceGuard();
@@ -320,11 +244,11 @@ describe('Strict Reverse Role Guard & Workspace Isolation (Phương án A)', () 
       assert.strictEqual(redirectedTo, null);
     });
 
-    test('Staff on login.html is NOT redirected by guard (auth page handles login redirects)', () => {
+    test('Admin on login.html is NOT redirected by guard (auth page handles login redirects)', () => {
       authManager.setSession({
-        token: 'creator-token',
-        accountId: 2,
-        roles: ['Creator']
+        token: 'admin-token',
+        accountId: 1,
+        roles: ['Admin']
       });
       globalThis.window.location = new MockLocation('/login.html');
       const didRedirect = enforceRoleWorkspaceGuard();

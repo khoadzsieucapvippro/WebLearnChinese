@@ -158,37 +158,37 @@ class JwtIssuerSecurityIntegrationTests {
     class RoleIssuerTests {
 
         @Test
-        @DisplayName("GIVEN Moderator token with WRONG issuer WHEN accessing Moderator endpoint THEN 401 UNAUTHORIZED (Auth fails before RBAC)")
-        void testModeratorTokenWithWrongIssuer_failsAuthBeforeRbac() throws Exception {
-            String email = "mod_wrong_iss@example.com";
-            createAccountWithProfile(email, "Moderator", "Active");
+        @DisplayName("GIVEN Admin token with WRONG issuer WHEN accessing Admin endpoint THEN 401 UNAUTHORIZED (Auth fails before RBAC)")
+        void testAdminTokenWithWrongIssuer_failsAuthBeforeRbac() throws Exception {
+            String email = "admin_wrong_iss@example.com";
+            createAccountWithProfile(email, "Admin", "Active");
 
             JwtUtil foreignJwtUtil = new JwtUtil(testSecret, 3600000L, "untrusted-issuer");
-            String modTokenWithWrongIssuer = foreignJwtUtil.generateToken(email, List.of("Moderator"));
+            String adminTokenWithWrongIssuer = foreignJwtUtil.generateToken(email, List.of("Admin"));
 
             // Must return 401 Unauthorized, NOT 403 Forbidden
-            mockMvc.perform(get("/api/v1/moderator/lessons/pending")
-                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + modTokenWithWrongIssuer))
+            mockMvc.perform(get("/api/v1/admin/lessons")
+                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + adminTokenWithWrongIssuer))
                     .andExpect(status().isUnauthorized())
                     .andExpect(jsonPath("$.code").value("UNAUTHORIZED"));
         }
 
         @Test
-        @DisplayName("GIVEN Creator token with MISSING issuer WHEN accessing Creator endpoint THEN 401 UNAUTHORIZED")
-        void testCreatorTokenWithMissingIssuer_failsAuth() throws Exception {
-            String email = "creator_missing_iss@example.com";
-            createAccountWithProfile(email, "Creator", "Active");
+        @DisplayName("GIVEN Admin token with MISSING issuer WHEN accessing Admin endpoint THEN 401 UNAUTHORIZED")
+        void testAdminTokenWithMissingIssuer_failsAuth() throws Exception {
+            String email = "admin_missing_iss@example.com";
+            createAccountWithProfile(email, "Admin", "Active");
 
-            String creatorTokenWithoutIssuer = Jwts.builder()
+            String adminTokenWithoutIssuer = Jwts.builder()
                     .subject(email)
-                    .claim("roles", List.of("Creator"))
+                    .claim("roles", List.of("Admin"))
                     .issuedAt(new Date())
                     .expiration(new Date(System.currentTimeMillis() + 3600000L))
                     .signWith(Keys.hmacShaKeyFor(testSecret.getBytes(StandardCharsets.UTF_8)))
                     .compact();
 
-            mockMvc.perform(get("/api/v1/creator/lessons")
-                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + creatorTokenWithoutIssuer))
+            mockMvc.perform(get("/api/v1/admin/lessons")
+                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + adminTokenWithoutIssuer))
                     .andExpect(status().isUnauthorized())
                     .andExpect(jsonPath("$.code").value("UNAUTHORIZED"));
         }

@@ -320,35 +320,35 @@ describe('Auth State Manager Contract', () => {
   });
 
   describe('Session Lifecycle Isolation: Staff (sessionStorage) vs Learner (localStorage)', () => {
-    test('isManagementRole correctly identifies management roles vs learner', () => {
+    test('isManagementRole identifies Admin only and excludes deprecated Creator/Moderator', () => {
       assert.strictEqual(isManagementRole(['Admin']), true);
-      assert.strictEqual(isManagementRole(['Creator']), true);
-      assert.strictEqual(isManagementRole(['Moderator']), true);
-      assert.strictEqual(isManagementRole(['Learner', 'Creator']), true);
+      assert.strictEqual(isManagementRole(['Creator']), false);
+      assert.strictEqual(isManagementRole(['Moderator']), false);
+      assert.strictEqual(isManagementRole(['Learner', 'Creator']), false);
       assert.strictEqual(isManagementRole(['Learner']), false);
       assert.strictEqual(isManagementRole([]), false);
       assert.strictEqual(isManagementRole(null), false);
     });
 
-    test('Staff login (Creator/Admin/Moderator) persists strictly to sessionStorage and cleanses localStorage', () => {
+    test('Staff login (Admin) persists strictly to sessionStorage and cleanses localStorage', () => {
       authManager.setSession({
-        token: 'creator-session-jwt',
+        token: 'admin-session-jwt',
         accountId: 99,
-        emailOrPhone: 'creator@example.com',
-        fullName: 'Người Sáng Tạo',
-        roles: ['Creator']
+        emailOrPhone: 'admin@example.com',
+        fullName: 'Quản Trị Viên',
+        roles: ['Admin']
       });
 
       // Must be present in sessionStorage
-      assert.strictEqual(mockSessionStorage.getItem('access_token'), 'creator-session-jwt');
-      assert.ok(mockSessionStorage.getItem('user_info')?.includes('Creator'));
+      assert.strictEqual(mockSessionStorage.getItem('access_token'), 'admin-session-jwt');
+      assert.ok(mockSessionStorage.getItem('user_info')?.includes('Admin'));
 
       // Must NOT be present in persistent localStorage
       assert.strictEqual(mockStorage.getItem('access_token'), null);
       assert.strictEqual(mockStorage.getItem('user_info'), null);
 
-      assert.strictEqual(authManager.getToken(), 'creator-session-jwt');
-      assert.strictEqual(authManager.hasRole('Creator'), true);
+      assert.strictEqual(authManager.getToken(), 'admin-session-jwt');
+      assert.strictEqual(authManager.hasRole('Admin'), true);
     });
 
     test('Simulating X tab Chrome: clearing sessionStorage terminates Staff session', () => {
@@ -388,21 +388,21 @@ describe('Auth State Manager Contract', () => {
       assert.strictEqual(authManager.hasRole('Learner'), true);
     });
 
-    test('Legacy staff tokens in localStorage are automatically migrated to sessionStorage on read', () => {
+    test('Legacy Admin staff tokens in localStorage are automatically migrated to sessionStorage on read', () => {
       // Simulate an old session from before the update in localStorage
-      mockStorage.setItem('access_token', 'legacy-mod-jwt');
+      mockStorage.setItem('access_token', 'legacy-admin-jwt');
       mockStorage.setItem('user_info', JSON.stringify({
         accountId: 66,
-        emailOrPhone: 'mod@example.com',
-        roles: ['Moderator']
+        emailOrPhone: 'admin@example.com',
+        roles: ['Admin']
       }));
 
       // Call getToken() which triggers migration
       const token = authManager.getToken();
-      assert.strictEqual(token, 'legacy-mod-jwt');
+      assert.strictEqual(token, 'legacy-admin-jwt');
 
       // Verified: moved to sessionStorage
-      assert.strictEqual(mockSessionStorage.getItem('access_token'), 'legacy-mod-jwt');
+      assert.strictEqual(mockSessionStorage.getItem('access_token'), 'legacy-admin-jwt');
 
       // Verified: deleted from persistent localStorage
       assert.strictEqual(mockStorage.getItem('access_token'), null);

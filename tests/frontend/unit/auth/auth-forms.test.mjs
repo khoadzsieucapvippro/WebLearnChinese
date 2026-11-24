@@ -313,18 +313,16 @@ describe('Authentication Form Validation & Business Constraints', () => {
       globalThis.Node = originalNode;
     });
 
-    test('role localization correctly maps all backend roles to scholarly Vietnamese', () => {
+    test('role localization correctly maps supported backend roles (Admin, Learner) to scholarly Vietnamese', () => {
       assert.strictEqual(getRoleLabel('Learner'), 'Học viên');
-      assert.strictEqual(getRoleLabel('Creator'), 'Tác giả');
-      assert.strictEqual(getRoleLabel('Moderator'), 'Kiểm duyệt');
       assert.strictEqual(getRoleLabel('Admin'), 'Quản trị');
+      assert.strictEqual(getRoleLabel('Creator'), 'Học viên');
+      assert.strictEqual(getRoleLabel('Moderator'), 'Học viên');
       assert.strictEqual(getRoleLabel(null), 'Học viên');
     });
 
-    test('role badge classes provide distinct visual cues', () => {
+    test('role badge classes provide distinct visual cues for Admin and Learner', () => {
       assert.ok(getRoleBadgeClass('Admin').includes('badge-status-approved'));
-      assert.ok(getRoleBadgeClass('Moderator').includes('badge-status-active'));
-      assert.ok(getRoleBadgeClass('Creator').includes('badge-status-pending'));
       assert.ok(getRoleBadgeClass('Learner').includes('badge-status-draft'));
     });
 
@@ -376,7 +374,7 @@ describe('Authentication Form Validation & Business Constraints', () => {
         accountId: 101,
         fullName: 'Lý Bạch',
         emailOrPhone: 'lybach@tang.cn',
-        roles: ['Creator']
+        roles: ['Learner']
       });
 
       const container = new MockElement('div');
@@ -387,7 +385,7 @@ describe('Authentication Form Validation & Business Constraints', () => {
 
       const roleBadge = container.querySelector('#navRoleBadge');
       assert.ok(roleBadge, 'Role badge must exist');
-      assert.strictEqual(roleBadge.textContent, 'Tác giả');
+      assert.strictEqual(roleBadge.textContent, 'Học viên');
 
       const nameLink = container.querySelector('#navUserNameLink');
       assert.ok(nameLink, 'User name link must exist');
@@ -400,22 +398,23 @@ describe('Authentication Form Validation & Business Constraints', () => {
       assert.ok(logoutBtn, 'Logout button must exist');
     });
 
-    test('getPrimaryRole correctly resolves role hierarchy (Admin > Moderator > Creator > Learner)', () => {
+    test('getPrimaryRole correctly resolves role hierarchy (Admin > Learner)', () => {
       assert.strictEqual(getPrimaryRole(['Learner', 'Admin']), 'Admin');
-      assert.strictEqual(getPrimaryRole(['Learner', 'Moderator']), 'Moderator');
-      assert.strictEqual(getPrimaryRole(['Learner', 'Creator']), 'Creator');
+      assert.strictEqual(getPrimaryRole(['Admin']), 'Admin');
       assert.strictEqual(getPrimaryRole(['Learner']), 'Learner');
+      assert.strictEqual(getPrimaryRole(['Creator']), 'Learner');
+      assert.strictEqual(getPrimaryRole(['Moderator']), 'Learner');
       assert.strictEqual(getPrimaryRole([]), 'Learner');
       assert.strictEqual(getPrimaryRole(null), 'Learner');
     });
 
-    test('renderNavbarAuth renders Moderator Queue button and badge for Moderator session', () => {
+    test('renderNavbarAuth does NOT render management link for legacy Moderator/Creator roles', () => {
       authManager.setSession({
         token: 'mod-jwt-token',
         accountId: 102,
         fullName: 'Bao Chửng',
         emailOrPhone: 'baochung@song.cn',
-        roles: ['Learner', 'Moderator']
+        roles: ['Moderator']
       });
 
       const container = new MockElement('div');
@@ -423,13 +422,10 @@ describe('Authentication Form Validation & Business Constraints', () => {
 
       const roleBadge = container.querySelector('#navRoleBadge');
       assert.ok(roleBadge, 'Role badge must exist');
-      assert.strictEqual(roleBadge.textContent, 'Kiểm duyệt', 'Badge must display Kiểm duyệt for multi-role Moderator');
-      assert.ok(roleBadge.className.includes('badge-status-active'));
+      assert.strictEqual(roleBadge.textContent, 'Học viên');
 
       const mgmtBtn = container.querySelector('#navManagementBtn');
-      assert.ok(mgmtBtn, 'Management button must exist');
-      assert.strictEqual(mgmtBtn.textContent, 'Khu vực quản lý');
-      assert.ok(mgmtBtn.getAttribute('href').includes('management.html'));
+      assert.strictEqual(mgmtBtn, null, 'Management button must NOT exist for deprecated Moderator role');
     });
 
     test('renderNavbarAuth renders Admin, Moderator, and Studio buttons for Admin session', () => {

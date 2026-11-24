@@ -55,8 +55,6 @@ class AdminRoleControllerTests {
     void testGetRoles_success() throws Exception {
         List<RoleResponse> roles = List.of(
                 new RoleResponse(1, "Learner"),
-                new RoleResponse(2, "Creator"),
-                new RoleResponse(3, "Moderator"),
                 new RoleResponse(4, "Admin")
         );
         when(adminRoleService.getRoles()).thenReturn(roles);
@@ -66,16 +64,16 @@ class AdminRoleControllerTests {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value("SUCCESS"))
                 .andExpect(jsonPath("$.data[0].roleName").value("Learner"))
-                .andExpect(jsonPath("$.data[3].roleName").value("Admin"));
+                .andExpect(jsonPath("$.data[1].roleName").value("Admin"));
     }
 
     @Test
     @DisplayName("GIVEN valid roles payload WHEN calling PUT /api/v1/admin/accounts/{id}/roles THEN returns 200 with updated AccountResponse")
     void testUpdateAccountRoles_success() throws Exception {
-        AccountResponse acc = new AccountResponse(1L, "user@example.com", "Test User", "Active", List.of("Learner", "Creator"), LocalDateTime.now(), LocalDateTime.now());
+        AccountResponse acc = new AccountResponse(1L, "user@example.com", "Test User", "Active", List.of("Admin"), LocalDateTime.now(), LocalDateTime.now());
         when(adminRoleService.updateAccountRoles(eq(1L), any(UpdateAccountRolesRequest.class), any())).thenReturn(acc);
 
-        UpdateAccountRolesRequest request = new UpdateAccountRolesRequest(List.of("Learner", "Creator"));
+        UpdateAccountRolesRequest request = new UpdateAccountRolesRequest(List.of("Admin"));
 
         mockMvc.perform(put("/api/v1/admin/accounts/1/roles")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -83,7 +81,6 @@ class AdminRoleControllerTests {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value("SUCCESS"))
                 .andExpect(jsonPath("$.message").value("Phân quyền tài khoản thành công"))
-                .andExpect(jsonPath("$.data.roles[0]").value("Learner"))
-                .andExpect(jsonPath("$.data.roles[1]").value("Creator"));
+                .andExpect(jsonPath("$.data.roles[0]").value("Admin"));
     }
 }

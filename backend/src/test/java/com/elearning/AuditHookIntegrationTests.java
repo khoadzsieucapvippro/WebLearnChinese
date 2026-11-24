@@ -2,10 +2,10 @@ package com.elearning;
 
 import com.elearning.common.AuditActionType;
 import com.elearning.common.AuditResourceType;
+import com.elearning.dto.request.AdminRevokeLessonRequest;
 import com.elearning.dto.request.ApproveLessonRequest;
 import com.elearning.dto.request.CreateRadicalRequest;
 import com.elearning.dto.request.CreateVocabularyRequest;
-import com.elearning.dto.request.RejectLessonRequest;
 import com.elearning.dto.request.UpdateAccountRolesRequest;
 import com.elearning.dto.request.UpdateAccountStatusRequest;
 import com.elearning.dto.request.UpdateRadicalRequest;
@@ -25,10 +25,11 @@ import com.elearning.repository.RadicalRepository;
 import com.elearning.repository.ReviewLogRepository;
 import com.elearning.repository.RoleRepository;
 import com.elearning.repository.VocabularyRepository;
+import com.elearning.service.ExcelParserService;
 import com.elearning.service.ManagementAuditService;
 import com.elearning.service.impl.AdminAccountServiceImpl;
 import com.elearning.service.impl.AdminRoleServiceImpl;
-import com.elearning.service.impl.ModerationServiceImpl;
+import com.elearning.service.impl.LessonServiceImpl;
 import com.elearning.service.impl.RadicalServiceImpl;
 import com.elearning.service.impl.VocabularyServiceImpl;
 import org.junit.jupiter.api.AfterEach;
@@ -83,14 +84,16 @@ class AuditHookIntegrationTests {
     @Mock
     private CardProgressRepository cardProgressRepository;
     @Mock
+    private ExcelParserService excelParserService;
+    @Mock
     private ReviewLogRepository reviewLogRepository;
 
     @BeforeEach
     void setUpSecurity() {
         UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
-                "moderator@elearning.com",
+                "admin@elearning.com",
                 "N/A",
-                List.of(new SimpleGrantedAuthority("ROLE_Moderator"), new SimpleGrantedAuthority("ROLE_Admin"))
+                List.of(new SimpleGrantedAuthority("ROLE_Admin"))
         );
         SecurityContextHolder.getContext().setAuthentication(auth);
     }
@@ -106,8 +109,8 @@ class AuditHookIntegrationTests {
         AdminRoleServiceImpl roleService = new AdminRoleServiceImpl(roleRepository, accountRepository, managementAuditService);
 
         Role learnerRole = new Role(1, "Learner");
-        Role moderatorRole = new Role(3, "Moderator");
-        when(roleRepository.findAll()).thenReturn(List.of(learnerRole, moderatorRole));
+        Role adminRole = new Role(4, "Admin");
+        when(roleRepository.findAll()).thenReturn(List.of(learnerRole, adminRole));
 
         Account targetAccount = new Account();
         targetAccount.setAccountId(10L);
@@ -119,7 +122,7 @@ class AuditHookIntegrationTests {
         when(accountRepository.save(any(Account.class))).thenReturn(targetAccount);
 
         UpdateAccountRolesRequest request = new UpdateAccountRolesRequest();
-        request.setRoles(List.of("Learner", "Moderator"));
+        request.setRoles(List.of("Admin"));
 
         roleService.updateAccountRoles(10L, request, "admin@elearning.com");
 
@@ -163,31 +166,32 @@ class AuditHookIntegrationTests {
     }
 
     @Test
-    @DisplayName("ModerationServiceImpl.approveLesson invokes managementAuditService.logSuccess with LESSON_APPROVE")
-    void testModerationService_approveEmitsAuditLog() {
-        ModerationServiceImpl moderationService = new ModerationServiceImpl(
-                lessonRepository, lessonVocabularyRepository, accountRepository, moderationLogRepository, managementAuditService);
+    @DisplayName("LessonServiceImpl.supervisoryApproveLesson invokes managementAuditService.logSuccess with LESSON_APPROVE")
+    void testLessonService_approveEmitsAuditLog() {
+        LessonServiceImpl lessonService = new LessonServiceImpl(
+                lessonRepository, lessonVocabularyRepository, accountRepository, vocabularyRepository,
+                excelParserService, moderationLogRepository, managementAuditService);
 
-        Account moderator = new Account();
-        moderator.setAccountId(1L);
-        moderator.setEmailOrPhone("moderator@elearning.com");
-        when(accountRepository.findByEmailOrPhone("moderator@elearning.com")).thenReturn(Optional.of(moderator));
+        Account admin = new Account();
+        admin.setAccountId(1L);
+        admin.setEmailOrPhone("admin@elearning.com");
+        when(accountRepository.findByEmailOrPhone("admin@elearning.com")).thenReturn(Optional.of(admin));
 
-        Account creator = new Account();
-        creator.setAccountId(2L);
-        creator.setEmailOrPhone("creator@elearning.com");
+        Account author = new Account();
+        author.setAccountId(2L);
+        author.setEmailOrPhone("author@elearning.com");
 
         Lesson lesson = new Lesson();
         lesson.setLessonId(30L);
         lesson.setTitle("Bài 1");
         lesson.setStatus("Pending");
-        lesson.setCreatedBy(creator);
+        lesson.setCreatedBy(author);
 
         when(lessonRepository.findById(30L)).thenReturn(Optional.of(lesson));
         when(lessonRepository.save(any(Lesson.class))).thenReturn(lesson);
         when(lessonVocabularyRepository.findByLessonIdWithVocabularyOrderAsc(30L)).thenReturn(Collections.emptyList());
 
-        moderationService.approveLesson(30L, new ApproveLessonRequest());
+        lessonService.supervisoryApproveLesson(30L, new ApproveLessonRequest());
 
         verify(managementAuditService).logSuccess(
                 eq(AuditActionType.LESSON_APPROVE),
@@ -200,38 +204,33 @@ class AuditHookIntegrationTests {
     }
 
     @Test
-    @DisplayName("ModerationServiceImpl.rejectLesson invokes managementAuditService.logSuccess with LESSON_REJECT")
-    void testModerationService_rejectEmitsAuditLog() {
-        ModerationServiceImpl moderationService = new ModerationServiceImpl(
-                lessonRepository, lessonVocabularyRepository, accountRepository, moderationLogRepository, managementAuditService);
+    @DisplayName("LessonServiceImpl.revokeLesson invokes managementAuditService.logSuccess with LESSON_REVOKE")
+    void testLessonService_revokeEmitsAuditLog() {
+        LessonServiceImpl lessonService = new LessonServiceImpl(
+                lessonRepository, lessonVocabularyRepository, accountRepository, vocabularyRepository,
+                excelParserService, moderationLogRepository, managementAuditService);
 
-        Account moderator = new Account();
-        moderator.setAccountId(1L);
-        moderator.setEmailOrPhone("moderator@elearning.com");
-        when(accountRepository.findByEmailOrPhone("moderator@elearning.com")).thenReturn(Optional.of(moderator));
-
-        Account creator = new Account();
-        creator.setAccountId(2L);
-        creator.setEmailOrPhone("creator@elearning.com");
+        Account admin = new Account();
+        admin.setAccountId(1L);
+        admin.setEmailOrPhone("admin@elearning.com");
+        when(accountRepository.findByEmailOrPhone("admin@elearning.com")).thenReturn(Optional.of(admin));
 
         Lesson lesson = new Lesson();
         lesson.setLessonId(31L);
         lesson.setTitle("Bài 2");
-        lesson.setStatus("Pending");
-        lesson.setCreatedBy(creator);
+        lesson.setStatus("Approved");
+        lesson.setCreatedBy(admin);
 
         when(lessonRepository.findById(31L)).thenReturn(Optional.of(lesson));
         when(lessonRepository.save(any(Lesson.class))).thenReturn(lesson);
         when(lessonVocabularyRepository.findByLessonIdWithVocabularyOrderAsc(31L)).thenReturn(Collections.emptyList());
 
-        RejectLessonRequest rejectRequest = new RejectLessonRequest();
-        rejectRequest.setRejectionReason("Nội dung chưa đạt chuẩn HSK");
-        rejectRequest.setFlaggedFields("title,description");
+        AdminRevokeLessonRequest revokeRequest = new AdminRevokeLessonRequest("Nội dung cần cập nhật lại");
 
-        moderationService.rejectLesson(31L, rejectRequest);
+        lessonService.revokeLesson(31L, revokeRequest);
 
         verify(managementAuditService).logSuccess(
-                eq(AuditActionType.LESSON_REJECT),
+                eq(AuditActionType.LESSON_REVOKE),
                 eq(AuditResourceType.LESSON),
                 eq("31"),
                 anyString(),

@@ -9,7 +9,7 @@ import java.util.Objects;
 
 /**
  * JPA Entity mapping the ROLE table.
- * Contains predefined system roles (1=Learner, 2=Creator, 3=Moderator, 4=Admin).
+ * Contains predefined system roles (1=Learner, 4=Admin).
  */
 @Entity
 @Table(name = "role")

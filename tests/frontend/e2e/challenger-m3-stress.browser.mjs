@@ -31,18 +31,13 @@ const ALL_25_PAGES = [
   'lesson-detail.html?id=1',
   'srs-review.html',
   'srs-dashboard.html',
-  'creator-lessons.html',
-  'creator-lesson-editor.html?id=1',
-  'creator-import.html',
-  'moderator-queue.html',
-  'moderator-review.html?id=1',
-  'moderator-history.html',
   'admin-accounts.html',
   'admin-roles.html',
   'admin-radicals.html',
   'admin-vocabulary.html',
   'admin-lessons.html',
   'admin-audit-logs.html',
+  'admin-dashboard.html',
   'management.html',
   'ui-verification.html'
 ];
@@ -65,17 +60,21 @@ describe('Empirical Adversarial Challenge: Milestone M3', () => {
 
   async function setupMockSession(page) {
     await page.addInitScript(() => {
-      const isAuthPage = window.location.pathname.includes('login.html') || window.location.pathname.includes('register.html');
-      if (isAuthPage) {
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('user_info');
-      } else {
-        localStorage.setItem('access_token', 'mock_jwt_challenger');
-        localStorage.setItem('user_info', JSON.stringify({
+      const pathName = window.location.pathname;
+      const isAuthPage = pathName.includes('login.html') || pathName.includes('register.html');
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('user_info');
+      sessionStorage.removeItem('access_token');
+      sessionStorage.removeItem('user_info');
+      if (!isAuthPage) {
+        const isAdminPage = pathName.includes('admin-') || pathName.includes('management.html');
+        const storage = isAdminPage ? sessionStorage : localStorage;
+        storage.setItem('access_token', 'mock_jwt_challenger');
+        storage.setItem('user_info', JSON.stringify({
           accountId: 999,
           emailOrPhone: 'challenger@example.com',
           fullName: 'Empirical Challenger',
-          roles: ['Admin', 'Creator', 'Moderator', 'Learner']
+          roles: isAdminPage ? ['Admin'] : ['Learner']
         }));
       }
     });

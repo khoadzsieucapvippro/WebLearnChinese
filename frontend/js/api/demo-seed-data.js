@@ -45554,38 +45554,6 @@ export const SEED_ACCOUNTS = [
     "avatarUrl": null
   },
   {
-    "accountId": 2,
-    "email": "creator@gmail.com",
-    "aliases": [
-      "creator@elearning.local",
-      "creator@test.com"
-    ],
-    "fullName": "Tác Giả Khóa Học",
-    "roles": [
-      "Creator"
-    ],
-    "password": "Password@123",
-    "status": "Active",
-    "createdAt": "2026-01-01T08:00:00Z",
-    "avatarUrl": null
-  },
-  {
-    "accountId": 3,
-    "email": "moderator@gmail.com",
-    "aliases": [
-      "moderator@elearning.local",
-      "moderator@test.com"
-    ],
-    "fullName": "Kiểm Duyệt Viên",
-    "roles": [
-      "Moderator"
-    ],
-    "password": "Password@123",
-    "status": "Active",
-    "createdAt": "2026-01-01T08:00:00Z",
-    "avatarUrl": null
-  },
-  {
     "accountId": 4,
     "email": "admin@gmail.com",
     "aliases": [

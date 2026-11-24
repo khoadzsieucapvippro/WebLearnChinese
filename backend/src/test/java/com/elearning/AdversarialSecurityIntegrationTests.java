@@ -1,15 +1,10 @@
 package com.elearning;
 
-import com.elearning.common.ErrorCode;
-import com.elearning.dto.request.ApproveLessonRequest;
-import com.elearning.dto.request.RejectLessonRequest;
 import com.elearning.dto.request.UpdateAccountRolesRequest;
 import com.elearning.dto.request.UpdateAccountStatusRequest;
 import com.elearning.entity.Account;
-import com.elearning.entity.Lesson;
 import com.elearning.entity.Role;
 import com.elearning.repository.AccountRepository;
-import com.elearning.repository.LessonRepository;
 import com.elearning.repository.RoleRepository;
 import com.elearning.security.JwtUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -30,6 +25,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -51,80 +47,59 @@ class AdversarialSecurityIntegrationTests {
     private RoleRepository roleRepository;
 
     @Autowired
-    private LessonRepository lessonRepository;
-
-    @Autowired
     private JwtUtil jwtUtil;
 
     @Autowired
     private ObjectMapper objectMapper;
 
-    private Account dualRoleUser;
-    private String dualRoleToken;
-    private Lesson ownPendingLesson;
+    private Account legacyTokenAccount;
+    private String legacyCreatorModToken;
 
     @BeforeEach
     void setUp() {
-        Role roleCreator = roleRepository.findByRoleName("Creator").orElseGet(() -> roleRepository.save(new Role(2, "Creator")));
-        Role roleModerator = roleRepository.findByRoleName("Moderator").orElseGet(() -> roleRepository.save(new Role(3, "Moderator")));
+        Role roleLearner = roleRepository.findByRoleName("Learner").orElseGet(() -> roleRepository.save(new Role(1, "Learner")));
 
-        // Account with dual roles: Creator AND Moderator
-        dualRoleUser = new Account();
-        dualRoleUser.setEmailOrPhone("dual_creator_mod_" + System.currentTimeMillis() + "@example.com");
-        dualRoleUser.setPasswordHash("$2a$12$dummyhashadversarial1234567890123");
-        dualRoleUser.setStatus("Active");
-        dualRoleUser.setAuthorizationVersion(1L);
-        dualRoleUser.addRole(roleCreator);
-        dualRoleUser.addRole(roleModerator);
-        dualRoleUser = accountRepository.save(dualRoleUser);
+        legacyTokenAccount = new Account();
+        legacyTokenAccount.setEmailOrPhone("legacy_creator_mod_" + System.currentTimeMillis() + "@example.com");
+        legacyTokenAccount.setPasswordHash("$2a$12$dummyhashadversarial1234567890123");
+        legacyTokenAccount.setStatus("Active");
+        legacyTokenAccount.setAuthorizationVersion(1L);
+        legacyTokenAccount.addRole(roleLearner);
+        legacyTokenAccount = accountRepository.save(legacyTokenAccount);
 
-        dualRoleToken = jwtUtil.generateToken(
-                dualRoleUser.getEmailOrPhone(),
+        legacyCreatorModToken = jwtUtil.generateToken(
+                legacyTokenAccount.getEmailOrPhone(),
                 List.of("Creator", "Moderator"),
-                dualRoleUser.getAuthorizationVersion()
+                legacyTokenAccount.getAuthorizationVersion()
         );
-
-        ownPendingLesson = new Lesson("Own Lesson for Self Review Challenge", dualRoleUser);
-        ownPendingLesson.setStatus("Pending");
-        ownPendingLesson = lessonRepository.save(ownPendingLesson);
     }
 
     @Test
-    @DisplayName("ADV-INTEG-01: Dual-role user attempting to approve own lesson via REST endpoint is REJECTED with HTTP 403 FORBIDDEN")
-    void testSelfApprove_rejectedWith403Forbidden() throws Exception {
-        ApproveLessonRequest request = new ApproveLessonRequest();
-
-        mockMvc.perform(post("/api/v1/moderator/lessons/{id}/approve", ownPendingLesson.getLessonId())
-                        .header("Authorization", "Bearer " + dualRoleToken)
+    @DisplayName("ADV-INTEG-01: Deprecated /api/v1/moderator/** endpoints are permanently denyAll (403 FORBIDDEN)")
+    void testLegacyModeratorEndpoints_permanentlyDenied() throws Exception {
+        mockMvc.perform(post("/api/v1/moderator/lessons/1/approve")
+                        .header("Authorization", "Bearer " + legacyCreatorModToken)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request))
+                        .content("{}")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.code", is("FORBIDDEN")))
-                .andExpect(jsonPath("$.message", is("Bạn không thể tự kiểm duyệt nội dung do chính mình tạo ra")));
-
-        // Verify lesson status remains Pending
-        Lesson persisted = lessonRepository.findById(ownPendingLesson.getLessonId()).orElseThrow();
-        assertThat(persisted.getStatus()).isEqualTo("Pending");
+                .andExpect(jsonPath("$.code", is("FORBIDDEN")));
     }
 
     @Test
-    @DisplayName("ADV-INTEG-02: Dual-role user attempting to reject own lesson via REST endpoint is REJECTED with HTTP 403 FORBIDDEN")
-    void testSelfReject_rejectedWith403Forbidden() throws Exception {
-        RejectLessonRequest request = new RejectLessonRequest("Lý do tự từ chối bài viết");
-
-        mockMvc.perform(post("/api/v1/moderator/lessons/{id}/reject", ownPendingLesson.getLessonId())
-                        .header("Authorization", "Bearer " + dualRoleToken)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request))
+    @DisplayName("ADV-INTEG-02: Deprecated /api/v1/creator/** endpoints and legacy role tokens on /api/v1/admin/** are strictly FORBIDDEN (403)")
+    void testLegacyCreatorEndpoints_andAdminEscalation_permanentlyDenied() throws Exception {
+        mockMvc.perform(get("/api/v1/creator/lessons")
+                        .header("Authorization", "Bearer " + legacyCreatorModToken)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.code", is("FORBIDDEN")))
-                .andExpect(jsonPath("$.message", is("Bạn không thể tự kiểm duyệt nội dung do chính mình tạo ra")));
+                .andExpect(jsonPath("$.code", is("FORBIDDEN")));
 
-        // Verify lesson status remains Pending
-        Lesson persisted = lessonRepository.findById(ownPendingLesson.getLessonId()).orElseThrow();
-        assertThat(persisted.getStatus()).isEqualTo("Pending");
+        mockMvc.perform(get("/api/v1/admin/lessons")
+                        .header("Authorization", "Bearer " + legacyCreatorModToken)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code", is("FORBIDDEN")));
     }
 
     @Test

@@ -27,14 +27,14 @@ const USER_KEY = 'user_info';
 
 /**
  * Checks whether a given role list contains management/staff privileges.
- * Contract: Backend AuthResponse roles include "Admin", "Creator", "Moderator", "Learner".
+ * Contract: Single-Admin + Learner model ("Admin", "Learner").
  * 
  * @param {string[]} roles 
  * @returns {boolean}
  */
 export function isManagementRole(roles) {
   if (!Array.isArray(roles)) return false;
-  return roles.some(r => r === 'Admin' || r === 'Creator' || r === 'Moderator');
+  return roles.some(r => r === 'Admin');
 }
 
 /**

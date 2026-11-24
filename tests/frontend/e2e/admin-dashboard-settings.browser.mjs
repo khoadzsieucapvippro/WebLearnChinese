@@ -55,17 +55,17 @@ async function setupLearnerSession(page) {
   `);
 }
 
-async function setupCreatorSession(page) {
+async function setupLegacyCreatorSession(page) {
   await page.addInitScript(`
-    sessionStorage.setItem('access_token', 'jwt-mock-creator-token');
-    sessionStorage.setItem('user_info', JSON.stringify({
+    localStorage.setItem('access_token', 'jwt-mock-legacy-creator-token');
+    localStorage.setItem('user_info', JSON.stringify({
       accountId: 501,
-      emailOrPhone: 'creator@hannguhoc.edu.vn',
-      fullName: 'Tác Giả Kiểm Thử',
+      emailOrPhone: 'legacy-creator@hannguhoc.edu.vn',
+      fullName: 'Tài Khoản Cũ',
       roles: ['Creator']
     }));
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('user_info');
+    sessionStorage.removeItem('access_token');
+    sessionStorage.removeItem('user_info');
   `);
 }
 
@@ -323,21 +323,21 @@ describe('Browser E2E: Admin Dashboard Overview & System Settings', () => {
     }
   });
 
-  test('AD-04: Creator visiting management.html is redirected to creator-lessons.html workspace', async () => {
+  test('AD-04: Deprecated Creator visiting management.html is blocked by role guard and admin dashboard is hidden', async () => {
     const { page, context, getRuntimeErrors } = await createMonitoredPage(browser, {
       viewportWidth: 1280,
       viewportHeight: 720
     });
 
     try {
-      await setupCreatorSession(page);
+      await setupLegacyCreatorSession(page);
       await mockBackendRoutes(page);
 
       await page.goto(`${baseUrl}/management.html`, { waitUntil: 'domcontentloaded' });
 
-      // Expect automatic redirection to creator workspace
-      await page.waitForURL('**/creator-lessons.html*');
-      assert.ok(page.url().includes('creator-lessons.html'), 'Creator must be redirected to creator-lessons.html');
+      await page.waitForSelector('#managementAuthGuardContainer:not(.d-none)');
+      const isDashboardHidden = await page.locator('#managementDashboardContent').evaluate(el => el.classList.contains('d-none'));
+      assert.strictEqual(isDashboardHidden, true, 'Dashboard content must stay hidden from deprecated Creator session');
 
       const errors = getRuntimeErrors();
       assert.strictEqual(errors.length, 0);

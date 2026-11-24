@@ -66,9 +66,8 @@ describe('Verification Center E2E: Dedicated Diagnostic Surface Suite', () => {
       assert.ok(await page.locator('#heading-9c1').isVisible(), 'Section 9C.1 heading must be visible');
       assert.ok(await page.locator('#heading-9c2').isVisible(), 'Section 9C.2 heading must be visible');
       assert.ok(await page.locator('#heading-9c3').isVisible(), 'Section 9C.3 heading must be visible');
-      assert.ok(await page.locator('#creatorVerificationHeading').isVisible(), 'Section 9D.1 heading must be visible');
-      assert.ok(await page.locator('#creatorImportVerificationHeading').isVisible(), 'Section 9D.2 heading must be visible');
-      assert.ok(await page.locator('#creatorSubmitVerificationHeading').isVisible(), 'Section 9D.3 heading must be visible');
+      assert.ok(await page.locator('#section-admin-accounts').isVisible(), 'Section Admin Accounts must be visible');
+      assert.ok(await page.locator('#section-admin-roles').isVisible(), 'Section Admin Roles must be visible');
       assert.ok(await page.locator('#liveDiagnosticsHeading').isVisible(), 'Section 12 Full-Stack heading must be visible');
 
       // Check badge legend
@@ -730,102 +729,6 @@ describe('Verification Center E2E: Dedicated Diagnostic Surface Suite', () => {
 
       const errors = getRuntimeErrors();
       assert.strictEqual(errors.length, 0, `Runtime errors during SRS diagnostics:\n${errors.join('\n')}`);
-    } finally {
-      await context.close();
-    }
-  });
-
-  // VC-13: Module 9D.1 Creator Studio Diagnostics
-  test('VC-13: Section 9D.1 Creator Studio diagnostic probes execute and report status safely', async () => {
-    const { page, context, getRuntimeErrors } = await createMonitoredPage(browser, {
-      viewportWidth: 1280,
-      viewportHeight: 720
-    });
-
-    try {
-      await page.goto(`${baseUrl}/ui-verification.html`, { waitUntil: 'domcontentloaded' });
-      await page.locator('#creatorVerificationHeading').waitFor({ state: 'visible' });
-
-      // 1. Probe Reorder Logic & Payload
-      await page.locator('#btnProbeCreatorReorderLogic').click();
-      await page.waitForTimeout(100);
-      const reorderOut = await page.locator('#creatorContractOutput').textContent();
-      assert.ok(reorderOut.includes('[UNIT PASS]'), `Reorder contract probe must pass, got: "${reorderOut}"`);
-
-      // 2. Probe Title Validation
-      await page.locator('#btnProbeCreatorValidation').click();
-      await page.waitForTimeout(100);
-      const valOut = await page.locator('#creatorContractOutput').textContent();
-      assert.ok(valOut.includes('[UNIT PASS]'), `Validation probe must pass, got: "${valOut}"`);
-
-      // 3. Probe Role Guard
-      await page.locator('#btnProbeCreatorRoleGuard').click();
-      await page.waitForTimeout(100);
-      const roleOut = await page.locator('#creatorApiOutput').textContent();
-      assert.ok(roleOut.includes('[CAPABILITY CHECK]'), `Role capability probe must report, got: "${roleOut}"`);
-
-      const errors = getRuntimeErrors();
-      assert.strictEqual(errors.length, 0, `Runtime errors during Creator diagnostics:\n${errors.join('\n')}`);
-    } finally {
-      await context.close();
-    }
-  });
-
-  // VC-14: Module 9D.2 Creator Two-Step Excel Import Diagnostics
-  test('VC-14: Section 9D.2 Creator Excel Import diagnostic probes execute and report status safely', async () => {
-    const { page, context, getRuntimeErrors } = await createMonitoredPage(browser, {
-      viewportWidth: 1280,
-      viewportHeight: 720
-    });
-
-    try {
-      await page.goto(`${baseUrl}/ui-verification.html`, { waitUntil: 'domcontentloaded' });
-      await page.locator('#creatorImportVerificationHeading').waitFor({ state: 'visible' });
-
-      // 1. Probe File & Title Rules
-      await page.locator('#btnProbeImportValidation').click();
-      await page.waitForTimeout(100);
-      const valOut = await page.locator('#importContractOutput').textContent();
-      assert.ok(valOut.includes('[UNIT PASS]'), `Validation probe must pass, got: "${valOut}"`);
-
-      // 2. Probe Two-Step Invariant & Report Model
-      await page.locator('#btnProbeImportReportLogic').click();
-      await page.waitForTimeout(100);
-      const invOut = await page.locator('#importLogicOutput').textContent();
-      assert.ok(invOut.includes('[CAPABILITY PASS]'), `Invariant probe must pass, got: "${invOut}"`);
-
-      const errors = getRuntimeErrors();
-      assert.strictEqual(errors.length, 0, `Runtime errors during Excel Import diagnostics:\n${errors.join('\n')}`);
-    } finally {
-      await context.close();
-    }
-  });
-
-  // VC-15: Module 9D.3 Creator Lesson Submission & Status Visibility Diagnostics
-  test('VC-15: Section 9D.3 Creator Submission diagnostic probes execute and report status safely', async () => {
-    const { page, context, getRuntimeErrors } = await createMonitoredPage(browser, {
-      viewportWidth: 1280,
-      viewportHeight: 720
-    });
-
-    try {
-      await page.goto(`${baseUrl}/ui-verification.html`, { waitUntil: 'domcontentloaded' });
-      await page.locator('#creatorSubmitVerificationHeading').waitFor({ state: 'visible' });
-
-      // 1. Probe Submission Eligibility Rules
-      await page.locator('#btnProbeSubmissionEligibility').click();
-      await page.waitForTimeout(100);
-      const eligOut = await page.locator('#submissionEligibilityOutput').textContent();
-      assert.ok(eligOut.includes('[UNIT PASS]'), `Submission eligibility probe must pass, got: "${eligOut}"`);
-
-      // 2. Probe Rejection Feedback Contract & Graceful Fallback
-      await page.locator('#btnProbeRejectionContract').click();
-      await page.waitForTimeout(100);
-      const rejOut = await page.locator('#rejectionContractOutput').textContent();
-      assert.ok(rejOut.includes('[CONTRACT PASS]'), `Rejection contract probe must pass, got: "${rejOut}"`);
-
-      const errors = getRuntimeErrors();
-      assert.strictEqual(errors.length, 0, `Runtime errors during Submission diagnostics:\n${errors.join('\n')}`);
     } finally {
       await context.close();
     }

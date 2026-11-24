@@ -48,10 +48,13 @@ public class AdminRoleServiceImpl implements AdminRoleService {
         this(roleRepository, accountRepository, null);
     }
 
+    private static final Set<String> SUPPORTED_ROLE_NAMES = Set.of("admin", "learner");
+
     @Override
     @Transactional(readOnly = true)
     public List<RoleResponse> getRoles() {
         return roleRepository.findAll().stream()
+                .filter(r -> r.getRoleName() != null && SUPPORTED_ROLE_NAMES.contains(r.getRoleName().trim().toLowerCase()))
                 .sorted(Comparator.comparing(Role::getRoleId))
                 .map(RoleResponse::fromEntity)
                 .toList();
@@ -64,9 +67,10 @@ public class AdminRoleServiceImpl implements AdminRoleService {
             throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Danh sách vai trò không được để trống");
         }
 
-        // 1. Fetch system roles and build lookup map
+        // 1. Fetch supported system roles (Admin, Learner only) and build lookup map
         List<Role> allSystemRoles = roleRepository.findAll();
         Map<String, Role> roleByNameMap = allSystemRoles.stream()
+                .filter(r -> r.getRoleName() != null && SUPPORTED_ROLE_NAMES.contains(r.getRoleName().trim().toLowerCase()))
                 .collect(Collectors.toMap(
                         r -> r.getRoleName().toLowerCase(),
                         Function.identity(),
@@ -95,24 +99,10 @@ public class AdminRoleServiceImpl implements AdminRoleService {
             throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Danh sách vai trò không được để trống");
         }
 
-        // Separation of Duties (SoD) Invariant: Creator and Moderator are mutually exclusive
-        boolean hasCreator = resolvedRoles.stream().anyMatch(r -> "Creator".equalsIgnoreCase(r.getRoleName()) || "ROLE_CREATOR".equalsIgnoreCase(r.getRoleName()));
-        boolean hasModerator = resolvedRoles.stream().anyMatch(r -> "Moderator".equalsIgnoreCase(r.getRoleName()) || "ROLE_MODERATOR".equalsIgnoreCase(r.getRoleName()));
-        if (hasCreator && hasModerator) {
-            throw new BusinessException(
-                    ErrorCode.BAD_REQUEST,
-                    "Vai trò Người sáng tạo (Creator) và Kiểm duyệt viên (Moderator) loại trừ lẫn nhau tuyệt đối. Một tài khoản không thể đồng thời giữ cả hai vai trò."
-            );
-        }
-
-        // Separation of Duties (SoD) & Single-Role Exclusivity: An account holds exactly 1 primary role
+        // Single-Role Exclusivity: An account holds exactly 1 primary role (Admin or Learner)
         Role primaryRole;
         if (resolvedRoles.stream().anyMatch(r -> "Admin".equalsIgnoreCase(r.getRoleName()) || "ROLE_ADMIN".equalsIgnoreCase(r.getRoleName()))) {
             primaryRole = roleByNameMap.get("admin");
-        } else if (resolvedRoles.stream().anyMatch(r -> "Moderator".equalsIgnoreCase(r.getRoleName()) || "ROLE_MODERATOR".equalsIgnoreCase(r.getRoleName()))) {
-            primaryRole = roleByNameMap.get("moderator");
-        } else if (resolvedRoles.stream().anyMatch(r -> "Creator".equalsIgnoreCase(r.getRoleName()) || "ROLE_CREATOR".equalsIgnoreCase(r.getRoleName()))) {
-            primaryRole = roleByNameMap.get("creator");
         } else {
             primaryRole = roleByNameMap.get("learner");
         }

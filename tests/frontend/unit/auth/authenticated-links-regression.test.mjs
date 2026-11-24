@@ -177,7 +177,7 @@ describe('Regression: Authenticated Links, Relative Paths & Data Isolation', () 
       assert.strictEqual(findElementByAttr(container, 'id', 'navAdminBtn'), null);
     });
 
-    test('Authenticated Creator: renders relative management.html entry', () => {
+    test('Deprecated Creator role does NOT receive management.html entry', () => {
       authManager.setSession({
         token: 'mock-creator-token',
         accountId: 2,
@@ -193,12 +193,10 @@ describe('Regression: Authenticated Links, Relative Paths & Data Isolation', () 
       assert.strictEqual(profileLink.getAttribute('href'), 'profile.html');
 
       const mgmtLink = findElementByAttr(container, 'id', 'navManagementBtn');
-      assert.ok(mgmtLink, 'Management link must be present for Creator');
-      assert.strictEqual(mgmtLink.getAttribute('href'), 'management.html');
-      assert.strictEqual(mgmtLink.textContent, 'Khu vực quản lý');
+      assert.strictEqual(mgmtLink, null, 'Management link must NOT exist for deprecated Creator role');
     });
 
-    test('Authenticated Moderator: renders relative management.html entry', () => {
+    test('Deprecated Moderator role does NOT receive management.html entry', () => {
       authManager.setSession({
         token: 'mock-mod-token',
         accountId: 3,
@@ -211,9 +209,7 @@ describe('Regression: Authenticated Links, Relative Paths & Data Isolation', () 
       renderNavbarAuth(container);
 
       const mgmtLink = findElementByAttr(container, 'id', 'navManagementBtn');
-      assert.ok(mgmtLink, 'Management link must be present for Moderator');
-      assert.strictEqual(mgmtLink.getAttribute('href'), 'management.html');
-      assert.strictEqual(mgmtLink.textContent, 'Khu vực quản lý');
+      assert.strictEqual(mgmtLink, null, 'Management link must NOT exist for deprecated Moderator role');
     });
 
     test('Authenticated Admin: renders relative management.html entry', () => {

@@ -35,7 +35,7 @@ export function normalizeRole(role) {
 }
 
 /**
- * Checks whether the user/roles has management access (Creator, Moderator, or Admin).
+ * Checks whether the user/roles has management access (Admin only).
  * Supports passing an authManager instance, a session object, or an array of roles.
  * 
  * @param {object|string[]} [subject=authManager] 
@@ -56,80 +56,32 @@ export function hasManagementAccess(subject = authManager) {
 
   if (!roles || !roles.length) return false;
   const norm = roles.map(normalizeRole);
-  return norm.includes('ADMIN') || norm.includes('MODERATOR') || norm.includes('CREATOR');
+  return norm.includes('ADMIN');
 }
 
 /**
  * Computes visibility matrix for management sections based on user roles.
  * 
- * Policy:
- * - Admin: sees Creator, Moderator, and Administration sections.
- * - Moderator: sees Moderation section (and Creator if also has Creator role).
- * - Creator: sees Creator Studio section.
- * - Learner: all false.
+ * Policy (Single-Admin):
+ * - Admin: sees Administration section.
+ * - Non-Admin: all false.
  * 
  * @param {string[]} [roles=[]]
- * @returns {{ creator: boolean, moderator: boolean, admin: boolean }}
+ * @returns {{ admin: boolean }}
  */
 export function getVisibleManagementSections(roles = []) {
   const norm = (Array.isArray(roles) ? roles : []).map(normalizeRole);
   const isAdmin = norm.includes('ADMIN');
-  const isModerator = norm.includes('MODERATOR');
-  const isCreator = norm.includes('CREATOR');
 
   return {
-    creator: isAdmin || isCreator,
-    moderator: isAdmin || isModerator,
     admin: isAdmin
   };
 }
 
 /**
- * High-level configuration of all functional management routes grouped by domain.
+ * High-level configuration of all functional management routes (Admin only).
  */
 export const MANAGEMENT_NAV_CONFIG = [
-  {
-    id: 'creator',
-    title: 'Tác Giả (Creator Studio)',
-    requiredRole: ['Creator'],
-    items: [
-      {
-        id: 'navMgmtCreatorLessons',
-        label: 'Quản lý bài học',
-        href: 'creator-lessons.html',
-        icon: '📖',
-        matchPages: ['creator-lessons.html', 'creator-lesson-editor.html']
-      },
-      {
-        id: 'navMgmtCreatorImport',
-        label: 'Nhập bài học từ Excel',
-        href: 'creator-import.html',
-        icon: '📊',
-        matchPages: ['creator-import.html']
-      }
-    ]
-  },
-  {
-    id: 'moderation',
-    title: 'Kiểm Duyệt (Moderation)',
-    requiredRole: ['Moderator'],
-    items: [
-      {
-        id: 'navMgmtModeratorQueue',
-        label: 'Hàng đợi kiểm duyệt',
-        href: 'moderator-queue.html',
-        icon: '⏳',
-        matchPages: ['moderator-queue.html', 'moderator-review.html']
-      },
-      {
-        id: 'navMgmtModeratorHistory',
-        label: 'Lịch sử kiểm duyệt',
-        href: 'moderator-history.html',
-        icon: '📜',
-        matchPages: ['moderator-history.html']
-      }
-    ]
-  },
   {
     id: 'admin',
     title: '',
@@ -198,7 +150,7 @@ export const MANAGEMENT_NAV_CONFIG = [
 
 /**
  * Resolves current pathname to active management route, mapping detail sub-pages
- * (e.g. creator-lesson-editor.html, moderator-review.html, admin-dashboard.html, management.html) to their parent navigation item.
+ * (e.g. admin-dashboard.html, management.html) to their parent navigation item.
  * 
  * @param {string} [currentPath='']
  * @returns {string}
@@ -211,12 +163,6 @@ export function getActiveManagementRoute(currentPath = '') {
   const cleanPath = String(path || '').split('?')[0].split('#')[0];
   const page = (cleanPath.split('/').pop() || 'management.html').toLowerCase();
 
-  if (page === 'creator-lesson-editor.html') {
-    return 'creator-lessons.html';
-  }
-  if (page === 'moderator-review.html') {
-    return 'moderator-queue.html';
-  }
   if (page === 'admin-dashboard.html' || page === 'management.html') {
     return 'management.html';
   }
@@ -224,7 +170,7 @@ export function getActiveManagementRoute(currentPath = '') {
 }
 
 /**
- * Returns filtered navigation groups visible to user's assigned roles.
+ * Returns filtered navigation groups visible to user's assigned roles (Admin only).
  * 
  * @param {string[]} [roles=[]]
  * @returns {Array<object>}
@@ -234,19 +180,11 @@ export function getVisibleManagementNavConfig(roles = []) {
   if (!norm.length) return [];
 
   const isAdmin = norm.includes('ADMIN');
-  const isModerator = norm.includes('MODERATOR');
-  const isCreator = norm.includes('CREATOR');
-
-  if (!isAdmin && !isModerator && !isCreator) {
+  if (!isAdmin) {
     return [];
   }
 
-  return MANAGEMENT_NAV_CONFIG.filter(section => {
-    if (section.id === 'admin') return isAdmin;
-    if (section.id === 'creator') return isCreator && !isAdmin;
-    if (section.id === 'moderation') return isModerator && !isAdmin;
-    return false;
-  });
+  return MANAGEMENT_NAV_CONFIG.filter(section => section.id === 'admin');
 }
 
 /**
@@ -271,7 +209,7 @@ export function renderManagementSidebar(navContainer, roles = [], currentPath = 
       children: [
         createSafeElement('div', { className: 'mb-2 fs-4', text: '🔒' }),
         createSafeElement('div', { className: 'fw-semibold text-dark mb-1', text: 'Quyền Truy Cập Bị Giới Hạn' }),
-        createSafeElement('div', { text: 'Khu vực quản lý dành riêng cho Tác giả, Kiểm duyệt viên và Quản trị viên.' })
+        createSafeElement('div', { text: 'Khu vực quản lý dành riêng cho Quản trị viên (Admin).' })
       ]
     });
     navContainer.appendChild(emptyNotice);

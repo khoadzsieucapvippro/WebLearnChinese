@@ -380,7 +380,7 @@ function initLoginForm() {
       const urlParams = new URLSearchParams(window.location.search);
       // Handle safe redirect based on role context & query parameters
       const userRoles = Array.isArray(authData?.roles) ? authData.roles : authManager.getRoles();
-      const isStaffUser = userRoles.some(r => ['Admin', 'Creator', 'Moderator'].includes(r));
+      const isStaffUser = userRoles.includes('Admin');
       const redirectParam = urlParams.get('redirect');
       let target;
       if (redirectParam) {
@@ -856,7 +856,7 @@ if (typeof document !== 'undefined' && typeof document.addEventListener === 'fun
   document.addEventListener('DOMContentLoaded', () => {
     if (authManager.isAuthenticated()) {
       const userRoles = authManager.getRoles();
-      const isStaffUser = userRoles.some(r => ['Admin', 'Creator', 'Moderator'].includes(r));
+      const isStaffUser = userRoles.includes('Admin');
       const urlParams = new URLSearchParams(window.location.search);
       const redirectParam = urlParams.get('redirect');
       let target;

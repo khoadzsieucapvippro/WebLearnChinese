@@ -152,7 +152,7 @@ describe('Tier 3: Cross-Feature Combinations Test Suite', () => {
   // ---------------------------------------------------------------------------
   // TC-T3-03: Management Hub Navigation + Audit Logs RBAC Enforcement
   // ---------------------------------------------------------------------------
-  test('TC-T3-03: Moderator sees management hub but is blocked from Admin audit logs API and cards', () => {
+  test('TC-T3-03: Deprecated Moderator sees NO management hub and is blocked from Admin audit logs API (403)', () => {
     const auditStore = new AuditLogMockStore();
     auditStore.recordEvent({
       actorId: 505,
@@ -164,21 +164,22 @@ describe('Tier 3: Cross-Feature Combinations Test Suite', () => {
 
     const moderator = TEST_PERSONAS.moderator;
 
-    // 1. Navigation bar renders management entry for Moderator
+    // 1. Navigation bar hides management entry for deprecated Moderator
     const navEval = evaluateNavManagementEntry(moderator.roles);
-    assert.strictEqual(navEval.showManagementLink, true);
+    assert.strictEqual(navEval.showManagementLink, false);
 
-    // 2. Management Hub reflects only Moderator tools, hides Admin audit log cards
+    // 2. Management Hub shows no sections for deprecated Moderator
     const hubEval = evaluateManagementHubStructure('<div><a href="index.html">Quay lại học</a></div>', moderator.roles);
-    assert.ok(hubEval.visibleSections.includes('MODERATOR'));
-    assert.strictEqual(hubEval.visibleSections.includes('ADMIN'), false);
+    assert.deepStrictEqual(hubEval.visibleSections, []);
 
-    // 3. Moderator attempts direct REST call to /api/v1/admin/audit-logs -> 403 Forbidden
+    // 3. Deprecated Moderator attempts direct REST call to /api/v1/admin/audit-logs -> 403 Forbidden
     const directApiCall = auditStore.queryLogs({ userRoles: moderator.roles });
     assert.strictEqual(directApiCall.status, 403);
     assert.ok(directApiCall.message.includes('Quản trị viên'));
 
-    // 4. Admin accesses same endpoint -> 200 OK
+    // 4. Admin sees ADMIN section and accesses endpoint -> 200 OK
+    const adminHub = evaluateManagementHubStructure('<div><a href="index.html">Quay lại học</a></div>', ['Admin']);
+    assert.deepStrictEqual(adminHub.visibleSections, ['ADMIN']);
     const adminApiCall = auditStore.queryLogs({ userRoles: ['Admin'] });
     assert.strictEqual(adminApiCall.status, 200);
     assert.strictEqual(adminApiCall.data.totalElements, 1);

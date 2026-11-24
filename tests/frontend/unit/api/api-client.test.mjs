@@ -594,15 +594,13 @@ describe('Centralized HTTP API Client Contract', () => {
       assert.strictEqual(result.items[0].status, 'Approved');
     });
 
-    test('Authenticates 4 standard accounts (Learner, Creator, Moderator, Admin) on demo', async () => {
+    test('Authenticates 2 standard accounts (Learner, Admin) on demo and blocks legacy /creator or /moderator', async () => {
       globalThis.fetch = async () => {
         throw new TypeError('Cloud backend offline');
       };
 
       const accounts = [
         { email: 'learner@gmail.com', role: 'Learner' },
-        { email: 'creator@gmail.com', role: 'Creator' },
-        { email: 'moderator@gmail.com', role: 'Moderator' },
         { email: 'admin@gmail.com', role: 'Admin' }
       ];
 
@@ -617,6 +615,13 @@ describe('Centralized HTTP API Client Contract', () => {
         assert.strictEqual(payload.email, acc.email);
         assert.ok(payload.roles.includes(acc.role));
       }
+
+      // Creator & Moderator emails log in as Learner only (no staff roles)
+      const legacyAuth = await apiClient('/auth/login', {
+        method: 'POST',
+        body: { emailOrPhone: 'creator@gmail.com', password: 'Password@123' }
+      });
+      assert.deepStrictEqual(legacyAuth.roles, ['Learner']);
     });
 
     test('Rejects invalid credentials with 401 ApiError', async () => {

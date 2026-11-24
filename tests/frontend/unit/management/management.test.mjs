@@ -32,20 +32,20 @@ describe('Management Hub Logic & RBAC Invariants', () => {
       assert.strictEqual(hasManagementAccess(['Learner', 'Admin']), true);
     });
 
-    test('grants access to Moderator role', () => {
-      assert.strictEqual(hasManagementAccess(['Moderator']), true);
-      assert.strictEqual(hasManagementAccess(['ROLE_MODERATOR']), true);
-      assert.strictEqual(hasManagementAccess(['Learner', 'Moderator']), true);
+    test('strictly denies access to deprecated Moderator role', () => {
+      assert.strictEqual(hasManagementAccess(['Moderator']), false);
+      assert.strictEqual(hasManagementAccess(['ROLE_MODERATOR']), false);
+      assert.strictEqual(hasManagementAccess(['Learner', 'Moderator']), false);
     });
 
-    test('grants access to Creator role', () => {
-      assert.strictEqual(hasManagementAccess(['Creator']), true);
-      assert.strictEqual(hasManagementAccess(['ROLE_CREATOR']), true);
-      assert.strictEqual(hasManagementAccess(['Learner', 'Creator']), true);
+    test('strictly denies access to deprecated Creator role', () => {
+      assert.strictEqual(hasManagementAccess(['Creator']), false);
+      assert.strictEqual(hasManagementAccess(['ROLE_CREATOR']), false);
+      assert.strictEqual(hasManagementAccess(['Learner', 'Creator']), false);
     });
 
-    test('grants access to dual Creator + Moderator role', () => {
-      assert.strictEqual(hasManagementAccess(['Creator', 'Moderator']), true);
+    test('strictly denies access to dual Creator + Moderator role', () => {
+      assert.strictEqual(hasManagementAccess(['Creator', 'Moderator']), false);
     });
 
     test('strictly denies access to Learner-only sessions', () => {
@@ -78,8 +78,8 @@ describe('Management Hub Logic & RBAC Invariants', () => {
 
     test('supports session object with roles array', () => {
       assert.strictEqual(hasManagementAccess({ roles: ['Admin'] }), true);
-      assert.strictEqual(hasManagementAccess({ roles: ['Creator'] }), true);
-      assert.strictEqual(hasManagementAccess({ roles: ['Moderator'] }), true);
+      assert.strictEqual(hasManagementAccess({ roles: ['Creator'] }), false);
+      assert.strictEqual(hasManagementAccess({ roles: ['Moderator'] }), false);
       assert.strictEqual(hasManagementAccess({ roles: ['Learner'] }), false);
     });
 
@@ -87,60 +87,39 @@ describe('Management Hub Logic & RBAC Invariants', () => {
 
   describe('2. Visibility Matrix: getVisibleManagementSections', () => {
 
-    test('Admin role receives full access to Creator, Moderator, and Administration sections', () => {
+    test('Admin role receives full access to Administration section', () => {
       const sections = getVisibleManagementSections(['Admin']);
       assert.deepStrictEqual(sections, {
-        creator: true,
-        moderator: true,
         admin: true
       });
     });
 
-    test('Moderator role receives only Moderation section access', () => {
+    test('Deprecated Moderator role receives no section access', () => {
       const sections = getVisibleManagementSections(['Moderator']);
       assert.deepStrictEqual(sections, {
-        creator: false,
-        moderator: true,
         admin: false
       });
     });
 
-    test('Creator role receives only Creator Studio section access', () => {
+    test('Deprecated Creator role receives no section access', () => {
       const sections = getVisibleManagementSections(['Creator']);
       assert.deepStrictEqual(sections, {
-        creator: true,
-        moderator: false,
         admin: false
       });
     });
 
-    test('Dual Creator + Moderator receives Creator and Moderation sections, but not Administration', () => {
-      const sections = getVisibleManagementSections(['Creator', 'Moderator']);
-      assert.deepStrictEqual(sections, {
-        creator: true,
-        moderator: true,
-        admin: false
-      });
-    });
-
-    test('Learner role receives no management section access (all false)', () => {
+    test('Learner role receives no management section access (admin: false)', () => {
       const sections = getVisibleManagementSections(['Learner']);
       assert.deepStrictEqual(sections, {
-        creator: false,
-        moderator: false,
         admin: false
       });
     });
 
-    test('Empty or null input safely returns all false', () => {
+    test('Empty or null input safely returns admin: false', () => {
       assert.deepStrictEqual(getVisibleManagementSections([]), {
-        creator: false,
-        moderator: false,
         admin: false
       });
       assert.deepStrictEqual(getVisibleManagementSections(null), {
-        creator: false,
-        moderator: false,
         admin: false
       });
     });

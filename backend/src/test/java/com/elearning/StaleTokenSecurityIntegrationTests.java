@@ -197,49 +197,49 @@ class StaleTokenSecurityIntegrationTests {
     class RbacPrecedenceTests {
 
         @Test
-        @DisplayName("GIVEN disabled Moderator WHEN accessing Moderator endpoint THEN rejected with 401 Unauthorized (Auth fails before RBAC)")
-        void test4_disabledModerator_failsAuthBeforeRbac() throws Exception {
+        @DisplayName("GIVEN disabled Admin WHEN accessing Admin endpoint THEN rejected with 401 Unauthorized (Auth fails before RBAC)")
+        void test4_disabledAdmin_failsAuthBeforeRbac() throws Exception {
             // Arrange
-            String email = "stale_moderator@example.com";
-            Account modAccount = createAccountWithProfile(email, "Moderator", "Active");
+            String email = "stale_admin@example.com";
+            Account adminAccount = createAccountWithProfile(email, "Admin", "Active");
 
-            String modToken = jwtUtil.generateToken(email, List.of("Moderator"), modAccount.getAuthorizationVersion());
+            String adminToken = jwtUtil.generateToken(email, List.of("Admin"), adminAccount.getAuthorizationVersion());
 
-            // Baseline: Active Moderator gets 200 OK on moderator queue
-            mockMvc.perform(get("/api/v1/moderator/lessons/pending")
-                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + modToken))
+            // Baseline: Active Admin gets 200 OK on admin lessons
+            mockMvc.perform(get("/api/v1/admin/lessons")
+                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + adminToken))
                     .andExpect(status().isOk());
 
-            // Disable Moderator account (status -> 'Banned')
-            adminAccountService.updateAccountStatus(modAccount.getAccountId(), new UpdateAccountStatusRequest("Banned"), "admin@example.com");
+            // Disable Admin account (status -> 'Banned')
+            adminAccountService.updateAccountStatus(adminAccount.getAccountId(), new UpdateAccountStatusRequest("Banned"), "other_admin@example.com");
 
             // Assert: Returns 401 UNAUTHORIZED, NOT 403 FORBIDDEN
-            mockMvc.perform(get("/api/v1/moderator/lessons/pending")
-                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + modToken))
+            mockMvc.perform(get("/api/v1/admin/lessons")
+                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + adminToken))
                     .andExpect(status().isUnauthorized())
                     .andExpect(jsonPath("$.code").value("UNAUTHORIZED"));
         }
 
         @Test
-        @DisplayName("GIVEN disabled Creator WHEN accessing Creator endpoint THEN rejected with 401 Unauthorized")
-        void test5_disabledCreator_failsAuthWith401() throws Exception {
+        @DisplayName("GIVEN disabled Learner WHEN accessing Learner endpoint THEN rejected with 401 Unauthorized")
+        void test5_disabledLearner_failsAuthWith401() throws Exception {
             // Arrange
-            String email = "stale_creator@example.com";
-            Account creatorAccount = createAccountWithProfile(email, "Creator", "Active");
+            String email = "stale_learner_rbac@example.com";
+            Account learnerAccount = createAccountWithProfile(email, "Learner", "Active");
 
-            String creatorToken = jwtUtil.generateToken(email, List.of("Creator"), creatorAccount.getAuthorizationVersion());
+            String learnerToken = jwtUtil.generateToken(email, List.of("Learner"), learnerAccount.getAuthorizationVersion());
 
-            // Baseline: Active Creator gets 200 OK on creator lessons
-            mockMvc.perform(get("/api/v1/creator/lessons")
-                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + creatorToken))
+            // Baseline: Active Learner gets 200 OK on SRS settings
+            mockMvc.perform(get("/api/v1/srs/settings")
+                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + learnerToken))
                     .andExpect(status().isOk());
 
-            // Disable Creator account
-            adminAccountService.updateAccountStatus(creatorAccount.getAccountId(), new UpdateAccountStatusRequest("Inactive"), "admin@example.com");
+            // Disable Learner account
+            adminAccountService.updateAccountStatus(learnerAccount.getAccountId(), new UpdateAccountStatusRequest("Inactive"), "admin@example.com");
 
             // Assert: Returns 401 UNAUTHORIZED
-            mockMvc.perform(get("/api/v1/creator/lessons")
-                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + creatorToken))
+            mockMvc.perform(get("/api/v1/srs/settings")
+                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + learnerToken))
                     .andExpect(status().isUnauthorized())
                     .andExpect(jsonPath("$.code").value("UNAUTHORIZED"));
         }

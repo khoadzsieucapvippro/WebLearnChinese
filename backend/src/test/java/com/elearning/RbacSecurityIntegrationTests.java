@@ -115,18 +115,14 @@ class RbacSecurityIntegrationTests {
     class RoleAuthorizationMatrixTests {
 
         @Test
-        @DisplayName("GIVEN Creator WHEN accessing Creator endpoint THEN 200 OK")
-        void testCreatorAllowedOnCreatorEndpoint() throws Exception {
-            mockMvc.perform(get("/api/v1/creator/test")
-                            .with(user("creator").roles("Creator")))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.data").value("Creator endpoint reached"));
-        }
-
-        @Test
-        @DisplayName("GIVEN Creator WHEN accessing Admin or Moderator endpoint THEN 403 Forbidden")
-        void testCreatorForbiddenOnAdminAndModeratorEndpoints() throws Exception {
+        @DisplayName("GIVEN deprecated Creator WHEN accessing any management or legacy endpoint THEN 403 Forbidden")
+        void testCreatorDeniedEverywhere() throws Exception {
             mockMvc.perform(get("/api/v1/admin/test")
+                            .with(user("creator").roles("Creator")))
+                    .andExpect(status().isForbidden())
+                    .andExpect(jsonPath("$.code").value("FORBIDDEN"));
+
+            mockMvc.perform(get("/api/v1/creator/test")
                             .with(user("creator").roles("Creator")))
                     .andExpect(status().isForbidden())
                     .andExpect(jsonPath("$.code").value("FORBIDDEN"));
@@ -138,18 +134,14 @@ class RbacSecurityIntegrationTests {
         }
 
         @Test
-        @DisplayName("GIVEN Moderator WHEN accessing Moderator endpoint THEN 200 OK")
-        void testModeratorAllowedOnModeratorEndpoint() throws Exception {
-            mockMvc.perform(get("/api/v1/moderator/test")
-                            .with(user("moderator").roles("Moderator")))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.data").value("Moderator endpoint reached"));
-        }
-
-        @Test
-        @DisplayName("GIVEN Moderator WHEN accessing Admin or Creator endpoint THEN 403 Forbidden")
-        void testModeratorForbiddenOnAdminAndCreatorEndpoints() throws Exception {
+        @DisplayName("GIVEN deprecated Moderator WHEN accessing any management or legacy endpoint THEN 403 Forbidden")
+        void testModeratorDeniedEverywhere() throws Exception {
             mockMvc.perform(get("/api/v1/admin/test")
+                            .with(user("moderator").roles("Moderator")))
+                    .andExpect(status().isForbidden())
+                    .andExpect(jsonPath("$.code").value("FORBIDDEN"));
+
+            mockMvc.perform(get("/api/v1/moderator/test")
                             .with(user("moderator").roles("Moderator")))
                     .andExpect(status().isForbidden())
                     .andExpect(jsonPath("$.code").value("FORBIDDEN"));
@@ -161,8 +153,8 @@ class RbacSecurityIntegrationTests {
         }
 
         @Test
-        @DisplayName("GIVEN Admin WHEN accessing Admin, Moderator, or Creator endpoint THEN 200 OK")
-        void testAdminAllowedOnAdminModeratorAndCreatorEndpoints() throws Exception {
+        @DisplayName("GIVEN Admin WHEN accessing Admin endpoint THEN 200 OK; legacy Moderator/Creator endpoints return 403 (denyAll)")
+        void testAdminAllowedOnAdminOnlyAndDeniedOnRemovedLegacyEndpoints() throws Exception {
             mockMvc.perform(get("/api/v1/admin/test")
                             .with(user("admin").roles("Admin")))
                     .andExpect(status().isOk())
@@ -170,13 +162,11 @@ class RbacSecurityIntegrationTests {
 
             mockMvc.perform(get("/api/v1/moderator/test")
                             .with(user("admin").roles("Admin")))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.data").value("Moderator endpoint reached"));
+                    .andExpect(status().isForbidden());
 
             mockMvc.perform(get("/api/v1/creator/test")
                             .with(user("admin").roles("Admin")))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.data").value("Creator endpoint reached"));
+                    .andExpect(status().isForbidden());
         }
     }
 
@@ -240,25 +230,25 @@ class RbacSecurityIntegrationTests {
         }
 
         @Test
-        @DisplayName("GIVEN real JWT with Creator role WHEN accessing Creator endpoint THEN 200 OK")
-        void testRealJwtCreatorAllowedOnCreator() throws Exception {
+        @DisplayName("GIVEN real JWT with deprecated Creator role WHEN accessing legacy Creator endpoint THEN 403 Forbidden")
+        void testRealJwtCreatorDeniedOnCreator() throws Exception {
             String token = jwtUtil.generateToken("creator.jwt@elearning.com", List.of("Creator"));
 
             mockMvc.perform(get("/api/v1/creator/test")
                             .header("Authorization", "Bearer " + token))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.data").value("Creator endpoint reached"));
+                    .andExpect(status().isForbidden())
+                    .andExpect(jsonPath("$.code").value("FORBIDDEN"));
         }
 
         @Test
-        @DisplayName("GIVEN real JWT with Moderator role WHEN accessing Moderator endpoint THEN 200 OK")
-        void testRealJwtModeratorAllowedOnModerator() throws Exception {
+        @DisplayName("GIVEN real JWT with deprecated Moderator role WHEN accessing legacy Moderator endpoint THEN 403 Forbidden")
+        void testRealJwtModeratorDeniedOnModerator() throws Exception {
             String token = jwtUtil.generateToken("moderator.jwt@elearning.com", List.of("Moderator"));
 
             mockMvc.perform(get("/api/v1/moderator/test")
                             .header("Authorization", "Bearer " + token))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.data").value("Moderator endpoint reached"));
+                    .andExpect(status().isForbidden())
+                    .andExpect(jsonPath("$.code").value("FORBIDDEN"));
         }
 
         @Test

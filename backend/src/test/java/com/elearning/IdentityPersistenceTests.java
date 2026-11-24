@@ -91,17 +91,17 @@ class IdentityPersistenceTests {
     class AccountRoleAssociationTests {
 
         @Test
-        @DisplayName("GIVEN Account with multiple Roles WHEN persisted THEN ACCOUNT_ROLE junction rows are created and reloaded correctly")
+        @DisplayName("GIVEN Account with Role WHEN persisted THEN ACCOUNT_ROLE junction row is created and reloaded correctly")
         void testPersistAccountWithRoles() {
-            // GIVEN: Obtain seeded roles from database (seeded via V2__seed_roles.sql)
+            // GIVEN: Obtain seeded roles from database (seeded via V2, cleaned via V36)
             Role roleLearner = entityManager.find(Role.class, 1);
-            Role roleCreator = entityManager.find(Role.class, 2);
+            Role roleAdmin = entityManager.find(Role.class, 4);
 
             Account account = new Account();
             account.setEmailOrPhone("multi_role_user@example.com");
             account.setPasswordHash("$2a$12$e8Fj1.V7z9K2p6mQ4rTtY.multirole");
             account.addRole(roleLearner);
-            account.addRole(roleCreator);
+            account.addRole(roleAdmin);
 
             // WHEN
             Account savedAccount = entityManager.persistAndFlush(account);
@@ -114,7 +114,7 @@ class IdentityPersistenceTests {
             assertThat(reloaded.getRoles()).hasSize(2);
             assertThat(reloaded.getRoles())
                     .extracting(Role::getRoleName)
-                    .containsExactlyInAnyOrder("Learner", "Creator");
+                    .containsExactlyInAnyOrder("Learner", "Admin");
 
             // AND: Verify physical composite key rows in ACCOUNT_ROLE junction table
             @SuppressWarnings("unchecked")
@@ -127,7 +127,7 @@ class IdentityPersistenceTests {
             assertThat(((Number) junctionRows.get(0)[0]).longValue()).isEqualTo(accountId);
             assertThat(((Number) junctionRows.get(0)[1]).intValue()).isEqualTo(1);
             assertThat(((Number) junctionRows.get(1)[0]).longValue()).isEqualTo(accountId);
-            assertThat(((Number) junctionRows.get(1)[1]).intValue()).isEqualTo(2);
+            assertThat(((Number) junctionRows.get(1)[1]).intValue()).isEqualTo(4);
         }
 
         @Test
@@ -162,16 +162,16 @@ class IdentityPersistenceTests {
         @Test
         @DisplayName("GIVEN Account with Profile and Roles WHEN Account is deleted THEN Profile and junction rows are removed, but Roles remain")
         void testDeleteAccountPreservesRoles() {
-            Role roleModerator = entityManager.find(Role.class, 3);
+            Role roleLearner = entityManager.find(Role.class, 1);
 
             Account account = new Account();
-            account.setEmailOrPhone("mod_to_delete@example.com");
+            account.setEmailOrPhone("learner_to_delete@example.com");
             account.setPasswordHash("$2a$12$e8Fj1.V7z9K2p6mQ4rTtY.moddel");
 
             UserProfile profile = new UserProfile();
-            profile.setFullName("Moderator User");
+            profile.setFullName("Learner User");
             account.setUserProfile(profile);
-            account.addRole(roleModerator);
+            account.addRole(roleLearner);
 
             Account saved = entityManager.persistAndFlush(account);
             Long accountId = saved.getAccountId();

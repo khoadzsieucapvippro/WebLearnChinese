@@ -40,7 +40,7 @@ const TIER_MAPPING = {
   4: {
     name: 'Tier 4: Real-World Application Workloads',
     file: 'tests/e2e/tier4-application-workloads.test.mjs',
-    scope: 'Dual-role creator-moderator lifecycle, Concurrent last admin race, Learner vs management nav decoupling, Password change & settings, Full audit trail'
+    scope: 'Single-Admin lesson governance lifecycle, Concurrent last admin race, Learner vs Admin nav decoupling, Password change & settings, Full audit trail'
   }
 };
 

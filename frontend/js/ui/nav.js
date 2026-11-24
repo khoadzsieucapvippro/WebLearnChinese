@@ -22,12 +22,6 @@ import { apiClient, isDemoFallbackActive, isGitHubPagesEnvironment, isApiConfigu
 export const MANAGEMENT_PAGE_SET = new Set([
   'management.html',
   'admin-dashboard.html',
-  'creator-lessons.html',
-  'creator-lesson-editor.html',
-  'creator-import.html',
-  'moderator-queue.html',
-  'moderator-review.html',
-  'moderator-history.html',
   'admin-accounts.html',
   'admin-roles.html',
   'admin-lessons.html',
@@ -39,8 +33,7 @@ export const MANAGEMENT_PAGE_SET = new Set([
 ]);
 
 /**
- * Resolves the operational landing page for staff roles.
- * Priority: Admin -> management.html, Creator -> creator-lessons.html, Moderator -> moderator-queue.html.
+ * Resolves the operational landing page for staff roles (Admin only).
  * 
  * @param {string[]} [roles=[]]
  * @returns {string}
@@ -48,17 +41,15 @@ export const MANAGEMENT_PAGE_SET = new Set([
 export function resolveStaffLandingPage(roles = []) {
   if (!Array.isArray(roles) || roles.length === 0) return 'management.html';
   if (roles.includes('Admin')) return 'management.html';
-  if (roles.includes('Creator')) return 'creator-lessons.html';
-  if (roles.includes('Moderator')) return 'moderator-queue.html';
-  return 'management.html';
+  return 'index.html';
 }
 
 /**
  * Strict Reverse Role Guard (Phương án A)
- * Strictly prevents privileged management roles (Admin, Creator, Moderator)
- * from accessing learner-facing pages (index, lessons, radicals, vocabulary, srs-review, srs-dashboard).
- * If a management user is detected on a learner page, immediately redirects them
- * to their operational workspace. The only exit to learner space is logging out.
+ * Strictly prevents Admin role from accessing learner-facing pages
+ * (index, lessons, radicals, vocabulary, srs-review, srs-dashboard).
+ * If an Admin user is detected on a learner page, immediately redirects them
+ * to their operational workspace (management.html).
  * 
  * @returns {boolean} True if a redirect was triggered, false otherwise.
  */
@@ -67,7 +58,7 @@ export function enforceRoleWorkspaceGuard() {
   if (!authManager.isAuthenticated()) return false;
 
   const roles = authManager.getRoles();
-  const hasStaffRole = roles.includes('Admin') || roles.includes('Creator') || roles.includes('Moderator');
+  const hasStaffRole = roles.includes('Admin');
   if (!hasStaffRole) return false;
 
   const rawPath = window.location.pathname || '';
@@ -121,7 +112,7 @@ export function createDemoSimulationBadge() {
 
 /**
  * Maps backend JSON role string to scholarly Vietnamese display label.
- * Contract: Backend roles are ["Learner"], ["Creator"], ["Moderator"], ["Admin"].
+ * Contract: Backend roles are ["Learner"], ["Admin"].
  * 
  * @param {string} role 
  * @returns {string}
@@ -129,8 +120,6 @@ export function createDemoSimulationBadge() {
 export function getRoleLabel(role) {
   switch (role) {
     case 'Admin': return 'Quản trị';
-    case 'Moderator': return 'Kiểm duyệt';
-    case 'Creator': return 'Tác giả';
     case 'Learner':
     default:
       return 'Học viên';
@@ -147,10 +136,6 @@ export function getRoleBadgeClass(role) {
   switch (role) {
     case 'Admin':
       return 'badge-status badge-status-approved';
-    case 'Moderator':
-      return 'badge-status badge-status-active';
-    case 'Creator':
-      return 'badge-status badge-status-pending';
     case 'Learner':
     default:
       return 'badge-status badge-status-draft';
@@ -159,7 +144,7 @@ export function getRoleBadgeClass(role) {
 
 /**
  * Resolves the primary/highest-privileged role from an array of roles.
- * Priority hierarchy: Admin > Moderator > Creator > Learner.
+ * Priority hierarchy: Admin > Learner.
  * 
  * @param {string[]} roles 
  * @returns {string}
@@ -167,8 +152,6 @@ export function getRoleBadgeClass(role) {
 export function getPrimaryRole(roles) {
   if (!Array.isArray(roles) || roles.length === 0) return 'Learner';
   if (roles.includes('Admin')) return 'Admin';
-  if (roles.includes('Moderator')) return 'Moderator';
-  if (roles.includes('Creator')) return 'Creator';
   return 'Learner';
 }
 
@@ -186,7 +169,7 @@ export function renderNavbarAuth(container) {
   const rawPath = (typeof window !== 'undefined' && window.location && window.location.pathname) ? window.location.pathname : '';
   const currentPage = (rawPath.split('/').pop() || '').toLowerCase();
   const activeRoles = authManager.getRoles();
-  const hasStaffRole = activeRoles.includes('Admin') || activeRoles.includes('Creator') || activeRoles.includes('Moderator');
+  const hasStaffRole = activeRoles.includes('Admin');
   const isManagement = MANAGEMENT_PAGE_SET.has(currentPage) || (currentPage === 'profile.html' && hasStaffRole);
 
   if (!authManager.isAuthenticated()) {
@@ -263,17 +246,13 @@ export function renderNavbarAuth(container) {
          window.location.pathname.endsWith('srs-dashboard.html') ||
          window.location.pathname.endsWith('srs-report.html') ||
          window.location.pathname.endsWith('srs-review.html') ||
-         window.location.pathname.endsWith('creator-lessons.html') ||
-         window.location.pathname.endsWith('creator-lesson-editor.html') ||
-         window.location.pathname.endsWith('creator-import.html') ||
-         window.location.pathname.endsWith('moderator-queue.html') ||
-         window.location.pathname.endsWith('moderator-review.html') ||
-         window.location.pathname.endsWith('moderator-history.html') ||
          window.location.pathname.endsWith('admin-accounts.html') ||
          window.location.pathname.endsWith('admin-roles.html') ||
          window.location.pathname.endsWith('admin-radicals.html') ||
          window.location.pathname.endsWith('admin-vocabulary.html') ||
          window.location.pathname.endsWith('admin-lessons.html') ||
+         window.location.pathname.endsWith('admin-dashboard.html') ||
+         window.location.pathname.endsWith('admin-settings.html') ||
          window.location.pathname.endsWith('management.html') ||
          window.location.pathname.endsWith('admin-audit-logs.html'));
 
@@ -360,8 +339,8 @@ export function renderNavbarAuth(container) {
         })
       );
 
-      // Management Area gateway for Creator, Moderator, or Admin
-      const hasManagementRole = roles.includes('Creator') || roles.includes('Moderator') || roles.includes('Admin');
+      // Management Area gateway for Admin only
+      const hasManagementRole = roles.includes('Admin');
       if (hasManagementRole) {
         dropdownLinks.push(
           createSafeElement('a', {
@@ -583,10 +562,8 @@ export function syncActiveNavLinks() {
         }
       } catch (_) {}
     }
-  } else if (currentPage.startsWith('creator-')) {
-    effectiveNavTarget = 'creator-lessons.html';
-  } else if (currentPage.startsWith('moderator-')) {
-    effectiveNavTarget = 'moderator-queue.html';
+  } else if (currentPage.startsWith('admin-')) {
+    effectiveNavTarget = 'admin-lessons.html';
   }
 
   const navContainer = document.querySelector('.navbar-nav');

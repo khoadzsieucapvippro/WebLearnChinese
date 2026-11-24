@@ -89,13 +89,9 @@ public class DemoAccountSeeder implements ApplicationRunner {
         log.info("Starting demo accounts seeding (app.demo.seed-accounts=true)...");
 
         Role learnerRole = getOrCreateRole(1, "Learner");
-        Role creatorRole = getOrCreateRole(2, "Creator");
-        Role moderatorRole = getOrCreateRole(3, "Moderator");
         Role adminRole = getOrCreateRole(4, "Admin");
 
         Set<Role> learnerRoles = Set.of(learnerRole);
-        Set<Role> creatorRoles = Set.of(creatorRole);
-        Set<Role> moderatorRoles = Set.of(moderatorRole);
         Set<Role> adminRoles = Set.of(adminRole);
 
         String encodedPassword = passwordEncoder.encode(DEFAULT_DEMO_PASSWORD);
@@ -105,15 +101,7 @@ public class DemoAccountSeeder implements ApplicationRunner {
                 new DemoAccountSpec("learner@elearning.local", "Học Viên Mẫu", learnerRoles),
                 new DemoAccountSpec("learner@gmail.com", "Học Viên Mẫu", learnerRoles),
 
-                // 2. Creator
-                new DemoAccountSpec("creator@elearning.local", "Biên Soạn Mẫu", creatorRoles),
-                new DemoAccountSpec("creator@gmail.com", "Biên Soạn Mẫu", creatorRoles),
-
-                // 3. Moderator
-                new DemoAccountSpec("moderator@elearning.local", "Kiểm Duyệt Mẫu", moderatorRoles),
-                new DemoAccountSpec("moderator@gmail.com", "Kiểm Duyệt Mẫu", moderatorRoles),
-
-                // 4. Admin
+                // 2. Admin
                 new DemoAccountSpec("admin@elearning.local", "Quản Trị Viên Mẫu", adminRoles),
                 new DemoAccountSpec("admin@gmail.com", "Quản Trị Viên Mẫu", adminRoles)
         );

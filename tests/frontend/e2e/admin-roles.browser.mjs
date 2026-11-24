@@ -23,8 +23,6 @@ import { launchBrowser, createMonitoredPage } from '../utils/browser-runner.mjs'
 function createMockRoles() {
   return [
     { roleId: 1, roleName: 'Learner' },
-    { roleId: 2, roleName: 'Creator' },
-    { roleId: 3, roleName: 'Moderator' },
     { roleId: 4, roleName: 'Admin' }
   ];
 }
@@ -51,10 +49,10 @@ function createMockAccounts() {
     },
     {
       accountId: 3,
-      emailOrPhone: 'creator1@example.com',
-      fullName: 'Tác Giả Khóa Học',
+      emailOrPhone: 'learner2@example.com',
+      fullName: 'Học Viên Hai',
       status: 'Active',
-      roles: ['Creator'],
+      roles: ['Learner'],
       createdAt: '2026-09-10T14:15:00Z',
       updatedAt: '2026-09-10T14:15:00Z'
     }
@@ -262,12 +260,12 @@ describe('Browser E2E: Admin Role Management & Assignment UI (Task 9F.2)', () =>
       const targetId = await page.locator('#modalTargetAccountId').textContent();
       assert.strictEqual(targetId.trim(), '#2');
 
-      // Learner checkbox should be checked, others unchecked
+      // Learner checkbox should be checked, Admin unchecked
       const learnerCheckbox = page.locator('#roleCheckbox_Learner');
       assert.strictEqual(await learnerCheckbox.isChecked(), true);
 
-      const creatorCheckbox = page.locator('#roleCheckbox_Creator');
-      assert.strictEqual(await creatorCheckbox.isChecked(), false);
+      const adminCheckbox = page.locator('#roleCheckbox_Admin');
+      assert.strictEqual(await adminCheckbox.isChecked(), false);
 
       assert.deepStrictEqual(getRuntimeErrors(), []);
     } finally {
@@ -324,7 +322,7 @@ describe('Browser E2E: Admin Role Management & Assignment UI (Task 9F.2)', () =>
               emailOrPhone: 'learner1@example.com',
               fullName: 'Học Viên Một',
               status: 'Active',
-              roles: ['Learner', 'Creator'],
+              roles: ['Admin'],
               createdAt: '2026-09-05T09:30:00Z',
               updatedAt: '2026-09-16T12:00:00Z'
             }
@@ -339,8 +337,8 @@ describe('Browser E2E: Admin Role Management & Assignment UI (Task 9F.2)', () =>
       await page.locator('#btnEditRoles_2').click();
       await page.locator('#roleAssignmentModal').waitFor({ state: 'visible', timeout: 3000 });
 
-      // Check 'Creator' checkbox (now selected roles: Learner + Creator)
-      await page.locator('#roleCheckbox_Creator').check();
+      // Switch role from Learner -> Admin (single-role radio/checkbox mutual exclusivity)
+      await page.locator('#roleCheckbox_Admin').check();
 
       // Submit
       await page.locator('#btnSaveRoles').click();
@@ -351,12 +349,12 @@ describe('Browser E2E: Admin Role Management & Assignment UI (Task 9F.2)', () =>
       assert.ok(capturedPutPayload, 'PUT request must have been sent');
       assert.ok(Array.isArray(capturedPutPayload.roles), 'Payload must contain a roles array');
       assert.strictEqual(capturedPutPayload.roles.length, 1);
-      assert.ok(capturedPutPayload.roles.includes('Creator'));
+      assert.ok(capturedPutPayload.roles.includes('Admin'));
 
       // Check that the table cell for account 2 was updated with new role badge
       const rolesCell = page.locator('#accountRolesCell_2');
       const cellText = await rolesCell.textContent();
-      assert.ok(cellText.includes('Tác giả'));
+      assert.ok(cellText.includes('Quản trị'));
 
       assert.deepStrictEqual(getRuntimeErrors(), []);
     } finally {
@@ -416,9 +414,9 @@ describe('Browser E2E: Admin Role Management & Assignment UI (Task 9F.2)', () =>
       assert.strictEqual(await adminCheckbox.isChecked(), true);
       assert.strictEqual(await adminCheckbox.isDisabled(), true);
 
-      // Other checkboxes (e.g. Creator) must be ENABLED
-      const creatorCheckbox = page.locator('#roleCheckbox_Creator');
-      assert.strictEqual(await creatorCheckbox.isDisabled(), false);
+      // Under Single-Role Exclusivity + POL-8D-02, self-demotion radios (e.g. Learner) are also disabled
+      const learnerCheckbox = page.locator('#roleCheckbox_Learner');
+      assert.strictEqual(await learnerCheckbox.isDisabled(), true);
 
       assert.deepStrictEqual(getRuntimeErrors(), []);
     } finally {
@@ -561,9 +559,9 @@ describe('Browser E2E: Admin Role Management & Assignment UI (Task 9F.2)', () =>
   });
 
   // ---------------------------------------------------------------------------
-  // AR-09: Separation of Duties (SoD) UI Mutual Exclusivity & Layout Cleanup
+  // AR-09: Single-Role Mutual Exclusivity (Admin vs Learner) & Layout Cleanup
   // ---------------------------------------------------------------------------
-  test('AR-09: Creator and Moderator are mutually exclusive in UI and layout is clean', async () => {
+  test('AR-09: Admin and Learner are mutually exclusive in UI and layout is clean', async () => {
     const { page, context, getRuntimeErrors } = await createMonitoredPage(browser, {
       viewportWidth: 1280,
       viewportHeight: 720
@@ -622,24 +620,24 @@ describe('Browser E2E: Admin Role Management & Assignment UI (Task 9F.2)', () =>
       const modal = page.locator('#roleAssignmentModal');
       await modal.waitFor({ state: 'visible' });
 
-      const creatorBox = page.locator('#roleCheckbox_Creator');
-      const moderatorBox = page.locator('#roleCheckbox_Moderator');
+      const learnerBox = page.locator('#roleCheckbox_Learner');
+      const adminBox = page.locator('#roleCheckbox_Admin');
 
-      // Both should initially be unchecked and enabled
-      assert.strictEqual(await creatorBox.isChecked(), false);
-      assert.strictEqual(await creatorBox.isEnabled(), true);
-      assert.strictEqual(await moderatorBox.isChecked(), false);
-      assert.strictEqual(await moderatorBox.isEnabled(), true);
+      // Initially Learner is checked and Admin is unchecked, both enabled
+      assert.strictEqual(await learnerBox.isChecked(), true);
+      assert.strictEqual(await learnerBox.isEnabled(), true);
+      assert.strictEqual(await adminBox.isChecked(), false);
+      assert.strictEqual(await adminBox.isEnabled(), true);
 
-      // Check Creator -> Creator is checked, others are unchecked
-      await creatorBox.check();
-      assert.strictEqual(await creatorBox.isChecked(), true);
-      assert.strictEqual(await moderatorBox.isChecked(), false);
+      // Check Admin -> Admin is checked, Learner is automatically unchecked (single-role mutual exclusivity)
+      await adminBox.check();
+      assert.strictEqual(await adminBox.isChecked(), true);
+      assert.strictEqual(await learnerBox.isChecked(), false);
 
-      // Check Moderator -> Moderator is checked, Creator is automatically unchecked (radio mutual exclusivity)
-      await moderatorBox.check();
-      assert.strictEqual(await moderatorBox.isChecked(), true);
-      assert.strictEqual(await creatorBox.isChecked(), false);
+      // Check Learner -> Learner is checked, Admin is automatically unchecked
+      await learnerBox.check();
+      assert.strictEqual(await learnerBox.isChecked(), true);
+      assert.strictEqual(await adminBox.isChecked(), false);
 
       // Close modal
       await page.locator('#btnCloseRoleModal').click();

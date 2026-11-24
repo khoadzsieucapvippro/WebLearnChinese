@@ -128,22 +128,8 @@ describe('Management Workspace Layout & Navigation Isolation', () => {
       assert.strictEqual(getActiveManagementRoute(''), 'management.html');
     });
 
-    test('maps creator-lesson-editor.html detail page to creator-lessons.html', () => {
-      assert.strictEqual(getActiveManagementRoute('creator-lesson-editor.html'), 'creator-lessons.html');
-      assert.strictEqual(getActiveManagementRoute('/creator-lesson-editor.html?id=42'), 'creator-lessons.html');
-    });
-
-    test('maps moderator-review.html detail page to moderator-queue.html', () => {
-      assert.strictEqual(getActiveManagementRoute('moderator-review.html'), 'moderator-queue.html');
-      assert.strictEqual(getActiveManagementRoute('/moderator-review.html?id=10'), 'moderator-queue.html');
-    });
-
     test('preserves direct operational routes', () => {
       const directRoutes = [
-        'creator-lessons.html',
-        'creator-import.html',
-        'moderator-queue.html',
-        'moderator-history.html',
         'admin-accounts.html',
         'admin-roles.html',
         'admin-lessons.html',
@@ -189,16 +175,14 @@ describe('Management Workspace Layout & Navigation Isolation', () => {
       assert.strictEqual(sections[0].items.some(i => i.id === 'navMgmtAdminSettings'), false);
     });
 
-    test('Creator role receives Creator group', () => {
+    test('Deprecated Creator role receives empty navigation configuration', () => {
       const sections = getVisibleManagementNavConfig(['Creator']);
-      const sectionIds = sections.map(s => s.id);
-      assert.deepStrictEqual(sectionIds, ['creator']);
+      assert.deepStrictEqual(sections, []);
     });
 
-    test('Moderator role receives Moderation group', () => {
+    test('Deprecated Moderator role receives empty navigation configuration', () => {
       const sections = getVisibleManagementNavConfig(['Moderator']);
-      const sectionIds = sections.map(s => s.id);
-      assert.deepStrictEqual(sectionIds, ['moderation']);
+      assert.deepStrictEqual(sections, []);
     });
 
     test('Learner role receives empty navigation configuration', () => {
@@ -313,27 +297,16 @@ describe('Management Workspace Layout & Navigation Isolation', () => {
       assert.strictEqual(activeLinks.length, 0, 'No links should have aria-current on unlisted settings page');
     });
 
-    test('renders role-gated sidebar and assigns active state on creator-lessons.html', () => {
-      const container = new MockElement('div');
-      renderManagementSidebar(container, ['Creator'], 'creator-lessons.html');
+    test('Deprecated Creator and Moderator roles render access notice without management links', () => {
+      const containerCreator = new MockElement('div');
+      renderManagementSidebar(containerCreator, ['Creator'], 'management.html');
+      assert.ok(containerCreator.querySelector('#mgmtSidebarAccessNotice'));
+      assert.strictEqual(containerCreator.querySelectorAll('a').length, 0);
 
-      const creatorLink = container.querySelector('#navMgmtCreatorLessons');
-      assert.ok(creatorLink, 'Creator Lessons link must exist');
-      assert.strictEqual(creatorLink.getAttribute('aria-current'), 'page');
-      assert.ok(creatorLink.classList.contains('active'));
-
-      const adminLink = container.querySelector('#navMgmtAdminAccounts');
-      assert.strictEqual(adminLink, null, 'Admin links must not exist for Creator session');
-    });
-
-    test('detail page creator-lesson-editor.html activates parent creator-lessons.html nav item', () => {
-      const container = new MockElement('div');
-      renderManagementSidebar(container, ['Creator'], 'creator-lesson-editor.html?id=12');
-
-      const creatorLink = container.querySelector('#navMgmtCreatorLessons');
-      assert.ok(creatorLink, 'Creator Lessons link must exist');
-      assert.strictEqual(creatorLink.getAttribute('aria-current'), 'page');
-      assert.ok(creatorLink.classList.contains('active'));
+      const containerMod = new MockElement('div');
+      renderManagementSidebar(containerMod, ['Moderator'], 'management.html');
+      assert.ok(containerMod.querySelector('#mgmtSidebarAccessNotice'));
+      assert.strictEqual(containerMod.querySelectorAll('a').length, 0);
     });
 
     test('Learner role renders access notice without management links', () => {

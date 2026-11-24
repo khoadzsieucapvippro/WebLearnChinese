@@ -52,22 +52,16 @@ class DemoAccountSeederTest {
     private DemoAccountSeeder demoAccountSeeder;
 
     private Role learnerRole;
-    private Role creatorRole;
-    private Role moderatorRole;
     private Role adminRole;
 
     @BeforeEach
     void setUp() {
         learnerRole = new Role(1, "Learner");
-        creatorRole = new Role(2, "Creator");
-        moderatorRole = new Role(3, "Moderator");
         adminRole = new Role(4, "Admin");
     }
 
     private void mockStandardRoles() {
         when(roleRepository.findById(1)).thenReturn(Optional.of(learnerRole));
-        when(roleRepository.findById(2)).thenReturn(Optional.of(creatorRole));
-        when(roleRepository.findById(3)).thenReturn(Optional.of(moderatorRole));
         when(roleRepository.findById(4)).thenReturn(Optional.of(adminRole));
     }
 
@@ -76,7 +70,7 @@ class DemoAccountSeederTest {
     class FreshSeedingTests {
 
         @Test
-        @DisplayName("GIVEN no existing accounts WHEN seeder runs THEN seeds 8 accounts, profiles, and SRS settings")
+        @DisplayName("GIVEN no existing accounts WHEN seeder runs THEN seeds 4 accounts (Learner & Admin), profiles, and SRS settings")
         void testRun_freshSeeding() {
             mockStandardRoles();
             when(passwordEncoder.encode("Password@123")).thenReturn("$2a$10$encodedHash123");
@@ -91,16 +85,14 @@ class DemoAccountSeederTest {
 
             verify(passwordEncoder).encode("Password@123");
 
-            // Verify 8 accounts saved
+            // Verify 4 accounts saved (2 Learner, 2 Admin)
             ArgumentCaptor<Account> accountCaptor = ArgumentCaptor.forClass(Account.class);
-            verify(accountRepository, times(8)).save(accountCaptor.capture());
+            verify(accountRepository, times(4)).save(accountCaptor.capture());
             List<Account> savedAccounts = accountCaptor.getAllValues();
 
             List<String> emails = savedAccounts.stream().map(Account::getEmailOrPhone).toList();
             assertThat(emails).containsExactlyInAnyOrder(
                     "learner@elearning.local", "learner@gmail.com",
-                    "creator@elearning.local", "creator@gmail.com",
-                    "moderator@elearning.local", "moderator@gmail.com",
                     "admin@elearning.local", "admin@gmail.com"
             );
 
@@ -113,25 +105,21 @@ class DemoAccountSeederTest {
                 Set<String> roleNames = account.getRoles().stream().map(Role::getRoleName).collect(Collectors.toSet());
                 if (account.getEmailOrPhone().startsWith("learner")) {
                     assertThat(roleNames).containsExactly("Learner");
-                } else if (account.getEmailOrPhone().startsWith("creator")) {
-                    assertThat(roleNames).containsExactlyInAnyOrder("Creator", "Learner");
-                } else if (account.getEmailOrPhone().startsWith("moderator")) {
-                    assertThat(roleNames).containsExactlyInAnyOrder("Moderator", "Learner");
                 } else if (account.getEmailOrPhone().startsWith("admin")) {
-                    assertThat(roleNames).containsExactlyInAnyOrder("Admin", "Learner");
+                    assertThat(roleNames).containsExactly("Admin");
                 }
             }
 
             // Verify UserProfile saving
             ArgumentCaptor<UserProfile> profileCaptor = ArgumentCaptor.forClass(UserProfile.class);
-            verify(userProfileRepository, atLeast(8)).save(profileCaptor.capture());
+            verify(userProfileRepository, atLeast(4)).save(profileCaptor.capture());
             List<UserProfile> savedProfiles = profileCaptor.getAllValues();
             List<String> fullNames = savedProfiles.stream().map(UserProfile::getFullName).distinct().toList();
-            assertThat(fullNames).contains("Học Viên Mẫu", "Biên Soạn Mẫu", "Kiểm Duyệt Mẫu", "Quản Trị Viên Mẫu");
+            assertThat(fullNames).containsExactlyInAnyOrder("Học Viên Mẫu", "Quản Trị Viên Mẫu");
 
             // Verify UserSrsSetting saving (20 new cards, 100 max review)
             ArgumentCaptor<UserSrsSetting> srsCaptor = ArgumentCaptor.forClass(UserSrsSetting.class);
-            verify(userSrsSettingRepository, times(8)).save(srsCaptor.capture());
+            verify(userSrsSettingRepository, times(4)).save(srsCaptor.capture());
             for (UserSrsSetting srs : srsCaptor.getAllValues()) {
                 assertThat(srs.getNewCardsPerDay()).isEqualTo(20);
                 assertThat(srs.getMaxReviewPerDay()).isEqualTo(100);
@@ -171,9 +159,9 @@ class DemoAccountSeederTest {
             assertThat(existingLearner.getPasswordHash()).isEqualTo("$2a$10$oldHash");
             assertThat(existingLearner.getStatus()).isEqualTo("Inactive");
 
-            // Only the remaining 7 accounts were newly saved
-            verify(accountRepository, times(7)).save(any(Account.class));
-            verify(userSrsSettingRepository, times(7)).save(any(UserSrsSetting.class));
+            // Only the remaining 3 accounts were newly saved
+            verify(accountRepository, times(3)).save(any(Account.class));
+            verify(userSrsSettingRepository, times(3)).save(any(UserSrsSetting.class));
         }
     }
 
@@ -182,12 +170,10 @@ class DemoAccountSeederTest {
     class MissingRolesTests {
 
         @Test
-        @DisplayName("GIVEN roles do not exist in DB WHEN seeder runs THEN creates missing roles")
+        @DisplayName("GIVEN roles do not exist in DB WHEN seeder runs THEN creates missing Learner & Admin roles")
         void testRun_createsMissingRoles() {
             when(roleRepository.findById(anyInt())).thenReturn(Optional.empty());
             when(roleRepository.findByRoleName("Learner")).thenReturn(Optional.empty());
-            when(roleRepository.findByRoleName("Creator")).thenReturn(Optional.empty());
-            when(roleRepository.findByRoleName("Moderator")).thenReturn(Optional.empty());
             when(roleRepository.findByRoleName("Admin")).thenReturn(Optional.empty());
 
             when(roleRepository.save(any(Role.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -201,10 +187,10 @@ class DemoAccountSeederTest {
             demoAccountSeeder.run(null);
 
             ArgumentCaptor<Role> roleCaptor = ArgumentCaptor.forClass(Role.class);
-            verify(roleRepository, times(4)).save(roleCaptor.capture());
+            verify(roleRepository, times(2)).save(roleCaptor.capture());
             List<Role> savedRoles = roleCaptor.getAllValues();
             assertThat(savedRoles.stream().map(Role::getRoleName).toList())
-                    .containsExactly("Learner", "Creator", "Moderator", "Admin");
+                    .containsExactly("Learner", "Admin");
         }
     }
 }

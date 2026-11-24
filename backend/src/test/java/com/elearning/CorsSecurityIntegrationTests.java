@@ -33,8 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @Import({
-        RbacTestControllers.AdminTestController.class,
-        RbacTestControllers.CreatorTestController.class
+        RbacTestControllers.AdminTestController.class
 })
 @DisplayName("BE-CORS-001: CORS Security & Preflight Integration Tests")
 class CorsSecurityIntegrationTests {
@@ -57,10 +56,10 @@ class CorsSecurityIntegrationTests {
 
     @org.junit.jupiter.api.BeforeEach
     void setUp() {
-        accountRepository.findByEmailOrPhone("creator@elearning.com")
+        accountRepository.findByEmailOrPhone("admin@elearning.com")
                 .orElseGet(() -> {
                     com.elearning.entity.Account acc = new com.elearning.entity.Account();
-                    acc.setEmailOrPhone("creator@elearning.com");
+                    acc.setEmailOrPhone("admin@elearning.com");
                     acc.setPasswordHash("hash1234567890");
                     acc.setStatus("Active");
                     return accountRepository.save(acc);
@@ -170,7 +169,7 @@ class CorsSecurityIntegrationTests {
         @Test
         @DisplayName("GIVEN valid preflight request with GET and Authorization header WHEN OPTIONS protected endpoint THEN succeeds without authentication")
         void testPreflight_protectedEndpointWithAuthorizationHeader() throws Exception {
-            mockMvc.perform(options("/api/v1/creator/test")
+            mockMvc.perform(options("/api/v1/admin/test")
                             .header(HttpHeaders.ORIGIN, ALLOWED_ORIGIN_5500)
                             .header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "GET")
                             .header(HttpHeaders.ACCESS_CONTROL_REQUEST_HEADERS, "Authorization"))
@@ -206,18 +205,18 @@ class CorsSecurityIntegrationTests {
         @Test
         @DisplayName("GIVEN unauthenticated request from allowed origin to protected endpoint WHEN executed THEN returns 401 Unauthorized with CORS header")
         void testProtectedEndpoint_unauthenticatedReturns401WithCors() throws Exception {
-            mockMvc.perform(get("/api/v1/creator/test")
+            mockMvc.perform(get("/api/v1/admin/test")
                             .header(HttpHeaders.ORIGIN, ALLOWED_ORIGIN_5500))
                     .andExpect(status().isUnauthorized())
                     .andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, ALLOWED_ORIGIN_5500));
         }
 
         @Test
-        @DisplayName("GIVEN request with valid Creator JWT from allowed origin to Creator endpoint WHEN executed THEN returns 200 OK with CORS header")
+        @DisplayName("GIVEN request with valid Admin JWT from allowed origin to Admin endpoint WHEN executed THEN returns 200 OK with CORS header")
         void testProtectedEndpoint_validJwtReturns200WithCors() throws Exception {
-            String token = jwtUtil.generateToken("creator@elearning.com", List.of("Creator"));
+            String token = jwtUtil.generateToken("admin@elearning.com", List.of("Admin"));
 
-            mockMvc.perform(get("/api/v1/creator/test")
+            mockMvc.perform(get("/api/v1/admin/test")
                             .header(HttpHeaders.ORIGIN, ALLOWED_ORIGIN_5500)
                             .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
                     .andExpect(status().isOk())

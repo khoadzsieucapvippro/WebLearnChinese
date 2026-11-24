@@ -47,83 +47,47 @@ import {
 describe('Tier 4: Real-World Application Workloads Test Suite', () => {
 
   // ---------------------------------------------------------------------------
-  // TC-T4-01: Scenario 1 — Dual-Role Creator-Moderator Workflow
+  // TC-T4-01: Scenario 1 — Single-Admin Direct Lesson Governance Workflow
   // ---------------------------------------------------------------------------
-  test('TC-T4-01: Scenario 1 — Dual-Role Creator-Moderator end-to-end lifecycle', () => {
+  test('TC-T4-01: Scenario 1 — Single-Admin lesson publication & audit trail lifecycle', () => {
     const auditStore = new AuditLogMockStore();
-    const alex = TEST_PERSONAS.creatorModerator; // Creator + Moderator (id=404)
-    const morgan = TEST_PERSONAS.moderator;       // Independent Moderator (id=303)
+    const admin = TEST_PERSONAS.admin;
+    const legacyCreator = TEST_PERSONAS.creator;
 
-    // Step 1: Alex logs in and checks navbar for management access
-    const alexNav = evaluateNavManagementEntry(alex.roles);
-    assert.strictEqual(alexNav.showManagementLink, true);
-    assert.strictEqual(alexNav.targetHref, 'management.html');
+    // Step 1: Only Admin receives management navigation link
+    assert.strictEqual(evaluateNavManagementEntry(admin.roles).showManagementLink, true);
+    assert.strictEqual(evaluateNavManagementEntry(admin.roles).targetHref, 'management.html');
+    assert.strictEqual(evaluateNavManagementEntry(legacyCreator.roles).showManagementLink, false);
 
-    // Step 2: Alex creates a lesson in Creator Studio
+    // Step 2: Admin creates and directly publishes lesson (status='Approved')
     const lesson = {
       id: 201,
       title: 'HSK 3 Từ vựng Nhà hàng',
       level: 3,
-      createdBy: alex.accountId,
-      status: 'Pending'
+      createdBy: admin.accountId,
+      status: 'Approved'
     };
 
-    // Step 3: Alex navigates to Moderation Queue and attempts to self-approve
-    const selfReviewAttempt = evaluateSelfReviewInvariant({
-      lessonCreatorId: lesson.createdBy,
-      reviewerAccountId: alex.accountId,
-      action: 'Approve'
-    });
-
-    assert.strictEqual(selfReviewAttempt.allowed, false);
-    assert.strictEqual(selfReviewAttempt.status, 403);
-    assert.strictEqual(selfReviewAttempt.message, 'Bạn không thể tự kiểm duyệt nội dung do chính mình tạo ra');
-
-    // System records audit log entry for the rejected self-review attempt
     auditStore.recordEvent({
-      actorId: alex.accountId,
-      actorUsername: alex.emailOrPhone,
-      actionType: 'LESSON_MODERATE',
-      resourceType: 'LESSON',
-      resourceId: lesson.id,
-      status: 'FAILURE',
-      detailsSummary: selfReviewAttempt.message
-    });
-
-    // Step 4: Morgan (independent moderator) logs in, reviews, and approves lesson
-    const morganReview = evaluateSelfReviewInvariant({
-      lessonCreatorId: lesson.createdBy,
-      reviewerAccountId: morgan.accountId,
-      action: 'Approve'
-    });
-
-    assert.strictEqual(morganReview.allowed, true);
-    assert.strictEqual(morganReview.status, 200);
-
-    lesson.status = 'Approved';
-    auditStore.recordEvent({
-      actorId: morgan.accountId,
-      actorUsername: morgan.emailOrPhone,
-      actionType: 'LESSON_MODERATE',
+      actorId: admin.accountId,
+      actorUsername: admin.emailOrPhone,
+      actionType: 'LESSON_ADMIN_PUBLISH',
       resourceType: 'LESSON',
       resourceId: lesson.id,
       status: 'SUCCESS',
-      beforeState: { status: 'Pending' },
+      beforeState: { status: 'Draft' },
       afterState: { status: 'Approved' },
-      detailsSummary: 'Phê duyệt bài học thành công'
+      detailsSummary: 'Admin tạo và xuất bản bài học trực tiếp'
     });
 
-    // Step 5: Verify audit trail contains complete provenance
+    // Step 3: Verify audit trail contains complete provenance
     const logs = auditStore.queryLogs({ userRoles: ['Admin'], resourceType: 'LESSON' });
     assert.strictEqual(logs.status, 200);
-    assert.strictEqual(logs.data.totalElements, 2);
+    assert.strictEqual(logs.data.totalElements, 1);
 
-    const failureRecord = logs.data.content.find(l => l.status === 'FAILURE');
-    assert.strictEqual(failureRecord.actorId, alex.accountId);
-
-    const successRecord = logs.data.content.find(l => l.status === 'SUCCESS');
-    assert.strictEqual(successRecord.actorId, morgan.accountId);
-    assert.strictEqual(successRecord.afterState.status, 'Approved');
+    const record = logs.data.content[0];
+    assert.strictEqual(record.actorId, admin.accountId);
+    assert.strictEqual(record.afterState.status, 'Approved');
   });
 
   // ---------------------------------------------------------------------------
@@ -185,15 +149,17 @@ describe('Tier 4: Real-World Application Workloads Test Suite', () => {
   });
 
   // ---------------------------------------------------------------------------
-  // TC-T4-03: Scenario 3 — Learner vs Management Navigation & Profile Decoupling
+  // TC-T4-03: Scenario 3 — Learner vs Admin Navigation & Profile Decoupling
   // ---------------------------------------------------------------------------
-  test('TC-T4-03: Scenario 3 — End-to-end Learner vs Management navigation isolation', () => {
+  test('TC-T4-03: Scenario 3 — End-to-end Learner vs Admin navigation isolation', () => {
     const lan = TEST_PERSONAS.learner;
-    const bao = TEST_PERSONAS.creator;
+    const admin = TEST_PERSONAS.admin;
+    const legacyCreator = TEST_PERSONAS.creator;
 
-    // 1. Learner Lan logs in
+    // 1. Learner & deprecated Creator receive zero management navigation entry
     const lanNav = evaluateNavManagementEntry(lan.roles);
     assert.strictEqual(lanNav.showManagementLink, false, 'Learner navbar must not display management link');
+    assert.strictEqual(evaluateNavManagementEntry(legacyCreator.roles).showManagementLink, false);
 
     // 2. Lan opens profile.html: Decoupled profile contains zero workspace sections
     const sampleProfileHtml = `
@@ -209,24 +175,24 @@ describe('Tier 4: Real-World Application Workloads Test Suite', () => {
     assert.strictEqual(decouplingCheck.decoupled, true);
     assert.strictEqual(decouplingCheck.violations.length, 0);
 
-    // 3. Creator Bao logs in
-    const baoNav = evaluateNavManagementEntry(bao.roles);
-    assert.strictEqual(baoNav.showManagementLink, true, 'Creator navbar must display management link');
-    assert.strictEqual(baoNav.targetHref, 'management.html');
+    // 3. Admin logs in
+    const adminNav = evaluateNavManagementEntry(admin.roles);
+    assert.strictEqual(adminNav.showManagementLink, true, 'Admin navbar must display management link');
+    assert.strictEqual(adminNav.targetHref, 'management.html');
 
-    // 4. Bao visits management.html
+    // 4. Admin visits management.html
     const sampleManagementHubHtml = `
       <header>
         <a id="btnBackToLearning" href="vocabulary.html">Quay lại học</a>
       </header>
       <main>
-        <div id="creatorStudioCard"><a href="creator-lessons.html">Quản lý bài học</a></div>
+        <div id="adminLessonsCard"><a href="admin-lessons.html">Quản lý bài học</a></div>
       </main>
     `;
 
-    const hubEval = evaluateManagementHubStructure(sampleManagementHubHtml, bao.roles);
+    const hubEval = evaluateManagementHubStructure(sampleManagementHubHtml, admin.roles);
     assert.strictEqual(hubEval.hasBackToLearning, true);
-    assert.deepStrictEqual(hubEval.visibleSections, ['CREATOR']);
+    assert.deepStrictEqual(hubEval.visibleSections, ['ADMIN']);
   });
 
   // ---------------------------------------------------------------------------

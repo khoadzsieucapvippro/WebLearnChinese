@@ -58,9 +58,9 @@ export const TEST_PERSONAS = {
 };
 
 /**
- * Evaluates navigation role visibility according to F15 contract.
- * - Learner: "Khu vực quản lý" MUST BE HIDDEN.
- * - Creator, Moderator, Admin: "Khu vực quản lý" MUST BE VISIBLE and point to 'management.html'.
+ * Evaluates navigation role visibility according to Single-Admin + Learner F15 contract.
+ * - Learner (and deprecated Creator/Moderator): "Khu vực quản lý" MUST BE HIDDEN.
+ * - Admin: "Khu vực quản lý" MUST BE VISIBLE and point to 'management.html'.
  * 
  * @param {string[]} roles
  * @returns {{ showManagementLink: boolean, targetHref: string }}
@@ -68,9 +68,7 @@ export const TEST_PERSONAS = {
 export function evaluateNavManagementEntry(roles = []) {
   const safeRoles = Array.isArray(roles) ? roles : [];
   const normRoles = safeRoles.map(r => String(r || '').toUpperCase().replace(/^ROLE_/, ''));
-  const hasManagementRole = normRoles.includes('CREATOR') ||
-                            normRoles.includes('MODERATOR') ||
-                            normRoles.includes('ADMIN');
+  const hasManagementRole = normRoles.includes('ADMIN');
 
   return {
     showManagementLink: hasManagementRole,
@@ -96,12 +94,6 @@ export function evaluateManagementHubStructure(htmlContent, userRoles = []) {
   }
 
   const visibleSections = [];
-  if (normRoles.includes('CREATOR') || normRoles.includes('ADMIN')) {
-    visibleSections.push('CREATOR');
-  }
-  if (normRoles.includes('MODERATOR') || normRoles.includes('ADMIN')) {
-    visibleSections.push('MODERATOR');
-  }
   if (normRoles.includes('ADMIN')) {
     visibleSections.push('ADMIN');
   }

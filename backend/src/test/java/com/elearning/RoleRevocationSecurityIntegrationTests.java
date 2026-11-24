@@ -130,9 +130,9 @@ class RoleRevocationSecurityIntegrationTests {
                             .header(HttpHeaders.AUTHORIZATION, "Bearer " + oldToken))
                     .andExpect(status().isOk());
 
-            // 2. Act: Admin adds Creator role and increments authorization version
-            Role creatorRole = roleRepository.findByRoleName("Creator").orElseThrow();
-            account.addRole(creatorRole);
+            // 2. Act: Admin adds Admin role and increments authorization version
+            Role adminRole = roleRepository.findByRoleName("Admin").orElseThrow();
+            account.addRole(adminRole);
             account.incrementAuthorizationVersion();
             accountRepository.saveAndFlush(account);
 
@@ -147,30 +147,30 @@ class RoleRevocationSecurityIntegrationTests {
         }
 
         @Test
-        @DisplayName("GIVEN Creator account WHEN role removed and version incremented THEN old token is rejected with 401 (Test 3)")
+        @DisplayName("GIVEN Admin account WHEN role removed and version incremented THEN old token is rejected with 401 (Test 3)")
         void test3_roleRemovalInvalidatesOldToken() throws Exception {
-            // 1. Arrange: Create account with Creator role and issue token at version 1
+            // 1. Arrange: Create account with Admin role and issue token at version 1
             String email = "role_remove_user@example.com";
-            Account account = createAccountWithProfile(email, "Creator", "Active");
+            Account account = createAccountWithProfile(email, "Admin", "Active");
 
-            String oldCreatorToken = jwtUtil.generateToken(email, List.of("Creator"), account.getAuthorizationVersion());
+            String oldAdminToken = jwtUtil.generateToken(email, List.of("Admin"), account.getAuthorizationVersion());
 
-            // Baseline: old Creator token accesses creator endpoints
-            mockMvc.perform(get("/api/v1/creator/lessons")
-                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + oldCreatorToken))
+            // Baseline: old Admin token accesses admin lessons endpoint
+            mockMvc.perform(get("/api/v1/admin/lessons")
+                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + oldAdminToken))
                     .andExpect(status().isOk());
 
-            // 2. Act: Admin removes Creator role and increments authorization version
-            Role creatorRole = roleRepository.findByRoleName("Creator").orElseThrow();
-            account.removeRole(creatorRole);
+            // 2. Act: Admin removes Admin role and increments authorization version
+            Role adminRole = roleRepository.findByRoleName("Admin").orElseThrow();
+            account.removeRole(adminRole);
             account.incrementAuthorizationVersion();
             accountRepository.saveAndFlush(account);
 
             assertThat(account.getAuthorizationVersion()).isEqualTo(2L);
 
-            // 3. Assert: Old creator token is rejected at auth boundary with 401 Unauthorized
-            mockMvc.perform(get("/api/v1/creator/lessons")
-                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + oldCreatorToken))
+            // 3. Assert: Old admin token is rejected at auth boundary with 401 Unauthorized
+            mockMvc.perform(get("/api/v1/admin/lessons")
+                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + oldAdminToken))
                     .andExpect(status().isUnauthorized())
                     .andExpect(jsonPath("$.code").value("UNAUTHORIZED"));
         }
@@ -178,18 +178,18 @@ class RoleRevocationSecurityIntegrationTests {
         @Test
         @DisplayName("GIVEN account WHEN roles replaced and version incremented THEN old token is rejected with 401 (Test 4)")
         void test4_roleReplacementInvalidatesOldToken() throws Exception {
-            // 1. Arrange: Account with Moderator role
+            // 1. Arrange: Account with Admin role
             String email = "role_replace_user@example.com";
-            Account account = createAccountWithProfile(email, "Moderator", "Active");
+            Account account = createAccountWithProfile(email, "Admin", "Active");
 
-            String oldModToken = jwtUtil.generateToken(email, List.of("Moderator"), account.getAuthorizationVersion());
+            String oldAdminToken = jwtUtil.generateToken(email, List.of("Admin"), account.getAuthorizationVersion());
 
-            // Baseline: Old token accesses moderator pending queue
-            mockMvc.perform(get("/api/v1/moderator/lessons/pending")
-                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + oldModToken))
+            // Baseline: Old token accesses admin lessons
+            mockMvc.perform(get("/api/v1/admin/lessons")
+                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + oldAdminToken))
                     .andExpect(status().isOk());
 
-            // 2. Act: Admin replaces roles with Learner only
+            // 2. Act: Demote roles to Learner only
             Role learnerRole = roleRepository.findByRoleName("Learner").orElseThrow();
             account.setRoles(new HashSet<>(Set.of(learnerRole)));
             account.incrementAuthorizationVersion();
@@ -198,8 +198,8 @@ class RoleRevocationSecurityIntegrationTests {
             assertThat(account.getAuthorizationVersion()).isEqualTo(2L);
 
             // 3. Assert: Old token is immediately rejected with 401
-            mockMvc.perform(get("/api/v1/moderator/lessons/pending")
-                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + oldModToken))
+            mockMvc.perform(get("/api/v1/admin/lessons")
+                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + oldAdminToken))
                     .andExpect(status().isUnauthorized())
                     .andExpect(jsonPath("$.code").value("UNAUTHORIZED"));
         }
@@ -212,21 +212,21 @@ class RoleRevocationSecurityIntegrationTests {
 
             String oldToken = jwtUtil.generateToken(email, List.of("Learner"), account.getAuthorizationVersion());
 
-            // Promote to Creator
-            Role creatorRole = roleRepository.findByRoleName("Creator").orElseThrow();
-            account.addRole(creatorRole);
+            // Promote to Admin
+            Role adminRole = roleRepository.findByRoleName("Admin").orElseThrow();
+            account.setRoles(new HashSet<>(Set.of(adminRole)));
             account.incrementAuthorizationVersion();
             Account updatedAccount = accountRepository.saveAndFlush(account);
 
             // Old token rejected
-            mockMvc.perform(get("/api/v1/creator/lessons")
+            mockMvc.perform(get("/api/v1/admin/lessons")
                             .header(HttpHeaders.AUTHORIZATION, "Bearer " + oldToken))
                     .andExpect(status().isUnauthorized());
 
-            // Fresh token with new version 2L and Creator role succeeds
-            String freshToken = jwtUtil.generateToken(email, List.of("Learner", "Creator"), updatedAccount.getAuthorizationVersion());
+            // Fresh token with new version 2L and Admin role succeeds
+            String freshToken = jwtUtil.generateToken(email, List.of("Admin"), updatedAccount.getAuthorizationVersion());
 
-            mockMvc.perform(get("/api/v1/creator/lessons")
+            mockMvc.perform(get("/api/v1/admin/lessons")
                             .header(HttpHeaders.AUTHORIZATION, "Bearer " + freshToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("SUCCESS"));
@@ -335,8 +335,8 @@ class RoleRevocationSecurityIntegrationTests {
             try {
                 txTemplate.execute(status -> {
                     Account acc = accountRepository.findByEmailOrPhone(email).orElseThrow();
-                    Role creatorRole = roleRepository.findByRoleName("Creator").orElseThrow();
-                    acc.addRole(creatorRole);
+                    Role adminRole = roleRepository.findByRoleName("Admin").orElseThrow();
+                    acc.addRole(adminRole);
                     acc.incrementAuthorizationVersion();
                     accountRepository.saveAndFlush(acc);
 

@@ -339,7 +339,7 @@ describe('Browser E2E: Authentication UI, Profile & Session Integration', () => 
           accountId: 301,
           emailOrPhone: 'trangquynh@example.com',
           fullName: 'Trạng Quỳnh',
-          roles: ['Creator']
+          roles: ['Learner']
         }));
       });
 
@@ -393,7 +393,7 @@ describe('Browser E2E: Authentication UI, Profile & Session Integration', () => 
       assert.strictEqual(nameHeading.trim(), 'Trạng Quỳnh');
 
       const roleBadge = await page.textContent('#profileRoleBadge');
-      assert.strictEqual(roleBadge.trim(), 'Tác giả'); // Sourced from authManager, mapped from Creator
+      assert.strictEqual(roleBadge.trim(), 'Học viên'); // Sourced from authManager, mapped from Learner
 
       // Edit profile: change name
       await page.fill('#profileFullNameInput', 'Trạng Quỳnh Đại Trí');

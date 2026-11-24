@@ -109,16 +109,16 @@ export const FALLBACK_AUDIT_LOGS = [
   {
     logId: 103,
     createdAt: new Date(Date.now() - 1000 * 60 * 120).toISOString(),
-    actorUsername: 'moderator_morgan',
-    actionType: 'LESSON_MODERATE',
+    actorUsername: 'admin_sys',
+    actionType: 'LESSON_UPDATE',
     resourceType: 'LESSON',
     status: 'SUCCESS'
   },
   {
     logId: 102,
     createdAt: new Date(Date.now() - 1000 * 60 * 240).toISOString(),
-    actorUsername: 'creator_bao',
-    actionType: 'LESSON_SUBMIT',
+    actorUsername: 'admin_sys',
+    actionType: 'LESSON_CREATE',
     resourceType: 'LESSON',
     status: 'SUCCESS'
   },
@@ -288,8 +288,6 @@ export function initManagementPage() {
   const primaryRole = getPrimaryRole(roles);
   const normRoles = (Array.isArray(roles) ? roles : []).map(r => String(r || '').trim().toUpperCase().replace(/^ROLE_/, ''));
   const isAdmin = normRoles.includes('ADMIN');
-  const isCreator = normRoles.includes('CREATOR');
-  const isModerator = normRoles.includes('MODERATOR');
 
   if (!isAuthenticated) {
     if (authGuardContainer) {
@@ -312,33 +310,6 @@ export function initManagementPage() {
   }
 
   if (!isAdmin) {
-    // If authenticated as specialized staff (Creator/Moderator), route directly to their operational studio
-    if (isCreator && typeof window !== 'undefined' && window.location) {
-      try {
-        if (typeof window.location.replace === 'function') {
-          window.location.replace('creator-lessons.html');
-        } else {
-          window.location.href = 'creator-lessons.html';
-        }
-      } catch (_) {
-        window.location.href = 'creator-lessons.html';
-      }
-      return;
-    }
-
-    if (isModerator && typeof window !== 'undefined' && window.location) {
-      try {
-        if (typeof window.location.replace === 'function') {
-          window.location.replace('moderator-queue.html');
-        } else {
-          window.location.href = 'moderator-queue.html';
-        }
-      } catch (_) {
-        window.location.href = 'moderator-queue.html';
-      }
-      return;
-    }
-
     // Authenticated as Learner or unauthorized role
     if (authGuardContainer) {
       authGuardContainer.classList.remove('d-none');

@@ -72,18 +72,21 @@ class ExcelImportIntegrationTests {
     private String learnerToken;
     private String moderatorToken;
 
-    private Account creatorAccount;
+    private Account adminAccount;
     private Vocabulary existingVocab;
 
     @BeforeEach
     void setUp() {
-        creatorAccount = new Account();
-        creatorAccount.setEmailOrPhone("import_creator@example.com");
-        creatorAccount.setPasswordHash("$2a$12$dummyhashcreator1234567890123");
-        creatorAccount.setStatus("Active");
-        creatorAccount = accountRepository.save(creatorAccount);
+        adminAccount = accountRepository.findByEmailOrPhone("import_admin@example.com")
+                .orElseGet(() -> {
+                    Account acc = new Account();
+                    acc.setEmailOrPhone("import_admin@example.com");
+                    acc.setPasswordHash("$2a$12$dummyhashadmin12345678901234");
+                    acc.setStatus("Active");
+                    return accountRepository.save(acc);
+                });
 
-        for (String email : List.of("import_admin@example.com", "import_learner@example.com", "import_moderator@example.com")) {
+        for (String email : List.of("import_creator@example.com", "import_learner@example.com", "import_moderator@example.com")) {
             accountRepository.findByEmailOrPhone(email)
                     .orElseGet(() -> {
                         Account acc = new Account();
@@ -139,25 +142,26 @@ class ExcelImportIntegrationTests {
         void testImportPreview_unauthenticated_returns401() throws Exception {
             MockMultipartFile file = new MockMultipartFile("file", "test.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", new byte[]{1, 2, 3});
 
-            mockMvc.perform(multipart("/api/v1/creator/lessons/import").file(file))
+            mockMvc.perform(multipart("/api/v1/admin/lessons/import").file(file))
                     .andExpect(status().isUnauthorized());
         }
 
         @Test
-        @DisplayName("GIVEN Learner or Moderator token WHEN POST /import THEN returns 403 FORBIDDEN")
+        @DisplayName("GIVEN Learner, Creator, or Moderator token WHEN POST /import THEN returns 403 FORBIDDEN")
         void testImportPreview_insufficientRole_returns403() throws Exception {
             MockMultipartFile file = new MockMultipartFile("file", "test.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", new byte[]{1, 2, 3});
 
-            // Learner
-            mockMvc.perform(multipart("/api/v1/creator/lessons/import")
-                            .file(file)
-                            .header("Authorization", "Bearer " + learnerToken))
-                    .andExpect(status().isForbidden());
+            for (String token : List.of(learnerToken, creatorToken, moderatorToken)) {
+                mockMvc.perform(multipart("/api/v1/admin/lessons/import")
+                                .file(file)
+                                .header("Authorization", "Bearer " + token))
+                        .andExpect(status().isForbidden());
+            }
 
-            // Moderator
+            // Legacy creator import endpoint is also permanently denied
             mockMvc.perform(multipart("/api/v1/creator/lessons/import")
                             .file(file)
-                            .header("Authorization", "Bearer " + moderatorToken))
+                            .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isForbidden());
         }
 
@@ -166,30 +170,24 @@ class ExcelImportIntegrationTests {
         void testImportConfirm_unauthenticated_returns401() throws Exception {
             MockMultipartFile file = new MockMultipartFile("file", "test.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", new byte[]{1, 2, 3});
 
-            mockMvc.perform(multipart("/api/v1/creator/lessons/import/confirm")
+            mockMvc.perform(multipart("/api/v1/admin/lessons/import/confirm")
                             .file(file)
                             .param("title", "Bài học mới"))
                     .andExpect(status().isUnauthorized());
         }
 
         @Test
-        @DisplayName("GIVEN Learner or Moderator token WHEN POST /import/confirm THEN returns 403 FORBIDDEN")
+        @DisplayName("GIVEN Learner, Creator, or Moderator token WHEN POST /import/confirm THEN returns 403 FORBIDDEN")
         void testImportConfirm_insufficientRole_returns403() throws Exception {
             MockMultipartFile file = new MockMultipartFile("file", "test.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", new byte[]{1, 2, 3});
 
-            // Learner
-            mockMvc.perform(multipart("/api/v1/creator/lessons/import/confirm")
-                            .file(file)
-                            .param("title", "Bài học mới")
-                            .header("Authorization", "Bearer " + learnerToken))
-                    .andExpect(status().isForbidden());
-
-            // Moderator
-            mockMvc.perform(multipart("/api/v1/creator/lessons/import/confirm")
-                            .file(file)
-                            .param("title", "Bài học mới")
-                            .header("Authorization", "Bearer " + moderatorToken))
-                    .andExpect(status().isForbidden());
+            for (String token : List.of(learnerToken, creatorToken, moderatorToken)) {
+                mockMvc.perform(multipart("/api/v1/admin/lessons/import/confirm")
+                                .file(file)
+                                .param("title", "Bài học mới")
+                                .header("Authorization", "Bearer " + token))
+                        .andExpect(status().isForbidden());
+            }
         }
     }
 
@@ -198,7 +196,7 @@ class ExcelImportIntegrationTests {
     class PreviewWorkflowTests {
 
         @Test
-        @DisplayName("GIVEN valid Excel file WHEN Creator calls POST /import THEN returns 200 with report and zero DB mutations")
+        @DisplayName("GIVEN valid Excel file WHEN Admin calls POST /import THEN returns 200 with report and zero DB mutations")
         void testPreview_zeroDbMutations() throws Exception {
             long lessonCountBefore = lessonRepository.count();
             long vocabCountBefore = vocabularyRepository.count();
@@ -212,9 +210,9 @@ class ExcelImportIntegrationTests {
             byte[] bytes = createWorkbook(headers, data);
             MockMultipartFile file = new MockMultipartFile("file", "preview_test.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", bytes);
 
-            mockMvc.perform(multipart("/api/v1/creator/lessons/import")
+            mockMvc.perform(multipart("/api/v1/admin/lessons/import")
                             .file(file)
-                            .header("Authorization", "Bearer " + creatorToken))
+                            .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("SUCCESS"))
                     .andExpect(jsonPath("$.data.isValid").value(true))
@@ -237,7 +235,7 @@ class ExcelImportIntegrationTests {
             byte[] bytes = createWorkbook(headers, data);
             MockMultipartFile file = new MockMultipartFile("file", "admin_preview.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", bytes);
 
-            mockMvc.perform(multipart("/api/v1/creator/lessons/import")
+            mockMvc.perform(multipart("/api/v1/admin/lessons/import")
                             .file(file)
                             .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isOk())
@@ -251,7 +249,7 @@ class ExcelImportIntegrationTests {
     class ConfirmWorkflowTests {
 
         @Test
-        @DisplayName("GIVEN valid Excel file and title WHEN Creator calls POST /import/confirm THEN creates Lesson, Vocabs, and links in MySQL")
+        @DisplayName("GIVEN valid Excel file and title WHEN Admin calls POST /import/confirm THEN creates Approved Lesson, Vocabs, and links in MySQL")
         void testConfirm_success_persistsAtomically() throws Exception {
             long lessonCountBefore = lessonRepository.count();
             long vocabCountBefore = vocabularyRepository.count();
@@ -264,16 +262,16 @@ class ExcelImportIntegrationTests {
             byte[] bytes = createWorkbook(headers, data);
             MockMultipartFile file = new MockMultipartFile("file", "confirm_test.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", bytes);
 
-            mockMvc.perform(multipart("/api/v1/creator/lessons/import/confirm")
+            mockMvc.perform(multipart("/api/v1/admin/lessons/import/confirm")
                             .file(file)
                             .param("title", "Bài 1: Quốc gia")
-                            .header("Authorization", "Bearer " + creatorToken))
+                            .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isCreated())
                     .andExpect(jsonPath("$.code").value("SUCCESS"))
-                    .andExpect(jsonPath("$.message").value("Import bài học từ Excel thành công"))
+                    .andExpect(jsonPath("$.message").value("Nhập bài học từ Excel và xuất bản thành công"))
                     .andExpect(jsonPath("$.data.lessonId").isNumber())
                     .andExpect(jsonPath("$.data.title").value("Bài 1: Quốc gia"))
-                    .andExpect(jsonPath("$.data.status").value("Draft"))
+                    .andExpect(jsonPath("$.data.status").value("Approved"))
                     .andExpect(jsonPath("$.data.vocabularies").isArray())
                     .andExpect(jsonPath("$.data.vocabularies[0].hanzi").value("中"))
                     .andExpect(jsonPath("$.data.vocabularies[0].orderIndex").value(1))
@@ -284,17 +282,17 @@ class ExcelImportIntegrationTests {
             assertThat(lessonRepository.count()).isEqualTo(lessonCountBefore + 1);
             assertThat(vocabularyRepository.count()).isEqualTo(vocabCountBefore + 1); // Only 1 new vocab created ("琲")
 
-            // Verify creator ownership
+            // Verify admin ownership and auto-publish
             Lesson created = lessonRepository.findAll().stream()
                     .filter(l -> "Bài 1: Quốc gia".equals(l.getTitle()))
                     .findFirst()
                     .orElseThrow();
-            assertThat(created.getCreatedBy().getAccountId()).isEqualTo(creatorAccount.getAccountId());
-            assertThat(created.getStatus()).isEqualTo("Draft");
+            assertThat(created.getCreatedBy().getAccountId()).isEqualTo(adminAccount.getAccountId());
+            assertThat(created.getStatus()).isEqualTo("Approved");
         }
 
         @Test
-        @DisplayName("GIVEN invalid Excel data WHEN Creator calls POST /import/confirm THEN returns 422 and rolls back completely")
+        @DisplayName("GIVEN invalid Excel data WHEN Admin calls POST /import/confirm THEN returns 422 and rolls back completely")
         void testConfirm_invalidData_rollsBack() throws Exception {
             long lessonCountBefore = lessonRepository.count();
             long vocabCountBefore = vocabularyRepository.count();
@@ -307,10 +305,10 @@ class ExcelImportIntegrationTests {
             byte[] bytes = createWorkbook(headers, data);
             MockMultipartFile file = new MockMultipartFile("file", "invalid_import.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", bytes);
 
-            mockMvc.perform(multipart("/api/v1/creator/lessons/import/confirm")
+            mockMvc.perform(multipart("/api/v1/admin/lessons/import/confirm")
                             .file(file)
                             .param("title", "Bài học lỗi")
-                            .header("Authorization", "Bearer " + creatorToken))
+                            .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isUnprocessableEntity())
                     .andExpect(jsonPath("$.code").value("UNPROCESSABLE_ENTITY"));
 
@@ -321,7 +319,7 @@ class ExcelImportIntegrationTests {
         }
 
         @Test
-        @DisplayName("GIVEN oversized Excel (5001 rows) WHEN Creator calls POST /import preview THEN returns 200 with ROW_LIMIT_EXCEEDED and zero mutations")
+        @DisplayName("GIVEN oversized Excel (5001 rows) WHEN Admin calls POST /import preview THEN returns 200 with ROW_LIMIT_EXCEEDED and zero mutations")
         void testPreview_oversizedWorkbook_returnsRowLimitExceeded() throws Exception {
             long lessonCountBefore = lessonRepository.count();
             long vocabCountBefore = vocabularyRepository.count();
@@ -350,9 +348,9 @@ class ExcelImportIntegrationTests {
 
             MockMultipartFile file = new MockMultipartFile("file", "oversized_5001.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", bytes);
 
-            mockMvc.perform(multipart("/api/v1/creator/lessons/import")
+            mockMvc.perform(multipart("/api/v1/admin/lessons/import")
                             .file(file)
-                            .header("Authorization", "Bearer " + creatorToken))
+                            .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("SUCCESS"))
                     .andExpect(jsonPath("$.data.isValid").value(false))
@@ -365,7 +363,7 @@ class ExcelImportIntegrationTests {
         }
 
         @Test
-        @DisplayName("GIVEN oversized Excel (5001 rows) WHEN Creator calls POST /import/confirm THEN returns 422 and persists nothing")
+        @DisplayName("GIVEN oversized Excel (5001 rows) WHEN Admin calls POST /import/confirm THEN returns 422 and persists nothing")
         void testConfirm_oversizedWorkbook_returns422AndZeroPersistence() throws Exception {
             long lessonCountBefore = lessonRepository.count();
             long vocabCountBefore = vocabularyRepository.count();
@@ -394,10 +392,10 @@ class ExcelImportIntegrationTests {
 
             MockMultipartFile file = new MockMultipartFile("file", "oversized_5001.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", bytes);
 
-            mockMvc.perform(multipart("/api/v1/creator/lessons/import/confirm")
+            mockMvc.perform(multipart("/api/v1/admin/lessons/import/confirm")
                             .file(file)
                             .param("title", "Bài học quá tải")
-                            .header("Authorization", "Bearer " + creatorToken))
+                            .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isUnprocessableEntity())
                     .andExpect(jsonPath("$.code").value("UNPROCESSABLE_ENTITY"))
                     .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("5000")));

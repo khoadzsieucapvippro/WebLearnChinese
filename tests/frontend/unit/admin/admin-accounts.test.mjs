@@ -438,7 +438,7 @@ describe('Unit: Admin Accounts Lifecycle UI Logic (Task 9F.1)', () => {
       assert.strictEqual(res.code, 'SUCCESS');
     });
 
-    it('enforces SoD invariant rejecting simultaneously assigning Creator and Moderator in demo fallback', async () => {
+    it('rejects assigning deprecated Creator or Moderator roles in demo fallback (Single-Admin model)', async () => {
       const { demoFallbackEngine } = await import('../../../../frontend/js/api/demo-fallback-engine.js');
       const { authManager } = await import('../../../../frontend/js/auth/auth-state.js');
 
@@ -449,12 +449,26 @@ describe('Unit: Admin Accounts Lifecycle UI Logic (Task 9F.1)', () => {
         async () => {
           await demoFallbackEngine.handleRequest('/admin/accounts/1/roles', {
             method: 'PUT',
-            body: { roles: ['Creator', 'Moderator'] }
+            body: { roles: ['Creator'] }
           });
         },
         (err) => {
           assert.strictEqual(err.status, 400);
-          assert.ok(err.message.includes('loại trừ lẫn nhau'));
+          assert.ok(err.message.includes('không hợp lệ'));
+          return true;
+        }
+      );
+
+      await assert.rejects(
+        async () => {
+          await demoFallbackEngine.handleRequest('/admin/accounts/1/roles', {
+            method: 'PUT',
+            body: { roles: ['Moderator'] }
+          });
+        },
+        (err) => {
+          assert.strictEqual(err.status, 400);
+          assert.ok(err.message.includes('không hợp lệ'));
           return true;
         }
       );

@@ -7,9 +7,7 @@
  * - Harmless sentinel detection: window.__XSS_TRIGGERED__ === undefined
  * - Zero unexpected alert/prompt/confirm dialogs across critical user flows
  * - XSS-01: Personal Notes modal (freeform user text, <script>, <img onerror>)
- * - XSS-02: Creator Lesson Editor (lesson title, <svg onload>, attribute breakouts)
  * - XSS-03: Vocabulary Catalog Search (URL query parameter & search input reflection)
- * - XSS-04: Moderator History & Review (rejection reason plain text rendering)
  * - XSS-05: Contextual URL sanitization in media and links (javascript:, /\\, \\)
  * - Legitimate data preservation: Chinese characters (你好，世界) and Vietnamese diacritics
  * =============================================================================
@@ -236,73 +234,6 @@ describe('Browser E2E: Adversarial DOM XSS Prevention & Safe Rendering Audit (Ta
     }
   });
 
-  test('XSS-02: Creator Lesson Editor renders <svg onload> and attribute breakout safely as text', async () => {
-    const { page, context } = await createMonitoredPage(browser);
-    const sentinel = attachXssSentinel(page);
-
-    try {
-      // 1. Setup authenticated Creator session
-      await page.addInitScript(() => {
-        localStorage.setItem('access_token', 'test_jwt_creator_user');
-        localStorage.setItem('user_info', JSON.stringify({
-          accountId: 777,
-          emailOrPhone: 'creator_xss@example.com',
-          fullName: 'Tác Giả Giáo Trình',
-          roles: ['Creator']
-        }));
-      });
-
-      // 2. Mock lesson detail with adversarial title containing <svg onload>
-      const svgPayload = '<svg onload="window.__XSS_TRIGGERED__=true;alert(\'XSS_SVG\')">';
-      await page.route('**/api/v1/creator/lessons/200*', async (route) => {
-        await route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify({
-            code: 'SUCCESS',
-            message: 'OK',
-            data: {
-              lessonId: 200,
-              title: svgPayload,
-              description: 'Mô tả bài học chứa chữ Hán: 你好，世界',
-              status: 'Draft',
-              creatorEmail: 'creator_xss@example.com',
-              vocabularyCount: 0,
-              vocabularies: [],
-              createdAt: '2026-09-18T00:00:00Z',
-              updatedAt: '2026-09-18T00:00:00Z'
-            }
-          })
-        });
-      });
-
-      // 3. Navigate to Creator Lesson Editor
-      await page.goto(`${server.baseUrl}/creator-lesson-editor.html?id=200`, { waitUntil: 'domcontentloaded' });
-
-      // 4. Verify no execution triggered on load
-      await sentinel.assertClean();
-
-      // Check title input displays literal string
-      const titleInput = page.locator('#editorTitleInput');
-      await titleInput.waitFor({ state: 'visible' });
-      const val = await titleInput.inputValue();
-      assert.strictEqual(val, svgPayload);
-
-      // Verify breadcrumb title text
-      const breadcrumbTitle = page.locator('#editorBreadcrumbTitle');
-      await breadcrumbTitle.waitFor({ state: 'visible' });
-      const breadcrumbText = await breadcrumbTitle.textContent();
-      assert.strictEqual(breadcrumbText.trim(), svgPayload);
-
-      // Verify no SVG tag with onload was created in DOM
-      const svgOnloadCount = await page.locator('svg[onload]').count();
-      assert.strictEqual(svgOnloadCount, 0);
-
-    } finally {
-      await context.close();
-    }
-  });
-
   test('XSS-03: Vocabulary search query parameter reflection renders literal text without execution', async () => {
     const { page, context } = await createMonitoredPage(browser);
     const sentinel = attachXssSentinel(page);
@@ -353,94 +284,6 @@ describe('Browser E2E: Adversarial DOM XSS Prevention & Safe Rendering Audit (Ta
       // Verify no injected script exists
       const scripts = await page.locator('main script').count();
       assert.strictEqual(scripts, 0);
-
-    } finally {
-      await context.close();
-    }
-  });
-
-  test('XSS-04: Moderator History renders rejectionReason payload strictly as safe plain text', async () => {
-    const { page, context } = await createMonitoredPage(browser);
-    const sentinel = attachXssSentinel(page);
-
-    try {
-      // 1. Setup authenticated Moderator session
-      await page.addInitScript(() => {
-        localStorage.setItem('access_token', 'test_jwt_mod_user');
-        localStorage.setItem('user_info', JSON.stringify({
-          accountId: 666,
-          emailOrPhone: 'mod_xss@example.com',
-          fullName: 'Kiểm Duyệt Viên',
-          roles: ['Moderator']
-        }));
-      });
-
-      const rejectionProbe = '<img src=x onerror="window.__XSS_TRIGGERED__=true;alert(\'XSS_MOD\')">';
-
-      // Mock history GET returning 2 items: 1 malicious probe, 1 legitimate Vietnamese review
-      await page.route(/\/api\/v1\/moderator\/history(\?.*)?$/, async (route) => {
-        await route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify({
-            code: 'SUCCESS',
-            message: 'OK',
-            data: {
-              items: [
-                {
-                  historyId: 10,
-                  lessonId: 301,
-                  lessonTitle: 'Bài kiểm thử XSS #301',
-                  action: 'REJECT',
-                  rejectionReason: rejectionProbe,
-                  flaggedFields: '["hanzi", "pinyin"]',
-                  moderatorEmail: 'mod_xss@example.com',
-                  createdAt: '2026-09-18T01:00:00Z'
-                },
-                {
-                  historyId: 11,
-                  lessonId: 302,
-                  lessonTitle: 'Bài học Chữ Hán Căn Bản',
-                  action: 'REJECT',
-                  rejectionReason: 'Lý do từ chối: Cần bổ sung ví dụ minh họa và nghĩa Hán Việt chuẩn xác.',
-                  flaggedFields: '["exampleSentence"]',
-                  moderatorEmail: 'mod_xss@example.com',
-                  createdAt: '2026-09-18T02:00:00Z'
-                }
-              ],
-              page: 0,
-              size: 20,
-              totalElements: 2,
-              totalPages: 1
-            }
-          })
-        });
-      });
-
-      // Navigate to Moderator History
-      await page.goto(`${server.baseUrl}/moderator-history.html`, { waitUntil: 'networkidle' });
-
-      // Verify zero execution
-      await sentinel.assertClean();
-
-      // Check first rejection cell
-      const firstReasonCell = page.locator('.rejection-reason-cell').first();
-      await firstReasonCell.waitFor({ state: 'visible' });
-
-      const cellText = await firstReasonCell.textContent();
-      assert.strictEqual(cellText.trim(), rejectionProbe);
-
-      // Verify no <img> tag in table body
-      const imgInCell = await firstReasonCell.locator('img').count();
-      assert.strictEqual(imgInCell, 0);
-
-      // Check second cell preserves Vietnamese diacritics
-      const secondReasonCell = page.locator('.rejection-reason-cell').nth(1);
-      const secondText = await secondReasonCell.textContent();
-      assert.strictEqual(
-        secondText.trim(),
-        'Lý do từ chối: Cần bổ sung ví dụ minh họa và nghĩa Hán Việt chuẩn xác.'
-      );
 
     } finally {
       await context.close();

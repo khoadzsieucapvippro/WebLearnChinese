@@ -191,7 +191,7 @@ describe('Browser Smoke: API Client & Auth State Integration', () => {
         authManager.setSession({
           token: 'tab-sync-jwt',
           accountId: 50,
-          roles: ['Creator']
+          roles: ['Learner']
         });
       });
 

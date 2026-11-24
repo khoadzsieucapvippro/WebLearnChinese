@@ -230,24 +230,24 @@ class LessonLifecycleIntegrationTests {
     }
 
     // =========================================================================
-    // 5D.1-A: Manual Lesson Lifecycle Flow
+    // 5D.1-A: Manual Lesson Lifecycle Flow (Single-Admin Direct Publish)
     // =========================================================================
     @Nested
     @DisplayName("5D.1-A: Manual Lesson Lifecycle Tests")
     class ManualLessonLifecycleTests {
 
         @Test
-        @DisplayName("GIVEN creator WHEN creating lesson, adding vocabs, reordering, and submitting THEN status transitions Draft -> Pending and is hidden from public API")
+        @DisplayName("GIVEN Admin WHEN creating lesson, adding vocabs, reordering THEN lesson is auto-Approved and visible on public API")
         void testManualLessonFullLifecycle() throws Exception {
-            // Step 1: Create Draft lesson
+            // Step 1: Create lesson -> Single-Admin auto-publishes with status 'Approved'
             CreateLessonRequest createReq = new CreateLessonRequest("Bài Học Thủ Công 5D.1");
-            String createResStr = mockMvc.perform(post("/api/v1/creator/lessons")
-                            .header("Authorization", "Bearer " + creatorTokenA)
+            String createResStr = mockMvc.perform(post("/api/v1/admin/lessons")
+                            .header("Authorization", "Bearer " + adminToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(createReq)))
                     .andExpect(status().isCreated())
                     .andExpect(jsonPath("$.code").value("SUCCESS"))
-                    .andExpect(jsonPath("$.data.status").value("Draft"))
+                    .andExpect(jsonPath("$.data.status").value("Approved"))
                     .andExpect(jsonPath("$.data.vocabularyCount").value(0))
                     .andReturn().getResponse().getContentAsString();
 
@@ -255,16 +255,16 @@ class LessonLifecycleIntegrationTests {
             assertThat(lessonId).isPositive();
 
             // Step 2: Add first vocabulary (xué) -> orderIndex = 1
-            mockMvc.perform(post("/api/v1/creator/lessons/" + lessonId + "/vocabularies/" + vocabXue.getVocabId())
-                            .header("Authorization", "Bearer " + creatorTokenA))
+            mockMvc.perform(post("/api/v1/admin/lessons/" + lessonId + "/vocabularies/" + vocabXue.getVocabId())
+                            .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data.vocabularyCount").value(1))
                     .andExpect(jsonPath("$.data.vocabularies[0].vocabId").value(vocabXue.getVocabId()))
                     .andExpect(jsonPath("$.data.vocabularies[0].orderIndex").value(1));
 
             // Step 3: Add second vocabulary (shēng) -> orderIndex = 2
-            mockMvc.perform(post("/api/v1/creator/lessons/" + lessonId + "/vocabularies/" + vocabSheng.getVocabId())
-                            .header("Authorization", "Bearer " + creatorTokenA))
+            mockMvc.perform(post("/api/v1/admin/lessons/" + lessonId + "/vocabularies/" + vocabSheng.getVocabId())
+                            .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data.vocabularyCount").value(2))
                     .andExpect(jsonPath("$.data.vocabularies[1].vocabId").value(vocabSheng.getVocabId()))
@@ -275,8 +275,8 @@ class LessonLifecycleIntegrationTests {
                     vocabSheng.getVocabId(),
                     vocabXue.getVocabId()
             ));
-            mockMvc.perform(post("/api/v1/creator/lessons/" + lessonId + "/reorder")
-                            .header("Authorization", "Bearer " + creatorTokenA)
+            mockMvc.perform(post("/api/v1/admin/lessons/" + lessonId + "/reorder")
+                            .header("Authorization", "Bearer " + adminToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(reorderReq)))
                     .andExpect(status().isOk())
@@ -285,21 +285,10 @@ class LessonLifecycleIntegrationTests {
                     .andExpect(jsonPath("$.data.vocabularies[1].vocabId").value(vocabXue.getVocabId()))
                     .andExpect(jsonPath("$.data.vocabularies[1].orderIndex").value(2));
 
-            // Step 5: Submit for moderation -> transitions status from 'Draft' to 'Pending'
-            mockMvc.perform(post("/api/v1/creator/lessons/" + lessonId + "/submit")
-                            .header("Authorization", "Bearer " + creatorTokenA))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.data.status").value("Pending"));
-
             // Verify in MySQL
             Lesson persisted = lessonRepository.findById(lessonId).orElseThrow();
-            assertThat(persisted.getStatus()).isEqualTo("Pending");
-            assertThat(persisted.getCreatedBy().getAccountId()).isEqualTo(creatorA.getAccountId());
-
-            // Step 6: Verify public learner endpoint cannot access Pending lesson (404 NOT_FOUND)
-            mockMvc.perform(get("/api/v1/lessons/" + lessonId))
-                    .andExpect(status().isNotFound())
-                    .andExpect(jsonPath("$.code").value("NOT_FOUND"));
+            assertThat(persisted.getStatus()).isEqualTo("Approved");
+            assertThat(persisted.getCreatedBy().getAccountId()).isEqualTo(adminUser.getAccountId());
 
             // Cleanup
             List<LessonVocabulary> manualLinks = lessonVocabularyRepository.findByLessonIdWithVocabularyOrderAsc(lessonId);
@@ -309,86 +298,50 @@ class LessonLifecycleIntegrationTests {
     }
 
     // =========================================================================
-    // 5D.1-B: Creator Ownership Isolation
+    // 5D.1-B: Single-Admin Isolation & Legacy Endpoint Removal
     // =========================================================================
     @Nested
-    @DisplayName("5D.1-B: Creator Ownership Isolation Tests")
-    class CreatorOwnershipIsolationTests {
+    @DisplayName("5D.1-B: Single-Admin Isolation & Legacy Endpoint DenyAll Tests")
+    class SingleAdminIsolationTests {
 
-        private Lesson lessonOfCreatorB;
+        private Lesson managedLesson;
 
         @BeforeEach
-        void createLessonB() {
-            Lesson lesson = new Lesson("Bài Của Creator B", creatorB);
+        void createLesson() {
+            Lesson lesson = new Lesson("Bài Quản Trị 5D.1", adminUser);
             lesson.setStatus("Draft");
-            lessonOfCreatorB = lessonRepository.save(lesson);
+            managedLesson = lessonRepository.save(lesson);
         }
 
         @AfterEach
         void cleanUp() {
-            if (lessonOfCreatorB != null && lessonRepository.existsById(lessonOfCreatorB.getLessonId())) {
-                lessonRepository.delete(lessonOfCreatorB);
+            if (managedLesson != null && lessonRepository.existsById(managedLesson.getLessonId())) {
+                lessonRepository.delete(managedLesson);
             }
         }
 
         @Test
-        @DisplayName("GIVEN lesson owned by Creator B WHEN Creator A attempts any operation THEN returns 403 FORBIDDEN")
-        void testCreatorA_cannotOperateOnCreatorBLesson() throws Exception {
-            Long targetId = lessonOfCreatorB.getLessonId();
+        @DisplayName("GIVEN deprecated Creator/Moderator or Learner WHEN calling /api/v1/admin/lessons/** or /api/v1/creator/lessons/** THEN returns 403 FORBIDDEN")
+        void testNonAdminCannotOperateAndLegacyEndpointsDenied() throws Exception {
+            Long targetId = managedLesson.getLessonId();
 
-            // 1. GET detail
+            for (String token : List.of(creatorTokenA, moderatorToken, learnerToken)) {
+                mockMvc.perform(get("/api/v1/admin/lessons/" + targetId)
+                                .header("Authorization", "Bearer " + token))
+                        .andExpect(status().isForbidden())
+                        .andExpect(jsonPath("$.code").value("FORBIDDEN"));
+            }
+
+            // Even Admin cannot access removed legacy /api/v1/creator/** endpoints
             mockMvc.perform(get("/api/v1/creator/lessons/" + targetId)
-                            .header("Authorization", "Bearer " + creatorTokenA))
-                    .andExpect(status().isForbidden())
-                    .andExpect(jsonPath("$.code").value("FORBIDDEN"));
-
-            // 2. PUT update
-            UpdateLessonRequest updateReq = new UpdateLessonRequest("Tiêu đề bị sửa trộm");
-            mockMvc.perform(put("/api/v1/creator/lessons/" + targetId)
-                            .header("Authorization", "Bearer " + creatorTokenA)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(updateReq)))
-                    .andExpect(status().isForbidden())
-                    .andExpect(jsonPath("$.code").value("FORBIDDEN"));
-
-            // 3. POST add vocab
-            mockMvc.perform(post("/api/v1/creator/lessons/" + targetId + "/vocabularies/" + vocabXue.getVocabId())
-                            .header("Authorization", "Bearer " + creatorTokenA))
-                    .andExpect(status().isForbidden())
-                    .andExpect(jsonPath("$.code").value("FORBIDDEN"));
-
-            // 4. DELETE remove vocab
-            mockMvc.perform(delete("/api/v1/creator/lessons/" + targetId + "/vocabularies/" + vocabXue.getVocabId())
-                            .header("Authorization", "Bearer " + creatorTokenA))
-                    .andExpect(status().isForbidden())
-                    .andExpect(jsonPath("$.code").value("FORBIDDEN"));
-
-            // 5. POST reorder
-            ReorderVocabRequest reorderReq = new ReorderVocabRequest(List.of(vocabXue.getVocabId()));
-            mockMvc.perform(post("/api/v1/creator/lessons/" + targetId + "/reorder")
-                            .header("Authorization", "Bearer " + creatorTokenA)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(reorderReq)))
-                    .andExpect(status().isForbidden())
-                    .andExpect(jsonPath("$.code").value("FORBIDDEN"));
-
-            // 6. POST submit
-            mockMvc.perform(post("/api/v1/creator/lessons/" + targetId + "/submit")
-                            .header("Authorization", "Bearer " + creatorTokenA))
-                    .andExpect(status().isForbidden())
-                    .andExpect(jsonPath("$.code").value("FORBIDDEN"));
-
-            // 7. DELETE lesson
-            mockMvc.perform(delete("/api/v1/creator/lessons/" + targetId)
-                            .header("Authorization", "Bearer " + creatorTokenA))
-                    .andExpect(status().isForbidden())
-                    .andExpect(jsonPath("$.code").value("FORBIDDEN"));
+                            .header("Authorization", "Bearer " + adminToken))
+                    .andExpect(status().isForbidden());
         }
 
         @Test
-        @DisplayName("GIVEN lesson owned by Creator B WHEN Admin accesses it THEN returns 200 OK (Admin Bypass)")
+        @DisplayName("GIVEN lesson WHEN Admin accesses /api/v1/admin/lessons/{id} THEN returns 200 OK")
         void testAdmin_canAccessAnyLesson() throws Exception {
-            mockMvc.perform(get("/api/v1/creator/lessons/" + lessonOfCreatorB.getLessonId())
+            mockMvc.perform(get("/api/v1/admin/lessons/" + managedLesson.getLessonId())
                             .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("SUCCESS"));
@@ -417,9 +370,9 @@ class LessonLifecycleIntegrationTests {
             byte[] bytes = createWorkbook(headers, data);
             MockMultipartFile file = new MockMultipartFile("file", "preview_test.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", bytes);
 
-            mockMvc.perform(multipart("/api/v1/creator/lessons/import")
+            mockMvc.perform(multipart("/api/v1/admin/lessons/import")
                             .file(file)
-                            .header("Authorization", "Bearer " + creatorTokenA))
+                            .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("SUCCESS"))
                     .andExpect(jsonPath("$.data.isValid").value(true))
@@ -440,9 +393,9 @@ class LessonLifecycleIntegrationTests {
 
             // 1. Corrupt bytes
             MockMultipartFile corruptFile = new MockMultipartFile("file", "corrupt.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", new byte[]{0x01, 0x02, 0x03});
-            mockMvc.perform(multipart("/api/v1/creator/lessons/import")
+            mockMvc.perform(multipart("/api/v1/admin/lessons/import")
                             .file(corruptFile)
-                            .header("Authorization", "Bearer " + creatorTokenA))
+                            .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data.isValid").value(false))
                     .andExpect(jsonPath("$.data.fileStatus").value("INVALID_FORMAT"));
@@ -451,9 +404,9 @@ class LessonLifecycleIntegrationTests {
             String[] badHeaders = {"Chữ Hán", "Nghĩa tiếng Việt"}; // Missing Pinyin, Han-Viet
             byte[] badHeaderBytes = createWorkbook(badHeaders, new String[][]{{"学", "Học"}});
             MockMultipartFile badHeaderFile = new MockMultipartFile("file", "bad_header.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", badHeaderBytes);
-            mockMvc.perform(multipart("/api/v1/creator/lessons/import")
+            mockMvc.perform(multipart("/api/v1/admin/lessons/import")
                             .file(badHeaderFile)
-                            .header("Authorization", "Bearer " + creatorTokenA))
+                            .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data.isValid").value(false))
                     .andExpect(jsonPath("$.data.fileStatus").value("HEADER_ERROR"));
@@ -463,9 +416,9 @@ class LessonLifecycleIntegrationTests {
             String[][] badRowData = {{"", "xué", "Học", "Học tập"}}; // Missing Hanzi
             byte[] badRowBytes = createWorkbook(headers, badRowData);
             MockMultipartFile badRowFile = new MockMultipartFile("file", "bad_row.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", badRowBytes);
-            mockMvc.perform(multipart("/api/v1/creator/lessons/import")
+            mockMvc.perform(multipart("/api/v1/admin/lessons/import")
                             .file(badRowFile)
-                            .header("Authorization", "Bearer " + creatorTokenA))
+                            .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data.isValid").value(false))
                     .andExpect(jsonPath("$.data.invalidRowsCount").value(1))
@@ -494,13 +447,13 @@ class LessonLifecycleIntegrationTests {
             byte[] bytes = createWorkbook(headers, data);
             MockMultipartFile file = new MockMultipartFile("file", "confirm_success.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", bytes);
 
-            String resStr = mockMvc.perform(multipart("/api/v1/creator/lessons/import/confirm")
+            String resStr = mockMvc.perform(multipart("/api/v1/admin/lessons/import/confirm")
                             .file(file)
                             .param("title", "Bài Học Import 5D.1")
-                            .header("Authorization", "Bearer " + creatorTokenA))
+                            .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isCreated())
                     .andExpect(jsonPath("$.code").value("SUCCESS"))
-                    .andExpect(jsonPath("$.data.status").value("Draft"))
+                    .andExpect(jsonPath("$.data.status").value("Approved"))
                     .andExpect(jsonPath("$.data.vocabularyCount").value(2))
                     .andExpect(jsonPath("$.data.vocabularies[0].hanzi").value("学"))
                     .andExpect(jsonPath("$.data.vocabularies[0].orderIndex").value(1))
@@ -513,8 +466,8 @@ class LessonLifecycleIntegrationTests {
             // Verify MySQL state directly
             Lesson lesson = lessonRepository.findById(lessonId).orElseThrow();
             assertThat(lesson.getTitle()).isEqualTo("Bài Học Import 5D.1");
-            assertThat(lesson.getStatus()).isEqualTo("Draft");
-            assertThat(lesson.getCreatedBy().getAccountId()).isEqualTo(creatorA.getAccountId());
+            assertThat(lesson.getStatus()).isEqualTo("Approved");
+            assertThat(lesson.getCreatedBy().getAccountId()).isEqualTo(adminUser.getAccountId());
 
             List<LessonVocabulary> links = lessonVocabularyRepository.findByLessonIdWithVocabularyOrderAsc(lessonId);
             assertThat(links).hasSize(2);
@@ -549,10 +502,10 @@ class LessonLifecycleIntegrationTests {
             byte[] bytes = createWorkbook(headers, data);
             MockMultipartFile file = new MockMultipartFile("file", "invalid.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", bytes);
 
-            mockMvc.perform(multipart("/api/v1/creator/lessons/import/confirm")
+            mockMvc.perform(multipart("/api/v1/admin/lessons/import/confirm")
                             .file(file)
                             .param("title", "Bài Học Thất Bại")
-                            .header("Authorization", "Bearer " + creatorTokenA))
+                            .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isUnprocessableEntity())
                     .andExpect(jsonPath("$.code").value("UNPROCESSABLE_ENTITY"));
 
@@ -582,10 +535,10 @@ class LessonLifecycleIntegrationTests {
                     .save(argThat(lv -> lv != null && lv.getOrderIndex() != null && lv.getOrderIndex() == 2));
 
             try {
-                mockMvc.perform(multipart("/api/v1/creator/lessons/import/confirm")
+                mockMvc.perform(multipart("/api/v1/admin/lessons/import/confirm")
                                 .file(file)
                                 .param("title", "Bài Lỗi Giữa Chừng")
-                                .header("Authorization", "Bearer " + creatorTokenA))
+                                .header("Authorization", "Bearer " + adminToken))
                         .andExpect(status().isInternalServerError())
                         .andExpect(jsonPath("$.code").value("INTERNAL_ERROR"));
             } finally {
@@ -617,57 +570,53 @@ class LessonLifecycleIntegrationTests {
         }
 
         @Test
-        @DisplayName("Security Matrix for Preview endpoint (/import)")
+        @DisplayName("Security Matrix for Preview endpoint (/api/v1/admin/lessons/import)")
         void testPreviewSecurityMatrix() throws Exception {
             // Anonymous -> 401
-            mockMvc.perform(multipart("/api/v1/creator/lessons/import").file(validFile))
+            mockMvc.perform(multipart("/api/v1/admin/lessons/import").file(validFile))
                     .andExpect(status().isUnauthorized())
                     .andExpect(jsonPath("$.code").value("UNAUTHORIZED"));
 
             // Learner -> 403
-            mockMvc.perform(multipart("/api/v1/creator/lessons/import").file(validFile)
+            mockMvc.perform(multipart("/api/v1/admin/lessons/import").file(validFile)
                             .header("Authorization", "Bearer " + learnerToken))
                     .andExpect(status().isForbidden())
                     .andExpect(jsonPath("$.code").value("FORBIDDEN"));
 
-            // Moderator -> 403
-            mockMvc.perform(multipart("/api/v1/creator/lessons/import").file(validFile)
+            // Deprecated Moderator -> 403
+            mockMvc.perform(multipart("/api/v1/admin/lessons/import").file(validFile)
                             .header("Authorization", "Bearer " + moderatorToken))
                     .andExpect(status().isForbidden())
                     .andExpect(jsonPath("$.code").value("FORBIDDEN"));
 
-            // Creator -> 200
-            mockMvc.perform(multipart("/api/v1/creator/lessons/import").file(validFile)
+            // Deprecated Creator -> 403
+            mockMvc.perform(multipart("/api/v1/admin/lessons/import").file(validFile)
                             .header("Authorization", "Bearer " + creatorTokenA))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.code").value("SUCCESS"));
+                    .andExpect(status().isForbidden())
+                    .andExpect(jsonPath("$.code").value("FORBIDDEN"));
 
             // Admin -> 200
-            mockMvc.perform(multipart("/api/v1/creator/lessons/import").file(validFile)
+            mockMvc.perform(multipart("/api/v1/admin/lessons/import").file(validFile)
                             .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("SUCCESS"));
         }
 
         @Test
-        @DisplayName("Security Matrix for Confirm endpoint (/import/confirm)")
+        @DisplayName("Security Matrix for Confirm endpoint (/api/v1/admin/lessons/import/confirm)")
         void testConfirmSecurityMatrix() throws Exception {
             // Anonymous -> 401
-            mockMvc.perform(multipart("/api/v1/creator/lessons/import/confirm").file(validFile).param("title", "Sec Test"))
+            mockMvc.perform(multipart("/api/v1/admin/lessons/import/confirm").file(validFile).param("title", "Sec Test"))
                     .andExpect(status().isUnauthorized())
                     .andExpect(jsonPath("$.code").value("UNAUTHORIZED"));
 
-            // Learner -> 403
-            mockMvc.perform(multipart("/api/v1/creator/lessons/import/confirm").file(validFile).param("title", "Sec Test")
-                            .header("Authorization", "Bearer " + learnerToken))
-                    .andExpect(status().isForbidden())
-                    .andExpect(jsonPath("$.code").value("FORBIDDEN"));
-
-            // Moderator -> 403
-            mockMvc.perform(multipart("/api/v1/creator/lessons/import/confirm").file(validFile).param("title", "Sec Test")
-                            .header("Authorization", "Bearer " + moderatorToken))
-                    .andExpect(status().isForbidden())
-                    .andExpect(jsonPath("$.code").value("FORBIDDEN"));
+            // Learner / Moderator / Creator -> 403
+            for (String token : List.of(learnerToken, moderatorToken, creatorTokenA)) {
+                mockMvc.perform(multipart("/api/v1/admin/lessons/import/confirm").file(validFile).param("title", "Sec Test")
+                                .header("Authorization", "Bearer " + token))
+                        .andExpect(status().isForbidden())
+                        .andExpect(jsonPath("$.code").value("FORBIDDEN"));
+            }
         }
     }
 
@@ -682,16 +631,16 @@ class LessonLifecycleIntegrationTests {
         @DisplayName("Missing file part or missing parameters returns 400 VALIDATION_ERROR")
         void testMissingParts_returns400() throws Exception {
             // Missing file on preview
-            mockMvc.perform(multipart("/api/v1/creator/lessons/import")
-                            .header("Authorization", "Bearer " + creatorTokenA))
+            mockMvc.perform(multipart("/api/v1/admin/lessons/import")
+                            .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
 
             // Missing title on confirm
             MockMultipartFile file = new MockMultipartFile("file", "test.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", new byte[]{1, 2});
-            mockMvc.perform(multipart("/api/v1/creator/lessons/import/confirm")
+            mockMvc.perform(multipart("/api/v1/admin/lessons/import/confirm")
                             .file(file)
-                            .header("Authorization", "Bearer " + creatorTokenA))
+                            .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
         }
@@ -702,19 +651,19 @@ class LessonLifecycleIntegrationTests {
             MockMultipartFile file = new MockMultipartFile("file", "test.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", new byte[]{1, 2});
 
             // Blank title
-            mockMvc.perform(multipart("/api/v1/creator/lessons/import/confirm")
+            mockMvc.perform(multipart("/api/v1/admin/lessons/import/confirm")
                             .file(file)
                             .param("title", "   ")
-                            .header("Authorization", "Bearer " + creatorTokenA))
+                            .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.code").value("BAD_REQUEST"));
 
             // Oversized title (>100 chars)
             String longTitle = "A".repeat(101);
-            mockMvc.perform(multipart("/api/v1/creator/lessons/import/confirm")
+            mockMvc.perform(multipart("/api/v1/admin/lessons/import/confirm")
                             .file(file)
                             .param("title", longTitle)
-                            .header("Authorization", "Bearer " + creatorTokenA))
+                            .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.code").value("BAD_REQUEST"));
         }
@@ -728,25 +677,25 @@ class LessonLifecycleIntegrationTests {
     class DuplicateConfirmSemanticsTests {
 
         @Test
-        @DisplayName("Calling confirm twice with same file & title creates 2 separate Draft lessons by design")
+        @DisplayName("Calling confirm twice with same file & title creates 2 separate Approved lessons by design")
         void testDuplicateConfirm_createsTwoLessons() throws Exception {
             String[] headers = {"Chữ Hán", "Pinyin", "Hán-Việt", "Nghĩa tiếng Việt"};
             String[][] data = {{"学", "xué", "Học", "Học tập"}};
             byte[] bytes = createWorkbook(headers, data);
             MockMultipartFile file = new MockMultipartFile("file", "dup_test.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", bytes);
 
-            String res1 = mockMvc.perform(multipart("/api/v1/creator/lessons/import/confirm")
+            String res1 = mockMvc.perform(multipart("/api/v1/admin/lessons/import/confirm")
                             .file(file)
                             .param("title", "Bài Học Nhân Bản")
-                            .header("Authorization", "Bearer " + creatorTokenA))
+                            .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isCreated())
                     .andReturn().getResponse().getContentAsString();
             Long id1 = objectMapper.readTree(res1).path("data").path("lessonId").asLong();
 
-            String res2 = mockMvc.perform(multipart("/api/v1/creator/lessons/import/confirm")
+            String res2 = mockMvc.perform(multipart("/api/v1/admin/lessons/import/confirm")
                             .file(file)
                             .param("title", "Bài Học Nhân Bản")
-                            .header("Authorization", "Bearer " + creatorTokenA))
+                            .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isCreated())
                     .andReturn().getResponse().getContentAsString();
             Long id2 = objectMapper.readTree(res2).path("data").path("lessonId").asLong();
@@ -760,105 +709,27 @@ class LessonLifecycleIntegrationTests {
     }
 
     // =========================================================================
-    // 5D.1-K: State Machine Invariants
+    // 5D.1-K: Single-Admin State Control Tests
     // =========================================================================
     @Nested
-    @DisplayName("5D.1-K: State Machine Invariants Tests")
+    @DisplayName("5D.1-K: Single-Admin State Control Tests")
     class StateMachineInvariantsTests {
 
         @Test
-        @DisplayName("Cannot submit empty lesson (0 vocabularies) returns 400 BAD_REQUEST")
-        void testSubmitEmptyLesson_returns400() throws Exception {
-            Lesson emptyLesson = lessonRepository.save(new Lesson("Bài Rỗng", creatorA));
-
-            mockMvc.perform(post("/api/v1/creator/lessons/" + emptyLesson.getLessonId() + "/submit")
-                            .header("Authorization", "Bearer " + creatorTokenA))
-                    .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.code").value("BAD_REQUEST"));
-
-            lessonRepository.delete(emptyLesson);
-        }
-
-        @Test
-        @DisplayName("Pending lesson cannot be edited, reordered, or resubmitted (409 CONFLICT)")
-        void testPendingLesson_isLocked() throws Exception {
-            Lesson pendingLesson = new Lesson("Bài Đang Chờ Duyệt", creatorA);
-            pendingLesson.setStatus("Pending");
-            pendingLesson = lessonRepository.save(pendingLesson);
-            Long id = pendingLesson.getLessonId();
-
-            // 1. Edit title
-            mockMvc.perform(put("/api/v1/creator/lessons/" + id)
-                            .header("Authorization", "Bearer " + creatorTokenA)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(new UpdateLessonRequest("Sửa tiêu đề"))))
-                    .andExpect(status().isConflict())
-                    .andExpect(jsonPath("$.code").value("CONFLICT"));
-
-            // 2. Add vocab
-            mockMvc.perform(post("/api/v1/creator/lessons/" + id + "/vocabularies/" + vocabXue.getVocabId())
-                            .header("Authorization", "Bearer " + creatorTokenA))
-                    .andExpect(status().isConflict())
-                    .andExpect(jsonPath("$.code").value("CONFLICT"));
-
-            // 3. Reorder
-            mockMvc.perform(post("/api/v1/creator/lessons/" + id + "/reorder")
-                            .header("Authorization", "Bearer " + creatorTokenA)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(new ReorderVocabRequest(List.of(vocabXue.getVocabId())))))
-                    .andExpect(status().isConflict())
-                    .andExpect(jsonPath("$.code").value("CONFLICT"));
-
-            // 4. Submit again
-            mockMvc.perform(post("/api/v1/creator/lessons/" + id + "/submit")
-                            .header("Authorization", "Bearer " + creatorTokenA))
-                    .andExpect(status().isConflict())
-                    .andExpect(jsonPath("$.code").value("CONFLICT"));
-
-            lessonRepository.delete(pendingLesson);
-        }
-
-        @Test
-        @DisplayName("Approved lesson cannot be edited (409 CONFLICT)")
-        void testApprovedLesson_isLocked() throws Exception {
-            Lesson approvedLesson = new Lesson("Bài Đã Duyệt", creatorA);
+        @DisplayName("Admin CAN update Approved lesson title directly")
+        void testApprovedLesson_canBeUpdatedByAdmin() throws Exception {
+            Lesson approvedLesson = new Lesson("Bài Đã Duyệt", adminUser);
             approvedLesson.setStatus("Approved");
             approvedLesson = lessonRepository.save(approvedLesson);
 
-            mockMvc.perform(put("/api/v1/creator/lessons/" + approvedLesson.getLessonId())
-                            .header("Authorization", "Bearer " + creatorTokenA)
+            mockMvc.perform(put("/api/v1/admin/lessons/" + approvedLesson.getLessonId())
+                            .header("Authorization", "Bearer " + adminToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(new UpdateLessonRequest("Sửa bài đã duyệt"))))
-                    .andExpect(status().isConflict())
-                    .andExpect(jsonPath("$.code").value("CONFLICT"));
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.title").value("Sửa bài đã duyệt"));
 
             lessonRepository.delete(approvedLesson);
-        }
-
-        @Test
-        @DisplayName("Rejected lesson CAN be edited and resubmitted (allowed state transition)")
-        void testRejectedLesson_canBeEditedAndResubmitted() throws Exception {
-            Lesson rejectedLesson = new Lesson("Bài Bị Từ Chối", creatorA);
-            rejectedLesson.setStatus("Rejected");
-            rejectedLesson = lessonRepository.save(rejectedLesson);
-            lessonVocabularyRepository.save(new LessonVocabulary(rejectedLesson, vocabXue, 1));
-            Long id = rejectedLesson.getLessonId();
-
-            // Edit title
-            mockMvc.perform(put("/api/v1/creator/lessons/" + id)
-                            .header("Authorization", "Bearer " + creatorTokenA)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(new UpdateLessonRequest("Tiêu Đề Sau Sửa Lỗi"))))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.data.title").value("Tiêu Đề Sau Sửa Lỗi"));
-
-            // Resubmit
-            mockMvc.perform(post("/api/v1/creator/lessons/" + id + "/submit")
-                            .header("Authorization", "Bearer " + creatorTokenA))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.data.status").value("Pending"));
-
-            lessonRepository.delete(rejectedLesson);
         }
     }
 
@@ -872,23 +743,23 @@ class LessonLifecycleIntegrationTests {
         @Test
         @DisplayName("When vocabulary is removed, remaining vocabularies are re-indexed consecutively 1..N")
         void testReindexingOnVocabularyRemoval() throws Exception {
-            Lesson lesson = lessonRepository.save(new Lesson("Test Reindex", creatorA));
+            Lesson lesson = lessonRepository.save(new Lesson("Test Reindex", adminUser));
             Long id = lesson.getLessonId();
 
             // Add 3 vocabularies
-            mockMvc.perform(post("/api/v1/creator/lessons/" + id + "/vocabularies/" + vocabXue.getVocabId())
-                            .header("Authorization", "Bearer " + creatorTokenA))
+            mockMvc.perform(post("/api/v1/admin/lessons/" + id + "/vocabularies/" + vocabXue.getVocabId())
+                            .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isOk());
-            mockMvc.perform(post("/api/v1/creator/lessons/" + id + "/vocabularies/" + vocabSheng.getVocabId())
-                            .header("Authorization", "Bearer " + creatorTokenA))
+            mockMvc.perform(post("/api/v1/admin/lessons/" + id + "/vocabularies/" + vocabSheng.getVocabId())
+                            .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isOk());
-            mockMvc.perform(post("/api/v1/creator/lessons/" + id + "/vocabularies/" + vocabXiao.getVocabId())
-                            .header("Authorization", "Bearer " + creatorTokenA))
+            mockMvc.perform(post("/api/v1/admin/lessons/" + id + "/vocabularies/" + vocabXiao.getVocabId())
+                            .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isOk());
 
             // Remove middle vocab (vocabSheng, order 2)
-            mockMvc.perform(delete("/api/v1/creator/lessons/" + id + "/vocabularies/" + vocabSheng.getVocabId())
-                            .header("Authorization", "Bearer " + creatorTokenA))
+            mockMvc.perform(delete("/api/v1/admin/lessons/" + id + "/vocabularies/" + vocabSheng.getVocabId())
+                            .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data.vocabularyCount").value(2))
                     .andExpect(jsonPath("$.data.vocabularies[0].vocabId").value(vocabXue.getVocabId()))
@@ -910,13 +781,13 @@ class LessonLifecycleIntegrationTests {
         @Test
         @DisplayName("Deleting a Lesson cascades to LessonVocabulary but preserves Vocabulary entities (ON DELETE RESTRICT)")
         void testDeleteLesson_cascadesToLessonVocab_preservesVocab() throws Exception {
-            Lesson lesson = lessonRepository.save(new Lesson("Bài Thử Cascade", creatorA));
+            Lesson lesson = lessonRepository.save(new Lesson("Bài Thử Cascade", adminUser));
             Long lessonId = lesson.getLessonId();
             lessonVocabularyRepository.save(new LessonVocabulary(lesson, vocabXue, 1));
 
             // Delete lesson
-            mockMvc.perform(delete("/api/v1/creator/lessons/" + lessonId)
-                            .header("Authorization", "Bearer " + creatorTokenA))
+            mockMvc.perform(delete("/api/v1/admin/lessons/" + lessonId)
+                            .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isNoContent());
 
             // Lesson is deleted

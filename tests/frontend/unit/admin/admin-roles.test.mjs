@@ -128,17 +128,11 @@ describe('Task 9F.2 — Admin Roles Pure Logic Unit Tests', () => {
    * 4. getRoleMetadata (Client-Side Labels, Descriptions & Badges)
    * --------------------------------------------------------------------------- */
   describe('4. getRoleMetadata', () => {
-    test('returns scholarly metadata for all 4 canonical roles', () => {
+    test('returns scholarly metadata for supported canonical roles (Admin & Learner)', () => {
       const admin = getRoleMetadata('Admin');
       assert.strictEqual(admin.label, 'Quản trị viên');
       assert.ok(admin.description.length > 0);
       assert.ok(admin.badgeClass.includes('badge-status'));
-
-      const creator = getRoleMetadata('Creator');
-      assert.strictEqual(creator.label, 'Người sáng tạo');
-
-      const moderator = getRoleMetadata('Moderator');
-      assert.strictEqual(moderator.label, 'Kiểm duyệt viên');
 
       const learner = getRoleMetadata('Learner');
       assert.strictEqual(learner.label, 'Học viên');
@@ -181,7 +175,7 @@ describe('Task 9F.2 — Admin Roles Pure Logic Unit Tests', () => {
    * 6. validateRoleSelection (Validation & Self-Demotion POL-8D-02)
    * --------------------------------------------------------------------------- */
   describe('6. validateRoleSelection', () => {
-    const catalog = ['Admin', 'Creator', 'Moderator', 'Learner'];
+    const catalog = ['Admin', 'Learner'];
 
     test('fails validation when selected roles list is empty', () => {
       const res = validateRoleSelection([], catalog, false);
@@ -189,20 +183,28 @@ describe('Task 9F.2 — Admin Roles Pure Logic Unit Tests', () => {
       assert.ok(res.error.includes('ít nhất một vai trò'));
     });
 
-    test('fails validation when selected roles contain non-catalog values', () => {
+    test('fails validation when selected roles contain non-catalog values (including removed Creator/Moderator)', () => {
       const res = validateRoleSelection(['Admin', 'SuperUser'], catalog, false);
       assert.strictEqual(res.valid, false);
       assert.ok(res.error.includes('không tồn tại trong danh mục'));
+
+      const resCreator = validateRoleSelection(['Creator'], catalog, false);
+      assert.strictEqual(resCreator.valid, false);
+      assert.ok(resCreator.error.includes('không tồn tại trong danh mục'));
+
+      const resMod = validateRoleSelection(['Moderator'], catalog, false);
+      assert.strictEqual(resMod.valid, false);
+      assert.ok(resMod.error.includes('không tồn tại trong danh mục'));
     });
 
     test('POL-8D-02: fails validation when current Admin attempts to remove own Admin role', () => {
-      const res = validateRoleSelection(['Creator', 'Learner'], catalog, true);
+      const res = validateRoleSelection(['Learner'], catalog, true);
       assert.strictEqual(res.valid, false);
       assert.ok(res.error.includes('POL-8D-02'));
     });
 
-    test('POL-8D-02: passes validation when current Admin retains Admin and edits other roles', () => {
-      const res = validateRoleSelection(['Admin', 'Moderator'], catalog, true);
+    test('POL-8D-02: passes validation when current Admin retains Admin', () => {
+      const res = validateRoleSelection(['Admin'], catalog, true);
       assert.strictEqual(res.valid, true);
       assert.strictEqual(res.error, null);
     });
@@ -211,18 +213,6 @@ describe('Task 9F.2 — Admin Roles Pure Logic Unit Tests', () => {
       const res = validateRoleSelection(['Learner'], catalog, false);
       assert.strictEqual(res.valid, true);
       assert.strictEqual(res.error, null);
-    });
-
-    test('fails validation when both Creator and Moderator are simultaneously selected (SoD invariant)', () => {
-      const res = validateRoleSelection(['Creator', 'Moderator'], catalog, false);
-      assert.strictEqual(res.valid, false);
-      assert.ok(res.error.includes('loại trừ lẫn nhau'));
-    });
-
-    test('fails validation when roles have ROLE_ prefix or case variations (SoD invariant)', () => {
-      const res = validateRoleSelection(['ROLE_CREATOR', 'ROLE_MODERATOR'], ['ROLE_CREATOR', 'ROLE_MODERATOR'], false);
-      assert.strictEqual(res.valid, false);
-      assert.ok(res.error.includes('loại trừ lẫn nhau'));
     });
   });
 

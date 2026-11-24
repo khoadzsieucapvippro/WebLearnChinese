@@ -1,8 +1,8 @@
 package com.elearning;
 
+import com.elearning.dto.request.AdminRevokeLessonRequest;
 import com.elearning.dto.request.ApproveLessonRequest;
 import com.elearning.dto.request.RegisterRequest;
-import com.elearning.dto.request.RejectLessonRequest;
 import com.elearning.dto.request.ReorderVocabRequest;
 import com.elearning.dto.request.ReviewCardRequest;
 import com.elearning.entity.Account;
@@ -26,8 +26,7 @@ import com.elearning.repository.UserSrsSettingRepository;
 import com.elearning.repository.VocabularyRepository;
 import com.elearning.security.JwtUtil;
 import com.elearning.service.AuthService;
-import com.elearning.service.CreatorLessonService;
-import com.elearning.service.ModerationService;
+import com.elearning.service.LessonService;
 import com.elearning.service.SrsService;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -88,10 +87,7 @@ import static org.mockito.Mockito.doThrow;
 class TransactionRollbackIntegrationTests {
 
     @Autowired
-    private CreatorLessonService creatorLessonService;
-
-    @Autowired
-    private ModerationService moderationService;
+    private LessonService lessonService;
 
     @Autowired
     private SrsService srsService;
@@ -236,8 +232,8 @@ class TransactionRollbackIntegrationTests {
     @Test
     @DisplayName("GIVEN mid-stream persistence failure during Excel confirm WHEN saving 2nd LessonVocabulary fails THEN Lesson, new Vocab, and LessonVocab are completely rolled back")
     void testExcelImportConfirmRollback_midStreamFailure_restoresDatabaseCleanly() throws Exception {
-        Account creator = createTestAccount("creator_imp_rb", "Creator");
-        authenticate(creator, "CREATOR");
+        Account admin = createTestAccount("admin_imp_rb", "Admin");
+        authenticate(admin, "ADMIN");
 
         long lessonCountBefore = lessonRepository.count();
         long vocabCountBefore = vocabularyRepository.count();
@@ -263,7 +259,7 @@ class TransactionRollbackIntegrationTests {
                 .save(argThat(lv -> lv != null && Integer.valueOf(2).equals(lv.getOrderIndex())));
 
         // Call Spring Service Bean Proxy
-        assertThatThrownBy(() -> creatorLessonService.importLessonFromExcel(lessonTitle, file))
+        assertThatThrownBy(() -> lessonService.importAdminLessonFromExcel(lessonTitle, file))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("Simulated mid-stream DB I/O error");
 
@@ -273,24 +269,24 @@ class TransactionRollbackIntegrationTests {
         assertThat(lessonVocabularyRepository.count()).as("LessonVocabulary count must be unchanged").isEqualTo(lvCountBefore);
 
         // Verify specific entities are absent from MySQL
-        List<Lesson> lessons = lessonRepository.findByCreatedBy(creator, org.springframework.data.domain.Pageable.unpaged()).getContent();
+        List<Lesson> lessons = lessonRepository.findByCreatedBy(admin, org.springframework.data.domain.Pageable.unpaged()).getContent();
         assertThat(lessons).noneMatch(l -> lessonTitle.equals(l.getTitle()));
         assertThat(vocabularyRepository.findByHanziAndPinyinRaw(uniqueHanzi1, "xing")).isEmpty();
         assertThat(vocabularyRepository.findByHanziAndPinyinRaw(uniqueHanzi2, "he")).isEmpty();
     }
 
     // =========================================================================
-    // 2. MODERATION APPROVE ROLLBACK
+    // 2. ADMIN SUPERVISORY APPROVE ROLLBACK
     // =========================================================================
 
     @Test
-    @DisplayName("GIVEN Pending Lesson WHEN saving ModerationLog fails during approveLesson THEN Lesson status change rolls back to Pending and 0 logs remain")
+    @DisplayName("GIVEN Pending Lesson WHEN saving ModerationLog fails during supervisoryApproveLesson THEN Lesson status change rolls back to Pending and 0 logs remain")
     void testModerationApproveRollback_auditLogFailure_restoresPendingState() {
-        Account creator = createTestAccount("creator_mod_rb", "Creator");
-        Account moderator = createTestAccount("mod_approve_rb", "Moderator");
-        authenticate(moderator, "MODERATOR");
+        Account author = createTestAccount("author_mod_rb", "Learner");
+        Account admin = createTestAccount("admin_approve_rb", "Admin");
+        authenticate(admin, "ADMIN");
 
-        Lesson lesson = new Lesson("Bài học Approve Rollback Test", creator);
+        Lesson lesson = new Lesson("Bài học Approve Rollback Test", author);
         lesson.setStatus("Pending");
         lesson = lessonRepository.save(lesson);
         cleanupLessonIds.add(lesson.getLessonId());
@@ -305,7 +301,7 @@ class TransactionRollbackIntegrationTests {
         ApproveLessonRequest request = new ApproveLessonRequest("Duyệt bài học kiểm thử rollback");
 
         // Call Spring Service Bean Proxy
-        assertThatThrownBy(() -> moderationService.approveLesson(lessonId, request))
+        assertThatThrownBy(() -> lessonService.supervisoryApproveLesson(lessonId, request))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("Simulated I/O database failure");
 
@@ -319,38 +315,37 @@ class TransactionRollbackIntegrationTests {
     }
 
     // =========================================================================
-    // 3. MODERATION REJECT ROLLBACK
+    // 3. ADMIN REVOKE ROLLBACK
     // =========================================================================
 
     @Test
-    @DisplayName("GIVEN Pending Lesson WHEN saving ModerationLog fails during rejectLesson THEN Lesson status change rolls back to Pending and 0 logs remain")
-    void testModerationRejectRollback_auditLogFailure_restoresPendingState() {
-        Account creator = createTestAccount("creator_rej_rb", "Creator");
-        Account moderator = createTestAccount("mod_reject_rb", "Moderator");
-        authenticate(moderator, "MODERATOR");
+    @DisplayName("GIVEN Approved Lesson WHEN saving ModerationLog fails during revokeLesson THEN Lesson status change rolls back to Approved and 0 logs remain")
+    void testModerationRevokeRollback_auditLogFailure_restoresApprovedState() {
+        Account admin = createTestAccount("admin_revoke_rb", "Admin");
+        authenticate(admin, "ADMIN");
 
-        Lesson lesson = new Lesson("Bài học Reject Rollback Test", creator);
-        lesson.setStatus("Pending");
+        Lesson lesson = new Lesson("Bài học Revoke Rollback Test", admin);
+        lesson.setStatus("Approved");
         lesson = lessonRepository.save(lesson);
         cleanupLessonIds.add(lesson.getLessonId());
         assertThat(lesson.getVersion()).isEqualTo(0L);
 
         // Injected Failure: Spy throws RuntimeException when persisting ModerationLog
-        doThrow(new RuntimeException("Simulated I/O database failure during ModerationLog reject persist"))
+        doThrow(new RuntimeException("Simulated I/O database failure during ModerationLog revoke persist"))
                 .when(moderationLogRepository)
                 .save(any(ModerationLog.class));
 
         Long lessonId = lesson.getLessonId();
-        RejectLessonRequest request = new RejectLessonRequest("Lý do từ chối kiểm thử rollback", "[\"title\"]");
+        AdminRevokeLessonRequest request = new AdminRevokeLessonRequest("Lý do thu hồi kiểm thử rollback");
 
         // Call Spring Service Bean Proxy
-        assertThatThrownBy(() -> moderationService.rejectLesson(lessonId, request))
+        assertThatThrownBy(() -> lessonService.revokeLesson(lessonId, request))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("Simulated I/O database failure");
 
         // Database Verification: Fresh read from MySQL
         Lesson persistedLesson = lessonRepository.findById(lessonId).orElseThrow();
-        assertThat(persistedLesson.getStatus()).as("Lesson status must remain Pending after rollback").isEqualTo("Pending");
+        assertThat(persistedLesson.getStatus()).as("Lesson status must remain Approved after rollback").isEqualTo("Approved");
         assertThat(persistedLesson.getVersion()).as("Lesson version must remain 0 after rollback").isEqualTo(0L);
 
         List<ModerationLog> logs = moderationLogRepository.findByLesson_LessonIdOrderByCreatedAtDesc(lessonId);
@@ -450,14 +445,14 @@ class TransactionRollbackIntegrationTests {
     }
 
     // =========================================================================
-    // 6. CREATOR LESSON DELETION ROLLBACK
+    // 6. ADMIN LESSON DELETION ROLLBACK
     // =========================================================================
 
     @Test
     @DisplayName("GIVEN Draft Lesson with vocabularies WHEN lesson deletion fails after deleting associations THEN Lesson and LessonVocabulary associations are restored")
-    void testCreatorLessonDeleteRollback_lessonDeleteFailure_restoresLessonVocabularyLinks() {
-        Account creator = createTestAccount("creator_del_rb", "Creator");
-        authenticate(creator, "CREATOR");
+    void testAdminLessonDeleteRollback_lessonDeleteFailure_restoresLessonVocabularyLinks() {
+        Account admin = createTestAccount("admin_del_rb", "Admin");
+        authenticate(admin, "ADMIN");
 
         String suffix = UUID.randomUUID().toString().substring(0, 6);
         Vocabulary v1 = vocabularyRepository.save(new Vocabulary("删" + suffix, "shān", "shan" + suffix, "San", "Xóa"));
@@ -465,7 +460,7 @@ class TransactionRollbackIntegrationTests {
         cleanupVocabIds.add(v1.getVocabId());
         cleanupVocabIds.add(v2.getVocabId());
 
-        Lesson lesson = new Lesson("Bài học Delete Rollback Test", creator);
+        Lesson lesson = new Lesson("Bài học Delete Rollback Test", admin);
         lesson.setStatus("Draft");
         lesson = lessonRepository.save(lesson);
         cleanupLessonIds.add(lesson.getLessonId());
@@ -482,7 +477,7 @@ class TransactionRollbackIntegrationTests {
                 .delete(argThat(l -> l != null && lessonId.equals(l.getLessonId())));
 
         // Call Spring Service Bean Proxy
-        assertThatThrownBy(() -> creatorLessonService.deleteMyLesson(lessonId))
+        assertThatThrownBy(() -> lessonService.deleteAdminLesson(lessonId))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("Simulated database failure during lesson record delete");
 
@@ -495,14 +490,14 @@ class TransactionRollbackIntegrationTests {
     }
 
     // =========================================================================
-    // 7. CREATOR LESSON REORDER ROLLBACK
+    // 7. ADMIN LESSON REORDER ROLLBACK
     // =========================================================================
 
     @Test
     @DisplayName("GIVEN Draft Lesson with 3 vocabularies WHEN reorder fails in Phase 2 THEN LessonVocabulary orderIndex mutations roll back to original [1, 2, 3]")
-    void testCreatorLessonReorderRollback_phase2Failure_restoresOriginalOrderSequence() {
-        Account creator = createTestAccount("creator_reord_rb", "Creator");
-        authenticate(creator, "CREATOR");
+    void testAdminLessonReorderRollback_phase2Failure_restoresOriginalOrderSequence() {
+        Account admin = createTestAccount("admin_reord_rb", "Admin");
+        authenticate(admin, "ADMIN");
 
         String suffix = UUID.randomUUID().toString().substring(0, 6);
         Vocabulary v1 = vocabularyRepository.save(new Vocabulary("一" + suffix, "yī", "yi" + suffix, "Nhất", "Một"));
@@ -512,7 +507,7 @@ class TransactionRollbackIntegrationTests {
         cleanupVocabIds.add(v2.getVocabId());
         cleanupVocabIds.add(v3.getVocabId());
 
-        Lesson lesson = new Lesson("Bài học Reorder Rollback Test", creator);
+        Lesson lesson = new Lesson("Bài học Reorder Rollback Test", admin);
         lesson.setStatus("Draft");
         lesson = lessonRepository.save(lesson);
         cleanupLessonIds.add(lesson.getLessonId());
@@ -533,7 +528,7 @@ class TransactionRollbackIntegrationTests {
                 .when(lessonVocabularyRepository).saveAll(any());
 
         // Call Spring Service Bean Proxy
-        assertThatThrownBy(() -> creatorLessonService.reorderVocabulary(lessonId, request))
+        assertThatThrownBy(() -> lessonService.reorderVocabularyInAdminLesson(lessonId, request))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("Simulated database failure during LessonVocabulary saveAll");
 

@@ -231,9 +231,8 @@ public class SrsLessonDueTests {
     }
 
     @Test
-    @DisplayName("GIVEN draft lesson and caller is lesson creator WHEN getDueCards THEN access is permitted")
-    void testGetDueCards_draftLesson_asCreator_permitted() {
-        // Authenticate as creator
+    @DisplayName("GIVEN draft lesson and caller has deprecated Creator role WHEN getDueCards THEN access is denied (Admin only)")
+    void testGetDueCards_draftLesson_asCreator_denied() {
         UserProfile creatorProfile = new UserProfile();
         creatorProfile.setUserId(200L);
         creatorProfile.setAccount(creatorAccount);
@@ -244,13 +243,11 @@ public class SrsLessonDueTests {
                 .thenReturn(Optional.of(creatorProfile));
         when(lessonRepository.findById(2L)).thenReturn(Optional.of(draftLesson));
 
-        when(cardProgressRepository.findDueCardsByLesson(eq(creatorProfile), eq(2L), any(LocalDateTime.class), any(Pageable.class)))
-                .thenReturn(Collections.emptyList());
+        assertThatThrownBy(() -> srsService.getDueCards(null, null, 2L, 10))
+                .isInstanceOf(BusinessException.class)
+                .satisfies(ex -> assertThat(((BusinessException) ex).getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND));
 
-        List<DueCardResponse> result = srsService.getDueCards(null, null, 2L, 10);
-
-        assertThat(result).isEmpty();
-        verify(cardProgressRepository).findDueCardsByLesson(eq(creatorProfile), eq(2L), any(LocalDateTime.class), any(Pageable.class));
+        verify(cardProgressRepository, never()).findDueCardsByLesson(any(), any(), any(), any());
     }
 
     @Test

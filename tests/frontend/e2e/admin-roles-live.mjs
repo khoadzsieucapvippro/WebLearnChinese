@@ -124,8 +124,8 @@ async function runLiveVerification() {
     await page.waitForSelector('#roleCatalogContainer strong', { timeout: 10000 });
     const roleItems = page.locator('#roleCatalogContainer strong');
     const roleCount = await roleItems.count();
-    assert.ok(roleCount >= 4, `Expected at least 4 authoritative roles, got ${roleCount}`);
-    console.log(`      ✓ Authoritative role catalog loaded with ${roleCount} roles (Admin, Creator, Learner, Moderator)`);
+    assert.ok(roleCount === 2, `Expected 2 authoritative roles (Admin, Learner), got ${roleCount}`);
+    console.log(`      ✓ Authoritative role catalog loaded with ${roleCount} roles (Admin, Learner)`);
 
     // 7.3 Search and open role assignment modal for target account
     const searchInput = page.locator('#accountSearchInput');
@@ -144,9 +144,9 @@ async function runLiveVerification() {
     assert.ok(targetEmailLabel.includes(targetEmail), `Target email mismatch: ${targetEmailLabel}`);
     console.log(`      ✓ Target account loaded into role assignment modal: ${targetEmailLabel.trim()}`);
 
-    // 7.5 Add 'Creator' role to target account and submit
-    const creatorCheckbox = page.locator('#roleCheckbox_Creator');
-    await creatorCheckbox.check();
+    // 7.5 Switch target account to 'Admin' role and submit
+    const adminCheckbox = page.locator('#roleCheckbox_Admin');
+    await adminCheckbox.check();
 
     const saveBtn = page.locator('#btnSaveRoles');
     assert.strictEqual(await saveBtn.isEnabled(), true, 'Save button must be enabled after role change');
@@ -158,8 +158,7 @@ async function runLiveVerification() {
 
     // 7.6 Verify server persistence in DB
     const dbRoles = execSync(`mysql -u root -s -N -e "SELECT r.role_name FROM elearning_db.account_role ar JOIN elearning_db.role r ON ar.role_id = r.role_id WHERE ar.account_id = ${targetAccountId} ORDER BY r.role_name;"`).toString().trim().split('\n').map(s => s.trim());
-    assert.ok(dbRoles.includes('Creator'), `Expected Creator in DB roles, got: ${dbRoles.join(', ')}`);
-    assert.ok(dbRoles.includes('Learner'), `Expected Learner in DB roles, got: ${dbRoles.join(', ')}`);
+    assert.ok(dbRoles.includes('Admin'), `Expected Admin in DB roles, got: ${dbRoles.join(', ')}`);
     console.log(`      ✓ MySQL persistence verified: Target account now has roles: [${dbRoles.join(', ')}]`);
 
     // 7.7 Verify Self-Protection POL-8D-02: Admin's own account has Admin checkbox disabled

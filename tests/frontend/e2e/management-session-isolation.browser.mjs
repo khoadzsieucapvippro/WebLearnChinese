@@ -4,12 +4,10 @@
  * File: tests/frontend/e2e/management-session-isolation.browser.mjs
  * 
  * Verifies:
- * 1. Staff Session Lifecycle:
- *    - Creator logs in -> session is stored in sessionStorage, NOT in persistent localStorage.
- *    - Strict Reverse Role Guard blocks Creator from visiting learner pages (lessons.html, index.html)
- *      and immediately redirects them to creator-lessons.html.
- *    - Simulating closing the browser tab (X tab): on new tab/context, sessionStorage is empty,
- *      so Creator is completely LOGGED OUT (guest navbar, no residual management session).
+ * 1. Deprecated Roles Non-Staff Behavior:
+ *    - Legacy Creator role (if ever present) is NOT treated as staff/management:
+ *      lands on index.html (not creator-lessons.html), session is NOT stored in staff sessionStorage,
+ *      and cannot bypass management guards.
  * 2. Admin Workspace Isolation:
  *    - Admin logs in -> session stored in sessionStorage.
  *    - Admin visiting lessons.html is immediately redirected to management.html.
@@ -42,7 +40,7 @@ describe('Browser E2E: Management Session Lifecycle & Reverse Role Guard (Phươ
     if (serverHandle) await serverHandle.close();
   });
 
-  test('MS-01: Creator session lives in sessionStorage, blocked from learner pages, wiped on X tab', async () => {
+  test('MS-01: Deprecated Creator role is NOT treated as staff and lands on learner index.html', async () => {
     const { page, context, getRuntimeErrors } = await createMonitoredPage(browser);
 
     try {
@@ -57,10 +55,10 @@ describe('Browser E2E: Management Session Lifecycle & Reverse Role Guard (Phươ
               code: 'SUCCESS',
               message: 'OK',
               data: {
-                token: 'jwt-mock-creator-token',
+                token: 'jwt-mock-legacy-creator-token',
                 accountId: 501,
                 emailOrPhone: 'creator@example.com',
-                fullName: 'Tác Giả Kiểm Thử',
+                fullName: 'Tài Khoản Cũ',
                 roles: ['Creator']
               }
             })
@@ -79,60 +77,32 @@ describe('Browser E2E: Management Session Lifecycle & Reverse Role Guard (Phươ
         });
       });
 
-      // 1. Creator logs in via login.html
+      // 1. Legacy Creator logs in via login.html -> routed to learner landing (index.html), never creator-lessons.html
       await page.goto(`${baseUrl}/login.html`, { waitUntil: 'domcontentloaded' });
       await page.fill('#loginEmail', 'creator@example.com');
       await page.fill('#loginPassword', 'CreatorPass123!');
       await page.click('#loginSubmitBtn');
 
-      // Expect automatic redirection to creator workspace (creator-lessons.html)
-      await page.waitForURL('**/creator-lessons.html*');
+      await page.waitForURL('**/index.html*');
 
-      // 2. Verify session storage placement
+      // 2. Verify non-staff storage placement
       const sessionToken = await page.evaluate(() => sessionStorage.getItem('access_token'));
       const localToken = await page.evaluate(() => localStorage.getItem('access_token'));
-      assert.strictEqual(sessionToken, 'jwt-mock-creator-token', 'Staff token must reside in sessionStorage');
-      assert.strictEqual(localToken, null, 'Staff token must NEVER reside in persistent localStorage');
+      assert.strictEqual(sessionToken, null, 'Non-Admin token must NOT reside in staff sessionStorage');
+      assert.strictEqual(localToken, 'jwt-mock-legacy-creator-token', 'Non-Admin token resides in standard localStorage');
 
-      // 3. Test Reverse Role Guard: Creator attempts to visit student lessons.html
-      await page.goto(`${baseUrl}/lessons.html`, { waitUntil: 'domcontentloaded' });
-
-      // Guard intercepts and forcibly redirects back to creator-lessons.html
-      await page.waitForURL('**/creator-lessons.html*');
-      assert.ok(page.url().includes('creator-lessons.html'), 'Creator must be blocked from lessons.html and redirected');
-
-      // 4. Test Reverse Role Guard: Creator attempts to visit student index.html (home)
-      await page.goto(`${baseUrl}/index.html`, { waitUntil: 'domcontentloaded' });
-
-      // Guard intercepts and forcibly redirects back to creator-lessons.html
-      await page.waitForURL('**/creator-lessons.html*');
-      assert.ok(page.url().includes('creator-lessons.html'), 'Creator must be blocked from index.html and redirected');
+      // 3. Denied from management.html
+      await page.goto(`${baseUrl}/management.html`, { waitUntil: 'domcontentloaded' });
+      await page.waitForSelector('#managementAuthGuardContainer:not(.d-none)');
+      const isDashboardHidden = await page.locator('#managementDashboardContent').evaluate(el => el.classList.contains('d-none'));
+      assert.strictEqual(isDashboardHidden, true);
 
       const errors = getRuntimeErrors();
       assert.strictEqual(errors.length, 0, `Runtime errors: ${errors.join(', ')}`);
 
     } finally {
-      // 5. Simulate X tab Chrome by closing the page and its tab context
       await page.close();
       await context.close();
-    }
-
-    // 6. User reopens Chrome in a new tab / window
-    const newSession = await createMonitoredPage(browser);
-    try {
-      await newSession.page.goto(`${baseUrl}/index.html`, { waitUntil: 'domcontentloaded' });
-
-      // Verify user is LOGGED OUT on new tab
-      await newSession.page.waitForSelector('#navLoginBtn');
-      await newSession.page.waitForSelector('#navRegisterBtn');
-      const authCluster = await newSession.page.locator('#navAuthenticatedSection').count();
-      assert.strictEqual(authCluster, 0, 'Management account must NOT persist after closing tab (X tab)');
-
-      const errors = newSession.getRuntimeErrors();
-      assert.strictEqual(errors.length, 0, `Runtime errors: ${errors.join(', ')}`);
-    } finally {
-      await newSession.page.close();
-      await newSession.context.close();
     }
   });
 

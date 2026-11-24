@@ -958,81 +958,6 @@ describe('Accessibility Verification: WCAG 2.2 AA Aligned', () => {
     }
   });
 
-  // WCAG 2.2 Creator Lesson Studio & Vocabulary Reordering Accessibility (Task 9D.1)
-  test('WCAG 2.2 Creator Lesson Studio & Vocabulary Reordering Accessibility (Task 9D.1)', async () => {
-    const { page, context, getRuntimeErrors } = await createMonitoredPage(browser, {
-      viewportWidth: 1280,
-      viewportHeight: 720
-    });
-
-    try {
-      await page.addInitScript(`
-        localStorage.setItem('access_token', 'test_creator_jwt');
-        localStorage.setItem('user_info', JSON.stringify({
-          accountId: 2001,
-          fullName: 'Tác Giả A11y',
-          roles: ['Creator']
-        }));
-      `);
-
-      const mockLesson = {
-        lessonId: 101,
-        title: 'HSK 1 — Bài 1: Chào hỏi',
-        status: 'Draft',
-        vocabularyCount: 2,
-        vocabularies: [
-          { vocabId: 1, hanzi: '你', pinyin: 'nǐ', meaningVi: 'Bạn', orderIndex: 1 },
-          { vocabId: 2, hanzi: '好', pinyin: 'hǎo', meaningVi: 'Tốt', orderIndex: 2 }
-        ],
-        createdAt: '2026-09-01T08:00:00Z',
-        updatedAt: '2026-09-02T10:00:00Z'
-      };
-
-      await page.route('**/api/v1/creator/lessons/101', async (route) => {
-        await route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify({ code: 'SUCCESS', data: mockLesson })
-        });
-      });
-
-      await page.goto(`${baseUrl}/creator-lesson-editor.html?id=101`, { waitUntil: 'domcontentloaded' });
-      await page.waitForSelector('#editorVocabList li');
-
-      // 1. Semantic ordered list structure (<ol>)
-      const listTag = await page.locator('#editorVocabList').evaluate(el => el.tagName.toLowerCase());
-      assert.strictEqual(listTag, 'ol', 'Vocabulary list must use semantic <ol> ordered list element');
-
-      // 2. Reorder buttons target size (WCAG 2.2 SC 2.5.8 >= 24x24 px)
-      const upBtns = page.locator('.btn-move-up');
-      const downBtns = page.locator('.btn-move-down');
-      const removeBtns = page.locator('.creator-remove-btn');
-
-      const secondUpBtn = upBtns.nth(1);
-      const secondUpBox = await secondUpBtn.boundingBox();
-      assert.ok(secondUpBox.width >= 24 && secondUpBox.height >= 24, 'Move Up button must satisfy SC 2.5.8 (>= 24x24 px)');
-
-      const firstDownBtn = downBtns.first();
-      const firstDownBox = await firstDownBtn.boundingBox();
-      assert.ok(firstDownBox.width >= 24 && firstDownBox.height >= 24, 'Move Down button must satisfy SC 2.5.8 (>= 24x24 px)');
-
-      // 3. Non-empty accessible names (WCAG 2.2 SC 4.1.2)
-      assert.ok(await secondUpBtn.getAttribute('aria-label'), 'Move Up button must possess non-empty aria-label');
-      assert.ok(await firstDownBtn.getAttribute('aria-label'), 'Move Down button must possess non-empty aria-label');
-      assert.ok(await removeBtns.first().getAttribute('aria-label'), 'Remove button must possess non-empty aria-label');
-
-      // 4. Status announcement live region (WCAG 2.2 SC 4.1.3)
-      const liveStatus = page.locator('#reorderLiveStatus');
-      assert.strictEqual(await liveStatus.getAttribute('role'), 'status', 'Reorder live region must have role="status"');
-      assert.strictEqual(await liveStatus.getAttribute('aria-live'), 'polite', 'Reorder live region must be polite');
-
-      const errors = getRuntimeErrors();
-      assert.strictEqual(errors.length, 0, `Runtime errors during creator studio a11y audit:\n${errors.join('\n')}`);
-    } finally {
-      await context.close();
-    }
-  });
-
   // WCAG 2.2 SC 2.4.11: Focus Not Obscured (Minimum) across responsive viewports
   test('WCAG 2.2 SC 2.4.11: Focus Not Obscured (Minimum) across 375px, 768px, and 1200px viewports', async () => {
     const viewports = [
@@ -1295,10 +1220,7 @@ describe('Accessibility Verification: WCAG 2.2 AA Aligned', () => {
       'admin-radicals.html',
       'admin-vocabulary.html',
       'admin-lessons.html',
-      'creator-lessons.html',
-      'creator-import.html',
-      'moderator-queue.html',
-      'moderator-history.html'
+      'admin-audit-logs.html'
     ];
 
     const { page, context, getRuntimeErrors } = await createMonitoredPage(browser, {
@@ -1333,7 +1255,7 @@ describe('Accessibility Verification: WCAG 2.2 AA Aligned', () => {
           accountId: 1,
           emailOrPhone: 'admin@example.com',
           fullName: 'Quản Trị Viên',
-          roles: ['Admin', 'Creator', 'Moderator', 'Learner']
+          roles: ['Admin']
         }));
       });
 
@@ -1374,24 +1296,21 @@ describe('Accessibility Verification: WCAG 2.2 AA Aligned', () => {
     }
   });
 
-  // WCAG 2.2 Universal Landmarks, Titles, and Skip Links across All 22 Frontend Pages
-  test('WCAG 2.2 Universal Conformance across All 22 Frontend Pages: Titles, Skip Link, and Main Landmark', async () => {
-    const all22Pages = [
+  // WCAG 2.2 Universal Landmarks, Titles, and Skip Links across Active Frontend Pages
+  test('WCAG 2.2 Universal Conformance across Active Frontend Pages: Titles, Skip Link, and Main Landmark', async () => {
+    const activePages = [
       'admin-accounts.html',
+      'admin-audit-logs.html',
+      'admin-dashboard.html',
       'admin-lessons.html',
       'admin-radicals.html',
       'admin-roles.html',
       'admin-vocabulary.html',
-      'creator-import.html',
-      'creator-lesson-editor.html',
-      'creator-lessons.html',
       'index.html',
       'lesson-detail.html',
       'lessons.html',
       'login.html',
-      'moderator-history.html',
-      'moderator-queue.html',
-      'moderator-review.html',
+      'management.html',
       'profile.html',
       'radicals.html',
       'register.html',
@@ -1428,22 +1347,26 @@ describe('Accessibility Verification: WCAG 2.2 AA Aligned', () => {
       });
 
       await page.addInitScript(() => {
-        const isAuthPage = window.location.pathname.includes('login.html') || window.location.pathname.includes('register.html');
-        if (isAuthPage) {
-          localStorage.removeItem('access_token');
-          localStorage.removeItem('user_info');
-        } else {
-          localStorage.setItem('access_token', 'test_admin_jwt');
-          localStorage.setItem('user_info', JSON.stringify({
+        const pathName = window.location.pathname;
+        const isAuthPage = pathName.includes('login.html') || pathName.includes('register.html');
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('user_info');
+        sessionStorage.removeItem('access_token');
+        sessionStorage.removeItem('user_info');
+        if (!isAuthPage) {
+          const isAdminPage = pathName.includes('admin-') || pathName.includes('management.html');
+          const storage = isAdminPage ? sessionStorage : localStorage;
+          storage.setItem('access_token', 'test_admin_jwt');
+          storage.setItem('user_info', JSON.stringify({
             accountId: 1,
-            emailOrPhone: 'admin@example.com',
-            fullName: 'Quản Trị Viên',
-            roles: ['Admin', 'Creator', 'Moderator', 'Learner']
+            emailOrPhone: isAdminPage ? 'admin@example.com' : 'learner@example.com',
+            fullName: isAdminPage ? 'Quản Trị Viên' : 'Học Viên',
+            roles: isAdminPage ? ['Admin'] : ['Learner']
           }));
         }
       });
 
-      for (const pageName of all22Pages) {
+      for (const pageName of activePages) {
         await page.goto(`${baseUrl}/${pageName}`, { waitUntil: 'domcontentloaded' });
 
         const pageAudit = await page.evaluate(() => {

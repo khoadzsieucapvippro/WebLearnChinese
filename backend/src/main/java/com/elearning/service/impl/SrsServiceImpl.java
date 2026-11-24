@@ -244,9 +244,7 @@ public class SrsServiceImpl implements SrsService {
                     Authentication auth = SecurityContextHolder.getContext().getAuthentication();
                     boolean isAdmin = auth != null && auth.getAuthorities().stream()
                             .anyMatch(a -> a.getAuthority().equalsIgnoreCase("ROLE_ADMIN") || a.getAuthority().equalsIgnoreCase("Admin"));
-                    boolean isCreator = user != null && user.getAccount() != null && lesson.getCreatedBy() != null
-                            && lesson.getCreatedBy().getAccountId().equals(user.getAccount().getAccountId());
-                    if (!isAdmin && !isCreator) {
+                    if (!isAdmin) {
                         throw new BusinessException(ErrorCode.NOT_FOUND, "Không tìm thấy bài học với ID: " + lessonId);
                     }
                 }
@@ -734,9 +732,7 @@ public class SrsServiceImpl implements SrsService {
                 Authentication auth = SecurityContextHolder.getContext().getAuthentication();
                 boolean isAdmin = auth != null && auth.getAuthorities().stream()
                         .anyMatch(a -> a.getAuthority().equalsIgnoreCase("ROLE_ADMIN") || a.getAuthority().equalsIgnoreCase("Admin"));
-                boolean isCreator = user != null && user.getAccount() != null && lesson.getCreatedBy() != null
-                        && lesson.getCreatedBy().getAccountId().equals(user.getAccount().getAccountId());
-                if (!isAdmin && !isCreator) {
+                if (!isAdmin) {
                     throw new BusinessException(ErrorCode.NOT_FOUND, "Không tìm thấy bài học với ID: " + lessonId);
                 }
             }

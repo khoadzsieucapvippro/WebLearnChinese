@@ -94,7 +94,7 @@ class FlywayFullChainIntegrationTests {
 
             try (ResultSet resultSet = statement.executeQuery("SELECT COUNT(*) FROM `role`")) {
                 assertThat(resultSet.next()).isTrue();
-                assertThat(resultSet.getInt(1)).isEqualTo(4);
+                assertThat(resultSet.getInt(1)).isEqualTo(2);
             }
 
             try (ResultSet resultSet = statement.executeQuery("SELECT COUNT(*) FROM `radical`")) {

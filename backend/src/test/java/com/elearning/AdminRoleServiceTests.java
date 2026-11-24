@@ -69,17 +69,17 @@ class AdminRoleServiceTests {
     class GetRolesTests {
 
         @Test
-        @DisplayName("GIVEN system roles exist WHEN calling getRoles THEN returns all 4 system roles sorted")
+        @DisplayName("GIVEN system roles exist WHEN calling getRoles THEN returns only supported roles (Learner & Admin) sorted")
         void testGetRoles_success() {
             when(roleRepository.findAll()).thenReturn(List.of(roleAdmin, roleLearner, roleModerator, roleCreator));
 
             List<RoleResponse> roles = adminRoleService.getRoles();
 
-            assertThat(roles).hasSize(4);
+            assertThat(roles).hasSize(2);
             assertThat(roles.get(0).getRoleId()).isEqualTo(1);
             assertThat(roles.get(0).getRoleName()).isEqualTo("Learner");
-            assertThat(roles.get(3).getRoleId()).isEqualTo(4);
-            assertThat(roles.get(3).getRoleName()).isEqualTo("Admin");
+            assertThat(roles.get(1).getRoleId()).isEqualTo(4);
+            assertThat(roles.get(1).getRoleName()).isEqualTo("Admin");
         }
     }
 
@@ -90,15 +90,15 @@ class AdminRoleServiceTests {
         @Test
         @DisplayName("GIVEN effective role change WHEN updating roles THEN roles replaced and authorizationVersion incremented")
         void testUpdateAccountRoles_effectiveChangeIncrementsVersion() {
-            when(roleRepository.findAll()).thenReturn(List.of(roleLearner, roleCreator, roleModerator, roleAdmin));
+            when(roleRepository.findAll()).thenReturn(List.of(roleLearner, roleAdmin));
             when(accountRepository.findByIdForUpdate(5L)).thenReturn(Optional.of(testAccount));
             when(accountRepository.save(any(Account.class))).thenAnswer(i -> i.getArgument(0));
 
-            UpdateAccountRolesRequest request = new UpdateAccountRolesRequest(List.of("Creator"));
+            UpdateAccountRolesRequest request = new UpdateAccountRolesRequest(List.of("Admin"));
             AccountResponse response = adminRoleService.updateAccountRoles(5L, request, "admin@example.com");
 
             assertThat(response).isNotNull();
-            assertThat(response.getRoles()).containsExactly("Creator");
+            assertThat(response.getRoles()).containsExactly("Admin");
             assertThat(testAccount.getAuthorizationVersion()).isEqualTo(2L);
             verify(accountRepository).save(testAccount);
         }
@@ -106,7 +106,7 @@ class AdminRoleServiceTests {
         @Test
         @DisplayName("GIVEN no-op role update (identical roles) WHEN updating THEN authorizationVersion remains unchanged")
         void testUpdateAccountRoles_noOpDoesNotIncrementVersion() {
-            when(roleRepository.findAll()).thenReturn(List.of(roleLearner, roleCreator, roleModerator, roleAdmin));
+            when(roleRepository.findAll()).thenReturn(List.of(roleLearner, roleAdmin));
             when(accountRepository.findByIdForUpdate(5L)).thenReturn(Optional.of(testAccount));
 
             // Requesting same role "Learner" that testAccount already has
@@ -121,42 +121,37 @@ class AdminRoleServiceTests {
         @Test
         @DisplayName("GIVEN duplicate role names in request WHEN updating THEN roles are deduplicated (BUS-8D-02)")
         void testUpdateAccountRoles_deduplicatesDuplicateEntries() {
-            when(roleRepository.findAll()).thenReturn(List.of(roleLearner, roleCreator, roleModerator, roleAdmin));
+            when(roleRepository.findAll()).thenReturn(List.of(roleLearner, roleAdmin));
             when(accountRepository.findByIdForUpdate(5L)).thenReturn(Optional.of(testAccount));
             when(accountRepository.save(any(Account.class))).thenAnswer(i -> i.getArgument(0));
 
-            UpdateAccountRolesRequest request = new UpdateAccountRolesRequest(List.of("Creator", "Creator", "ROLE_CREATOR"));
+            UpdateAccountRolesRequest request = new UpdateAccountRolesRequest(List.of("Admin", "Admin", "ROLE_ADMIN"));
             AccountResponse response = adminRoleService.updateAccountRoles(5L, request, "admin@example.com");
 
             assertThat(response).isNotNull();
-            assertThat(response.getRoles()).containsExactly("Creator");
+            assertThat(response.getRoles()).containsExactly("Admin");
             assertThat(testAccount.getAuthorizationVersion()).isEqualTo(2L);
         }
 
         @Test
-        @DisplayName("GIVEN invalid role name WHEN updating THEN throws BAD_REQUEST")
+        @DisplayName("GIVEN invalid or deprecated role name WHEN updating THEN throws BAD_REQUEST")
         void testUpdateAccountRoles_invalidRoleThrowsBadRequest() {
             when(roleRepository.findAll()).thenReturn(List.of(roleLearner, roleCreator, roleModerator, roleAdmin));
 
-            UpdateAccountRolesRequest request = new UpdateAccountRolesRequest(List.of("Learner", "SuperAdmin"));
-
-            assertThatThrownBy(() -> adminRoleService.updateAccountRoles(5L, request, "admin@example.com"))
+            assertThatThrownBy(() -> adminRoleService.updateAccountRoles(5L, new UpdateAccountRolesRequest(List.of("Learner", "SuperAdmin")), "admin@example.com"))
                     .isInstanceOf(BusinessException.class)
                     .hasFieldOrPropertyWithValue("errorCode", ErrorCode.BAD_REQUEST)
                     .hasMessageContaining("Vai trò không hợp lệ: SuperAdmin");
-        }
 
-        @Test
-        @DisplayName("GIVEN both Creator and Moderator in requested roles WHEN updating THEN throws BAD_REQUEST for SoD violation")
-        void testUpdateAccountRoles_creatorAndModeratorMutuallyExclusive_throwsBadRequest() {
-            when(roleRepository.findAll()).thenReturn(List.of(roleLearner, roleCreator, roleModerator, roleAdmin));
-
-            UpdateAccountRolesRequest request = new UpdateAccountRolesRequest(List.of("Creator", "Moderator"));
-
-            assertThatThrownBy(() -> adminRoleService.updateAccountRoles(5L, request, "admin@example.com"))
+            assertThatThrownBy(() -> adminRoleService.updateAccountRoles(5L, new UpdateAccountRolesRequest(List.of("Creator")), "admin@example.com"))
                     .isInstanceOf(BusinessException.class)
                     .hasFieldOrPropertyWithValue("errorCode", ErrorCode.BAD_REQUEST)
-                    .hasMessage("Vai trò Người sáng tạo (Creator) và Kiểm duyệt viên (Moderator) loại trừ lẫn nhau tuyệt đối. Một tài khoản không thể đồng thời giữ cả hai vai trò.");
+                    .hasMessageContaining("Vai trò không hợp lệ: Creator");
+
+            assertThatThrownBy(() -> adminRoleService.updateAccountRoles(5L, new UpdateAccountRolesRequest(List.of("Moderator")), "admin@example.com"))
+                    .isInstanceOf(BusinessException.class)
+                    .hasFieldOrPropertyWithValue("errorCode", ErrorCode.BAD_REQUEST)
+                    .hasMessageContaining("Vai trò không hợp lệ: Moderator");
         }
 
         @Test

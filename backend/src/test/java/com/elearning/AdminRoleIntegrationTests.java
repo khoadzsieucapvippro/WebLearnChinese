@@ -124,15 +124,15 @@ class AdminRoleIntegrationTests {
         }
 
         @Test
-        @DisplayName("GIVEN admin user WHEN calling GET roles THEN returns 200 with all 4 system roles")
+        @DisplayName("GIVEN admin user WHEN calling GET roles THEN returns 200 with all 2 supported system roles")
         void testGetRoles_admin_returns200() throws Exception {
             mockMvc.perform(get("/api/v1/admin/roles")
                             .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code", is("SUCCESS")))
-                    .andExpect(jsonPath("$.data", hasSize(4)))
+                    .andExpect(jsonPath("$.data", hasSize(2)))
                     .andExpect(jsonPath("$.data[0].roleName", is("Learner")))
-                    .andExpect(jsonPath("$.data[3].roleName", is("Admin")));
+                    .andExpect(jsonPath("$.data[1].roleName", is("Admin")));
         }
     }
 
@@ -145,7 +145,7 @@ class AdminRoleIntegrationTests {
         void testUpdateRoles_effectiveChange_incrementsVersionAndRevokesOldTokens() throws Exception {
             String oldTargetToken = jwtUtil.generateToken(targetAccount.getEmailOrPhone(), List.of("Learner"), 1L);
 
-            UpdateAccountRolesRequest request = new UpdateAccountRolesRequest(List.of("Learner", "Creator"));
+            UpdateAccountRolesRequest request = new UpdateAccountRolesRequest(List.of("Admin"));
 
             mockMvc.perform(put("/api/v1/admin/accounts/" + targetAccount.getAccountId() + "/roles")
                             .header("Authorization", "Bearer " + adminToken)
@@ -154,7 +154,7 @@ class AdminRoleIntegrationTests {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code", is("SUCCESS")))
                     .andExpect(jsonPath("$.message", is("Phân quyền tài khoản thành công")))
-                    .andExpect(jsonPath("$.data.roles", hasSize(2)));
+                    .andExpect(jsonPath("$.data.roles", hasSize(1)));
 
             Account updated = accountRepository.findById(targetAccount.getAccountId()).orElseThrow();
             assertThat(updated.getAuthorizationVersion()).isEqualTo(2L);
@@ -165,7 +165,7 @@ class AdminRoleIntegrationTests {
                     .andExpect(status().isUnauthorized());
 
             // Fresh token with auth_ver=2 is accepted
-            String freshToken = jwtUtil.generateToken(targetAccount.getEmailOrPhone(), List.of("Learner", "Creator"), 2L);
+            String freshToken = jwtUtil.generateToken(targetAccount.getEmailOrPhone(), List.of("Admin"), 2L);
             mockMvc.perform(get("/api/v1/users/profile")
                             .header("Authorization", "Bearer " + freshToken))
                     .andExpect(status().isOk());
@@ -190,7 +190,7 @@ class AdminRoleIntegrationTests {
         @Test
         @DisplayName("GIVEN self-demotion attempt by admin WHEN removing Admin role THEN returns 400 Bad Request (POL-8D-02)")
         void testSelfDemotion_returns400() throws Exception {
-            UpdateAccountRolesRequest request = new UpdateAccountRolesRequest(List.of("Learner", "Moderator"));
+            UpdateAccountRolesRequest request = new UpdateAccountRolesRequest(List.of("Learner"));
 
             mockMvc.perform(put("/api/v1/admin/accounts/" + adminAccount.getAccountId() + "/roles")
                             .header("Authorization", "Bearer " + adminToken)
