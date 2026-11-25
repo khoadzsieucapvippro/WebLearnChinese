@@ -5,10 +5,13 @@ import com.elearning.dto.request.ChangePasswordRequest;
 import com.elearning.dto.request.ForgotPasswordRequest;
 import com.elearning.dto.request.LoginRequest;
 import com.elearning.dto.request.RegisterRequest;
+import com.elearning.dto.request.RegisterSendOtpRequest;
+import com.elearning.dto.request.RegisterVerifyOtpRequest;
 import com.elearning.dto.request.ResetPasswordRequest;
 import com.elearning.dto.request.VerifyResetCodeRequest;
 import com.elearning.dto.response.AuthResponse;
 import com.elearning.dto.response.ForgotPasswordResponse;
+import com.elearning.dto.response.RegistrationOtpResponse;
 import com.elearning.entity.Account;
 import com.elearning.entity.PasswordResetToken;
 import com.elearning.entity.Role;
@@ -20,6 +23,7 @@ import com.elearning.repository.RoleRepository;
 import com.elearning.security.CustomUserDetails;
 import com.elearning.security.JwtUtil;
 import com.elearning.service.AuthService;
+import com.elearning.service.EmailDomainValidator;
 import com.elearning.service.EmailService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,9 +50,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * Implementation of {@link AuthService} handling account registration, login, and self-service password reset (Model A).
- * Orchestrates AccountRepository, RoleRepository, PasswordEncoder, AuthenticationManager, JwtUtil,
- * EmailService, and persistent PasswordResetTokenRepository.
+ * Implementation of {@link AuthService} handling account registration (including real email OTP verification),
+ * login, logout, password change, and self-service password reset (Model A).
  */
 @Service
 public class AuthServiceImpl implements AuthService {
@@ -56,8 +59,8 @@ public class AuthServiceImpl implements AuthService {
     private static final Logger log = LoggerFactory.getLogger(AuthServiceImpl.class);
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
     private static final HexFormat HEX_FORMAT = HexFormat.of();
-    private static final long RESET_CODE_TTL_MINUTES = 15L;
-    private static final int MAX_RESET_ATTEMPTS = 5;
+    private static final long OTP_TTL_MINUTES = 15L;
+    private static final int MAX_OTP_ATTEMPTS = 5;
     private static final int MAX_COOLDOWN_ENTRIES = 10000;
     private static final String ANTI_ENUMERATION_MESSAGE =
             "Nếu email tồn tại trong hệ thống, mã xác thực 6 chữ số đã được gửi đến hộp thư của bạn.";
@@ -69,13 +72,19 @@ public class AuthServiceImpl implements AuthService {
     private final JwtUtil jwtUtil;
     private final EmailService emailService;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
-    private final ConcurrentMap<String, Long> resetCooldownByEmail = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, Long> otpCooldownByKey = new ConcurrentHashMap<>();
+
+    @Autowired(required = false)
+    private EmailDomainValidator emailDomainValidator;
 
     @Value("${app.email.allow-dev-code-fallback:false}")
     private boolean allowDevCodeFallback = false;
 
     @Value("${app.email.reset-resend-cooldown-seconds:60}")
-    private long resetResendCooldownSeconds = 60L;
+    private long otpResendCooldownSeconds = 60L;
+
+    @Value("${app.auth.require-registration-otp:false}")
+    private boolean requireRegistrationOtp = false;
 
     public AuthServiceImpl(
             AccountRepository accountRepository,
@@ -105,34 +114,115 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    @Transactional
+    @Transactional(noRollbackFor = BusinessException.class)
     public AuthResponse register(RegisterRequest request) {
-        // 1. Uniqueness check
-        if (accountRepository.existsByEmailOrPhone(request.getEmailOrPhone())) {
-            throw new BusinessException(ErrorCode.CONFLICT, "Email hoặc số điện thoại đã được đăng ký trong hệ thống");
+        String identifier = request.getEmailOrPhone() != null ? request.getEmailOrPhone().trim() : "";
+        String normalizedEmail = identifier.toLowerCase(Locale.ROOT);
+
+        if (requireRegistrationOtp) {
+            validateDeliverableEmailOrThrow(normalizedEmail);
+            String code = request.getVerificationCode() != null ? request.getVerificationCode().trim() : "";
+            if (code.isEmpty()) {
+                throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Vui lòng xác thực mã OTP gửi về email trước khi tạo tài khoản");
+            }
+            if (accountRepository.existsByEmailOrPhone(normalizedEmail)) {
+                throw new BusinessException(ErrorCode.CONFLICT, "Email đã được đăng ký trong hệ thống");
+            }
+            validateOtpOrThrow(normalizedEmail, PasswordResetToken.PURPOSE_REGISTRATION, code);
+            AuthResponse response = createAccountAndIssueToken(normalizedEmail, request.getPassword(), request.getFullName().trim());
+            clearOtpState(normalizedEmail, PasswordResetToken.PURPOSE_REGISTRATION);
+            return response;
         }
 
-        // 2. Fetch default Learner role
+        // Compatibility path for automated API tests that post directly to /auth/register
+        if (accountRepository.existsByEmailOrPhone(identifier)) {
+            throw new BusinessException(ErrorCode.CONFLICT, "Email hoặc số điện thoại đã được đăng ký trong hệ thống");
+        }
+        return createAccountAndIssueToken(identifier, request.getPassword(), request.getFullName());
+    }
+
+    @Override
+    @Transactional
+    public RegistrationOtpResponse sendRegistrationOtp(RegisterSendOtpRequest request) {
+        if (request == null || request.getEmail() == null || request.getEmail().trim().isEmpty()) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Email không được để trống");
+        }
+
+        String email = request.getEmail().trim().toLowerCase(Locale.ROOT);
+        validateDeliverableEmailOrThrow(email);
+
+        if (accountRepository.existsByEmailOrPhone(email)) {
+            throw new BusinessException(ErrorCode.CONFLICT, "Email này đã được đăng ký trong hệ thống");
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        enforceCooldown(email, PasswordResetToken.PURPOSE_REGISTRATION, now);
+
+        String code = generateSixDigitCode();
+        String fullName = request.getFullName() != null ? request.getFullName().trim() : "";
+        boolean emailSent = emailService != null && emailService.sendRegistrationVerificationCode(email, code, fullName);
+        if (!emailSent) {
+            throw new BusinessException(
+                    ErrorCode.INTERNAL_ERROR,
+                    "Không thể gửi mã xác thực tới địa chỉ email này. Vui lòng kiểm tra lại email hoặc thử lại sau."
+            );
+        }
+
+        persistOtpToken(email, PasswordResetToken.PURPOSE_REGISTRATION, code, now);
+        recordCooldown(email, PasswordResetToken.PURPOSE_REGISTRATION);
+        log.info("Đã gửi OTP xác thực đăng ký tài khoản [TTL {} phút].", OTP_TTL_MINUTES);
+
+        return new RegistrationOtpResponse(
+                "Mã xác thực 6 chữ số đã được gửi tới email của bạn. Vui lòng kiểm tra hộp thư đến hoặc thư mục Spam.",
+                true
+        );
+    }
+
+    @Override
+    @Transactional(noRollbackFor = BusinessException.class)
+    public AuthResponse verifyRegistrationOtpAndRegister(RegisterVerifyOtpRequest request) {
+        if (request == null) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Dữ liệu yêu cầu không hợp lệ");
+        }
+
+        String email = request.getEmail() != null ? request.getEmail().trim().toLowerCase(Locale.ROOT) : "";
+        String code = request.getVerificationCode() != null ? request.getVerificationCode().trim() : "";
+        String fullName = request.getFullName() != null ? request.getFullName().trim() : "";
+        String password = request.getPassword() != null ? request.getPassword() : "";
+
+        validateDeliverableEmailOrThrow(email);
+        if (code.isEmpty()) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Mã xác thực không được để trống");
+        }
+        if (accountRepository.existsByEmailOrPhone(email)) {
+            throw new BusinessException(ErrorCode.CONFLICT, "Email này đã được đăng ký trong hệ thống");
+        }
+
+        validateOtpOrThrow(email, PasswordResetToken.PURPOSE_REGISTRATION, code);
+
+        AuthResponse response = createAccountAndIssueToken(email, password, fullName);
+        clearOtpState(email, PasswordResetToken.PURPOSE_REGISTRATION);
+        log.info("Hoàn tất xác thực email và đăng ký tài khoản mới.");
+        return response;
+    }
+
+    private AuthResponse createAccountAndIssueToken(String emailOrPhone, String rawPassword, String fullName) {
         Role learnerRole = roleRepository.findByRoleName("Learner")
                 .or(() -> roleRepository.findById(1))
                 .orElseThrow(() -> new BusinessException(ErrorCode.INTERNAL_ERROR, "Không tìm thấy vai trò mặc định Learner trong hệ thống"));
 
-        // 3. Construct Account entity with hashed password
         Account account = new Account();
-        account.setEmailOrPhone(request.getEmailOrPhone());
-        account.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+        account.setEmailOrPhone(emailOrPhone);
+        account.setPasswordHash(passwordEncoder.encode(rawPassword));
         account.setStatus("Active");
         account.addRole(learnerRole);
 
-        // 4. Attach UserProfile
         UserProfile userProfile = new UserProfile();
-        userProfile.setFullName(request.getFullName());
+        userProfile.setFullName(fullName);
         account.setUserProfile(userProfile);
 
-        // 5. Persist account and cascaded profile
         Account savedAccount = accountRepository.save(account);
 
-        // 6. Generate JWT token and return AuthResponse
         List<String> roleNames = List.of(learnerRole.getRoleName());
         String token = jwtUtil.generateToken(
                 savedAccount.getEmailOrPhone(),
@@ -145,7 +235,7 @@ public class AuthServiceImpl implements AuthService {
                 "Bearer",
                 savedAccount.getAccountId(),
                 savedAccount.getEmailOrPhone(),
-                request.getFullName(),
+                fullName,
                 roleNames
         );
     }
@@ -153,7 +243,6 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional(readOnly = true)
     public AuthResponse login(LoginRequest request) {
-        // 1. Authenticate via AuthenticationManager (verifies credentials through CustomUserDetailsService & PasswordEncoder)
         Authentication authentication;
         try {
             authentication = authenticationManager.authenticate(
@@ -163,25 +252,21 @@ public class AuthServiceImpl implements AuthService {
             throw new BusinessException(ErrorCode.UNAUTHORIZED, "Email/số điện thoại hoặc mật khẩu không chính xác");
         }
 
-        // 2. Retrieve authenticated principal and account details
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
         Account account = accountRepository.findByEmailOrPhone(userDetails.getUsername())
                 .orElseThrow(() -> new BusinessException(ErrorCode.UNAUTHORIZED, "Email/số điện thoại hoặc mật khẩu không chính xác"));
 
-        // 3. Verify active status
         if (!"Active".equalsIgnoreCase(account.getStatus())) {
             throw new BusinessException(ErrorCode.UNAUTHORIZED, "Tài khoản chưa được kích hoạt hoặc đã bị vô hiệu hóa");
         }
 
-        // 4. Extract roles and profile
         List<String> roleNames = account.getRoles().stream()
                 .map(Role::getRoleName)
                 .toList();
 
         String fullName = account.getUserProfile() != null ? account.getUserProfile().getFullName() : null;
 
-        // 5. Generate JWT token
         String token = jwtUtil.generateToken(
                 account.getEmailOrPhone(),
                 roleNames,
@@ -241,18 +326,16 @@ public class AuthServiceImpl implements AuthService {
         String email = request.getEmail().trim().toLowerCase(Locale.ROOT);
         LocalDateTime now = LocalDateTime.now();
 
-        enforceResendCooldown(email, now);
+        enforceCooldown(email, PasswordResetToken.PURPOSE_PASSWORD_RESET, now);
 
-        // Anti-enumeration defense: return the exact same response shape & wording when account doesn't exist
         Optional<Account> accountOpt = accountRepository.findByEmailOrPhone(email);
         if (accountOpt.isEmpty() || "Banned".equalsIgnoreCase(accountOpt.get().getStatus())) {
             log.info("Bỏ qua gửi OTP quên mật khẩu cho tài khoản không tồn tại hoặc bị khóa.");
-            recordCooldown(email);
+            recordCooldown(email, PasswordResetToken.PURPOSE_PASSWORD_RESET);
             return new ForgotPasswordResponse(ANTI_ENUMERATION_MESSAGE, null, !allowDevCodeFallback);
         }
 
-        int num = 100000 + SECURE_RANDOM.nextInt(900000);
-        String code = String.valueOf(num);
+        String code = generateSixDigitCode();
 
         boolean emailSent = emailService != null && emailService.sendPasswordResetCode(email, code);
         if (!emailSent && !allowDevCodeFallback) {
@@ -262,19 +345,9 @@ public class AuthServiceImpl implements AuthService {
             );
         }
 
-        if (passwordResetTokenRepository != null) {
-            PasswordResetToken token = passwordResetTokenRepository.findByEmail(email)
-                    .orElseGet(PasswordResetToken::new);
-            token.setEmail(email);
-            token.setCodeHash(hashOtp(email, code));
-            token.setExpiresAt(now.plusMinutes(RESET_CODE_TTL_MINUTES));
-            token.setLastSentAt(now);
-            token.setFailedAttempts(0);
-            passwordResetTokenRepository.save(token);
-        }
-
-        recordCooldown(email);
-        log.info("Đã cấp mã xác thực quên mật khẩu [TTL {} phút, emailSent={}].", RESET_CODE_TTL_MINUTES, emailSent);
+        persistOtpToken(email, PasswordResetToken.PURPOSE_PASSWORD_RESET, code, now);
+        recordCooldown(email, PasswordResetToken.PURPOSE_PASSWORD_RESET);
+        log.info("Đã cấp mã xác thực quên mật khẩu [TTL {} phút, emailSent={}].", OTP_TTL_MINUTES, emailSent);
 
         String devCode = (emailSent || !allowDevCodeFallback) ? null : code;
         return new ForgotPasswordResponse(ANTI_ENUMERATION_MESSAGE, devCode, emailSent);
@@ -296,7 +369,7 @@ public class AuthServiceImpl implements AuthService {
             throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Mã xác thực không được để trống");
         }
 
-        validateResetTokenOrThrow(email, code);
+        validateOtpOrThrow(email, PasswordResetToken.PURPOSE_PASSWORD_RESET, code);
     }
 
     @Override
@@ -319,7 +392,7 @@ public class AuthServiceImpl implements AuthService {
             throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Mật khẩu mới phải từ 6 đến 100 ký tự");
         }
 
-        validateResetTokenOrThrow(email, code);
+        validateOtpOrThrow(email, PasswordResetToken.PURPOSE_PASSWORD_RESET, code);
 
         Account account = accountRepository.findByEmailOrPhone(email)
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "Không tìm thấy tài khoản với email này"));
@@ -328,21 +401,50 @@ public class AuthServiceImpl implements AuthService {
         account.incrementAuthorizationVersion();
         accountRepository.save(account);
 
-        if (passwordResetTokenRepository != null) {
-            passwordResetTokenRepository.deleteByEmail(email);
-        }
-        resetCooldownByEmail.remove(email);
+        clearOtpState(email, PasswordResetToken.PURPOSE_PASSWORD_RESET);
         log.info("Đặt lại mật khẩu thành công cho tài khoản đã xác thực.");
     }
 
-    private void enforceResendCooldown(String email, LocalDateTime now) {
-        if (resetResendCooldownSeconds <= 0) {
+    private void validateDeliverableEmailOrThrow(String email) {
+        if (emailDomainValidator != null) {
+            if (!emailDomainValidator.isValidEmailSyntax(email)) {
+                throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Email không đúng định dạng (ví dụ: tenban@gmail.com)");
+            }
+            if (!emailDomainValidator.isDeliverableEmailDomain(email)) {
+                throw new BusinessException(
+                        ErrorCode.VALIDATION_ERROR,
+                        "Tên miền email không tồn tại hoặc không hỗ trợ nhận thư. Vui lòng dùng Gmail hoặc email thật."
+                );
+            }
+        } else if (email == null || !email.contains("@")) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR, "Email không đúng định dạng");
+        }
+    }
+
+    private void persistOtpToken(String email, String purpose, String code, LocalDateTime now) {
+        if (passwordResetTokenRepository == null) {
+            return;
+        }
+        PasswordResetToken token = passwordResetTokenRepository.findByEmailAndPurpose(email, purpose)
+                .orElseGet(PasswordResetToken::new);
+        token.setEmail(email);
+        token.setPurpose(purpose);
+        token.setCodeHash(hashOtp(scopedEmailKey(email, purpose), code));
+        token.setExpiresAt(now.plusMinutes(OTP_TTL_MINUTES));
+        token.setLastSentAt(now);
+        token.setFailedAttempts(0);
+        passwordResetTokenRepository.save(token);
+    }
+
+    private void enforceCooldown(String email, String purpose, LocalDateTime now) {
+        if (otpResendCooldownSeconds <= 0) {
             return;
         }
         long nowMs = System.currentTimeMillis();
-        long cooldownMs = resetResendCooldownSeconds * 1000L;
+        long cooldownMs = otpResendCooldownSeconds * 1000L;
+        String key = scopedEmailKey(email, purpose);
 
-        Long lastInMemory = resetCooldownByEmail.get(email);
+        Long lastInMemory = otpCooldownByKey.get(key);
         if (lastInMemory != null && (nowMs - lastInMemory) < cooldownMs) {
             long remaining = Math.max(1L, (cooldownMs - (nowMs - lastInMemory) + 999L) / 1000L);
             throw new BusinessException(
@@ -352,57 +454,56 @@ public class AuthServiceImpl implements AuthService {
         }
 
         if (passwordResetTokenRepository != null) {
-            Optional<PasswordResetToken> existingOpt = passwordResetTokenRepository.findByEmail(email);
+            Optional<PasswordResetToken> existingOpt = passwordResetTokenRepository.findByEmailAndPurpose(email, purpose);
             if (existingOpt.isPresent()) {
-                PasswordResetToken existing = existingOpt.get();
-                LocalDateTime lastSent = existing.getLastSentAt();
-                if (lastSent != null && lastSent.plusSeconds(resetResendCooldownSeconds).isAfter(now)) {
+                LocalDateTime lastSent = existingOpt.get().getLastSentAt();
+                if (lastSent != null && lastSent.plusSeconds(otpResendCooldownSeconds).isAfter(now)) {
                     throw new BusinessException(
                             ErrorCode.TOO_MANY_REQUESTS,
-                            "Vui lòng đợi " + resetResendCooldownSeconds + " giây trước khi yêu cầu gửi lại mã mới."
+                            "Vui lòng đợi " + otpResendCooldownSeconds + " giây trước khi yêu cầu gửi lại mã mới."
                     );
                 }
             }
         }
     }
 
-    private void recordCooldown(String email) {
-        if (resetCooldownByEmail.size() >= MAX_COOLDOWN_ENTRIES) {
-            long cutoff = System.currentTimeMillis() - Math.max(resetResendCooldownSeconds, 60L) * 1000L;
-            resetCooldownByEmail.entrySet().removeIf(entry -> entry.getValue() < cutoff);
+    private void recordCooldown(String email, String purpose) {
+        if (otpCooldownByKey.size() >= MAX_COOLDOWN_ENTRIES) {
+            long cutoff = System.currentTimeMillis() - Math.max(otpResendCooldownSeconds, 60L) * 1000L;
+            otpCooldownByKey.entrySet().removeIf(entry -> entry.getValue() < cutoff);
         }
-        resetCooldownByEmail.put(email, System.currentTimeMillis());
+        otpCooldownByKey.put(scopedEmailKey(email, purpose), System.currentTimeMillis());
     }
 
-    private void validateResetTokenOrThrow(String email, String code) {
+    private void validateOtpOrThrow(String email, String purpose, String code) {
         if (passwordResetTokenRepository == null) {
             throw new BusinessException(ErrorCode.BAD_REQUEST, "Mã xác thực không chính xác hoặc đã hết hạn");
         }
 
-        PasswordResetToken token = passwordResetTokenRepository.findByEmail(email)
+        PasswordResetToken token = passwordResetTokenRepository.findByEmailAndPurpose(email, purpose)
                 .orElseThrow(() -> new BusinessException(ErrorCode.BAD_REQUEST, "Mã xác thực không chính xác hoặc đã hết hạn"));
 
         LocalDateTime now = LocalDateTime.now();
         if (token.getExpiresAt() == null || token.getExpiresAt().isBefore(now)) {
-            passwordResetTokenRepository.deleteByEmail(email);
+            passwordResetTokenRepository.deleteByEmailAndPurpose(email, purpose);
             throw new BusinessException(ErrorCode.BAD_REQUEST, "Mã xác thực đã hết hạn. Vui lòng yêu cầu mã mới.");
         }
 
-        if (token.getFailedAttempts() >= MAX_RESET_ATTEMPTS) {
-            passwordResetTokenRepository.deleteByEmail(email);
+        if (token.getFailedAttempts() >= MAX_OTP_ATTEMPTS) {
+            passwordResetTokenRepository.deleteByEmailAndPurpose(email, purpose);
             throw new BusinessException(
                     ErrorCode.TOO_MANY_REQUESTS,
-                    "Bạn đã nhập sai mã quá " + MAX_RESET_ATTEMPTS + " lần. Vui lòng yêu cầu mã xác thực mới."
+                    "Bạn đã nhập sai mã quá " + MAX_OTP_ATTEMPTS + " lần. Vui lòng yêu cầu mã xác thực mới."
             );
         }
 
-        if (!verifyOtpHash(email, code, token.getCodeHash())) {
+        if (!verifyOtpHash(scopedEmailKey(email, purpose), code, token.getCodeHash())) {
             int nextAttempts = token.getFailedAttempts() + 1;
-            if (nextAttempts >= MAX_RESET_ATTEMPTS) {
-                passwordResetTokenRepository.deleteByEmail(email);
+            if (nextAttempts >= MAX_OTP_ATTEMPTS) {
+                passwordResetTokenRepository.deleteByEmailAndPurpose(email, purpose);
                 throw new BusinessException(
                         ErrorCode.TOO_MANY_REQUESTS,
-                        "Bạn đã nhập sai mã quá " + MAX_RESET_ATTEMPTS + " lần. Vui lòng yêu cầu mã xác thực mới."
+                        "Bạn đã nhập sai mã quá " + MAX_OTP_ATTEMPTS + " lần. Vui lòng yêu cầu mã xác thực mới."
                 );
             }
             token.setFailedAttempts(nextAttempts);
@@ -411,15 +512,30 @@ public class AuthServiceImpl implements AuthService {
         }
     }
 
-    public static String hashOtp(String email, String code) {
+    private void clearOtpState(String email, String purpose) {
+        if (passwordResetTokenRepository != null) {
+            passwordResetTokenRepository.deleteByEmailAndPurpose(email, purpose);
+        }
+        otpCooldownByKey.remove(scopedEmailKey(email, purpose));
+    }
+
+    private static String generateSixDigitCode() {
+        return String.valueOf(100000 + SECURE_RANDOM.nextInt(900000));
+    }
+
+    public static String scopedEmailKey(String email, String purpose) {
+        return purpose + ":" + email;
+    }
+
+    public static String hashOtp(String scopedKey, String code) {
         byte[] saltBytes = new byte[16];
         SECURE_RANDOM.nextBytes(saltBytes);
         String saltHex = HEX_FORMAT.formatHex(saltBytes);
-        String digestHex = sha256Hex(saltHex + ":" + email + ":" + code);
+        String digestHex = sha256Hex(saltHex + ":" + scopedKey + ":" + code);
         return saltHex + ":" + digestHex;
     }
 
-    private static boolean verifyOtpHash(String email, String code, String storedHash) {
+    private static boolean verifyOtpHash(String scopedKey, String code, String storedHash) {
         if (storedHash == null) {
             return false;
         }
@@ -429,7 +545,7 @@ public class AuthServiceImpl implements AuthService {
         }
         String saltHex = storedHash.substring(0, sep);
         String expectedHex = storedHash.substring(sep + 1);
-        String actualHex = sha256Hex(saltHex + ":" + email + ":" + code);
+        String actualHex = sha256Hex(saltHex + ":" + scopedKey + ":" + code);
         return MessageDigest.isEqual(
                 expectedHex.getBytes(StandardCharsets.UTF_8),
                 actualHex.getBytes(StandardCharsets.UTF_8)

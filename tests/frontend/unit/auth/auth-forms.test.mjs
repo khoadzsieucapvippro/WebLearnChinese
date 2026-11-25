@@ -197,6 +197,16 @@ describe('Authentication Form Validation & Business Constraints', () => {
       assert.strictEqual(result.isValid, true);
       assert.deepStrictEqual(result.errors, {});
     });
+
+    test('rejects phone number or malformed email in registration form', () => {
+      const phoneResult = validateRegisterForm('Nguyen Van A', '0912345678', 'SuperSecret!123');
+      assert.strictEqual(phoneResult.isValid, false);
+      assert.ok(phoneResult.errors.emailOrPhone);
+
+      const badDomainResult = validateRegisterForm('Nguyen Van A', 'user@localhost', 'SuperSecret!123');
+      assert.strictEqual(badDomainResult.isValid, false);
+      assert.ok(badDomainResult.errors.emailOrPhone);
+    });
   });
 
   describe('Redirect Security (Open Redirect Prevention CWE-601)', () => {

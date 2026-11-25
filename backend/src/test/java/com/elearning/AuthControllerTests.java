@@ -8,8 +8,11 @@ import com.elearning.dto.request.ResetPasswordRequest;
 import com.elearning.dto.request.VerifyResetCodeRequest;
 import com.elearning.dto.request.LoginRequest;
 import com.elearning.dto.request.RegisterRequest;
+import com.elearning.dto.request.RegisterSendOtpRequest;
+import com.elearning.dto.request.RegisterVerifyOtpRequest;
 import com.elearning.dto.response.AuthResponse;
 import com.elearning.dto.response.ForgotPasswordResponse;
+import com.elearning.dto.response.RegistrationOtpResponse;
 import com.elearning.exception.BusinessException;
 import com.elearning.exception.GlobalExceptionHandler;
 import com.elearning.service.AuthService;
@@ -118,6 +121,39 @@ class AuthControllerTests {
                     .andExpect(status().isConflict())
                     .andExpect(jsonPath("$.code").value("CONFLICT"))
                     .andExpect(jsonPath("$.message").value(containsString("đã được đăng ký")));
+        }
+        @Test
+        @DisplayName("GIVEN valid send-otp request WHEN POST /register/send-otp THEN returns 200 OK")
+        void testSendRegistrationOtpSuccess() throws Exception {
+            RegisterSendOtpRequest request = new RegisterSendOtpRequest("realuser@gmail.com", "Secret@123", "Nguyen Van A");
+            when(authService.sendRegistrationOtp(any(RegisterSendOtpRequest.class)))
+                    .thenReturn(new RegistrationOtpResponse("Mã xác thực 6 chữ số đã được gửi", true));
+
+            mockMvc.perform(post("/api/v1/auth/register/send-otp")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("SUCCESS"))
+                    .andExpect(jsonPath("$.data.emailSent").value(true));
+
+            verify(authService).sendRegistrationOtp(any(RegisterSendOtpRequest.class));
+        }
+
+        @Test
+        @DisplayName("GIVEN valid verify-otp request WHEN POST /register/verify-otp THEN returns 201 Created")
+        void testVerifyRegistrationOtpSuccess() throws Exception {
+            RegisterVerifyOtpRequest request = new RegisterVerifyOtpRequest("realuser@gmail.com", "Secret@123", "Nguyen Van A", "482915");
+            AuthResponse response = new AuthResponse("jwt.token", "Bearer", 10L, "realuser@gmail.com", "Nguyen Van A", List.of("Learner"));
+            when(authService.verifyRegistrationOtpAndRegister(any(RegisterVerifyOtpRequest.class))).thenReturn(response);
+
+            mockMvc.perform(post("/api/v1/auth/register/verify-otp")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andExpect(status().isCreated())
+                    .andExpect(jsonPath("$.code").value("SUCCESS"))
+                    .andExpect(jsonPath("$.data.token").value("jwt.token"));
+
+            verify(authService).verifyRegistrationOtpAndRegister(any(RegisterVerifyOtpRequest.class));
         }
     }
 

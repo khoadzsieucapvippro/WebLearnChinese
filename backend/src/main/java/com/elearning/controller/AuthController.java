@@ -5,11 +5,14 @@ import com.elearning.dto.request.ChangePasswordRequest;
 import com.elearning.dto.request.ForgotPasswordRequest;
 import com.elearning.dto.request.LoginRequest;
 import com.elearning.dto.request.RegisterRequest;
+import com.elearning.dto.request.RegisterSendOtpRequest;
+import com.elearning.dto.request.RegisterVerifyOtpRequest;
 import com.elearning.dto.request.ResetPasswordRequest;
 import com.elearning.dto.request.VerifyResetCodeRequest;
 import com.elearning.dto.response.ApiResponse;
 import com.elearning.dto.response.AuthResponse;
 import com.elearning.dto.response.ForgotPasswordResponse;
+import com.elearning.dto.response.RegistrationOtpResponse;
 import com.elearning.exception.BusinessException;
 import com.elearning.security.LoginRateLimiter;
 import com.elearning.service.AuthService;
@@ -56,6 +59,40 @@ public class AuthController {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Đăng ký tài khoản thành công", response));
+    }
+
+    @PostMapping("/register/send-otp")
+    public ResponseEntity<ApiResponse<RegistrationOtpResponse>> sendRegistrationOtp(
+            @Valid @RequestBody RegisterSendOtpRequest request,
+            HttpServletRequest servletRequest) {
+        String clientIp = resolveClientIp(servletRequest);
+        if (!loginRateLimiter.tryAcquire(clientIp)) {
+            throw new BusinessException(
+                    ErrorCode.TOO_MANY_REQUESTS,
+                    "Quá nhiều yêu cầu đăng ký, vui lòng thử lại sau"
+            );
+        }
+
+        RegistrationOtpResponse response = authService.sendRegistrationOtp(request);
+        return ResponseEntity.ok(ApiResponse.success(response.getMessage(), response));
+    }
+
+    @PostMapping("/register/verify-otp")
+    public ResponseEntity<ApiResponse<AuthResponse>> verifyRegistrationOtp(
+            @Valid @RequestBody RegisterVerifyOtpRequest request,
+            HttpServletRequest servletRequest) {
+        String clientIp = resolveClientIp(servletRequest);
+        if (!loginRateLimiter.tryAcquire(clientIp)) {
+            throw new BusinessException(
+                    ErrorCode.TOO_MANY_REQUESTS,
+                    "Quá nhiều yêu cầu xác thực, vui lòng thử lại sau"
+            );
+        }
+
+        AuthResponse response = authService.verifyRegistrationOtpAndRegister(request);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(ApiResponse.success("Xác thực email và đăng ký tài khoản thành công", response));
     }
 
     @PostMapping("/login")

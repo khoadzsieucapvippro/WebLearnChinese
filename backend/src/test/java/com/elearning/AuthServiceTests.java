@@ -4,11 +4,14 @@ import com.elearning.common.ErrorCode;
 import com.elearning.dto.request.ChangePasswordRequest;
 import com.elearning.dto.request.ForgotPasswordRequest;
 import com.elearning.dto.request.ResetPasswordRequest;
-import com.elearning.dto.request.VerifyResetCodeRequest;
 import com.elearning.dto.request.LoginRequest;
 import com.elearning.dto.request.RegisterRequest;
+import com.elearning.dto.request.RegisterSendOtpRequest;
+import com.elearning.dto.request.RegisterVerifyOtpRequest;
+import com.elearning.dto.request.VerifyResetCodeRequest;
 import com.elearning.dto.response.AuthResponse;
 import com.elearning.dto.response.ForgotPasswordResponse;
+import com.elearning.dto.response.RegistrationOtpResponse;
 import com.elearning.entity.Account;
 import com.elearning.entity.PasswordResetToken;
 import com.elearning.entity.Role;
@@ -19,6 +22,7 @@ import com.elearning.repository.PasswordResetTokenRepository;
 import com.elearning.repository.RoleRepository;
 import com.elearning.security.CustomUserDetails;
 import com.elearning.security.JwtUtil;
+import com.elearning.service.EmailDomainValidator;
 import com.elearning.service.EmailService;
 import com.elearning.service.impl.AuthServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -326,7 +330,8 @@ class AuthServiceTests {
             Account account = new Account();
             account.setEmailOrPhone("user@elearning.com");
             when(accountRepository.findByEmailOrPhone("user@elearning.com")).thenReturn(Optional.of(account));
-            when(passwordResetTokenRepository.findByEmail("user@elearning.com")).thenReturn(Optional.empty());
+            when(passwordResetTokenRepository.findByEmailAndPurpose("user@elearning.com", PasswordResetToken.PURPOSE_PASSWORD_RESET))
+                    .thenReturn(Optional.empty());
             when(emailService.sendPasswordResetCode(anyString(), anyString())).thenReturn(true);
 
             ForgotPasswordRequest request = new ForgotPasswordRequest("user@elearning.com");
@@ -343,6 +348,7 @@ class AuthServiceTests {
             verify(passwordResetTokenRepository).save(tokenCaptor.capture());
             PasswordResetToken savedToken = tokenCaptor.getValue();
             assertThat(savedToken.getEmail()).isEqualTo("user@elearning.com");
+            assertThat(savedToken.getPurpose()).isEqualTo(PasswordResetToken.PURPOSE_PASSWORD_RESET);
             assertThat(savedToken.getCodeHash()).doesNotContain(codeCaptor.getValue());
             assertThat(savedToken.getFailedAttempts()).isZero();
         }
@@ -367,7 +373,8 @@ class AuthServiceTests {
             Account account = new Account();
             account.setEmailOrPhone("user@elearning.com");
             when(accountRepository.findByEmailOrPhone("user@elearning.com")).thenReturn(Optional.of(account));
-            when(passwordResetTokenRepository.findByEmail("user@elearning.com")).thenReturn(Optional.empty());
+            when(passwordResetTokenRepository.findByEmailAndPurpose("user@elearning.com", PasswordResetToken.PURPOSE_PASSWORD_RESET))
+                    .thenReturn(Optional.empty());
             when(emailService.sendPasswordResetCode(anyString(), anyString())).thenReturn(false);
 
             ForgotPasswordRequest request = new ForgotPasswordRequest("user@elearning.com");
@@ -384,8 +391,10 @@ class AuthServiceTests {
         void testForgotPassword_cooldownEnforced() {
             PasswordResetToken existing = new PasswordResetToken();
             existing.setEmail("user@elearning.com");
+            existing.setPurpose(PasswordResetToken.PURPOSE_PASSWORD_RESET);
             existing.setLastSentAt(java.time.LocalDateTime.now().minusSeconds(10));
-            when(passwordResetTokenRepository.findByEmail("user@elearning.com")).thenReturn(Optional.of(existing));
+            when(passwordResetTokenRepository.findByEmailAndPurpose("user@elearning.com", PasswordResetToken.PURPOSE_PASSWORD_RESET))
+                    .thenReturn(Optional.of(existing));
 
             ForgotPasswordRequest request = new ForgotPasswordRequest("user@elearning.com");
 
@@ -408,13 +417,87 @@ class AuthServiceTests {
     }
 
     @Nested
+    @DisplayName("Registration Email OTP Verification Tests")
+    class RegistrationOtpTests {
+
+        @Test
+        @DisplayName("GIVEN valid real email WHEN sendRegistrationOtp THEN dispatches OTP via EmailService and saves REGISTRATION token")
+        void testSendRegistrationOtp_success() {
+            when(accountRepository.existsByEmailOrPhone("realuser@gmail.com")).thenReturn(false);
+            when(passwordResetTokenRepository.findByEmailAndPurpose("realuser@gmail.com", PasswordResetToken.PURPOSE_REGISTRATION))
+                    .thenReturn(Optional.empty());
+            when(emailService.sendRegistrationVerificationCode(anyString(), anyString(), anyString())).thenReturn(true);
+
+            RegisterSendOtpRequest request = new RegisterSendOtpRequest("realuser@gmail.com", "Secret@123", "Nguyen Van A");
+            RegistrationOtpResponse response = authService.sendRegistrationOtp(request);
+
+            assertThat(response.isEmailSent()).isTrue();
+            verify(emailService).sendRegistrationVerificationCode(
+                    org.mockito.ArgumentMatchers.eq("realuser@gmail.com"),
+                    anyString(),
+                    org.mockito.ArgumentMatchers.eq("Nguyen Van A")
+            );
+            verify(passwordResetTokenRepository).save(any(PasswordResetToken.class));
+        }
+
+        @Test
+        @DisplayName("GIVEN fake or non-MX email domain WHEN sendRegistrationOtp THEN throws VALIDATION_ERROR without sending email")
+        void testSendRegistrationOtp_invalidMxDomain_rejected() {
+            EmailDomainValidator strictValidator = new EmailDomainValidator() {
+                @Override
+                protected boolean lookupMxRecord(String asciiDomain) {
+                    return false;
+                }
+            };
+            org.springframework.test.util.ReflectionTestUtils.setField(strictValidator, "verifyMxRecord", true);
+            org.springframework.test.util.ReflectionTestUtils.setField(authService, "emailDomainValidator", strictValidator);
+
+            RegisterSendOtpRequest request = new RegisterSendOtpRequest("user@gmial-fake-domain.invalid", "Secret@123", "Nguyen Van A");
+
+            assertThatThrownBy(() -> authService.sendRegistrationOtp(request))
+                    .isInstanceOf(BusinessException.class)
+                    .satisfies(ex -> assertThat(((BusinessException) ex).getErrorCode()).isEqualTo(ErrorCode.VALIDATION_ERROR));
+
+            verify(emailService, never()).sendRegistrationVerificationCode(anyString(), anyString(), anyString());
+        }
+
+        @Test
+        @DisplayName("GIVEN valid OTP WHEN verifyRegistrationOtpAndRegister THEN creates account and deletes OTP token")
+        void testVerifyRegistrationOtpAndRegister_success() {
+            String email = "realuser@gmail.com";
+            PasswordResetToken token = new PasswordResetToken();
+            token.setEmail(email);
+            token.setPurpose(PasswordResetToken.PURPOSE_REGISTRATION);
+            token.setCodeHash(AuthServiceImpl.hashOtp(AuthServiceImpl.scopedEmailKey(email, PasswordResetToken.PURPOSE_REGISTRATION), "482915"));
+            token.setExpiresAt(java.time.LocalDateTime.now().plusMinutes(10));
+            token.setLastSentAt(java.time.LocalDateTime.now().minusMinutes(2));
+
+            when(accountRepository.existsByEmailOrPhone(email)).thenReturn(false);
+            when(passwordResetTokenRepository.findByEmailAndPurpose(email, PasswordResetToken.PURPOSE_REGISTRATION))
+                    .thenReturn(Optional.of(token));
+            when(roleRepository.findByRoleName("Learner")).thenReturn(Optional.of(learnerRole));
+            when(passwordEncoder.encode("Secret@123")).thenReturn("$2a$10$hashed");
+            when(accountRepository.save(any(Account.class))).thenAnswer(inv -> inv.getArgument(0));
+            when(jwtUtil.generateToken(email, List.of("Learner"), 1L)).thenReturn("jwt.token.val");
+
+            RegisterVerifyOtpRequest request = new RegisterVerifyOtpRequest(email, "Secret@123", "Nguyen Van A", "482915");
+            AuthResponse response = authService.verifyRegistrationOtpAndRegister(request);
+
+            assertThat(response.getToken()).isEqualTo("jwt.token.val");
+            assertThat(response.getEmailOrPhone()).isEqualTo(email);
+            verify(passwordResetTokenRepository).deleteByEmailAndPurpose(email, PasswordResetToken.PURPOSE_REGISTRATION);
+        }
+    }
+
+    @Nested
     @DisplayName("ResetPassword & VerifyResetCode Tests")
     class ResetPasswordTests {
 
         private PasswordResetToken createToken(String email, String code, int failedAttempts, java.time.LocalDateTime expiresAt) {
             PasswordResetToken token = new PasswordResetToken();
             token.setEmail(email);
-            token.setCodeHash(AuthServiceImpl.hashOtp(email, code));
+            token.setPurpose(PasswordResetToken.PURPOSE_PASSWORD_RESET);
+            token.setCodeHash(AuthServiceImpl.hashOtp(AuthServiceImpl.scopedEmailKey(email, PasswordResetToken.PURPOSE_PASSWORD_RESET), code));
             token.setExpiresAt(expiresAt);
             token.setLastSentAt(java.time.LocalDateTime.now().minusMinutes(2));
             token.setFailedAttempts(failedAttempts);
@@ -430,7 +513,8 @@ class AuthServiceTests {
             account.setAuthorizationVersion(1L);
 
             PasswordResetToken token = createToken("user@elearning.com", "654321", 0, java.time.LocalDateTime.now().plusMinutes(10));
-            when(passwordResetTokenRepository.findByEmail("user@elearning.com")).thenReturn(Optional.of(token));
+            when(passwordResetTokenRepository.findByEmailAndPurpose("user@elearning.com", PasswordResetToken.PURPOSE_PASSWORD_RESET))
+                    .thenReturn(Optional.of(token));
             when(accountRepository.findByEmailOrPhone("user@elearning.com")).thenReturn(Optional.of(account));
             when(passwordEncoder.encode("NewSecret@123")).thenReturn("newHashed@123");
 
@@ -440,14 +524,15 @@ class AuthServiceTests {
             assertThat(account.getPasswordHash()).isEqualTo("newHashed@123");
             assertThat(account.getAuthorizationVersion()).isEqualTo(2L);
             verify(accountRepository).save(account);
-            verify(passwordResetTokenRepository).deleteByEmail("user@elearning.com");
+            verify(passwordResetTokenRepository).deleteByEmailAndPurpose("user@elearning.com", PasswordResetToken.PURPOSE_PASSWORD_RESET);
         }
 
         @Test
         @DisplayName("GIVEN legacy backdoor code 123456 when real OTP is 654321 WHEN verifyResetCode THEN throws BAD_REQUEST and increments attempts")
         void testVerifyResetCode_rejectsHardcoded123456() {
             PasswordResetToken token = createToken("user@elearning.com", "654321", 0, java.time.LocalDateTime.now().plusMinutes(10));
-            when(passwordResetTokenRepository.findByEmail("user@elearning.com")).thenReturn(Optional.of(token));
+            when(passwordResetTokenRepository.findByEmailAndPurpose("user@elearning.com", PasswordResetToken.PURPOSE_PASSWORD_RESET))
+                    .thenReturn(Optional.of(token));
 
             VerifyResetCodeRequest request = new VerifyResetCodeRequest("user@elearning.com", "123456");
 
@@ -463,7 +548,8 @@ class AuthServiceTests {
         @DisplayName("GIVEN 5th wrong OTP attempt WHEN verifyResetCode THEN deletes token and throws TOO_MANY_REQUESTS")
         void testVerifyResetCode_locksOutAfterFiveFailures() {
             PasswordResetToken token = createToken("user@elearning.com", "654321", 4, java.time.LocalDateTime.now().plusMinutes(10));
-            when(passwordResetTokenRepository.findByEmail("user@elearning.com")).thenReturn(Optional.of(token));
+            when(passwordResetTokenRepository.findByEmailAndPurpose("user@elearning.com", PasswordResetToken.PURPOSE_PASSWORD_RESET))
+                    .thenReturn(Optional.of(token));
 
             VerifyResetCodeRequest request = new VerifyResetCodeRequest("user@elearning.com", "999999");
 
@@ -471,14 +557,15 @@ class AuthServiceTests {
                     .isInstanceOf(BusinessException.class)
                     .satisfies(ex -> assertThat(((BusinessException) ex).getErrorCode()).isEqualTo(ErrorCode.TOO_MANY_REQUESTS));
 
-            verify(passwordResetTokenRepository).deleteByEmail("user@elearning.com");
+            verify(passwordResetTokenRepository).deleteByEmailAndPurpose("user@elearning.com", PasswordResetToken.PURPOSE_PASSWORD_RESET);
         }
 
         @Test
         @DisplayName("GIVEN incorrect verification code WHEN resetPassword THEN throws BAD_REQUEST without updating account")
         void testResetPassword_invalidCode_throwsBadRequest() {
             PasswordResetToken token = createToken("user@elearning.com", "654321", 0, java.time.LocalDateTime.now().plusMinutes(10));
-            when(passwordResetTokenRepository.findByEmail("user@elearning.com")).thenReturn(Optional.of(token));
+            when(passwordResetTokenRepository.findByEmailAndPurpose("user@elearning.com", PasswordResetToken.PURPOSE_PASSWORD_RESET))
+                    .thenReturn(Optional.of(token));
 
             ResetPasswordRequest request = new ResetPasswordRequest("user@elearning.com", "999999", "NewSecret@123");
 

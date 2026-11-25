@@ -93,6 +93,10 @@ services:
         value: "false"
       - key: APP_EMAIL_RESET_RESEND_COOLDOWN_SECONDS
         value: "60"
+      - key: APP_EMAIL_VERIFY_MX_RECORD
+        value: "true"
+      - key: APP_AUTH_REQUIRE_REGISTRATION_OTP
+        value: "true"
 
       # Resend API Key for Cloud HTTPS Email Delivery (Port 443)
       - key: RESEND_API_KEY

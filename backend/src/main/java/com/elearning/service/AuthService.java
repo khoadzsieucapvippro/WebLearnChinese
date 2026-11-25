@@ -4,10 +4,13 @@ import com.elearning.dto.request.ChangePasswordRequest;
 import com.elearning.dto.request.ForgotPasswordRequest;
 import com.elearning.dto.request.LoginRequest;
 import com.elearning.dto.request.RegisterRequest;
+import com.elearning.dto.request.RegisterSendOtpRequest;
+import com.elearning.dto.request.RegisterVerifyOtpRequest;
 import com.elearning.dto.request.ResetPasswordRequest;
 import com.elearning.dto.request.VerifyResetCodeRequest;
 import com.elearning.dto.response.AuthResponse;
 import com.elearning.dto.response.ForgotPasswordResponse;
+import com.elearning.dto.response.RegistrationOtpResponse;
 
 /**
  * Service interface for user registration and authentication workflows.
@@ -21,6 +24,17 @@ public interface AuthService {
      * @return AuthResponse containing token and user identity details
      */
     AuthResponse register(RegisterRequest request);
+
+    /**
+     * Validates email format + MX domain, checks uniqueness, and dispatches a 6-digit
+     * verification OTP to the user's real email inbox prior to account creation.
+     */
+    RegistrationOtpResponse sendRegistrationOtp(RegisterSendOtpRequest request);
+
+    /**
+     * Verifies the 6-digit registration OTP and persists the new Learner account.
+     */
+    AuthResponse verifyRegistrationOtpAndRegister(RegisterVerifyOtpRequest request);
 
     /**
      * Authenticates an existing user and issues a JWT token.

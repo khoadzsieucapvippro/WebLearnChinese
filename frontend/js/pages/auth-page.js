@@ -199,9 +199,11 @@ export function validateRegisterForm(fullName, emailOrPhone, password) {
 
   const cleanEmail = (emailOrPhone || '').trim();
   if (!cleanEmail) {
-    errors.emailOrPhone = 'Vui lòng nhập email hoặc số điện thoại.';
+    errors.emailOrPhone = 'Vui lòng nhập email đăng ký.';
   } else if (cleanEmail.length > 191) {
-    errors.emailOrPhone = 'Email hoặc số điện thoại không được vượt quá 191 ký tự.';
+    errors.emailOrPhone = 'Email không được vượt quá 191 ký tự.';
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(cleanEmail)) {
+    errors.emailOrPhone = 'Vui lòng nhập địa chỉ email hợp lệ (ví dụ: tenban@gmail.com).';
   }
 
   const cleanPassword = password || '';
@@ -448,7 +450,46 @@ function initRegisterForm() {
     setupPasswordToggle(toggleRegPasswordBtn, passwordInput);
   }
 
+  const otpSection = document.getElementById('registerOtpSection');
+  const otpForm = document.getElementById('registerOtpForm');
+  const otpInput = document.getElementById('regOtpInput');
+  const otpError = document.getElementById('regOtpError');
+  const otpAlert = document.getElementById('registerOtpAlert');
+  const targetEmailDisplay = document.getElementById('regTargetEmailDisplay');
+  const btnResendOtp = document.getElementById('btnResendRegOtp');
+  const btnBackToStep1 = document.getElementById('btnBackToRegStep1');
+  const btnConfirmOtp = document.getElementById('btnConfirmRegOtp');
+
+  let pendingRegistration = null;
+  let regResendTimerId = null;
   let isSubmitting = false;
+
+  function stopRegResendCooldown() {
+    if (regResendTimerId) {
+      clearInterval(regResendTimerId);
+      regResendTimerId = null;
+    }
+    if (btnResendOtp) {
+      btnResendOtp.disabled = false;
+      btnResendOtp.textContent = 'Gửi lại mã';
+    }
+  }
+
+  function startRegResendCooldown(seconds = 60) {
+    stopRegResendCooldown();
+    if (!btnResendOtp) return;
+    let remaining = seconds;
+    btnResendOtp.disabled = true;
+    btnResendOtp.textContent = `Gửi lại mã (${remaining}s)`;
+    regResendTimerId = setInterval(() => {
+      remaining -= 1;
+      if (remaining <= 0) {
+        stopRegResendCooldown();
+      } else {
+        btnResendOtp.textContent = `Gửi lại mã (${remaining}s)`;
+      }
+    }, 1000);
+  }
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -479,46 +520,71 @@ function initRegisterForm() {
       return;
     }
 
+    const cleanEmail = emailOrPhone.trim().toLowerCase();
+    const cleanFullName = fullName.trim();
+
     isSubmitting = true;
-    setButtonLoading(submitBtn, true, 'Đang tạo tài khoản...');
+    setButtonLoading(submitBtn, true, 'Đang gửi mã xác thực...');
 
     try {
-      await apiClient('/auth/register', {
+      await apiClient('/auth/register/send-otp', {
         method: 'POST',
         body: {
-          fullName: fullName.trim(),
-          emailOrPhone: emailOrPhone.trim(),
+          fullName: cleanFullName,
+          email: cleanEmail,
           password: password
         }
       });
 
-      // On successful registration, redirect to login with success indicator
-      window.location.href = 'login.html?registered=true';
+      pendingRegistration = {
+        fullName: cleanFullName,
+        email: cleanEmail,
+        password: password
+      };
+
+      if (targetEmailDisplay) targetEmailDisplay.textContent = cleanEmail;
+      form.classList.add('d-none');
+      otpSection?.classList.remove('d-none');
+      if (otpAlert) {
+        otpAlert.className = 'alert d-none small py-2 px-3 mb-3';
+        otpAlert.textContent = '';
+      }
+      if (otpInput) {
+        otpInput.value = '';
+        otpInput.classList.remove('is-invalid');
+        otpInput.focus();
+      }
+      if (otpError) {
+        otpError.textContent = '';
+        otpError.classList.add('d-none');
+      }
+      startRegResendCooldown(60);
 
     } catch (err) {
-      isSubmitting = false;
-      setButtonLoading(submitBtn, false);
-
       if (err instanceof ApiError) {
         if (err.status === 409) {
-          // Conflict: email/phone already registered
           if (emailInput && emailError) {
-            setFieldError(emailInput, emailError, 'Email hoặc số điện thoại này đã được sử dụng.');
+            setFieldError(emailInput, emailError, 'Email này đã được sử dụng.');
             emailInput.focus();
           }
-          setGlobalAlert(globalAlert, 'Email hoặc số điện thoại này đã được sử dụng. Vui lòng chọn tài khoản khác hoặc đăng nhập.');
+          setGlobalAlert(globalAlert, 'Email này đã được sử dụng. Vui lòng chọn email khác hoặc đăng nhập.');
         } else if (err.status === 400) {
           const fieldErrors = parseFieldErrors(err.errors);
           if (fieldErrors.fullName && fullNameInput && fullNameError) {
             setFieldError(fullNameInput, fullNameError, fieldErrors.fullName);
           }
-          if (fieldErrors.emailOrPhone && emailInput && emailError) {
-            setFieldError(emailInput, emailError, fieldErrors.emailOrPhone);
+          if ((fieldErrors.email || fieldErrors.emailOrPhone) && emailInput && emailError) {
+            setFieldError(emailInput, emailError, fieldErrors.email || fieldErrors.emailOrPhone);
           }
           if (fieldErrors.password && passwordInput && passwordError) {
             setFieldError(passwordInput, passwordError, fieldErrors.password);
           }
+          if (err.message && emailInput && emailError && !fieldErrors.email && !fieldErrors.fullName && !fieldErrors.password) {
+            setFieldError(emailInput, emailError, err.message);
+          }
           setGlobalAlert(globalAlert, err.message || 'Thông tin đăng ký không hợp lệ. Vui lòng kiểm tra lại.');
+        } else if (err.status === 429) {
+          setGlobalAlert(globalAlert, err.message || 'Bạn thao tác quá nhanh. Vui lòng đợi giây lát rồi thử lại.');
         } else if (err.status === 0 || err.code === 'NETWORK_ERROR') {
           setGlobalAlert(globalAlert, 'Không thể kết nối đến máy chủ backend. Vui lòng kiểm tra trạng thái máy chủ.');
         } else if (err.status === 408 || err.code === 'TIMEOUT') {
@@ -526,11 +592,86 @@ function initRegisterForm() {
         } else if (err.status === 404 || err.code === 'NOT_FOUND') {
           setGlobalAlert(globalAlert, 'Không tìm thấy dịch vụ đăng ký (404). Vui lòng kiểm tra cấu hình máy chủ.');
         } else {
-          setGlobalAlert(globalAlert, 'Hệ thống đang gặp sự cố. Vui lòng thử lại sau.');
+          setGlobalAlert(globalAlert, err.message || 'Hệ thống đang gặp sự cố. Vui lòng thử lại sau.');
         }
       } else {
         setGlobalAlert(globalAlert, 'Đã xảy ra lỗi không xác định. Vui lòng thử lại.');
       }
+    } finally {
+      isSubmitting = false;
+      setButtonLoading(submitBtn, false);
+    }
+  });
+
+  btnBackToStep1?.addEventListener('click', () => {
+    stopRegResendCooldown();
+    otpSection?.classList.add('d-none');
+    form.classList.remove('d-none');
+    if (emailInput) emailInput.focus();
+  });
+
+  btnResendOtp?.addEventListener('click', async () => {
+    if (!pendingRegistration || btnResendOtp.disabled) return;
+    btnResendOtp.disabled = true;
+    btnResendOtp.textContent = 'Đang gửi lại...';
+    if (otpAlert) otpAlert.classList.add('d-none');
+
+    try {
+      await apiClient('/auth/register/send-otp', {
+        method: 'POST',
+        body: pendingRegistration
+      });
+      if (otpAlert) {
+        setGlobalAlert(otpAlert, 'Đã gửi lại mã xác thực mới tới ' + pendingRegistration.email + '.', 'info');
+      }
+      startRegResendCooldown(60);
+    } catch (err) {
+      stopRegResendCooldown();
+      if (otpAlert) {
+        setGlobalAlert(otpAlert, err.message || 'Không thể gửi lại mã xác thực. Vui lòng thử lại.');
+      }
+    }
+  });
+
+  otpForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!pendingRegistration || isSubmitting) return;
+
+    const code = (otpInput?.value || '').trim();
+    if (!/^\d{6}$/.test(code)) {
+      if (otpInput && otpError) {
+        setFieldError(otpInput, otpError, 'Vui lòng nhập đúng mã xác thực gồm 6 chữ số.');
+        otpInput.focus();
+      }
+      return;
+    }
+
+    clearFormErrors(otpForm, otpAlert);
+    isSubmitting = true;
+    if (btnConfirmOtp) setButtonLoading(btnConfirmOtp, true, 'Đang xác thực...');
+
+    try {
+      await apiClient('/auth/register/verify-otp', {
+        method: 'POST',
+        body: {
+          ...pendingRegistration,
+          verificationCode: code
+        }
+      });
+
+      stopRegResendCooldown();
+      window.location.href = 'login.html?registered=true';
+    } catch (err) {
+      if (otpInput && otpError && (err.status === 400 || err.status === 429)) {
+        setFieldError(otpInput, otpError, err.message || 'Mã xác thực không chính xác hoặc đã hết hạn.');
+        otpInput.focus();
+      }
+      if (otpAlert) {
+        setGlobalAlert(otpAlert, err.message || 'Không thể xác thực mã OTP. Vui lòng thử lại.');
+      }
+    } finally {
+      isSubmitting = false;
+      if (btnConfirmOtp) setButtonLoading(btnConfirmOtp, false);
     }
   });
 }

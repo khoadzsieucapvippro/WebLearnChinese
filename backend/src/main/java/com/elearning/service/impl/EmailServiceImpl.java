@@ -80,17 +80,46 @@ public class EmailServiceImpl implements EmailService {
 
     @Override
     public boolean sendPasswordResetCode(String toEmail, String resetCode) {
-        if (toEmail == null || toEmail.trim().isEmpty() || resetCode == null || resetCode.trim().isEmpty()) {
-            log.warn("Bỏ qua gửi email: địa chỉ nhận hoặc mã xác thực bị trống.");
+        return dispatchOtpEmail(
+                toEmail,
+                resetCode,
+                "Mã xác nhận đặt lại mật khẩu - Hán Ngữ Học Đường",
+                buildResetHtmlContent(toEmail, resetCode),
+                buildResetTextContent(toEmail, resetCode),
+                "đặt lại mật khẩu"
+        );
+    }
+
+    @Override
+    public boolean sendRegistrationVerificationCode(String toEmail, String verificationCode, String fullName) {
+        return dispatchOtpEmail(
+                toEmail,
+                verificationCode,
+                "Mã xác thực đăng ký tài khoản - Hán Ngữ Học Đường",
+                buildRegistrationHtmlContent(toEmail, verificationCode, fullName),
+                buildRegistrationTextContent(toEmail, verificationCode, fullName),
+                "xác thực đăng ký"
+        );
+    }
+
+    private boolean dispatchOtpEmail(
+            String toEmail,
+            String code,
+            String subject,
+            String htmlContent,
+            String textContent,
+            String purposeLabel) {
+        if (toEmail == null || toEmail.trim().isEmpty() || code == null || code.trim().isEmpty()) {
+            log.warn("Bỏ qua gửi email {}: địa chỉ nhận hoặc mã xác thực bị trống.", purposeLabel);
             return false;
         }
 
         String recipient = toEmail.trim().toLowerCase(Locale.ROOT);
-        log.info("Bắt đầu gửi email mã đặt lại mật khẩu tới: {}", maskEmail(recipient));
+        log.info("Bắt đầu gửi email {} tới: {}", purposeLabel, maskEmail(recipient));
 
         // 1. Primary: Brevo API over HTTPS (port 443, 300 free emails/day to any recipient)
         if (brevoApiKey != null && !brevoApiKey.trim().isEmpty()) {
-            if (sendViaBrevo(recipient, resetCode.trim())) {
+            if (sendViaBrevo(recipient, subject, htmlContent, textContent)) {
                 return true;
             }
         } else {
@@ -99,23 +128,23 @@ public class EmailServiceImpl implements EmailService {
 
         // 2. Secondary: Resend API over HTTPS (port 443)
         if (resendApiKey != null && !resendApiKey.trim().isEmpty()) {
-            if (sendViaResend(recipient, resetCode.trim())) {
+            if (sendViaResend(recipient, subject, htmlContent, textContent)) {
                 return true;
             }
         }
 
         // 3. Local dev fallback: Standard SMTP via JavaMailSender
         if (mailSender != null && mailUsername != null && !mailUsername.trim().isEmpty()) {
-            if (sendViaSmtp(recipient, resetCode.trim())) {
+            if (sendViaSmtp(recipient, subject, htmlContent, textContent)) {
                 return true;
             }
         }
 
-        log.warn("Không thể gửi email xác thực tới {} vì không có cổng gửi mail nào thành công.", maskEmail(recipient));
+        log.warn("Không thể gửi email {} tới {} vì không có cổng gửi mail nào thành công.", purposeLabel, maskEmail(recipient));
         return false;
     }
 
-    private boolean sendViaBrevo(String recipient, String resetCode) {
+    private boolean sendViaBrevo(String recipient, String subject, String htmlContent, String textContent) {
         try {
             Map<String, Object> payload = new HashMap<>();
             Map<String, String> sender = new HashMap<>();
@@ -130,9 +159,9 @@ public class EmailServiceImpl implements EmailService {
             toRecipient.put("email", recipient);
             payload.put("to", List.of(toRecipient));
 
-            payload.put("subject", "Mã xác nhận đặt lại mật khẩu - Hán Ngữ Học Đường");
-            payload.put("htmlContent", buildHtmlContent(recipient, resetCode));
-            payload.put("textContent", buildTextContent(recipient, resetCode));
+            payload.put("subject", subject);
+            payload.put("htmlContent", htmlContent);
+            payload.put("textContent", textContent);
 
             String jsonBody = objectMapper.writeValueAsString(payload);
             String targetUrl = (brevoApiUrl != null && !brevoApiUrl.isBlank()) ? brevoApiUrl.trim() : DEFAULT_BREVO_API_URL;
@@ -159,7 +188,7 @@ public class EmailServiceImpl implements EmailService {
         return false;
     }
 
-    private boolean sendViaResend(String recipient, String resetCode) {
+    private boolean sendViaResend(String recipient, String subject, String htmlContent, String textContent) {
         try {
             String effectiveFromName = (fromName != null && !fromName.isBlank()) ? fromName.trim() : "Hán Ngữ Học Đường";
             String effectiveFromEmail = (fromEmail != null && !fromEmail.isBlank()) ? fromEmail.trim() : "onboarding@resend.dev";
@@ -167,9 +196,9 @@ public class EmailServiceImpl implements EmailService {
             Map<String, Object> payload = new HashMap<>();
             payload.put("from", effectiveFromName + " <" + effectiveFromEmail + ">");
             payload.put("to", List.of(recipient));
-            payload.put("subject", "Mã xác nhận đặt lại mật khẩu - Hán Ngữ Học Đường");
-            payload.put("html", buildHtmlContent(recipient, resetCode));
-            payload.put("text", buildTextContent(recipient, resetCode));
+            payload.put("subject", subject);
+            payload.put("html", htmlContent);
+            payload.put("text", textContent);
 
             String jsonBody = objectMapper.writeValueAsString(payload);
             String targetUrl = (resendApiUrl != null && !resendApiUrl.isBlank()) ? resendApiUrl.trim() : DEFAULT_RESEND_API_URL;
@@ -195,7 +224,7 @@ public class EmailServiceImpl implements EmailService {
         return false;
     }
 
-    private boolean sendViaSmtp(String recipient, String resetCode) {
+    private boolean sendViaSmtp(String recipient, String subject, String htmlContent, String textContent) {
         try {
             MimeMessage mimeMessage = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
@@ -204,8 +233,8 @@ public class EmailServiceImpl implements EmailService {
             String effectiveFromName = (fromName != null && !fromName.isBlank()) ? fromName.trim() : "Hán Ngữ Học Đường";
             helper.setFrom(new InternetAddress(senderAddress, effectiveFromName, "UTF-8"));
             helper.setTo(recipient);
-            helper.setSubject("Mã xác nhận đặt lại mật khẩu - Hán Ngữ Học Đường");
-            helper.setText(buildTextContent(recipient, resetCode), buildHtmlContent(recipient, resetCode));
+            helper.setSubject(subject);
+            helper.setText(textContent, htmlContent);
 
             mailSender.send(mimeMessage);
             log.info("Gửi email thành công qua SMTP tới {}", maskEmail(recipient));
@@ -216,28 +245,61 @@ public class EmailServiceImpl implements EmailService {
         }
     }
 
-    private String buildTextContent(String recipient, String resetCode) {
+    private String buildResetTextContent(String recipient, String resetCode) {
+        String safeRecipient = recipient != null ? recipient.trim().toLowerCase(Locale.ROOT) : "";
         return "Hán Ngữ Học Đường\n\n"
                 + "Xin chào,\n"
-                + "Bạn vừa yêu cầu đặt lại mật khẩu cho tài khoản " + recipient + ".\n\n"
+                + "Bạn vừa yêu cầu đặt lại mật khẩu cho tài khoản " + safeRecipient + ".\n\n"
                 + "Mã xác nhận của bạn là: " + resetCode + "\n"
                 + "Mã có hiệu lực trong vòng 15 phút. Tuyệt đối không chia sẻ mã này cho bất kỳ ai.\n\n"
                 + "Nếu bạn không thực hiện yêu cầu này, vui lòng bỏ qua email này.";
     }
 
-    private String buildHtmlContent(String recipient, String resetCode) {
-        String safeRecipient = escapeHtml(recipient);
+    private String buildResetHtmlContent(String recipient, String resetCode) {
+        String safeRecipient = escapeHtml(recipient != null ? recipient.trim().toLowerCase(Locale.ROOT) : "");
         String safeCode = escapeHtml(resetCode);
+        return buildOtpEmailCard(
+                "Xin chào,",
+                "Bạn vừa yêu cầu đặt lại mật khẩu cho tài khoản <strong>" + safeRecipient + "</strong> trên hệ thống học tiếng Trung Hán Ngữ Học Đường.",
+                safeCode,
+                "Nếu bạn không thực hiện yêu cầu này, vui lòng bỏ qua email này. Mật khẩu hiện tại của bạn vẫn được bảo mật an toàn."
+        );
+    }
+
+    private String buildRegistrationTextContent(String recipient, String verificationCode, String fullName) {
+        String greetingName = (fullName != null && !fullName.isBlank()) ? fullName.trim() : "bạn";
+        String safeRecipient = recipient != null ? recipient.trim().toLowerCase(Locale.ROOT) : "";
+        return "Hán Ngữ Học Đường\n\n"
+                + "Xin chào " + greetingName + ",\n"
+                + "Cảm ơn bạn đã đăng ký tài khoản với email " + safeRecipient + ".\n\n"
+                + "Mã xác thực đăng ký của bạn là: " + verificationCode + "\n"
+                + "Mã có hiệu lực trong vòng 15 phút. Tuyệt đối không chia sẻ mã này cho bất kỳ ai.\n\n"
+                + "Nếu bạn không yêu cầu đăng ký tài khoản này, vui lòng bỏ qua email này.";
+    }
+
+    private String buildRegistrationHtmlContent(String recipient, String verificationCode, String fullName) {
+        String safeName = escapeHtml((fullName != null && !fullName.isBlank()) ? fullName.trim() : "bạn");
+        String safeRecipient = escapeHtml(recipient != null ? recipient.trim().toLowerCase(Locale.ROOT) : "");
+        String safeCode = escapeHtml(verificationCode);
+        return buildOtpEmailCard(
+                "Xin chào <strong>" + safeName + "</strong>,",
+                "Cảm ơn bạn đã đăng ký tài khoản học tại <strong>Hán Ngữ Học Đường</strong> bằng địa chỉ email <strong>" + safeRecipient + "</strong>. Vui lòng nhập mã bên dưới để xác thực email thật và hoàn tất tạo tài khoản:",
+                safeCode,
+                "Nếu bạn không thực hiện đăng ký này, vui lòng bỏ qua email này."
+        );
+    }
+
+    private String buildOtpEmailCard(String greetingHtml, String introHtml, String safeCode, String footerNotice) {
         return "<div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;\">"
                 + "<h2 style=\"color: #8B2635; margin-top: 0;\">Hán Ngữ Học Đường</h2>"
-                + "<p>Xin chào,</p>"
-                + "<p>Bạn vừa yêu cầu đặt lại mật khẩu cho tài khoản <strong>" + safeRecipient + "</strong> trên hệ thống học tiếng Trung Hán Ngữ Học Đường.</p>"
+                + "<p>" + greetingHtml + "</p>"
+                + "<p>" + introHtml + "</p>"
                 + "<div style=\"background-color: #f8f9fa; padding: 15px; text-align: center; border-radius: 6px; margin: 20px 0;\">"
                 + "<p style=\"margin: 0; font-size: 14px; color: #6c757d;\">Mã xác nhận của bạn là:</p>"
                 + "<h1 style=\"letter-spacing: 6px; color: #8B2635; margin: 10px 0; font-size: 32px;\">" + safeCode + "</h1>"
                 + "<p style=\"margin: 0; font-size: 13px; color: #dc3545;\">Mã có hiệu lực trong vòng 15 phút. Tuyệt đối không chia sẻ mã này cho người khác.</p>"
                 + "</div>"
-                + "<p>Nếu bạn không thực hiện yêu cầu này, vui lòng bỏ qua email này. Mật khẩu hiện tại của bạn vẫn được bảo mật an toàn.</p>"
+                + "<p>" + escapeHtml(footerNotice) + "</p>"
                 + "<hr style=\"border: none; border-top: 1px solid #eee; margin: 20px 0;\">"
                 + "<p style=\"font-size: 12px; color: #999; margin: 0;\">© 2026 Hán Ngữ Học Đường. Nền tảng học Hán tự và bộ thủ trực tuyến chuẩn mực.</p>"
                 + "</div>";

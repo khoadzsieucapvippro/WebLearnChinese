@@ -20,13 +20,19 @@ import java.time.LocalDateTime;
 @Table(name = "password_reset_token")
 public class PasswordResetToken {
 
+    public static final String PURPOSE_PASSWORD_RESET = "PASSWORD_RESET";
+    public static final String PURPOSE_REGISTRATION = "REGISTRATION";
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "token_id")
     private Long tokenId;
 
-    @Column(name = "email", nullable = false, length = 191, unique = true)
+    @Column(name = "email", nullable = false, length = 191)
     private String email;
+
+    @Column(name = "purpose", nullable = false, length = 30)
+    private String purpose = PURPOSE_PASSWORD_RESET;
 
     @Column(name = "code_hash", nullable = false, length = 200)
     private String codeHash;
@@ -79,6 +85,14 @@ public class PasswordResetToken {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getPurpose() {
+        return purpose;
+    }
+
+    public void setPurpose(String purpose) {
+        this.purpose = purpose;
     }
 
     public String getCodeHash() {

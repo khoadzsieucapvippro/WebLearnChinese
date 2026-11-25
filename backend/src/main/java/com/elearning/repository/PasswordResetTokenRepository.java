@@ -7,12 +7,12 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 /**
- * Repository for persisting and querying password reset OTP tokens.
+ * Repository for persisting and querying email verification / password reset OTP tokens.
  */
 @Repository
 public interface PasswordResetTokenRepository extends JpaRepository<PasswordResetToken, Long> {
 
-    Optional<PasswordResetToken> findByEmail(String email);
+    Optional<PasswordResetToken> findByEmailAndPurpose(String email, String purpose);
 
-    void deleteByEmail(String email);
+    void deleteByEmailAndPurpose(String email, String purpose);
 }

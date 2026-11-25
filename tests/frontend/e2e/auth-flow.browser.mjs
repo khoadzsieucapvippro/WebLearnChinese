@@ -213,7 +213,19 @@ describe('Browser E2E: Authentication UI, Profile & Session Integration', () => 
     const { page, context, getRuntimeErrors } = await createMonitoredPage(browser);
 
     try {
-      await page.route('**/api/v1/auth/register', async (route) => {
+      await page.route('**/api/v1/auth/register/send-otp', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            code: 'SUCCESS',
+            message: 'Mã xác thực 6 chữ số đã được gửi tới email của bạn.',
+            data: { message: 'Mã xác thực 6 chữ số đã được gửi tới email của bạn.', emailSent: true }
+          })
+        });
+      });
+
+      await page.route('**/api/v1/auth/register/verify-otp', async (route) => {
         await route.fulfill({
           status: 201,
           contentType: 'application/json',
@@ -241,10 +253,13 @@ describe('Browser E2E: Authentication UI, Profile & Session Integration', () => 
       assert.strictEqual(await page.locator('#navLoginBtn').getAttribute('aria-current'), null);
 
       await page.fill('#regFullName', 'Học Viên Mới');
-      await page.fill('#regEmail', 'newuser@example.com');
+      await page.fill('#regEmail', 'newuser@gmail.com');
       await page.fill('#regPassword', 'SecretPass123!');
 
       await page.click('#registerSubmitBtn');
+      await page.waitForSelector('#registerOtpSection:not(.d-none)');
+      await page.fill('#regOtpInput', '482915');
+      await page.click('#btnConfirmRegOtp');
 
       // Redirects to login with ?registered=true
       await page.waitForURL('**/login.html?registered=true*');
@@ -266,7 +281,7 @@ describe('Browser E2E: Authentication UI, Profile & Session Integration', () => 
     const { page, context, getRuntimeErrors } = await createMonitoredPage(browser);
 
     try {
-      await page.route('**/api/v1/auth/register', async (route) => {
+      await page.route('**/api/v1/auth/register/send-otp', async (route) => {
         await route.fulfill({
           status: 409,
           contentType: 'application/json',

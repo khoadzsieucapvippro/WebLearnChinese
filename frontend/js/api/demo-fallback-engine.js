@@ -302,6 +302,62 @@ class DemoFallbackEngine {
       };
     }
 
+    if (cleanPath === '/auth/register/send-otp' && method === 'POST') {
+      const email = String(body?.email || body?.emailOrPhone || '').trim().toLowerCase();
+      if (!email || !email.includes('@')) {
+        throw new ApiError('Email không đúng định dạng', 400, 'VALIDATION_ERROR');
+      }
+      const existing = data.accounts.find(a =>
+        (a.email && a.email.toLowerCase() === email) ||
+        (Array.isArray(a.aliases) && a.aliases.some(al => al.toLowerCase() === email))
+      );
+      if (existing) {
+        throw new ApiError('Email này đã được đăng ký trong hệ thống', 409, 'CONFLICT');
+      }
+      this._regOtpCodes = this._regOtpCodes || {};
+      this._regOtpCodes[email] = { code: '123456', expiresAt: Date.now() + 15 * 60 * 1000 };
+      return {
+        message: 'Mã xác thực 6 chữ số đã được tạo trong chế độ demo.',
+        emailSent: false
+      };
+    }
+
+    if (cleanPath === '/auth/register/verify-otp' && method === 'POST') {
+      const email = String(body?.email || body?.emailOrPhone || '').trim().toLowerCase();
+      const code = String(body?.verificationCode || '').trim();
+      this._regOtpCodes = this._regOtpCodes || {};
+      const entry = this._regOtpCodes[email];
+      if (!entry || entry.code !== code || entry.expiresAt <= Date.now()) {
+        throw new ApiError('Mã xác thực không chính xác hoặc đã hết hạn', 400, 'INVALID_CODE');
+      }
+      delete this._regOtpCodes[email];
+      const fullName = String(body?.fullName || 'Học Viên Mới').trim();
+      const newAccount = {
+        accountId: data.accounts.length + 1,
+        email: email,
+        aliases: [],
+        fullName: fullName || 'Học Viên Mới',
+        roles: ['Learner'],
+        password: body?.password || 'Password@123',
+        status: 'Active',
+        createdAt: new Date().toISOString(),
+        avatarUrl: null
+      };
+      data.accounts.push(newAccount);
+      this.saveData();
+      const token = generateDemoJwt(newAccount);
+      return {
+        token: token,
+        accessToken: token,
+        type: 'Bearer',
+        tokenType: 'Bearer',
+        accountId: newAccount.accountId,
+        emailOrPhone: newAccount.email,
+        fullName: newAccount.fullName,
+        roles: ['Learner']
+      };
+    }
+
     if (cleanPath === '/auth/register' && method === 'POST') {
       const email = String(body?.email || body?.emailOrPhone || '').trim();
       const fullName = String(body?.fullName || 'Học Viên Mới').trim();

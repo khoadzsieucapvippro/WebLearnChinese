@@ -21,13 +21,20 @@ public class RegisterRequest {
     @Size(max = 100, message = "Full name must not exceed 100 characters")
     private String fullName;
 
+    private String verificationCode;
+
     public RegisterRequest() {
     }
 
     public RegisterRequest(String emailOrPhone, String password, String fullName) {
+        this(emailOrPhone, password, fullName, null);
+    }
+
+    public RegisterRequest(String emailOrPhone, String password, String fullName, String verificationCode) {
         this.emailOrPhone = emailOrPhone;
         this.password = password;
         this.fullName = fullName;
+        this.verificationCode = verificationCode;
     }
 
     public String getEmailOrPhone() {
@@ -52,6 +59,14 @@ public class RegisterRequest {
 
     public void setFullName(String fullName) {
         this.fullName = fullName;
+    }
+
+    public String getVerificationCode() {
+        return verificationCode;
+    }
+
+    public void setVerificationCode(String verificationCode) {
+        this.verificationCode = verificationCode;
     }
 
     @Override
