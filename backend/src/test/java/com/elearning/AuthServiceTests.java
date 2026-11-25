@@ -4,14 +4,18 @@ import com.elearning.common.ErrorCode;
 import com.elearning.dto.request.ChangePasswordRequest;
 import com.elearning.dto.request.ForgotPasswordRequest;
 import com.elearning.dto.request.ResetPasswordRequest;
+import com.elearning.dto.request.VerifyResetCodeRequest;
 import com.elearning.dto.request.LoginRequest;
 import com.elearning.dto.request.RegisterRequest;
 import com.elearning.dto.response.AuthResponse;
+import com.elearning.dto.response.ForgotPasswordResponse;
 import com.elearning.entity.Account;
+import com.elearning.entity.PasswordResetToken;
 import com.elearning.entity.Role;
 import com.elearning.entity.UserProfile;
 import com.elearning.exception.BusinessException;
 import com.elearning.repository.AccountRepository;
+import com.elearning.repository.PasswordResetTokenRepository;
 import com.elearning.repository.RoleRepository;
 import com.elearning.security.CustomUserDetails;
 import com.elearning.security.JwtUtil;
@@ -64,6 +68,9 @@ class AuthServiceTests {
 
     @Mock
     private EmailService emailService;
+
+    @Mock
+    private PasswordResetTokenRepository passwordResetTokenRepository;
 
     @InjectMocks
     private AuthServiceImpl authService;
@@ -310,33 +317,83 @@ class AuthServiceTests {
     }
 
     @Nested
-    @DisplayName("ForgotPassword Tests (Model A)")
+    @DisplayName("ForgotPassword Tests (Real Email + Brevo OTP)")
     class ForgotPasswordTests {
 
         @Test
-        @DisplayName("GIVEN existing account WHEN forgotPassword THEN generates 6-digit code")
+        @DisplayName("GIVEN existing account and email delivery succeeds WHEN forgotPassword THEN hashes 6-digit OTP, saves token, and omits devCode")
         void testForgotPassword_success() {
             Account account = new Account();
             account.setEmailOrPhone("user@elearning.com");
             when(accountRepository.findByEmailOrPhone("user@elearning.com")).thenReturn(Optional.of(account));
+            when(passwordResetTokenRepository.findByEmail("user@elearning.com")).thenReturn(Optional.empty());
+            when(emailService.sendPasswordResetCode(anyString(), anyString())).thenReturn(true);
 
             ForgotPasswordRequest request = new ForgotPasswordRequest("user@elearning.com");
-            authService.forgotPassword(request);
+            ForgotPasswordResponse response = authService.forgotPassword(request);
 
-            String code = authService.getResetCodeForTesting("user@elearning.com");
-            assertThat(code).isNotNull().hasSize(6);
+            assertThat(response.getDevCode()).isNull();
+            assertThat(response.isEmailSent()).isTrue();
+
+            ArgumentCaptor<String> codeCaptor = ArgumentCaptor.forClass(String.class);
+            verify(emailService).sendPasswordResetCode(org.mockito.ArgumentMatchers.eq("user@elearning.com"), codeCaptor.capture());
+            assertThat(codeCaptor.getValue()).matches("\\d{6}");
+
+            ArgumentCaptor<PasswordResetToken> tokenCaptor = ArgumentCaptor.forClass(PasswordResetToken.class);
+            verify(passwordResetTokenRepository).save(tokenCaptor.capture());
+            PasswordResetToken savedToken = tokenCaptor.getValue();
+            assertThat(savedToken.getEmail()).isEqualTo("user@elearning.com");
+            assertThat(savedToken.getCodeHash()).doesNotContain(codeCaptor.getValue());
+            assertThat(savedToken.getFailedAttempts()).isZero();
         }
 
         @Test
-        @DisplayName("GIVEN non-existent account WHEN forgotPassword THEN completes silently without revealing account status")
+        @DisplayName("GIVEN non-existent account WHEN forgotPassword THEN returns identical anti-enumeration response without sending email")
         void testForgotPassword_nonExistentEmail_silentSuccess() {
             when(accountRepository.findByEmailOrPhone("unknown@elearning.com")).thenReturn(Optional.empty());
 
             ForgotPasswordRequest request = new ForgotPasswordRequest("unknown@elearning.com");
-            authService.forgotPassword(request);
+            ForgotPasswordResponse response = authService.forgotPassword(request);
 
-            String code = authService.getResetCodeForTesting("unknown@elearning.com");
-            assertThat(code).isNull();
+            assertThat(response.getDevCode()).isNull();
+            assertThat(response.isEmailSent()).isTrue();
+            verify(emailService, never()).sendPasswordResetCode(anyString(), anyString());
+            verify(passwordResetTokenRepository, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("GIVEN email dispatch fails in production mode WHEN forgotPassword THEN throws INTERNAL_ERROR without saving token or leaking devCode")
+        void testForgotPassword_emailDispatchFails_throwsError() {
+            Account account = new Account();
+            account.setEmailOrPhone("user@elearning.com");
+            when(accountRepository.findByEmailOrPhone("user@elearning.com")).thenReturn(Optional.of(account));
+            when(passwordResetTokenRepository.findByEmail("user@elearning.com")).thenReturn(Optional.empty());
+            when(emailService.sendPasswordResetCode(anyString(), anyString())).thenReturn(false);
+
+            ForgotPasswordRequest request = new ForgotPasswordRequest("user@elearning.com");
+
+            assertThatThrownBy(() -> authService.forgotPassword(request))
+                    .isInstanceOf(BusinessException.class)
+                    .satisfies(ex -> assertThat(((BusinessException) ex).getErrorCode()).isEqualTo(ErrorCode.INTERNAL_ERROR));
+
+            verify(passwordResetTokenRepository, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("GIVEN repeated request within 60s cooldown WHEN forgotPassword THEN throws TOO_MANY_REQUESTS")
+        void testForgotPassword_cooldownEnforced() {
+            PasswordResetToken existing = new PasswordResetToken();
+            existing.setEmail("user@elearning.com");
+            existing.setLastSentAt(java.time.LocalDateTime.now().minusSeconds(10));
+            when(passwordResetTokenRepository.findByEmail("user@elearning.com")).thenReturn(Optional.of(existing));
+
+            ForgotPasswordRequest request = new ForgotPasswordRequest("user@elearning.com");
+
+            assertThatThrownBy(() -> authService.forgotPassword(request))
+                    .isInstanceOf(BusinessException.class)
+                    .satisfies(ex -> assertThat(((BusinessException) ex).getErrorCode()).isEqualTo(ErrorCode.TOO_MANY_REQUESTS));
+
+            verify(emailService, never()).sendPasswordResetCode(anyString(), anyString());
         }
 
         @Test
@@ -351,21 +408,31 @@ class AuthServiceTests {
     }
 
     @Nested
-    @DisplayName("ResetPassword Tests (Model A)")
+    @DisplayName("ResetPassword & VerifyResetCode Tests")
     class ResetPasswordTests {
 
+        private PasswordResetToken createToken(String email, String code, int failedAttempts, java.time.LocalDateTime expiresAt) {
+            PasswordResetToken token = new PasswordResetToken();
+            token.setEmail(email);
+            token.setCodeHash(AuthServiceImpl.hashOtp(email, code));
+            token.setExpiresAt(expiresAt);
+            token.setLastSentAt(java.time.LocalDateTime.now().minusMinutes(2));
+            token.setFailedAttempts(failedAttempts);
+            return token;
+        }
+
         @Test
-        @DisplayName("GIVEN valid verification code WHEN resetPassword THEN updates password hash and revokes sessions")
+        @DisplayName("GIVEN valid verification code WHEN resetPassword THEN updates password hash, revokes sessions, and deletes token")
         void testResetPassword_success() {
             Account account = new Account();
             account.setEmailOrPhone("user@elearning.com");
             account.setPasswordHash("oldHashed");
             account.setAuthorizationVersion(1L);
 
+            PasswordResetToken token = createToken("user@elearning.com", "654321", 0, java.time.LocalDateTime.now().plusMinutes(10));
+            when(passwordResetTokenRepository.findByEmail("user@elearning.com")).thenReturn(Optional.of(token));
             when(accountRepository.findByEmailOrPhone("user@elearning.com")).thenReturn(Optional.of(account));
             when(passwordEncoder.encode("NewSecret@123")).thenReturn("newHashed@123");
-
-            authService.setResetCodeForTesting("user@elearning.com", "654321");
 
             ResetPasswordRequest request = new ResetPasswordRequest("user@elearning.com", "654321", "NewSecret@123");
             authService.resetPassword(request);
@@ -373,15 +440,45 @@ class AuthServiceTests {
             assertThat(account.getPasswordHash()).isEqualTo("newHashed@123");
             assertThat(account.getAuthorizationVersion()).isEqualTo(2L);
             verify(accountRepository).save(account);
-
-            // Code should be invalidated
-            assertThat(authService.getResetCodeForTesting("user@elearning.com")).isNull();
+            verify(passwordResetTokenRepository).deleteByEmail("user@elearning.com");
         }
 
         @Test
-        @DisplayName("GIVEN incorrect verification code WHEN resetPassword THEN throws BAD_REQUEST")
+        @DisplayName("GIVEN legacy backdoor code 123456 when real OTP is 654321 WHEN verifyResetCode THEN throws BAD_REQUEST and increments attempts")
+        void testVerifyResetCode_rejectsHardcoded123456() {
+            PasswordResetToken token = createToken("user@elearning.com", "654321", 0, java.time.LocalDateTime.now().plusMinutes(10));
+            when(passwordResetTokenRepository.findByEmail("user@elearning.com")).thenReturn(Optional.of(token));
+
+            VerifyResetCodeRequest request = new VerifyResetCodeRequest("user@elearning.com", "123456");
+
+            assertThatThrownBy(() -> authService.verifyResetCode(request))
+                    .isInstanceOf(BusinessException.class)
+                    .satisfies(ex -> assertThat(((BusinessException) ex).getErrorCode()).isEqualTo(ErrorCode.BAD_REQUEST));
+
+            assertThat(token.getFailedAttempts()).isEqualTo(1);
+            verify(passwordResetTokenRepository).save(token);
+        }
+
+        @Test
+        @DisplayName("GIVEN 5th wrong OTP attempt WHEN verifyResetCode THEN deletes token and throws TOO_MANY_REQUESTS")
+        void testVerifyResetCode_locksOutAfterFiveFailures() {
+            PasswordResetToken token = createToken("user@elearning.com", "654321", 4, java.time.LocalDateTime.now().plusMinutes(10));
+            when(passwordResetTokenRepository.findByEmail("user@elearning.com")).thenReturn(Optional.of(token));
+
+            VerifyResetCodeRequest request = new VerifyResetCodeRequest("user@elearning.com", "999999");
+
+            assertThatThrownBy(() -> authService.verifyResetCode(request))
+                    .isInstanceOf(BusinessException.class)
+                    .satisfies(ex -> assertThat(((BusinessException) ex).getErrorCode()).isEqualTo(ErrorCode.TOO_MANY_REQUESTS));
+
+            verify(passwordResetTokenRepository).deleteByEmail("user@elearning.com");
+        }
+
+        @Test
+        @DisplayName("GIVEN incorrect verification code WHEN resetPassword THEN throws BAD_REQUEST without updating account")
         void testResetPassword_invalidCode_throwsBadRequest() {
-            authService.setResetCodeForTesting("user@elearning.com", "654321");
+            PasswordResetToken token = createToken("user@elearning.com", "654321", 0, java.time.LocalDateTime.now().plusMinutes(10));
+            when(passwordResetTokenRepository.findByEmail("user@elearning.com")).thenReturn(Optional.of(token));
 
             ResetPasswordRequest request = new ResetPasswordRequest("user@elearning.com", "999999", "NewSecret@123");
 
@@ -395,8 +492,6 @@ class AuthServiceTests {
         @Test
         @DisplayName("GIVEN invalid new password length WHEN resetPassword THEN throws VALIDATION_ERROR")
         void testResetPassword_shortPassword_throwsValidationError() {
-            authService.setResetCodeForTesting("user@elearning.com", "654321");
-
             ResetPasswordRequest request = new ResetPasswordRequest("user@elearning.com", "654321", "123");
 
             assertThatThrownBy(() -> authService.resetPassword(request))

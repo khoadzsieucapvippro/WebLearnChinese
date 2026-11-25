@@ -98,6 +98,8 @@ app:
     resend-api-key: ${RESEND_API_KEY:}
     from-email: ${APP_EMAIL_FROM:onboarding@resend.dev}
     from-name: ${APP_EMAIL_FROM_NAME:Hán Ngữ Học Đường}
+    allow-dev-code-fallback: ${APP_EMAIL_ALLOW_DEV_CODE_FALLBACK:false}
+    reset-resend-cooldown-seconds: ${APP_EMAIL_RESET_RESEND_COOLDOWN_SECONDS:60}
   rate-limit:
     login:
       max-attempts: ${APP_RATE_LIMIT_LOGIN_MAX_ATTEMPTS:10}

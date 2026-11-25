@@ -349,35 +349,10 @@ class DemoFallbackEngine {
       };
       try { if (typeof sessionStorage !== 'undefined') sessionStorage.setItem('DEMO_RESET_CODE_' + email, resetCode); } catch (_) {}
 
-      // Real email dispatch via FormSubmit when running in browser
-      if (typeof fetch !== 'undefined' && email.includes('@')) {
-        try {
-          fetch('https://formsubmit.co/ajax/' + encodeURIComponent(email), {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json',
-              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-              'Referer': typeof window !== 'undefined' ? window.location.href : 'https://khoadzsieucapvippro.github.io/WebLearnChinese/login.html',
-              'Origin': 'https://khoadzsieucapvippro.github.io'
-            },
-            body: JSON.stringify({
-              'Mã xác nhận 6 chữ số': resetCode,
-              'Thời hạn hiệu lực': '15 phút',
-              'Lưu ý': 'Tuyệt đối không chia sẻ mã này cho bất kỳ ai',
-              'Hệ thống': 'Hán Ngữ Học Đường',
-              _subject: 'Mã xác thực đặt lại mật khẩu - Hán Ngữ Học Đường',
-              _captcha: 'false',
-              _template: 'box'
-            })
-          }).catch(() => {});
-        } catch (_) {}
-      }
-
       return {
         code: 'SUCCESS',
-        message: 'Mã xác thực 6 chữ số đã được gửi tới email của bạn.',
-        emailSent: true,
+        message: 'Mã xác thực 6 chữ số đã được tạo trong chế độ demo.',
+        emailSent: false,
         demoCode: '123456',
         devCode: resetCode
       };

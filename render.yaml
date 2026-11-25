@@ -89,6 +89,10 @@ services:
         sync: false
       - key: BREVO_SENDER_EMAIL
         value: "keodeom1700a15@gmail.com"
+      - key: APP_EMAIL_ALLOW_DEV_CODE_FALLBACK
+        value: "false"
+      - key: APP_EMAIL_RESET_RESEND_COOLDOWN_SECONDS
+        value: "60"
 
       # Resend API Key for Cloud HTTPS Email Delivery (Port 443)
       - key: RESEND_API_KEY

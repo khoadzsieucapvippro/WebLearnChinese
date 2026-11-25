@@ -37,16 +37,19 @@ describe('E2E: Self-Service Password Reset (Model A) & Admin Zero-Knowledge', ()
     page.on('console', msg => console.log('[BROWSER CONSOLE]', msg.text()));
 
     try {
-      // Mock Auth endpoints for self-service password reset
+      // Mock Auth endpoints for real email self-service password reset (no demoCode/devCode leaked)
       await page.route('**/api/v1/auth/forgot-password', async (route) => {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
           body: JSON.stringify({
             code: 'SUCCESS',
-            message: 'Nếu email tồn tại trong hệ thống, mã xác thực đã được gửi đến hòm thư của bạn.',
-            data: null,
-            demoCode: '123456'
+            message: 'Nếu email tồn tại trong hệ thống, mã xác thực 6 chữ số đã được gửi đến hộp thư của bạn.',
+            data: {
+              message: 'Nếu email tồn tại trong hệ thống, mã xác thực 6 chữ số đã được gửi đến hộp thư của bạn.',
+              devCode: null,
+              emailSent: true
+            }
           })
         });
       });
@@ -103,8 +106,12 @@ describe('E2E: Self-Service Password Reset (Model A) & Admin Zero-Knowledge', ()
       const isStep3VisibleInitially = await page.locator('#forgotStep3Section').isVisible();
       assert.strictEqual(isStep3VisibleInitially, false, 'Step 3 password input must not be visible before valid code');
 
-      // Fill Step 2 input: Verification Code
-      await page.fill('#forgotCodeInput', '123456');
+      // Verify code input is empty (never pre-filled with a hardcoded backdoor code)
+      const initialCodeValue = await page.inputValue('#forgotCodeInput');
+      assert.strictEqual(initialCodeValue, '', 'Verification code input must NOT be pre-filled in real email mode');
+
+      // Fill Step 2 input: Verification Code received from Gmail
+      await page.fill('#forgotCodeInput', '482915');
 
       // Screenshot Step 2
       await page.screenshot({

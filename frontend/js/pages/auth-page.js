@@ -563,6 +563,7 @@ export function initForgotPasswordModal() {
   const step2Alert = document.getElementById('forgotStep2Alert');
   const btnVerifyResetCode = document.getElementById('btnVerifyResetCode');
   const btnBackToStep1 = document.getElementById('btnBackToStep1');
+  const btnResendResetCode = document.getElementById('btnResendResetCode');
 
   const newPassInput = document.getElementById('forgotNewPasswordInput');
   const newPassError = document.getElementById('forgotNewPasswordError');
@@ -584,8 +585,69 @@ export function initForgotPasswordModal() {
 
   let resetEmail = '';
   let verifiedCode = '';
+  let resendTimerId = null;
+
+  function stopResendCooldown() {
+    if (resendTimerId) {
+      clearInterval(resendTimerId);
+      resendTimerId = null;
+    }
+    if (btnResendResetCode) {
+      btnResendResetCode.disabled = false;
+      btnResendResetCode.textContent = 'Gửi lại mã';
+    }
+  }
+
+  function startResendCooldown(seconds = 60) {
+    stopResendCooldown();
+    if (!btnResendResetCode) return;
+    let remaining = seconds;
+    btnResendResetCode.disabled = true;
+    btnResendResetCode.textContent = `Gửi lại mã (${remaining}s)`;
+    resendTimerId = setInterval(() => {
+      remaining -= 1;
+      if (remaining <= 0) {
+        stopResendCooldown();
+      } else {
+        btnResendResetCode.textContent = `Gửi lại mã (${remaining}s)`;
+      }
+    }, 1000);
+  }
+
+  function renderStep2StatusBanner(email, resp) {
+    if (!step2Alert) return;
+    const activeDevCode = resp?.devCode || resp?.demoCode || resp?.data?.devCode || resp?.data?.demoCode;
+    clearContainer(step2Alert);
+    step2Alert.className = 'alert alert-info small py-2 px-3 mb-3 d-flex align-items-center justify-content-between gap-2';
+    if (activeDevCode) {
+      step2Alert.appendChild(createSafeElement('span', {
+        children: [
+          document.createTextNode('Mã xác thực demo/dev: '),
+          createSafeElement('strong', { className: 'fs-6 text-chinese-red', text: activeDevCode })
+        ]
+      }));
+    } else {
+      step2Alert.appendChild(createSafeElement('span', {
+        children: [
+          document.createTextNode('Mã xác nhận 6 chữ số đã được gửi tới '),
+          createSafeElement('strong', { className: 'text-chinese-red', text: email }),
+          document.createTextNode(' (nếu email tồn tại). Vui lòng kiểm tra hộp thư đến hoặc thư mục Spam.')
+        ]
+      }));
+    }
+    step2Alert.appendChild(createSafeElement('span', {
+      className: 'badge bg-secondary-subtle text-secondary border flex-shrink-0',
+      text: 'Hiệu lực 15 phút'
+    }));
+    step2Alert.classList.remove('d-none');
+    if (codeInput) {
+      codeInput.value = activeDevCode ? activeDevCode : '';
+      codeInput.focus();
+    }
+  }
 
   function resetModalState() {
+    stopResendCooldown();
     step1Section?.classList.remove('d-none');
     step2Section?.classList.add('d-none');
     step3Section?.classList.add('d-none');
@@ -622,6 +684,7 @@ export function initForgotPasswordModal() {
   }
 
   modalEl.addEventListener('show.bs.modal', resetModalState);
+  modalEl.addEventListener('hidden.bs.modal', stopResendCooldown);
 
   // Step 1: Submit email to request reset code
   step1Form?.addEventListener('submit', async (e) => {
@@ -646,8 +709,6 @@ export function initForgotPasswordModal() {
         body: { email }
       });
 
-      const isEmailDispatched = resp?.emailSent === true || resp?.data?.emailSent === true;
-      const activeDevCode = resp?.devCode || resp?.demoCode || resp?.data?.devCode || resp?.data?.demoCode;
       resetEmail = email;
       verifiedCode = '';
       if (targetEmailDisplay) targetEmailDisplay.textContent = email;
@@ -656,36 +717,8 @@ export function initForgotPasswordModal() {
       step2Section?.classList.remove('d-none');
       step3Section?.classList.add('d-none');
 
-      if (step2Alert) {
-        clearContainer(step2Alert);
-        step2Alert.className = 'alert alert-info small py-2 px-3 mb-3 d-flex align-items-center justify-content-between';
-        if (isEmailDispatched && !activeDevCode) {
-          step2Alert.appendChild(createSafeElement('span', {
-            children: [
-              document.createTextNode('✉️ Mã xác nhận 6 chữ số đã gửi tới: '),
-              createSafeElement('strong', { className: 'text-chinese-red', text: email }),
-              document.createTextNode('. Vui lòng kiểm tra hộp thư đến (hoặc thư mục Spam).')
-            ]
-          }));
-        } else {
-          const displayCode = activeDevCode || '123456';
-          step2Alert.appendChild(createSafeElement('span', {
-            children: [
-              document.createTextNode('Mã xác thực của bạn: '),
-              createSafeElement('strong', { className: 'fs-6 text-chinese-red', text: displayCode })
-            ]
-          }));
-        }
-        step2Alert.appendChild(createSafeElement('span', {
-          className: 'badge bg-secondary-subtle text-secondary border',
-          text: 'Hiệu lực 15 phút'
-        }));
-        step2Alert.classList.remove('d-none');
-      }
-      if (codeInput) {
-        codeInput.value = activeDevCode ? activeDevCode : '';
-        codeInput.focus();
-      }
+      renderStep2StatusBanner(email, resp);
+      startResendCooldown(60);
 
     } catch (err) {
       if (step1Alert) {
@@ -702,8 +735,36 @@ export function initForgotPasswordModal() {
     }
   });
 
+  // Step 2: Resend verification code
+  btnResendResetCode?.addEventListener('click', async () => {
+    if (!resetEmail || btnResendResetCode.disabled) return;
+    btnResendResetCode.disabled = true;
+    btnResendResetCode.textContent = 'Đang gửi lại...';
+    if (codeError) {
+      codeInput?.classList.remove('is-invalid');
+      codeError.classList.add('d-none');
+    }
+
+    try {
+      const resp = await apiClient('/auth/forgot-password', {
+        method: 'POST',
+        body: { email: resetEmail }
+      });
+      renderStep2StatusBanner(resetEmail, resp);
+      startResendCooldown(60);
+    } catch (err) {
+      stopResendCooldown();
+      if (step2Alert) {
+        step2Alert.className = 'alert alert-danger small py-2 px-3 mb-3';
+        step2Alert.textContent = err.message || 'Không thể gửi lại mã xác thực. Vui lòng thử lại.';
+        step2Alert.classList.remove('d-none');
+      }
+    }
+  });
+
   // Step 2: Back to Step 1
   btnBackToStep1?.addEventListener('click', () => {
+    stopResendCooldown();
     step2Section?.classList.add('d-none');
     step1Section?.classList.remove('d-none');
     if (emailInput) emailInput.focus();

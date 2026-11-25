@@ -5,6 +5,7 @@ import com.elearning.controller.AuthController;
 import com.elearning.dto.request.ChangePasswordRequest;
 import com.elearning.dto.request.ForgotPasswordRequest;
 import com.elearning.dto.request.ResetPasswordRequest;
+import com.elearning.dto.request.VerifyResetCodeRequest;
 import com.elearning.dto.request.LoginRequest;
 import com.elearning.dto.request.RegisterRequest;
 import com.elearning.dto.response.AuthResponse;
@@ -259,21 +260,37 @@ class AuthControllerTests {
     class ForgotPasswordEndpointTests {
 
         @Test
-        @DisplayName("GIVEN valid email WHEN POST /forgot-password THEN returns 200 OK")
+        @DisplayName("GIVEN valid email WHEN POST /forgot-password THEN returns 200 OK without exposing devCode")
         void testForgotPasswordSuccess() throws Exception {
             ForgotPasswordRequest request = new ForgotPasswordRequest("learner@elearning.com");
             when(authService.forgotPassword(any(ForgotPasswordRequest.class)))
-                    .thenReturn(new ForgotPasswordResponse("mã xác thực đã được gửi", "123456", false));
+                    .thenReturn(new ForgotPasswordResponse("Nếu email tồn tại trong hệ thống, mã xác thực 6 chữ số đã được gửi đến hộp thư của bạn.", null, true));
 
             mockMvc.perform(post("/api/v1/auth/forgot-password")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("SUCCESS"))
-                    .andExpect(jsonPath("$.message").value(containsString("mã xác thực đã được gửi")))
-                    .andExpect(jsonPath("$.data.devCode").value("123456"));
+                    .andExpect(jsonPath("$.message").value(containsString("mã xác thực 6 chữ số")))
+                    .andExpect(jsonPath("$.data.devCode").doesNotExist())
+                    .andExpect(jsonPath("$.data.emailSent").value(true));
 
             verify(authService).forgotPassword(any(ForgotPasswordRequest.class));
+        }
+
+        @Test
+        @DisplayName("GIVEN valid verify request WHEN POST /verify-reset-code THEN returns 200 OK")
+        void testVerifyResetCodeSuccess() throws Exception {
+            VerifyResetCodeRequest request = new VerifyResetCodeRequest("learner@elearning.com", "482915");
+
+            mockMvc.perform(post("/api/v1/auth/verify-reset-code")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("SUCCESS"))
+                    .andExpect(jsonPath("$.message").value(containsString("Mã xác thực hợp lệ")));
+
+            verify(authService).verifyResetCode(any(VerifyResetCodeRequest.class));
         }
 
         @Test
