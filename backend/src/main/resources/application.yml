@@ -8,6 +8,8 @@ spring:
   config:
     import:
       - optional:classpath:application-local.yml
+      - optional:file:./backend/src/main/resources/application-local.yml
+      - optional:file:./src/main/resources/application-local.yml
 
   servlet:
     multipart:
