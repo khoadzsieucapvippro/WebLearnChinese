@@ -60,6 +60,8 @@ public class FlywayConfig {
                         cleanupPartialV8(flyway);
                     } else if ("24".equals(version)) {
                         logV24State(flyway);
+                    } else if ("38".equals(version)) {
+                        cleanupPartialV38(flyway);
                     } else if (isRestartableDmlMigration(version)) {
                         log.info("V{} consists of deterministic UPDATE/DELETE and INSERT IGNORE statements; "
                                 + "rerunning it from the beginning is safe.", version);
@@ -143,6 +145,25 @@ public class FlywayConfig {
                     "column explanation_vi");
         } catch (SQLException e) {
             throw new IllegalStateException("Could not clean up the partial V8 schema safely", e);
+        }
+    }
+
+    private void cleanupPartialV38(Flyway flyway) {
+        log.warn("V38 failed previously; restoring password_reset_token to clean V37 state before rerunning V38.");
+        try (Connection connection = flyway.getConfiguration().getDataSource().getConnection();
+             Statement statement = connection.createStatement()) {
+
+            executeIgnoringFailure(statement,
+                    "ALTER TABLE `password_reset_token` DROP INDEX `uk_password_reset_token_email_purpose`",
+                    "unique index uk_password_reset_token_email_purpose");
+            executeIgnoringFailure(statement,
+                    "ALTER TABLE `password_reset_token` DROP COLUMN `purpose`",
+                    "column purpose");
+            executeIgnoringFailure(statement,
+                    "ALTER TABLE `password_reset_token` ADD CONSTRAINT `uk_password_reset_token_email` UNIQUE (`email`)",
+                    "restore unique index uk_password_reset_token_email");
+        } catch (SQLException e) {
+            throw new IllegalStateException("Could not clean up the partial V38 schema safely", e);
         }
     }
 

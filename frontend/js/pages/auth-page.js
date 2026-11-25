@@ -590,7 +590,7 @@ function initRegisterForm() {
         } else if (err.status === 408 || err.code === 'TIMEOUT') {
           setGlobalAlert(globalAlert, 'Yêu cầu đăng ký hết thời gian chờ (Timeout). Vui lòng thử lại.');
         } else if (err.status === 404 || err.code === 'NOT_FOUND') {
-          setGlobalAlert(globalAlert, 'Không tìm thấy dịch vụ đăng ký (404). Vui lòng kiểm tra cấu hình máy chủ.');
+          setGlobalAlert(globalAlert, 'Máy chủ Cloud (Render) đang cập nhật hoặc chưa triển khai phiên bản xác thực OTP mới (HTTP 404). Vui lòng thử lại sau vài phút hoặc kiểm tra Deploy trên Render Dashboard.');
         } else {
           setGlobalAlert(globalAlert, err.message || 'Hệ thống đang gặp sự cố. Vui lòng thử lại sau.');
         }
